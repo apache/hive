@@ -1,14 +1,14 @@
-PREHOOK: query: CREATE TABLE TEST1(A INT, B DOUBLE) partitioned by (ds string)
+PREHOOK: query: CREATE TABLE TEST1_n12(A INT, B DOUBLE) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST1
-POSTHOOK: query: CREATE TABLE TEST1(A INT, B DOUBLE) partitioned by (ds string)
+PREHOOK: Output: default@TEST1_n12
+POSTHOOK: query: CREATE TABLE TEST1_n12(A INT, B DOUBLE) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST1
-PREHOOK: query: explain extended select max(ds) from TEST1
+POSTHOOK: Output: default@TEST1_n12
+PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select max(ds) from TEST1
+POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -25,7 +25,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test1
+                  alias: test1_n12
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -84,25 +84,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(ds) from TEST1
+PREHOOK: query: select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select max(ds) from TEST1
+POSTHOOK: query: select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1_n12
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: alter table TEST1 add partition (ds='1')
+PREHOOK: query: alter table TEST1_n12 add partition (ds='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@test1
-POSTHOOK: query: alter table TEST1 add partition (ds='1')
+PREHOOK: Output: default@test1_n12
+POSTHOOK: query: alter table TEST1_n12 add partition (ds='1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@test1
-POSTHOOK: Output: default@test1@ds=1
-PREHOOK: query: explain extended select max(ds) from TEST1
+POSTHOOK: Output: default@test1_n12
+POSTHOOK: Output: default@test1_n12@ds=1
+PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select max(ds) from TEST1
+POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -119,7 +119,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test1
+                  alias: test1_n12
                   Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -141,9 +141,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
-              nullscan://null/default.test1/part_ds=1_ [test1]
+              nullscan://null/default.test1_n12/part_ds=1_ [test1_n12]
             Path -> Partition:
-              nullscan://null/default.test1/part_ds=1_ 
+              nullscan://null/default.test1_n12/part_ds=1_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -157,13 +157,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test1
+                    name default.test1_n12
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct test1 { i32 a, double b}
+                    serialization.ddl struct test1_n12 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -180,18 +180,18 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test1
+                      name default.test1_n12
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct test1 { i32 a, double b}
+                      serialization.ddl struct test1_n12 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test1
-                  name: default.test1
+                    name: default.test1_n12
+                  name: default.test1_n12
             Truncated Path -> Alias:
-              nullscan://null/default.test1/part_ds=1_ [test1]
+              nullscan://null/default.test1_n12/part_ds=1_ [test1_n12]
         Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
@@ -230,20 +230,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(ds) from TEST1
+PREHOOK: query: select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test1@ds=1
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select max(ds) from TEST1
+POSTHOOK: query: select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test1@ds=1
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: explain extended select count(distinct ds) from TEST1
+PREHOOK: query: explain extended select count(distinct ds) from TEST1_n12
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select count(distinct ds) from TEST1
+POSTHOOK: query: explain extended select count(distinct ds) from TEST1_n12
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -260,7 +260,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test1
+                  alias: test1_n12
                   Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -283,9 +283,9 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
             Path -> Alias:
-              nullscan://null/default.test1/part_ds=1_ [test1]
+              nullscan://null/default.test1_n12/part_ds=1_ [test1_n12]
             Path -> Partition:
-              nullscan://null/default.test1/part_ds=1_ 
+              nullscan://null/default.test1_n12/part_ds=1_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -299,13 +299,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test1
+                    name default.test1_n12
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct test1 { i32 a, double b}
+                    serialization.ddl struct test1_n12 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -322,18 +322,18 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test1
+                      name default.test1_n12
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct test1 { i32 a, double b}
+                      serialization.ddl struct test1_n12 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test1
-                  name: default.test1
+                    name: default.test1_n12
+                  name: default.test1_n12
             Truncated Path -> Alias:
-              nullscan://null/default.test1/part_ds=1_ [test1]
+              nullscan://null/default.test1_n12/part_ds=1_ [test1_n12]
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
@@ -372,20 +372,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct ds) from TEST1
+PREHOOK: query: select count(distinct ds) from TEST1_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test1@ds=1
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct ds) from TEST1
+POSTHOOK: query: select count(distinct ds) from TEST1_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test1@ds=1
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
 #### A masked pattern was here ####
 0
-PREHOOK: query: explain extended select count(ds) from TEST1
+PREHOOK: query: explain extended select count(ds) from TEST1_n12
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select count(ds) from TEST1
+POSTHOOK: query: explain extended select count(ds) from TEST1_n12
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -402,7 +402,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test1
+                  alias: test1_n12
                   Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -441,13 +441,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test1
+                    name default.test1_n12
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct test1 { i32 a, double b}
+                    serialization.ddl struct test1_n12 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
@@ -464,18 +464,18 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test1
+                      name default.test1_n12
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct test1 { i32 a, double b}
+                      serialization.ddl struct test1_n12 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test1
-                  name: default.test1
+                    name: default.test1_n12
+                  name: default.test1_n12
             Truncated Path -> Alias:
-              /test1/ds=1 [test1]
+              /test1_n12/ds=1 [test1_n12]
         Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
@@ -514,29 +514,29 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(ds) from TEST1
+PREHOOK: query: select count(ds) from TEST1_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test1@ds=1
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(ds) from TEST1
+POSTHOOK: query: select count(ds) from TEST1_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test1@ds=1
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
 #### A masked pattern was here ####
 0
-PREHOOK: query: alter table TEST1 add partition (ds='2')
+PREHOOK: query: alter table TEST1_n12 add partition (ds='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@test1
-POSTHOOK: query: alter table TEST1 add partition (ds='2')
+PREHOOK: Output: default@test1_n12
+POSTHOOK: query: alter table TEST1_n12 add partition (ds='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@test1
-POSTHOOK: Output: default@test1@ds=2
+POSTHOOK: Output: default@test1_n12
+POSTHOOK: Output: default@test1_n12@ds=2
 PREHOOK: query: explain extended 
-select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
+select count(*) from TEST1_n12 a2 join (select max(ds) m from TEST1_n12) b on a2.ds=b.m
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended 
-select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
+select count(*) from TEST1_n12 a2 join (select max(ds) m from TEST1_n12) b on a2.ds=b.m
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -590,13 +590,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test1
+                    name default.test1_n12
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct test1 { i32 a, double b}
+                    serialization.ddl struct test1_n12 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
@@ -613,16 +613,16 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test1
+                      name default.test1_n12
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct test1 { i32 a, double b}
+                      serialization.ddl struct test1_n12 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test1
-                  name: default.test1
+                    name: default.test1_n12
+                  name: default.test1_n12
 #### A masked pattern was here ####
                 Partition
                   base file name: ds=2
@@ -638,13 +638,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test1
+                    name default.test1_n12
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct test1 { i32 a, double b}
+                    serialization.ddl struct test1_n12 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
@@ -661,23 +661,23 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test1
+                      name default.test1_n12
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct test1 { i32 a, double b}
+                      serialization.ddl struct test1_n12 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test1
-                  name: default.test1
+                    name: default.test1_n12
+                  name: default.test1_n12
             Truncated Path -> Alias:
-              /test1/ds=1 [a2]
-              /test1/ds=2 [a2]
+              /test1_n12/ds=1 [a2]
+              /test1_n12/ds=2 [a2]
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: test1
+                  alias: test1_n12
                   Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -716,13 +716,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test1
+                    name default.test1_n12
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct test1 { i32 a, double b}
+                    serialization.ddl struct test1_n12 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
@@ -739,16 +739,16 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test1
+                      name default.test1_n12
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct test1 { i32 a, double b}
+                      serialization.ddl struct test1_n12 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test1
-                  name: default.test1
+                    name: default.test1_n12
+                  name: default.test1_n12
 #### A masked pattern was here ####
                 Partition
                   base file name: ds=2
@@ -764,13 +764,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test1
+                    name default.test1_n12
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct test1 { i32 a, double b}
+                    serialization.ddl struct test1_n12 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
@@ -787,19 +787,19 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test1
+                      name default.test1_n12
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct test1 { i32 a, double b}
+                      serialization.ddl struct test1_n12 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test1
-                  name: default.test1
+                    name: default.test1_n12
+                  name: default.test1_n12
             Truncated Path -> Alias:
-              /test1/ds=1 [test1]
-              /test1/ds=2 [test1]
+              /test1_n12/ds=1 [test1_n12]
+              /test1_n12/ds=2 [test1_n12]
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
@@ -898,51 +898,51 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
+PREHOOK: query: select count(*) from TEST1_n12 a2 join (select max(ds) m from TEST1_n12) b on a2.ds=b.m
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test1@ds=1
-PREHOOK: Input: default@test1@ds=2
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
+PREHOOK: Input: default@test1_n12@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
+POSTHOOK: query: select count(*) from TEST1_n12 a2 join (select max(ds) m from TEST1_n12) b on a2.ds=b.m
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test1@ds=1
-POSTHOOK: Input: default@test1@ds=2
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
+POSTHOOK: Input: default@test1_n12@ds=2
 #### A masked pattern was here ####
 0
-PREHOOK: query: CREATE TABLE TEST2(A INT, B DOUBLE) partitioned by (ds string, hr string)
+PREHOOK: query: CREATE TABLE TEST2_n8(A INT, B DOUBLE) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST2
-POSTHOOK: query: CREATE TABLE TEST2(A INT, B DOUBLE) partitioned by (ds string, hr string)
+PREHOOK: Output: default@TEST2_n8
+POSTHOOK: query: CREATE TABLE TEST2_n8(A INT, B DOUBLE) partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST2
-PREHOOK: query: alter table TEST2 add partition (ds='1', hr='1')
+POSTHOOK: Output: default@TEST2_n8
+PREHOOK: query: alter table TEST2_n8 add partition (ds='1', hr='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@test2
-POSTHOOK: query: alter table TEST2 add partition (ds='1', hr='1')
+PREHOOK: Output: default@test2_n8
+POSTHOOK: query: alter table TEST2_n8 add partition (ds='1', hr='1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@ds=1/hr=1
-PREHOOK: query: alter table TEST2 add partition (ds='1', hr='2')
+POSTHOOK: Output: default@test2_n8
+POSTHOOK: Output: default@test2_n8@ds=1/hr=1
+PREHOOK: query: alter table TEST2_n8 add partition (ds='1', hr='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@test2
-POSTHOOK: query: alter table TEST2 add partition (ds='1', hr='2')
+PREHOOK: Output: default@test2_n8
+POSTHOOK: query: alter table TEST2_n8 add partition (ds='1', hr='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@ds=1/hr=2
-PREHOOK: query: alter table TEST2 add partition (ds='1', hr='3')
+POSTHOOK: Output: default@test2_n8
+POSTHOOK: Output: default@test2_n8@ds=1/hr=2
+PREHOOK: query: alter table TEST2_n8 add partition (ds='1', hr='3')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@test2
-POSTHOOK: query: alter table TEST2 add partition (ds='1', hr='3')
+PREHOOK: Output: default@test2_n8
+POSTHOOK: query: alter table TEST2_n8 add partition (ds='1', hr='3')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@ds=1/hr=3
-PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group by ds
+POSTHOOK: Output: default@test2_n8
+POSTHOOK: Output: default@test2_n8@ds=1/hr=3
+PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group by ds
+POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -959,7 +959,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test2
+                  alias: test2_n8
                   Statistics: Num rows: 1 Data size: 368 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -983,11 +983,11 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
             Path -> Alias:
-              nullscan://null/default.test2/part_ds=1_hr=1_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=2_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=3_ [test2]
+              nullscan://null/default.test2_n8/part_ds=1_hr=1_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=2_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=3_ [test2_n8]
             Path -> Partition:
-              nullscan://null/default.test2/part_ds=1_hr=1_ 
+              nullscan://null/default.test2_n8/part_ds=1_hr=1_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1002,13 +1002,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1025,17 +1025,17 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
-              nullscan://null/default.test2/part_ds=1_hr=2_ 
+                    name: default.test2_n8
+                  name: default.test2_n8
+              nullscan://null/default.test2_n8/part_ds=1_hr=2_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1050,13 +1050,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1073,17 +1073,17 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
-              nullscan://null/default.test2/part_ds=1_hr=3_ 
+                    name: default.test2_n8
+                  name: default.test2_n8
+              nullscan://null/default.test2_n8/part_ds=1_hr=3_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1098,13 +1098,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1121,20 +1121,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
+                    name: default.test2_n8
+                  name: default.test2_n8
             Truncated Path -> Alias:
-              nullscan://null/default.test2/part_ds=1_hr=1_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=2_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=3_ [test2]
+              nullscan://null/default.test2_n8/part_ds=1_hr=1_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=2_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=3_ [test2_n8]
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
@@ -1174,23 +1174,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
+PREHOOK: query: select ds, count(distinct hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test2
-PREHOOK: Input: default@test2@ds=1/hr=1
-PREHOOK: Input: default@test2@ds=1/hr=2
-PREHOOK: Input: default@test2@ds=1/hr=3
+PREHOOK: Input: default@test2_n8
+PREHOOK: Input: default@test2_n8@ds=1/hr=1
+PREHOOK: Input: default@test2_n8@ds=1/hr=2
+PREHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
-POSTHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
+POSTHOOK: query: select ds, count(distinct hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test2
-POSTHOOK: Input: default@test2@ds=1/hr=1
-POSTHOOK: Input: default@test2@ds=1/hr=2
-POSTHOOK: Input: default@test2@ds=1/hr=3
+POSTHOOK: Input: default@test2_n8
+POSTHOOK: Input: default@test2_n8@ds=1/hr=1
+POSTHOOK: Input: default@test2_n8@ds=1/hr=2
+POSTHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
-PREHOOK: query: explain extended select ds, count(hr) from TEST2 group by ds
+PREHOOK: query: explain extended select ds, count(hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select ds, count(hr) from TEST2 group by ds
+POSTHOOK: query: explain extended select ds, count(hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1207,7 +1207,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test2
+                  alias: test2_n8
                   Statistics: Num rows: 1 Data size: 368 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -1250,13 +1250,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
@@ -1273,16 +1273,16 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
+                    name: default.test2_n8
+                  name: default.test2_n8
 #### A masked pattern was here ####
                 Partition
                   base file name: hr=2
@@ -1299,13 +1299,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
@@ -1322,16 +1322,16 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
+                    name: default.test2_n8
+                  name: default.test2_n8
 #### A masked pattern was here ####
                 Partition
                   base file name: hr=3
@@ -1348,13 +1348,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
@@ -1371,20 +1371,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
+                    name: default.test2_n8
+                  name: default.test2_n8
             Truncated Path -> Alias:
-              /test2/ds=1/hr=1 [test2]
-              /test2/ds=1/hr=2 [test2]
-              /test2/ds=1/hr=3 [test2]
+              /test2_n8/ds=1/hr=1 [test2_n8]
+              /test2_n8/ds=1/hr=2 [test2_n8]
+              /test2_n8/ds=1/hr=3 [test2_n8]
         Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
@@ -1424,23 +1424,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ds, count(hr) from TEST2 group by ds
+PREHOOK: query: select ds, count(hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test2
-PREHOOK: Input: default@test2@ds=1/hr=1
-PREHOOK: Input: default@test2@ds=1/hr=2
-PREHOOK: Input: default@test2@ds=1/hr=3
+PREHOOK: Input: default@test2_n8
+PREHOOK: Input: default@test2_n8@ds=1/hr=1
+PREHOOK: Input: default@test2_n8@ds=1/hr=2
+PREHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
-POSTHOOK: query: select ds, count(hr) from TEST2 group by ds
+POSTHOOK: query: select ds, count(hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test2
-POSTHOOK: Input: default@test2@ds=1/hr=1
-POSTHOOK: Input: default@test2@ds=1/hr=2
-POSTHOOK: Input: default@test2@ds=1/hr=3
+POSTHOOK: Input: default@test2_n8
+POSTHOOK: Input: default@test2_n8@ds=1/hr=1
+POSTHOOK: Input: default@test2_n8@ds=1/hr=2
+POSTHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
-PREHOOK: query: explain extended select max(ds) from TEST1
+PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select max(ds) from TEST1
+POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1457,7 +1457,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test1
+                  alias: test1_n12
                   Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -1479,10 +1479,10 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
-              nullscan://null/default.test1/part_ds=1_ [test1]
-              nullscan://null/default.test1/part_ds=2_ [test1]
+              nullscan://null/default.test1_n12/part_ds=1_ [test1_n12]
+              nullscan://null/default.test1_n12/part_ds=2_ [test1_n12]
             Path -> Partition:
-              nullscan://null/default.test1/part_ds=1_ 
+              nullscan://null/default.test1_n12/part_ds=1_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1496,13 +1496,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test1
+                    name default.test1_n12
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct test1 { i32 a, double b}
+                    serialization.ddl struct test1_n12 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1519,17 +1519,17 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test1
+                      name default.test1_n12
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct test1 { i32 a, double b}
+                      serialization.ddl struct test1_n12 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test1
-                  name: default.test1
-              nullscan://null/default.test1/part_ds=2_ 
+                    name: default.test1_n12
+                  name: default.test1_n12
+              nullscan://null/default.test1_n12/part_ds=2_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1543,13 +1543,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test1
+                    name default.test1_n12
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct test1 { i32 a, double b}
+                    serialization.ddl struct test1_n12 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1566,19 +1566,19 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test1
+                      name default.test1_n12
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct test1 { i32 a, double b}
+                      serialization.ddl struct test1_n12 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test1
-                  name: default.test1
+                    name: default.test1_n12
+                  name: default.test1_n12
             Truncated Path -> Alias:
-              nullscan://null/default.test1/part_ds=1_ [test1]
-              nullscan://null/default.test1/part_ds=2_ [test1]
+              nullscan://null/default.test1_n12/part_ds=1_ [test1_n12]
+              nullscan://null/default.test1_n12/part_ds=2_ [test1_n12]
         Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
@@ -1617,17 +1617,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(ds) from TEST1
+PREHOOK: query: select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test1@ds=1
-PREHOOK: Input: default@test1@ds=2
+PREHOOK: Input: default@test1_n12
+PREHOOK: Input: default@test1_n12@ds=1
+PREHOOK: Input: default@test1_n12@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select max(ds) from TEST1
+POSTHOOK: query: select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test1@ds=1
-POSTHOOK: Input: default@test1@ds=2
+POSTHOOK: Input: default@test1_n12
+POSTHOOK: Input: default@test1_n12@ds=1
+POSTHOOK: Input: default@test1_n12@ds=2
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: select distinct ds from srcpart
@@ -1665,23 +1665,23 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 2008-04-08	2008-04-09
-PREHOOK: query: alter table TEST2 add partition (ds='01:10:10', hr='01')
+PREHOOK: query: alter table TEST2_n8 add partition (ds='01:10:10', hr='01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@test2
-POSTHOOK: query: alter table TEST2 add partition (ds='01:10:10', hr='01')
+PREHOOK: Output: default@test2_n8
+POSTHOOK: query: alter table TEST2_n8 add partition (ds='01:10:10', hr='01')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@ds=01%3A10%3A10/hr=01
-PREHOOK: query: alter table TEST2 add partition (ds='01:10:20', hr='02')
+POSTHOOK: Output: default@test2_n8
+POSTHOOK: Output: default@test2_n8@ds=01%3A10%3A10/hr=01
+PREHOOK: query: alter table TEST2_n8 add partition (ds='01:10:20', hr='02')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@test2
-POSTHOOK: query: alter table TEST2 add partition (ds='01:10:20', hr='02')
+PREHOOK: Output: default@test2_n8
+POSTHOOK: query: alter table TEST2_n8 add partition (ds='01:10:20', hr='02')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@ds=01%3A10%3A20/hr=02
-PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group by ds
+POSTHOOK: Output: default@test2_n8
+POSTHOOK: Output: default@test2_n8@ds=01%3A10%3A20/hr=02
+PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2 group by ds
+POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1698,7 +1698,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test2
+                  alias: test2_n8
                   Statistics: Num rows: 1 Data size: 368 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -1722,13 +1722,13 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
             Path -> Alias:
-              nullscan://null/default.test2/part_ds=01_10_10_hr=01_ [test2]
-              nullscan://null/default.test2/part_ds=01_10_20_hr=02_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=1_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=2_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=3_ [test2]
+              nullscan://null/default.test2_n8/part_ds=01_10_10_hr=01_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=01_10_20_hr=02_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=1_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=2_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=3_ [test2_n8]
             Path -> Partition:
-              nullscan://null/default.test2/part_ds=01_10_10_hr=01_ 
+              nullscan://null/default.test2_n8/part_ds=01_10_10_hr=01_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1743,13 +1743,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1766,17 +1766,17 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
-              nullscan://null/default.test2/part_ds=01_10_20_hr=02_ 
+                    name: default.test2_n8
+                  name: default.test2_n8
+              nullscan://null/default.test2_n8/part_ds=01_10_20_hr=02_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1791,13 +1791,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1814,17 +1814,17 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
-              nullscan://null/default.test2/part_ds=1_hr=1_ 
+                    name: default.test2_n8
+                  name: default.test2_n8
+              nullscan://null/default.test2_n8/part_ds=1_hr=1_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1839,13 +1839,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1862,17 +1862,17 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
-              nullscan://null/default.test2/part_ds=1_hr=2_ 
+                    name: default.test2_n8
+                  name: default.test2_n8
+              nullscan://null/default.test2_n8/part_ds=1_hr=2_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1887,13 +1887,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1910,17 +1910,17 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
-              nullscan://null/default.test2/part_ds=1_hr=3_ 
+                    name: default.test2_n8
+                  name: default.test2_n8
+              nullscan://null/default.test2_n8/part_ds=1_hr=3_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1935,13 +1935,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:double
 #### A masked pattern was here ####
-                    name default.test2
+                    name default.test2_n8
                     numFiles 0
                     numRows 0
                     partition_columns ds/hr
                     partition_columns.types string:string
                     rawDataSize 0
-                    serialization.ddl struct test2 { i32 a, double b}
+                    serialization.ddl struct test2_n8 { i32 a, double b}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 0
@@ -1958,22 +1958,22 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:double
 #### A masked pattern was here ####
-                      name default.test2
+                      name default.test2_n8
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct test2 { i32 a, double b}
+                      serialization.ddl struct test2_n8 { i32 a, double b}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.test2
-                  name: default.test2
+                    name: default.test2_n8
+                  name: default.test2_n8
             Truncated Path -> Alias:
-              nullscan://null/default.test2/part_ds=01_10_10_hr=01_ [test2]
-              nullscan://null/default.test2/part_ds=01_10_20_hr=02_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=1_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=2_ [test2]
-              nullscan://null/default.test2/part_ds=1_hr=3_ [test2]
+              nullscan://null/default.test2_n8/part_ds=01_10_10_hr=01_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=01_10_20_hr=02_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=1_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=2_ [test2_n8]
+              nullscan://null/default.test2_n8/part_ds=1_hr=3_ [test2_n8]
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
@@ -2013,21 +2013,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
+PREHOOK: query: select ds, count(distinct hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test2
-PREHOOK: Input: default@test2@ds=01%3A10%3A10/hr=01
-PREHOOK: Input: default@test2@ds=01%3A10%3A20/hr=02
-PREHOOK: Input: default@test2@ds=1/hr=1
-PREHOOK: Input: default@test2@ds=1/hr=2
-PREHOOK: Input: default@test2@ds=1/hr=3
+PREHOOK: Input: default@test2_n8
+PREHOOK: Input: default@test2_n8@ds=01%3A10%3A10/hr=01
+PREHOOK: Input: default@test2_n8@ds=01%3A10%3A20/hr=02
+PREHOOK: Input: default@test2_n8@ds=1/hr=1
+PREHOOK: Input: default@test2_n8@ds=1/hr=2
+PREHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####
-POSTHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
+POSTHOOK: query: select ds, count(distinct hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test2
-POSTHOOK: Input: default@test2@ds=01%3A10%3A10/hr=01
-POSTHOOK: Input: default@test2@ds=01%3A10%3A20/hr=02
-POSTHOOK: Input: default@test2@ds=1/hr=1
-POSTHOOK: Input: default@test2@ds=1/hr=2
-POSTHOOK: Input: default@test2@ds=1/hr=3
+POSTHOOK: Input: default@test2_n8
+POSTHOOK: Input: default@test2_n8@ds=01%3A10%3A10/hr=01
+POSTHOOK: Input: default@test2_n8@ds=01%3A10%3A20/hr=02
+POSTHOOK: Input: default@test2_n8@ds=1/hr=1
+POSTHOOK: Input: default@test2_n8@ds=1/hr=2
+POSTHOOK: Input: default@test2_n8@ds=1/hr=3
 #### A masked pattern was here ####

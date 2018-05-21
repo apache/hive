@@ -18,25 +18,25 @@ set hive.merge.smallfiles.avgsize=1;
 -- fixed in MAPREDUCE-2046 which is included in 0.22.
 
 -- create file inputs
-create table sih_i_part (key int, value string) partitioned by (p string);
-insert overwrite table sih_i_part partition (p='1') select key, value from src;
-insert overwrite table sih_i_part partition (p='2') select key+10000, value from src;
-insert overwrite table sih_i_part partition (p='3') select key+20000, value from src;
-create table sih_src as select key, value from sih_i_part order by key, value;
-create table sih_src2 as select key, value from sih_src order by key, value;
+create table sih_i_part_n0 (key int, value string) partitioned by (p string);
+insert overwrite table sih_i_part_n0 partition (p='1') select key, value from src;
+insert overwrite table sih_i_part_n0 partition (p='2') select key+10000, value from src;
+insert overwrite table sih_i_part_n0 partition (p='3') select key+20000, value from src;
+create table sih_src_n0 as select key, value from sih_i_part_n0 order by key, value;
+create table sih_src2_n0 as select key, value from sih_src_n0 order by key, value;
 
 set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.VerifyIsLocalModeHook ;
 set mapred.job.tracker=localhost:58;
 set hive.exec.mode.local.auto.input.files.max=1;
 
 -- Sample split, running locally limited by num tasks
-select count(1) from sih_src tablesample(1 percent);
+select count(1) from sih_src_n0 tablesample(1 percent);
 
 -- sample two tables
-select count(1) from sih_src tablesample(1 percent)a join sih_src2 tablesample(1 percent)b on a.key = b.key;
+select count(1) from sih_src_n0 tablesample(1 percent)a join sih_src2_n0 tablesample(1 percent)b on a.key = b.key;
 
 set hive.exec.mode.local.auto.inputbytes.max=1000;
 set hive.exec.mode.local.auto.input.files.max=4;
 
 -- sample split, running locally limited by max bytes
-select count(1) from sih_src tablesample(1 percent);
+select count(1) from sih_src_n0 tablesample(1 percent);

@@ -6,11 +6,11 @@ set hive.stats.column.autogather=false;
 
 set hive.cli.errors.ignore=true;
 
-DROP TABLE IF EXISTS encrypted_table PURGE;
+DROP TABLE IF EXISTS encrypted_table_n1 PURGE;
 DROP DATABASE IF EXISTS encrypted_db;
 
--- create table default.encrypted_table in its default warehouse location ${hiveconf:hive.metastore.warehouse.dir}/encrypted_table
-CREATE TABLE encrypted_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/encrypted_table';
+-- create table default.encrypted_table_n1 in its default warehouse location ${hiveconf:hive.metastore.warehouse.dir}/encrypted_table
+CREATE TABLE encrypted_table_n1 (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/encrypted_table';
 CRYPTO CREATE_KEY --keyName key_128 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128 --path ${hiveconf:hive.metastore.warehouse.dir}/encrypted_table;
 
@@ -19,20 +19,20 @@ CREATE DATABASE encrypted_db LOCATION '${hiveconf:hive.metastore.warehouse.dir}/
 CRYPTO CREATE_KEY --keyName key_128_2 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128_2 --path ${hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db;
 
-INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src;
+INSERT OVERWRITE TABLE encrypted_table_n1 SELECT * FROM src;
 SHOW TABLES LIKE "encrypted_*";
-ANALYZE TABLE encrypted_table COMPUTE STATISTICS FOR COLUMNS;
-DESCRIBE FORMATTED encrypted_table key;
-DESCRIBE FORMATTED encrypted_table value;
+ANALYZE TABLE encrypted_table_n1 COMPUTE STATISTICS FOR COLUMNS;
+DESCRIBE FORMATTED encrypted_table_n1 key;
+DESCRIBE FORMATTED encrypted_table_n1 value;
 
 -- should fail, since they are in different encryption zones, but table columns statistics should not change
-ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2;
+ALTER TABLE default.encrypted_table_n1 RENAME TO encrypted_db.encrypted_table_2;
 SHOW TABLES;
-DESCRIBE FORMATTED encrypted_table key;
-DESCRIBE FORMATTED encrypted_table value;
+DESCRIBE FORMATTED encrypted_table_n1 key;
+DESCRIBE FORMATTED encrypted_table_n1 value;
 
 -- should succeed in Hadoop 2.7 but fail in 2.6  (HDFS-7530)
-ALTER TABLE default.encrypted_table RENAME TO default.plain_table;
+ALTER TABLE default.encrypted_table_n1 RENAME TO default.plain_table;
 SHOW TABLES;
 
 -- create table encrypted_table_outloc under default database but in a specified location other than the default db location in the warehouse
@@ -49,20 +49,20 @@ CRYPTO CREATE_KEY --keyName key_128_4 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128_4 --path ${hiveconf:hive.metastore.warehouse.dir}/../specified_db_location;
 
 USE encrypted_db_outloc;
-CREATE TABLE encrypted_table (key INT, value STRING);
-INSERT OVERWRITE TABLE encrypted_table SELECT * FROM default.src;
-ALTER TABLE encrypted_table RENAME TO renamed_encrypted_table;
+CREATE TABLE encrypted_table_n1 (key INT, value STRING);
+INSERT OVERWRITE TABLE encrypted_table_n1 SELECT * FROM default.src;
+ALTER TABLE encrypted_table_n1 RENAME TO renamed_encrypted_table_n1;
 -- should succeed since data moves within specified_db_location
 SHOW TABLES;
 -- should fail, since they are in different encryption zones
-ALTER TABLE encrypted_db_outloc.renamed_encrypted_table RENAME TO default.plain_table_2;
+ALTER TABLE encrypted_db_outloc.renamed_encrypted_table_n1 RENAME TO default.plain_table_2;
 SHOW TABLES;
 
-DROP TABLE default.encrypted_table PURGE;
+DROP TABLE default.encrypted_table_n1 PURGE;
 DROP TABLE default.plain_table PURGE;
 DROP TABLE default.renamed_encrypted_table_outloc PURGE;
 DROP DATABASE encrypted_db;
-DROP TABLE encrypted_db_outloc.renamed_encrypted_table PURGE;
+DROP TABLE encrypted_db_outloc.renamed_encrypted_table_n1 PURGE;
 DROP DATABASE encrypted_db_outloc;
 CRYPTO DELETE_KEY --keyName key_128;
 CRYPTO DELETE_KEY --keyName key_128_2;

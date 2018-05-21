@@ -1,32 +1,32 @@
-PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n118(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n118
+POSTHOOK: query: CREATE TABLE T1_n118(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n118
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets1.txt' INTO TABLE T1_n118
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n118
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets1.txt' INTO TABLE T1_n118
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets2.txt' INTO TABLE T1
+POSTHOOK: Output: default@t1_n118
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets2.txt' INTO TABLE T1_n118
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets2.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n118
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets2.txt' INTO TABLE T1_n118
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n118
 PREHOOK: query: EXPLAIN
-SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
+SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
+SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -38,7 +38,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n118
             Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string), c (type: string)
@@ -83,10 +83,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN
-SELECT a, b, avg(c), count(*) from T1 group by cube(a, b)
+SELECT a, b, avg(c), count(*) from T1_n118 group by cube(a, b)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a, b, avg(c), count(*) from T1 group by cube(a, b)
+SELECT a, b, avg(c), count(*) from T1_n118 group by cube(a, b)
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -98,7 +98,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n118
             Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string), c (type: string)
@@ -142,13 +142,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
+PREHOOK: query: SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
+POSTHOOK: query: SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
 a	b	_c2	_c3
 1	1	3.0	2
@@ -168,10 +168,10 @@ NULL	2	5.2	5
 NULL	3	5.0	2
 NULL	NULL	3.8333333333333335	12
 PREHOOK: query: EXPLAIN
-SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
+SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
+SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -184,7 +184,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n118
             Statistics: Num rows: 1 Data size: 720 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string), c (type: string)
@@ -252,13 +252,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
+PREHOOK: query: SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, avg(c), count(*) from T1 group by a, b with cube
+POSTHOOK: query: SELECT a, b, avg(c), count(*) from T1_n118 group by a, b with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n118
 #### A masked pattern was here ####
 a	b	_c2	_c3
 1	1	3.0	2

@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE mytbl AS
+PREHOOK: query: CREATE TABLE mytbl_n1 AS
 SELECT key, value
 FROM src
 ORDER BY key
@@ -6,8 +6,8 @@ LIMIT 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mytbl
-POSTHOOK: query: CREATE TABLE mytbl AS
+PREHOOK: Output: default@mytbl_n1
+POSTHOOK: query: CREATE TABLE mytbl_n1 AS
 SELECT key, value
 FROM src
 ORDER BY key
@@ -15,16 +15,16 @@ LIMIT 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mytbl
-POSTHOOK: Lineage: mytbl.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: mytbl.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@mytbl_n1
+POSTHOOK: Lineage: mytbl_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: mytbl_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
-INSERT INTO mytbl(key,value)
+INSERT INTO mytbl_n1(key,value)
 SELECT a,b as c FROM TABLE(VALUES(1,2),(3,4)) AS vc(a,b)
 WHERE b = 9
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT INTO mytbl(key,value)
+INSERT INTO mytbl_n1(key,value)
 SELECT a,b as c FROM TABLE(VALUES(1,2),(3,4)) AS vc(a,b)
 WHERE b = 9
 POSTHOOK: type: QUERY
@@ -67,7 +67,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.mytbl
+                          name: default.mytbl_n1
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string)
                       outputColumnNames: key, value
@@ -112,7 +112,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.mytbl
+              name: default.mytbl_n1
 
   Stage: Stage-2
     Stats Work
@@ -120,7 +120,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.mytbl
+          Table: default.mytbl_n1
 
   Stage: Stage-3
     Map Reduce
@@ -132,7 +132,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.mytbl
+                  name: default.mytbl_n1
 
   Stage: Stage-5
     Map Reduce
@@ -144,7 +144,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.mytbl
+                  name: default.mytbl_n1
 
   Stage: Stage-6
     Move Operator
@@ -152,31 +152,31 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT INTO mytbl(key,value)
+PREHOOK: query: INSERT INTO mytbl_n1(key,value)
 SELECT a,b as c FROM TABLE(VALUES(1,2),(3,4)) AS vc(a,b)
 WHERE b = 9
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@mytbl
-POSTHOOK: query: INSERT INTO mytbl(key,value)
+PREHOOK: Output: default@mytbl_n1
+POSTHOOK: query: INSERT INTO mytbl_n1(key,value)
 SELECT a,b as c FROM TABLE(VALUES(1,2),(3,4)) AS vc(a,b)
 WHERE b = 9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@mytbl
-POSTHOOK: Lineage: mytbl.key SCRIPT []
-POSTHOOK: Lineage: mytbl.value EXPRESSION []
+POSTHOOK: Output: default@mytbl_n1
+POSTHOOK: Lineage: mytbl_n1.key SCRIPT []
+POSTHOOK: Lineage: mytbl_n1.value EXPRESSION []
 PREHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t
+  (SELECT key, value FROM mytbl_n1) t
   LATERAL VIEW
   INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t
+  (SELECT key, value FROM mytbl_n1) t
   LATERAL VIEW
   INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
 POSTHOOK: type: QUERY
@@ -189,7 +189,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: mytbl
+            alias: mytbl_n1
             Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: array(struct(key,value,'A',10,key),struct(key,value,'B',20,key)) (type: array<struct<col1:string,col2:string,col3:string,col4:int,col5:string>>)
@@ -218,19 +218,19 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t
+  (SELECT key, value FROM mytbl_n1) t
   LATERAL VIEW
   INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl
+PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t
+  (SELECT key, value FROM mytbl_n1) t
   LATERAL VIEW
   INLINE(array(struct('A', 10, t.key),struct('B', 20, t.key))) tf AS col1, col2, col3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl
+POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 A	10	0
 B	20	0
@@ -361,13 +361,13 @@ PREHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3),
-  (SELECT key, value FROM mytbl) t
+  (SELECT key, value FROM mytbl_n1) t
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3),
-  (SELECT key, value FROM mytbl) t
+  (SELECT key, value FROM mytbl_n1) t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -393,7 +393,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 2560 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: col1 (type: string), col2 (type: int), col3 (type: int)
           TableScan
-            alias: mytbl
+            alias: mytbl_n1
             Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -427,18 +427,18 @@ Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAP
 PREHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3),
-  (SELECT key, value FROM mytbl) t
+  (SELECT key, value FROM mytbl_n1) t
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Input: default@mytbl
+PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3),
-  (SELECT key, value FROM mytbl) t
+  (SELECT key, value FROM mytbl_n1) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Input: default@mytbl
+POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 B	20	30
 B	20	30
@@ -546,13 +546,13 @@ Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAP
 PREHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -564,7 +564,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: mytbl
+            alias: mytbl_n1
             Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -616,19 +616,19 @@ STAGE PLANS:
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Input: default@mytbl
+PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   TABLE(VALUES('A', 10, 30),('B', 20, 30)) AS tf(col1, col2, col3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Input: default@mytbl
+POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 B	20	30
 A	10	30
@@ -643,13 +643,13 @@ A	10	30
 PREHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -661,7 +661,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: mytbl
+            alias: mytbl_n1
             Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: array(struct(key,value,'A',10,key),struct(key,value,'B',20,key)) (type: array<struct<col1:string,col2:string,col3:string,col4:int,col5:string>>)
@@ -690,17 +690,17 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl
+PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT tf.col1, tf.col2, tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl
+POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 A	10	0
 B	20	0
@@ -715,13 +715,13 @@ B	20	100
 PREHOOK: query: EXPLAIN
 SELECT t.key
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT t.key
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -733,7 +733,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: mytbl
+            alias: mytbl_n1
             Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: array(struct(key,value,'A',10,key),struct(key,value,'B',20,key)) (type: array<struct<col1:string,col2:string,col3:string,col4:int,col5:string>>)
@@ -762,17 +762,17 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT t.key
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl
+PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT t.key
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl
+POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 0
 0
@@ -787,13 +787,13 @@ POSTHOOK: Input: default@mytbl
 PREHOOK: query: EXPLAIN
 SELECT tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -805,7 +805,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: mytbl
+            alias: mytbl_n1
             Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: array(struct(key,value,'A',10,key),struct(key,value,'B',20,key)) (type: array<struct<col1:string,col2:string,col3:string,col4:int,col5:string>>)
@@ -834,17 +834,17 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl
+PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT tf.col3
 FROM
-  (SELECT key, value FROM mytbl) t,
+  (SELECT key, value FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl
+POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 0
 0
@@ -859,13 +859,13 @@ POSTHOOK: Input: default@mytbl
 PREHOOK: query: EXPLAIN
 SELECT tf.col3
 FROM
-  (SELECT row_number() over (order by key desc) as r FROM mytbl) t,
+  (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT tf.col3
 FROM
-  (SELECT row_number() over (order by key desc) as r FROM mytbl) t,
+  (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -877,7 +877,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: mytbl
+            alias: mytbl_n1
             Statistics: Num rows: 5 Data size: 41 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: 0 (type: int), key (type: string)
@@ -937,17 +937,17 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT tf.col3
 FROM
-  (SELECT row_number() over (order by key desc) as r FROM mytbl) t,
+  (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mytbl
+PREHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT tf.col3
 FROM
-  (SELECT row_number() over (order by key desc) as r FROM mytbl) t,
+  (SELECT row_number() over (order by key desc) as r FROM mytbl_n1) t,
   LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mytbl
+POSTHOOK: Input: default@mytbl_n1
 #### A masked pattern was here ####
 1
 1

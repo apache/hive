@@ -4,29 +4,29 @@ set hive.mapred.mode=nonstrict;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/t;
 
-drop table a;
+drop table a_n13;
 
-create table a like src;
+create table a_n13 like src;
 
-desc formatted a;
+desc formatted a_n13;
 
-drop table a;
+drop table a_n13;
 
-create table a like src location '${system:test.tmp.dir}/t';
+create table a_n13 like src location '${system:test.tmp.dir}/t';
 
-desc formatted a;
+desc formatted a_n13;
 
-drop table a;
+drop table a_n13;
 
-create table a (key STRING COMMENT 'default', value STRING COMMENT 'default')
+create table a_n13 (key STRING COMMENT 'default', value STRING COMMENT 'default')
 PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE;
 
-desc formatted a;
+desc formatted a_n13;
 
-drop table a;
+drop table a_n13;
 
-create table a like srcpart;
+create table a_n13 like srcpart;
 
-desc formatted a;
+desc formatted a_n13;
  

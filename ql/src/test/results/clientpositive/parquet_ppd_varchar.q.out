@@ -1,108 +1,108 @@
-PREHOOK: query: create table newtypestbl(c char(10), v varchar(10), d decimal(5,3), da date) stored as parquet
+PREHOOK: query: create table newtypestbl_n0(c char(10), v varchar(10), d decimal(5,3), da date) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@newtypestbl
-POSTHOOK: query: create table newtypestbl(c char(10), v varchar(10), d decimal(5,3), da date) stored as parquet
+PREHOOK: Output: default@newtypestbl_n0
+POSTHOOK: query: create table newtypestbl_n0(c char(10), v varchar(10), d decimal(5,3), da date) stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@newtypestbl
-PREHOOK: query: insert overwrite table newtypestbl select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, cast("1970-02-20" as date) from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, cast("1970-02-27" as date) from src src2 limit 10) uniontbl
+POSTHOOK: Output: default@newtypestbl_n0
+PREHOOK: query: insert overwrite table newtypestbl_n0 select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, cast("1970-02-20" as date) from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, cast("1970-02-27" as date) from src src2 limit 10) uniontbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@newtypestbl
-POSTHOOK: query: insert overwrite table newtypestbl select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, cast("1970-02-20" as date) from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, cast("1970-02-27" as date) from src src2 limit 10) uniontbl
+PREHOOK: Output: default@newtypestbl_n0
+POSTHOOK: query: insert overwrite table newtypestbl_n0 select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, cast("1970-02-20" as date) from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, cast("1970-02-27" as date) from src src2 limit 10) uniontbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@newtypestbl
-POSTHOOK: Lineage: newtypestbl.c EXPRESSION []
-POSTHOOK: Lineage: newtypestbl.d EXPRESSION []
-POSTHOOK: Lineage: newtypestbl.da EXPRESSION []
-POSTHOOK: Lineage: newtypestbl.v EXPRESSION []
-PREHOOK: query: select * from newtypestbl where v="bee"
+POSTHOOK: Output: default@newtypestbl_n0
+POSTHOOK: Lineage: newtypestbl_n0.c EXPRESSION []
+POSTHOOK: Lineage: newtypestbl_n0.d EXPRESSION []
+POSTHOOK: Lineage: newtypestbl_n0.da EXPRESSION []
+POSTHOOK: Lineage: newtypestbl_n0.v EXPRESSION []
+PREHOOK: query: select * from newtypestbl_n0 where v="bee"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v="bee"
+POSTHOOK: query: select * from newtypestbl_n0 where v="bee"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-PREHOOK: query: select * from newtypestbl where v="bee"
+PREHOOK: query: select * from newtypestbl_n0 where v="bee"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v="bee"
+POSTHOOK: query: select * from newtypestbl_n0 where v="bee"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-PREHOOK: query: select * from newtypestbl where v!="bee"
+PREHOOK: query: select * from newtypestbl_n0 where v!="bee"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v!="bee"
+POSTHOOK: query: select * from newtypestbl_n0 where v!="bee"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
-PREHOOK: query: select * from newtypestbl where v!="bee"
+PREHOOK: query: select * from newtypestbl_n0 where v!="bee"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v!="bee"
+POSTHOOK: query: select * from newtypestbl_n0 where v!="bee"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
-PREHOOK: query: select * from newtypestbl where v<"world"
+PREHOOK: query: select * from newtypestbl_n0 where v<"world"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v<"world"
+POSTHOOK: query: select * from newtypestbl_n0 where v<"world"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-PREHOOK: query: select * from newtypestbl where v<"world"
+PREHOOK: query: select * from newtypestbl_n0 where v<"world"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v<"world"
+POSTHOOK: query: select * from newtypestbl_n0 where v<"world"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-PREHOOK: query: select * from newtypestbl where v<="world" sort by c
+PREHOOK: query: select * from newtypestbl_n0 where v<="world" sort by c
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v<="world" sort by c
+POSTHOOK: query: select * from newtypestbl_n0 where v<="world" sort by c
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
@@ -114,13 +114,13 @@ hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
-PREHOOK: query: select * from newtypestbl where v<="world" sort by c
+PREHOOK: query: select * from newtypestbl_n0 where v<="world" sort by c
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v<="world" sort by c
+POSTHOOK: query: select * from newtypestbl_n0 where v<="world" sort by c
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
@@ -132,55 +132,55 @@ hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
-PREHOOK: query: select * from newtypestbl where v="bee   "
+PREHOOK: query: select * from newtypestbl_n0 where v="bee   "
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v="bee   "
+POSTHOOK: query: select * from newtypestbl_n0 where v="bee   "
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-PREHOOK: query: select * from newtypestbl where v="bee   "
+PREHOOK: query: select * from newtypestbl_n0 where v="bee   "
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v="bee   "
+POSTHOOK: query: select * from newtypestbl_n0 where v="bee   "
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-PREHOOK: query: select * from newtypestbl where v in ("bee", "orange")
+PREHOOK: query: select * from newtypestbl_n0 where v in ("bee", "orange")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v in ("bee", "orange")
+POSTHOOK: query: select * from newtypestbl_n0 where v in ("bee", "orange")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-PREHOOK: query: select * from newtypestbl where v in ("bee", "orange")
+PREHOOK: query: select * from newtypestbl_n0 where v in ("bee", "orange")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v in ("bee", "orange")
+POSTHOOK: query: select * from newtypestbl_n0 where v in ("bee", "orange")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-PREHOOK: query: select * from newtypestbl where v in ("bee", "world") sort by c
+PREHOOK: query: select * from newtypestbl_n0 where v in ("bee", "world") sort by c
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v in ("bee", "world") sort by c
+POSTHOOK: query: select * from newtypestbl_n0 where v in ("bee", "world") sort by c
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
@@ -192,13 +192,13 @@ hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
-PREHOOK: query: select * from newtypestbl where v in ("bee", "world") sort by c
+PREHOOK: query: select * from newtypestbl_n0 where v in ("bee", "world") sort by c
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v in ("bee", "world") sort by c
+POSTHOOK: query: select * from newtypestbl_n0 where v in ("bee", "world") sort by c
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
@@ -210,55 +210,55 @@ hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
-PREHOOK: query: select * from newtypestbl where v in ("orange")
+PREHOOK: query: select * from newtypestbl_n0 where v in ("orange")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v in ("orange")
+POSTHOOK: query: select * from newtypestbl_n0 where v in ("orange")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-PREHOOK: query: select * from newtypestbl where v in ("orange")
+PREHOOK: query: select * from newtypestbl_n0 where v in ("orange")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v in ("orange")
+POSTHOOK: query: select * from newtypestbl_n0 where v in ("orange")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-PREHOOK: query: select * from newtypestbl where v between "bee" and "orange"
+PREHOOK: query: select * from newtypestbl_n0 where v between "bee" and "orange"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v between "bee" and "orange"
+POSTHOOK: query: select * from newtypestbl_n0 where v between "bee" and "orange"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-PREHOOK: query: select * from newtypestbl where v between "bee" and "orange"
+PREHOOK: query: select * from newtypestbl_n0 where v between "bee" and "orange"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v between "bee" and "orange"
+POSTHOOK: query: select * from newtypestbl_n0 where v between "bee" and "orange"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
-PREHOOK: query: select * from newtypestbl where v between "bee" and "zombie" sort by c
+PREHOOK: query: select * from newtypestbl_n0 where v between "bee" and "zombie" sort by c
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v between "bee" and "zombie" sort by c
+POSTHOOK: query: select * from newtypestbl_n0 where v between "bee" and "zombie" sort by c
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
@@ -270,13 +270,13 @@ hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
-PREHOOK: query: select * from newtypestbl where v between "bee" and "zombie" sort by c
+PREHOOK: query: select * from newtypestbl_n0 where v between "bee" and "zombie" sort by c
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v between "bee" and "zombie" sort by c
+POSTHOOK: query: select * from newtypestbl_n0 where v between "bee" and "zombie" sort by c
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
 apple     	bee	0.220	1970-02-20
 apple     	bee	0.220	1970-02-20
@@ -288,19 +288,19 @@ hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
 hello     	world	11.220	1970-02-27
-PREHOOK: query: select * from newtypestbl where v between "orange" and "pine"
+PREHOOK: query: select * from newtypestbl_n0 where v between "orange" and "pine"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v between "orange" and "pine"
+POSTHOOK: query: select * from newtypestbl_n0 where v between "orange" and "pine"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-PREHOOK: query: select * from newtypestbl where v between "orange" and "pine"
+PREHOOK: query: select * from newtypestbl_n0 where v between "orange" and "pine"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@newtypestbl
+PREHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from newtypestbl where v between "orange" and "pine"
+POSTHOOK: query: select * from newtypestbl_n0 where v between "orange" and "pine"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@newtypestbl
+POSTHOOK: Input: default@newtypestbl_n0
 #### A masked pattern was here ####

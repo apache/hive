@@ -1,24 +1,24 @@
-PREHOOK: query: create table mytbl (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
+PREHOOK: query: create table mytbl_n0 (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mytbl
-POSTHOOK: query: create table mytbl (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
+PREHOOK: Output: default@mytbl_n0
+POSTHOOK: query: create table mytbl_n0 (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mytbl
-PREHOOK: query: alter table mytbl add partition (c2 = 'v1')
+POSTHOOK: Output: default@mytbl_n0
+PREHOOK: query: alter table mytbl_n0 add partition (c2 = 'v1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@mytbl
-POSTHOOK: query: alter table mytbl add partition (c2 = 'v1')
+PREHOOK: Output: default@mytbl_n0
+POSTHOOK: query: alter table mytbl_n0 add partition (c2 = 'v1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@mytbl
-POSTHOOK: Output: default@mytbl@c2=v1
-PREHOOK: query: describe formatted mytbl partition (c2='v1')
+POSTHOOK: Output: default@mytbl_n0
+POSTHOOK: Output: default@mytbl_n0@c2=v1
+PREHOOK: query: describe formatted mytbl_n0 partition (c2='v1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@mytbl
-POSTHOOK: query: describe formatted mytbl partition (c2='v1')
+PREHOOK: Input: default@mytbl_n0
+POSTHOOK: query: describe formatted mytbl_n0 partition (c2='v1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@mytbl
+POSTHOOK: Input: default@mytbl_n0
 # col_name            	data_type           	comment             
 c1                  	tinyint             	                    
 	 	 
@@ -29,7 +29,7 @@ c2                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[v1]                	 
 Database:           	default             	 
-Table:              	mytbl               	 
+Table:              	mytbl_n0            	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\"}}

@@ -1,284 +1,284 @@
-PREHOOK: query: drop table decimal_2
+PREHOOK: query: drop table decimal_2_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table decimal_2
+POSTHOOK: query: drop table decimal_2_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table decimal_2 (t decimal(18,9))
+PREHOOK: query: create table decimal_2_n1 (t decimal(18,9))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@decimal_2
-POSTHOOK: query: create table decimal_2 (t decimal(18,9))
+PREHOOK: Output: default@decimal_2_n1
+POSTHOOK: query: create table decimal_2_n1 (t decimal(18,9))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@decimal_2
-PREHOOK: query: alter table decimal_2 set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
+POSTHOOK: Output: default@decimal_2_n1
+PREHOOK: query: alter table decimal_2_n1 set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
-PREHOOK: Input: default@decimal_2
-PREHOOK: Output: default@decimal_2
-POSTHOOK: query: alter table decimal_2 set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
+PREHOOK: Input: default@decimal_2_n1
+PREHOOK: Output: default@decimal_2_n1
+POSTHOOK: query: alter table decimal_2_n1 set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
 POSTHOOK: type: ALTERTABLE_SERIALIZER
-POSTHOOK: Input: default@decimal_2
-POSTHOOK: Output: default@decimal_2
-PREHOOK: query: insert overwrite table decimal_2
+POSTHOOK: Input: default@decimal_2_n1
+POSTHOOK: Output: default@decimal_2_n1
+PREHOOK: query: insert overwrite table decimal_2_n1
   select cast('17.29' as decimal(4,2)) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@decimal_2
-POSTHOOK: query: insert overwrite table decimal_2
+PREHOOK: Output: default@decimal_2_n1
+POSTHOOK: query: insert overwrite table decimal_2_n1
   select cast('17.29' as decimal(4,2)) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@decimal_2
-POSTHOOK: Lineage: decimal_2.t EXPRESSION []
-PREHOOK: query: select cast(t as boolean) from decimal_2
+POSTHOOK: Output: default@decimal_2_n1
+POSTHOOK: Lineage: decimal_2_n1.t EXPRESSION []
+PREHOOK: query: select cast(t as boolean) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as boolean) from decimal_2
+POSTHOOK: query: select cast(t as boolean) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 true
-PREHOOK: query: select cast(t as tinyint) from decimal_2
+PREHOOK: query: select cast(t as tinyint) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as tinyint) from decimal_2
+POSTHOOK: query: select cast(t as tinyint) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 17
-PREHOOK: query: select cast(t as smallint) from decimal_2
+PREHOOK: query: select cast(t as smallint) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as smallint) from decimal_2
+POSTHOOK: query: select cast(t as smallint) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 17
-PREHOOK: query: select cast(t as int) from decimal_2
+PREHOOK: query: select cast(t as int) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as int) from decimal_2
+POSTHOOK: query: select cast(t as int) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 17
-PREHOOK: query: select cast(t as bigint) from decimal_2
+PREHOOK: query: select cast(t as bigint) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as bigint) from decimal_2
+POSTHOOK: query: select cast(t as bigint) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 17
-PREHOOK: query: select cast(t as float) from decimal_2
+PREHOOK: query: select cast(t as float) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as float) from decimal_2
+POSTHOOK: query: select cast(t as float) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 17.29
-PREHOOK: query: select cast(t as double) from decimal_2
+PREHOOK: query: select cast(t as double) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as double) from decimal_2
+POSTHOOK: query: select cast(t as double) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 17.29
-PREHOOK: query: select cast(t as string) from decimal_2
+PREHOOK: query: select cast(t as string) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as string) from decimal_2
+POSTHOOK: query: select cast(t as string) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 17.29
-PREHOOK: query: insert overwrite table decimal_2
+PREHOOK: query: insert overwrite table decimal_2_n1
   select cast('3404045.5044003' as decimal(18,9)) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@decimal_2
-POSTHOOK: query: insert overwrite table decimal_2
+PREHOOK: Output: default@decimal_2_n1
+POSTHOOK: query: insert overwrite table decimal_2_n1
   select cast('3404045.5044003' as decimal(18,9)) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@decimal_2
-POSTHOOK: Lineage: decimal_2.t EXPRESSION []
-PREHOOK: query: select cast(t as boolean) from decimal_2
+POSTHOOK: Output: default@decimal_2_n1
+POSTHOOK: Lineage: decimal_2_n1.t EXPRESSION []
+PREHOOK: query: select cast(t as boolean) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as boolean) from decimal_2
+POSTHOOK: query: select cast(t as boolean) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 true
-PREHOOK: query: select cast(t as tinyint) from decimal_2
+PREHOOK: query: select cast(t as tinyint) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as tinyint) from decimal_2
+POSTHOOK: query: select cast(t as tinyint) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: select cast(t as smallint) from decimal_2
+PREHOOK: query: select cast(t as smallint) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as smallint) from decimal_2
+POSTHOOK: query: select cast(t as smallint) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: select cast(t as int) from decimal_2
+PREHOOK: query: select cast(t as int) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as int) from decimal_2
+POSTHOOK: query: select cast(t as int) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3404045
-PREHOOK: query: select cast(t as bigint) from decimal_2
+PREHOOK: query: select cast(t as bigint) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as bigint) from decimal_2
+POSTHOOK: query: select cast(t as bigint) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3404045
-PREHOOK: query: select cast(t as float) from decimal_2
+PREHOOK: query: select cast(t as float) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as float) from decimal_2
+POSTHOOK: query: select cast(t as float) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3404045.5
-PREHOOK: query: select cast(t as double) from decimal_2
+PREHOOK: query: select cast(t as double) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as double) from decimal_2
+POSTHOOK: query: select cast(t as double) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3404045.5044003
-PREHOOK: query: select cast(t as string) from decimal_2
+PREHOOK: query: select cast(t as string) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(t as string) from decimal_2
+POSTHOOK: query: select cast(t as string) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3404045.5044003
-PREHOOK: query: select cast(3.14 as decimal(4,2)) from decimal_2
+PREHOOK: query: select cast(3.14 as decimal(4,2)) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(3.14 as decimal(4,2)) from decimal_2
+POSTHOOK: query: select cast(3.14 as decimal(4,2)) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3.14
-PREHOOK: query: select cast(cast(3.14 as float) as decimal(4,2)) from decimal_2
+PREHOOK: query: select cast(cast(3.14 as float) as decimal(4,2)) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(cast(3.14 as float) as decimal(4,2)) from decimal_2
+POSTHOOK: query: select cast(cast(3.14 as float) as decimal(4,2)) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3.14
-PREHOOK: query: select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as decimal(30,8)) from decimal_2
+PREHOOK: query: select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as decimal(30,8)) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as decimal(30,8)) from decimal_2
+POSTHOOK: query: select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as decimal(30,8)) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 1355944339.1234567
-PREHOOK: query: select cast(true as decimal) from decimal_2
+PREHOOK: query: select cast(true as decimal) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(true as decimal) from decimal_2
+POSTHOOK: query: select cast(true as decimal) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 1
-PREHOOK: query: select cast(3Y as decimal) from decimal_2
+PREHOOK: query: select cast(3Y as decimal) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(3Y as decimal) from decimal_2
+POSTHOOK: query: select cast(3Y as decimal) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3
-PREHOOK: query: select cast(3S as decimal) from decimal_2
+PREHOOK: query: select cast(3S as decimal) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(3S as decimal) from decimal_2
+POSTHOOK: query: select cast(3S as decimal) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3
-PREHOOK: query: select cast(cast(3 as int) as decimal) from decimal_2
+PREHOOK: query: select cast(cast(3 as int) as decimal) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(cast(3 as int) as decimal) from decimal_2
+POSTHOOK: query: select cast(cast(3 as int) as decimal) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3
-PREHOOK: query: select cast(3L as decimal) from decimal_2
+PREHOOK: query: select cast(3L as decimal) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(3L as decimal) from decimal_2
+POSTHOOK: query: select cast(3L as decimal) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 3
-PREHOOK: query: select cast(0.99999999999999999999 as decimal(20,19)) from decimal_2
+PREHOOK: query: select cast(0.99999999999999999999 as decimal(20,19)) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(0.99999999999999999999 as decimal(20,19)) from decimal_2
+POSTHOOK: query: select cast(0.99999999999999999999 as decimal(20,19)) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 1
-PREHOOK: query: select cast('0.99999999999999999999' as decimal(20,20)) from decimal_2
+PREHOOK: query: select cast('0.99999999999999999999' as decimal(20,20)) from decimal_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select cast('0.99999999999999999999' as decimal(20,20)) from decimal_2
+POSTHOOK: query: select cast('0.99999999999999999999' as decimal(20,20)) from decimal_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
 #### A masked pattern was here ####
 0.99999999999999999999
-PREHOOK: query: drop table decimal_2
+PREHOOK: query: drop table decimal_2_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@decimal_2
-PREHOOK: Output: default@decimal_2
-POSTHOOK: query: drop table decimal_2
+PREHOOK: Input: default@decimal_2_n1
+PREHOOK: Output: default@decimal_2_n1
+POSTHOOK: query: drop table decimal_2_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@decimal_2
-POSTHOOK: Output: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n1
+POSTHOOK: Output: default@decimal_2_n1

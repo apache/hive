@@ -1,19 +1,19 @@
-PREHOOK: query: create table tmptable(key string, value int)
+PREHOOK: query: create table tmptable_n12(key string, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmptable
-POSTHOOK: query: create table tmptable(key string, value int)
+PREHOOK: Output: default@tmptable_n12
+POSTHOOK: query: create table tmptable_n12(key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmptable
+POSTHOOK: Output: default@tmptable_n12
 PREHOOK: query: explain 
-insert overwrite table tmptable
+insert overwrite table tmptable_n12
   select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  
                                             select 'tst2' as key, count(1) as value from src s2) unionsrc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-insert overwrite table tmptable
+insert overwrite table tmptable_n12
   select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  
                                             select 'tst2' as key, count(1) as value from src s2) unionsrc
@@ -93,7 +93,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.tmptable
+                          name: default.tmptable_n12
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: int)
                       outputColumnNames: key, value
@@ -145,7 +145,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.tmptable
+                          name: default.tmptable_n12
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: int)
                       outputColumnNames: key, value
@@ -173,7 +173,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.tmptable
+              name: default.tmptable_n12
 
   Stage: Stage-3
     Stats Work
@@ -181,31 +181,31 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, int
-          Table: default.tmptable
+          Table: default.tmptable_n12
 
-PREHOOK: query: insert overwrite table tmptable
+PREHOOK: query: insert overwrite table tmptable_n12
 select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  
                                           select 'tst2' as key, count(1) as value from src s2) unionsrc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tmptable
-POSTHOOK: query: insert overwrite table tmptable
+PREHOOK: Output: default@tmptable_n12
+POSTHOOK: query: insert overwrite table tmptable_n12
 select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  
                                           select 'tst2' as key, count(1) as value from src s2) unionsrc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tmptable
-POSTHOOK: Lineage: tmptable.key EXPRESSION []
-POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src)s2.null, ]
-PREHOOK: query: select * from tmptable x sort by x.key
+POSTHOOK: Output: default@tmptable_n12
+POSTHOOK: Lineage: tmptable_n12.key EXPRESSION []
+POSTHOOK: Lineage: tmptable_n12.value EXPRESSION [(src)s1.null, (src)s2.null, ]
+PREHOOK: query: select * from tmptable_n12 x sort by x.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmptable
+PREHOOK: Input: default@tmptable_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tmptable x sort by x.key
+POSTHOOK: query: select * from tmptable_n12 x sort by x.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmptable
+POSTHOOK: Input: default@tmptable_n12
 #### A masked pattern was here ####
 tst1	500
 tst2	500

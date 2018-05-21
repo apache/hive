@@ -8,33 +8,33 @@ drop table if exists d1;
 create table d1(a int);
 
 from (select a.ctinyint x, b.cstring1 y
-from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t
+from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t_n20
 insert into table d1 select x + length(y);
 
 drop table if exists d2;
 create table d2(b varchar(128));
 
 from (select a.ctinyint x, b.cstring1 y
-from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t
+from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t_n20
 insert into table d1 select x where y is null
 insert into table d2 select y where x > 0;
 
-drop table if exists t;
-create table t as
+drop table if exists t_n20;
+create table t_n20 as
 select * from
   (select * from
      (select key from src1 limit 1) v1) v2;
 
-drop table if exists dest_l1;
-create table dest_l1(a int, b varchar(128))
+drop table if exists dest_l1_n2;
+create table dest_l1_n2(a int, b varchar(128))
   partitioned by (ds string) clustered by (a) into 2 buckets;
 
-insert into table dest_l1 partition (ds='today')
+insert into table dest_l1_n2 partition (ds='today')
 select cint, cast(cstring1 as varchar(128)) as cs
 from alltypesorc
 where cint is not null and cint < 0 order by cint, cs limit 5;
 
-insert into table dest_l1 partition (ds='tomorrow')
+insert into table dest_l1_n2 partition (ds='tomorrow')
 select min(cint), cast(min(cstring1) as varchar(128)) as cs
 from alltypesorc
 where cint is not null and cboolean1 = true
@@ -117,10 +117,10 @@ where not exists
    where a.key = b.ctinyint + 300)
 and key > 300;
 
-with t as (select key x, value y from src1 where key > '2')
-select x, y from t where y > 'v' order by x, y limit 5;
+with t_n20 as (select key x, value y from src1 where key > '2')
+select x, y from t_n20 where y > 'v' order by x, y limit 5;
 
-from (select key x, value y from src1 where key > '2') t
+from (select key x, value y from src1 where key > '2') t_n20
 select x, y where y > 'v' order by x, y limit 5;
 
 drop view if exists dest_v1;
@@ -176,7 +176,7 @@ alter view dest_v3 as
     where a.cboolean2 = true and b.cfloat > 0
     group by a.ctinyint, a.csmallint, b.cboolean1
     having count(a.cint) > 10
-    order by a, x, b.cboolean1 limit 10) t;
+    order by a, x, b.cboolean1 limit 10) t_n20;
 
 select * from dest_v3 limit 2;
 

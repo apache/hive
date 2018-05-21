@@ -4,17 +4,17 @@ set hive.stats.autogather=false;
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 
-create table analyze_srcpart like srcpart;
-insert overwrite table analyze_srcpart partition (ds, hr) select * from srcpart where ds is not null;
+create table analyze_srcpart_n3 like srcpart;
+insert overwrite table analyze_srcpart_n3 partition (ds, hr) select * from srcpart where ds is not null;
 
 explain extended
-analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics;
+analyze table analyze_srcpart_n3 PARTITION(ds='2008-04-08',hr) compute statistics;
 
-analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr) compute statistics;
+analyze table analyze_srcpart_n3 PARTITION(ds='2008-04-08',hr) compute statistics;
 
-desc formatted analyze_srcpart;
-desc formatted analyze_srcpart partition (ds='2008-04-08', hr=11);
-desc formatted analyze_srcpart partition (ds='2008-04-08', hr=12);
-desc formatted analyze_srcpart partition (ds='2008-04-09', hr=11);
-desc formatted analyze_srcpart partition (ds='2008-04-09', hr=12);
+desc formatted analyze_srcpart_n3;
+desc formatted analyze_srcpart_n3 partition (ds='2008-04-08', hr=11);
+desc formatted analyze_srcpart_n3 partition (ds='2008-04-08', hr=12);
+desc formatted analyze_srcpart_n3 partition (ds='2008-04-09', hr=11);
+desc formatted analyze_srcpart_n3 partition (ds='2008-04-09', hr=12);
 

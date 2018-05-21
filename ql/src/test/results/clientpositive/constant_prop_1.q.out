@@ -483,7 +483,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: create table t (
+PREHOOK: query: create table t_n26 (
 a int,
 b int,
 c int,
@@ -492,8 +492,8 @@ e int
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (
+PREHOOK: Output: default@t_n26
+POSTHOOK: query: create table t_n26 (
 a int,
 b int,
 c int,
@@ -502,16 +502,16 @@ e int
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
+POSTHOOK: Output: default@t_n26
 PREHOOK: query: explain 
 select a2 as a3 from
 (select a1 as a2, c1 as c2 from
-(select a as a1, b as b1, c as c1 from t where a=1 and b=2 and c=3)sub1)sub2
+(select a as a1, b as b1, c as c1 from t_n26 where a=1 and b=2 and c=3)sub1)sub2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 select a2 as a3 from
 (select a1 as a2, c1 as c2 from
-(select a as a1, b as b1, c as c1 from t where a=1 and b=2 and c=3)sub1)sub2
+(select a as a1, b as b1, c as c1 from t_n26 where a=1 and b=2 and c=3)sub1)sub2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -522,7 +522,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t
+            alias: t_n26
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((a = 1) and (b = 2) and (c = 3)) (type: boolean)

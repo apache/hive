@@ -1,6 +1,6 @@
-drop table over10k;
+drop table over10k_n10;
 
-create table over10k(
+create table over10k_n10(
            t tinyint,
            si smallint,
            i int,
@@ -15,15 +15,15 @@ create table over10k(
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../../data/files/over10k' into table over10k;
+load data local inpath '../../data/files/over10k' into table over10k_n10;
 
-select s, rank() over (partition by f order by t) from over10k limit 100;
+select s, rank() over (partition by f order by t) from over10k_n10 limit 100;
 
-select s, dense_rank() over (partition by ts order by i,s desc) from over10k limit 100;
+select s, dense_rank() over (partition by ts order by i,s desc) from over10k_n10 limit 100;
 
-select s, cume_dist() over (partition by bo order by b,s) from over10k limit 100;
+select s, cume_dist() over (partition by bo order by b,s) from over10k_n10 limit 100;
 
-select s, percent_rank() over (partition by `dec` order by f) from over10k limit 100;
+select s, percent_rank() over (partition by `dec` order by f) from over10k_n10 limit 100;
 
 -- If following tests fail, look for the comments in class PTFPPD::process()
 
@@ -33,8 +33,8 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n10 other
+             join over10k_n10 on (other.b = over10k_n10.b)
             ) joined
   ) ranked
 where rnk =  1 limit 10;
@@ -45,8 +45,8 @@ from
           rank() over (partition by ts)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n10 other
+             join over10k_n10 on (other.b = over10k_n10.b)
             ) joined
   ) ranked
 where `dec` = 89.5 limit 10;
@@ -57,8 +57,8 @@ from
           rank() over (partition by ts order by `dec`)  as rnk
           from
             (select other.ts, other.`dec`
-             from over10k other
-             join over10k on (other.b = over10k.b)
+             from over10k_n10 other
+             join over10k_n10 on (other.b = over10k_n10.b)
              where other.t < 10
             ) joined
   ) ranked

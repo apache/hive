@@ -5333,45 +5333,45 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-PREHOOK: query: CREATE TABLE t1 (c1 INT, c2 CHAR(100))
+PREHOOK: query: CREATE TABLE t1_n0 (c1 INT, c2 CHAR(100))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: CREATE TABLE t1 (c1 INT, c2 CHAR(100))
+PREHOOK: Output: default@t1_n0
+POSTHOOK: query: CREATE TABLE t1_n0 (c1 INT, c2 CHAR(100))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: INSERT INTO t1 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij')
+POSTHOOK: Output: default@t1_n0
+PREHOOK: query: INSERT INTO t1_n0 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t1
-POSTHOOK: query: INSERT INTO t1 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij')
+PREHOOK: Output: default@t1_n0
+POSTHOOK: query: INSERT INTO t1_n0 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.c1 SCRIPT []
-POSTHOOK: Lineage: t1.c2 SCRIPT []
-PREHOOK: query: CREATE TABLE t2 (c1 INT)
+POSTHOOK: Output: default@t1_n0
+POSTHOOK: Lineage: t1_n0.c1 SCRIPT []
+POSTHOOK: Lineage: t1_n0.c2 SCRIPT []
+PREHOOK: query: CREATE TABLE t2_n0 (c1 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: CREATE TABLE t2 (c1 INT)
+PREHOOK: Output: default@t2_n0
+POSTHOOK: query: CREATE TABLE t2_n0 (c1 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-PREHOOK: query: INSERT INTO t2 VALUES (null), (2), (100)
+POSTHOOK: Output: default@t2_n0
+PREHOOK: query: INSERT INTO t2_n0 VALUES (null), (2), (100)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t2
-POSTHOOK: query: INSERT INTO t2 VALUES (null), (2), (100)
+PREHOOK: Output: default@t2_n0
+POSTHOOK: query: INSERT INTO t2_n0 VALUES (null), (2), (100)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.c1 SCRIPT []
+POSTHOOK: Output: default@t2_n0
+POSTHOOK: Lineage: t2_n0.c1 SCRIPT []
 Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2)
+PREHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2)
+POSTHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5391,7 +5391,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n0
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: c1 (type: int)
@@ -5406,7 +5406,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: c1 (type: int)
@@ -5513,19 +5513,19 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2)
+PREHOOK: query: SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n0
+PREHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2)
+POSTHOOK: query: SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n0
+POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
-PREHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c2=t2.c1)
+PREHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c2=t2.c1)
+POSTHOOK: query: explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5547,7 +5547,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n0
                   Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: c1 (type: int), c2 (type: char(100))
@@ -5564,7 +5564,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: c1 (type: int)
@@ -5581,7 +5581,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n0
                   Statistics: Num rows: 4 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: c2 (type: char(100))
@@ -5727,73 +5727,73 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+PREHOOK: query: SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c1=t2_n0.c1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n0
+PREHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+POSTHOOK: query: SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c1=t2_n0.c1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n0
+POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
 NULL
 1
-PREHOOK: query: DROP TABLE t1
+PREHOOK: query: DROP TABLE t1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: DROP TABLE t1
+PREHOOK: Input: default@t1_n0
+PREHOOK: Output: default@t1_n0
+POSTHOOK: query: DROP TABLE t1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: DROP TABLE t2
+POSTHOOK: Input: default@t1_n0
+POSTHOOK: Output: default@t1_n0
+PREHOOK: query: DROP TABLE t2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t2
-POSTHOOK: query: DROP TABLE t2
+PREHOOK: Input: default@t2_n0
+PREHOOK: Output: default@t2_n0
+POSTHOOK: query: DROP TABLE t2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t2
-PREHOOK: query: create table t1(a int, b int)
+POSTHOOK: Input: default@t2_n0
+POSTHOOK: Output: default@t2_n0
+PREHOOK: query: create table t1_n0(a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(a int, b int)
+PREHOOK: Output: default@t1_n0
+POSTHOOK: query: create table t1_n0(a int, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: insert into t1 values(1,0), (1,0),(1,0)
+POSTHOOK: Output: default@t1_n0
+PREHOOK: query: insert into t1_n0 values(1,0), (1,0),(1,0)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t1
-POSTHOOK: query: insert into t1 values(1,0), (1,0),(1,0)
+PREHOOK: Output: default@t1_n0
+POSTHOOK: query: insert into t1_n0 values(1,0), (1,0),(1,0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.a SCRIPT []
-POSTHOOK: Lineage: t1.b SCRIPT []
-PREHOOK: query: create table t2(a int, b int)
+POSTHOOK: Output: default@t1_n0
+POSTHOOK: Lineage: t1_n0.a SCRIPT []
+POSTHOOK: Lineage: t1_n0.b SCRIPT []
+PREHOOK: query: create table t2_n0(a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2(a int, b int)
+PREHOOK: Output: default@t2_n0
+POSTHOOK: query: create table t2_n0(a int, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-PREHOOK: query: insert into t2 values(2,1), (3,1), (NULL,1)
+POSTHOOK: Output: default@t2_n0
+PREHOOK: query: insert into t2_n0 values(2,1), (3,1), (NULL,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t2
-POSTHOOK: query: insert into t2 values(2,1), (3,1), (NULL,1)
+PREHOOK: Output: default@t2_n0
+POSTHOOK: query: insert into t2_n0 values(2,1), (3,1), (NULL,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.a SCRIPT []
-POSTHOOK: Lineage: t2.b SCRIPT []
-PREHOOK: query: explain select t1.a from t1 where t1.b NOT IN (select t2.a from t2 where t2.b=t1.a)
+POSTHOOK: Output: default@t2_n0
+POSTHOOK: Lineage: t2_n0.a SCRIPT []
+POSTHOOK: Lineage: t2_n0.b SCRIPT []
+PREHOOK: query: explain select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select t1.a from t1 where t1.b NOT IN (select t2.a from t2 where t2.b=t1.a)
+POSTHOOK: query: explain select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5813,7 +5813,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n0
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: a (type: int), b (type: int)
@@ -5830,7 +5830,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n0
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: b is not null (type: boolean)
@@ -5948,32 +5948,32 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select t1.a from t1 where t1.b NOT IN (select t2.a from t2 where t2.b=t1.a)
+PREHOOK: query: select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n0
+PREHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.a from t1 where t1.b NOT IN (select t2.a from t2 where t2.b=t1.a)
+POSTHOOK: query: select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n0
+POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n0
+PREHOOK: Output: default@t1_n0
+POSTHOOK: query: drop table t1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: drop table t2
+POSTHOOK: Input: default@t1_n0
+POSTHOOK: Output: default@t1_n0
+PREHOOK: query: drop table t2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t2
-POSTHOOK: query: drop table t2
+PREHOOK: Input: default@t2_n0
+PREHOOK: Output: default@t2_n0
+POSTHOOK: query: drop table t2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t2
+POSTHOOK: Input: default@t2_n0
+POSTHOOK: Output: default@t2_n0
 PREHOOK: query: create table t7(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -6220,27 +6220,27 @@ POSTHOOK: query: drop table fixOb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@fixob
 POSTHOOK: Output: default@fixob
-PREHOOK: query: create table t(i int, j int)
+PREHOOK: query: create table t_n0(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t(i int, j int)
+PREHOOK: Output: default@t_n0
+POSTHOOK: query: create table t_n0(i int, j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values(1,2), (4,5), (7, NULL)
+POSTHOOK: Output: default@t_n0
+PREHOOK: query: insert into t_n0 values(1,2), (4,5), (7, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values(1,2), (4,5), (7, NULL)
+PREHOOK: Output: default@t_n0
+POSTHOOK: query: insert into t_n0 values(1,2), (4,5), (7, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i SCRIPT []
-POSTHOOK: Lineage: t.j SCRIPT []
-PREHOOK: query: explain select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j)
+POSTHOOK: Output: default@t_n0
+POSTHOOK: Lineage: t_n0.i SCRIPT []
+POSTHOOK: Lineage: t_n0.j SCRIPT []
+PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j)
+POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6261,7 +6261,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n0
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int), j (type: int)
@@ -6306,7 +6306,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: j (type: int)
@@ -6417,20 +6417,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j)
+PREHOOK: query: select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j)
+POSTHOOK: query: select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 7
 1
 4
-PREHOOK: query: explain select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j)
+PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j)
+POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6450,7 +6450,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n0
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int), j (type: int)
@@ -6577,19 +6577,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j)
+PREHOOK: query: select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j)
+POSTHOOK: query: select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 7
 Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select t.i from t where t.j NOT IN (select t1.i from t t1 )
+PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select t.i from t where t.j NOT IN (select t1.i from t t1 )
+POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 )
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6609,7 +6609,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n0
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int), j (type: int)
@@ -6624,7 +6624,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int)
@@ -6731,20 +6731,20 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select t.i from t where t.j NOT IN (select t1.i from t t1 )
+PREHOOK: query: select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select t.i from t where t.j NOT IN (select t1.i from t t1 )
+POSTHOOK: query: select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n0
 #### A masked pattern was here ####
 1
 4
 Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select t.i from t where t.i NOT IN (select t1.i from t t1 )
+PREHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select t.i from t where t.i NOT IN (select t1.i from t t1 )
+POSTHOOK: query: explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 )
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6764,7 +6764,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int)
@@ -6879,17 +6879,17 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select t.i from t where t.i NOT IN (select t1.i from t t1 )
+PREHOOK: query: select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select t.i from t where t.i NOT IN (select t1.i from t t1 )
+POSTHOOK: query: select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n0
 #### A masked pattern was here ####
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table t1
+POSTHOOK: query: drop table t1_n0
 POSTHOOK: type: DROPTABLE
 Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select *

@@ -1,53 +1,53 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: query: CREATE TABLE T1_n63(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: Output: default@T1_n63
+POSTHOOK: query: CREATE TABLE T1_n63(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n63
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n63
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n63
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n63
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+POSTHOOK: Output: default@t1_n63
+PREHOOK: query: CREATE TABLE T2_n38(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+PREHOOK: Output: default@T2_n38
+POSTHOOK: query: CREATE TABLE T2_n38(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@T2_n38
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n38
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n38
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n38
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
+POSTHOOK: Output: default@t2_n38
 PREHOOK: query: EXPLAIN
 SELECT a.*, b.*
 FROM 
-  (SELECT key as k, val as v FROM T1) a
+  (SELECT key as k, val as v FROM T1_n63) a
   JOIN
-  (SELECT key as k, val as v FROM T2) b
+  (SELECT key as k, val as v FROM T2_n38) b
 ON a.k = b.k
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT a.*, b.*
 FROM 
-  (SELECT key as k, val as v FROM T1) a
+  (SELECT key as k, val as v FROM T1_n63) a
   JOIN
-  (SELECT key as k, val as v FROM T2) b
+  (SELECT key as k, val as v FROM T2_n38) b
 ON a.k = b.k
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -61,7 +61,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n63
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
@@ -77,7 +77,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
           TableScan
-            alias: t2
+            alias: t2_n38
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
@@ -136,7 +136,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n63
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((not ((key = '2') or (key = '3'))) and key is not null) (type: boolean)
@@ -152,7 +152,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
           TableScan
-            alias: t2
+            alias: t2_n38
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((not ((key = '2') or (key = '3'))) and key is not null) (type: boolean)
@@ -188,25 +188,25 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT a.*, b.*
 FROM 
-  (SELECT key as k, val as v FROM T1) a
+  (SELECT key as k, val as v FROM T1_n63) a
   JOIN
-  (SELECT key as k, val as v FROM T2) b
+  (SELECT key as k, val as v FROM T2_n38) b
 ON a.k = b.k
 ORDER BY a.k, b.k, a.v, b.v
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n63
+PREHOOK: Input: default@t2_n38
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a.*, b.*
 FROM 
-  (SELECT key as k, val as v FROM T1) a
+  (SELECT key as k, val as v FROM T1_n63) a
   JOIN
-  (SELECT key as k, val as v FROM T2) b
+  (SELECT key as k, val as v FROM T2_n38) b
 ON a.k = b.k
 ORDER BY a.k, b.k, a.v, b.v
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n63
+POSTHOOK: Input: default@t2_n38
 #### A masked pattern was here ####
 2	12	2	22
 3	13	3	13

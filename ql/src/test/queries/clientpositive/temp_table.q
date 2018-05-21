@@ -43,28 +43,28 @@ DROP DATABASE two CASCADE;
 
 DROP TABLE bay;
 
-create table s as select * from src limit 10;
+create table s_n4 as select * from src limit 10;
 
-select count(*) from s;
+select count(*) from s_n4;
 
-create temporary table s as select * from s limit 2;
+create temporary table s_n4 as select * from s_n4 limit 2;
 
-select count(*) from s;
+select count(*) from s_n4;
 
-with s as ( select * from src limit 1)
-select count(*) from s;
+with s_n4 as ( select * from src limit 1)
+select count(*) from s_n4;
 
-with src as ( select * from s)
+with src as ( select * from s_n4)
 select count(*) from src;
 
-drop table s;
+drop table s_n4;
 
-select count(*) from s;
+select count(*) from s_n4;
 
-with s as ( select * from src limit 1)
-select count(*) from s;
+with s_n4 as ( select * from src limit 1)
+select count(*) from s_n4;
 
-with src as ( select * from s)
+with src as ( select * from s_n4)
 select count(*) from src;
 
-drop table s;
+drop table s_n4;

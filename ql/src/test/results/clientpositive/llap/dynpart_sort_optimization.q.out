@@ -1,4 +1,4 @@
-PREHOOK: query: create table over1k(
+PREHOOK: query: create table over1k_n3(
            t tinyint,
            si smallint,
            i int,
@@ -14,8 +14,8 @@ PREHOOK: query: create table over1k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1k
-POSTHOOK: query: create table over1k(
+PREHOOK: Output: default@over1k_n3
+POSTHOOK: query: create table over1k_n3(
            t tinyint,
            si smallint,
            i int,
@@ -31,15 +31,15 @@ POSTHOOK: query: create table over1k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1k
-PREHOOK: query: load data local inpath '../../data/files/over1k' into table over1k
+POSTHOOK: Output: default@over1k_n3
+PREHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over1k
-POSTHOOK: query: load data local inpath '../../data/files/over1k' into table over1k
+PREHOOK: Output: default@over1k_n3
+POSTHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over1k
+POSTHOOK: Output: default@over1k_n3
 PREHOOK: query: create table over1k_part(
            si smallint,
            i int,
@@ -108,9 +108,9 @@ POSTHOOK: query: create table over1k_part_buck_sort(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part_buck_sort
-PREHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -129,7 +129,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -187,9 +187,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part
 
-PREHOOK: query: explain insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
+PREHOOK: query: explain insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
+POSTHOOK: query: explain insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -209,7 +209,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -285,9 +285,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part_limit
 
-PREHOOK: query: explain insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: explain insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -306,7 +306,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -363,9 +363,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part_buck
 
-PREHOOK: query: explain insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: explain insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -384,7 +384,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -441,77 +441,77 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part_buck_sort
 
-PREHOOK: query: insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part@ds=foo
-POSTHOOK: query: insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part@ds=foo/t=27
 POSTHOOK: Output: default@over1k_part@ds=foo/t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part_limit@ds=foo
-POSTHOOK: query: insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
+POSTHOOK: query: insert overwrite table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part_limit@ds=foo/t=27
 POSTHOOK: Output: default@over1k_part_limit@ds=foo/t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part_buck
-POSTHOOK: query: insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: insert overwrite table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part_buck@t=27
 POSTHOOK: Output: default@over1k_part_buck@t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part_buck_sort
-POSTHOOK: query: insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: insert overwrite table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part_buck_sort@t=27
 POSTHOOK: Output: default@over1k_part_buck_sort@t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -530,7 +530,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -588,9 +588,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part
 
-PREHOOK: query: explain insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
+PREHOOK: query: explain insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
+POSTHOOK: query: explain insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -610,7 +610,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -686,9 +686,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part_limit
 
-PREHOOK: query: explain insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: explain insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -707,7 +707,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -764,9 +764,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part_buck
 
-PREHOOK: query: explain insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: explain insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -785,7 +785,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -842,74 +842,74 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part_buck_sort
 
-PREHOOK: query: insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part@ds=foo
-POSTHOOK: query: insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part@ds=foo/t=27
 POSTHOOK: Output: default@over1k_part@ds=foo/t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part_limit@ds=foo
-POSTHOOK: query: insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27 limit 10
+POSTHOOK: query: insert into table over1k_part_limit partition(ds="foo", t) select si,i,b,f,t from over1k_n3 where t is null or t=27 limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part_limit@ds=foo/t=27
 POSTHOOK: Output: default@over1k_part_limit@ds=foo/t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_limit PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part_buck
-POSTHOOK: query: insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: insert into table over1k_part_buck partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part_buck@t=27
 POSTHOOK: Output: default@over1k_part_buck@t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part_buck_sort
-POSTHOOK: query: insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: insert into table over1k_part_buck_sort partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part_buck_sort@t=27
 POSTHOOK: Output: default@over1k_part_buck_sort@t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
 PREHOOK: query: desc formatted over1k_part partition(ds="foo",t=27)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@over1k_part
@@ -1296,9 +1296,9 @@ POSTHOOK: query: create table over1k_part2(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part2
-PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
+PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
+POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1318,7 +1318,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1410,9 +1410,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part2
 
-PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
+PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
+POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1431,7 +1431,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1489,9 +1489,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part2
 
-PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from (select * from over1k order by i limit 10) tmp where t is null or t=27
+PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from (select * from over1k_n3 order by i limit 10) tmp where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from (select * from over1k order by i limit 10) tmp where t is null or t=27
+POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from (select * from over1k_n3 order by i limit 10) tmp where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1511,7 +1511,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float)
@@ -1589,9 +1589,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part2
 
-PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 group by si,i,b,f,t
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 group by si,i,b,f,t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1611,7 +1611,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1709,9 +1709,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part2
 
-PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 group by si,i,b,f,t
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 group by si,i,b,f,t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1730,7 +1730,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1793,23 +1793,23 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part2
 
-PREHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
+PREHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part2@ds=foo
-POSTHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
+POSTHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part2@ds=foo/t=27
 POSTHOOK: Output: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
 PREHOOK: query: desc formatted over1k_part2 partition(ds="foo",t=27)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@over1k_part2
@@ -1934,23 +1934,23 @@ POSTHOOK: Input: default@over1k_part2@ds=foo/t=27
 POSTHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
-PREHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
+PREHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part2@ds=foo
-POSTHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 order by i
+POSTHOOK: query: insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k_n3 where t is null or t=27 order by i
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part2@ds=foo/t=27
 POSTHOOK: Output: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part2 PARTITION(ds=foo,t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
 PREHOOK: query: desc formatted over1k_part2 partition(ds="foo",t=27)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@over1k_part2
@@ -2097,9 +2097,9 @@ POSTHOOK: query: create table over1k_part_buck_sort2(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part_buck_sort2
-PREHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2119,7 +2119,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -2211,9 +2211,9 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part_buck_sort2
 
-PREHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2232,7 +2232,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -2289,23 +2289,23 @@ STAGE PLANS:
           Column Types: smallint, int, bigint, float
           Table: default.over1k_part_buck_sort2
 
-PREHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part_buck_sort2
-POSTHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part_buck_sort2@t=27
 POSTHOOK: Output: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
 PREHOOK: query: desc formatted over1k_part_buck_sort2 partition(t=27)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@over1k_part_buck_sort2
@@ -2428,23 +2428,23 @@ POSTHOOK: Input: default@over1k_part_buck_sort2@t=27
 POSTHOOK: Input: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
-PREHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part_buck_sort2
-POSTHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: insert overwrite table over1k_part_buck_sort2 partition(t) select si,i,b,f,t from over1k_n3 where t is null or t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part_buck_sort2@t=27
 POSTHOOK: Output: default@over1k_part_buck_sort2@t=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=27).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_part_buck_sort2 PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
 PREHOOK: query: desc formatted over1k_part_buck_sort2 partition(t=27)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@over1k_part_buck_sort2
@@ -2583,9 +2583,9 @@ POSTHOOK: query: create table over1k_part3(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part3
-PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where s="foo"
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where s="foo"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2604,7 +2604,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (s = 'foo') (type: boolean)
@@ -2663,9 +2663,9 @@ STAGE PLANS:
           Column Types: smallint, bigint, float
           Table: default.over1k_part3
 
-PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2684,7 +2684,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (t = 27Y) (type: boolean)
@@ -2743,9 +2743,9 @@ STAGE PLANS:
           Column Types: smallint, bigint, float
           Table: default.over1k_part3
 
-PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2764,7 +2764,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (i = 100) (type: boolean)
@@ -2823,9 +2823,9 @@ STAGE PLANS:
           Column Types: smallint, bigint, float
           Table: default.over1k_part3
 
-PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2844,7 +2844,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((i = 100) and (t = 27Y)) (type: boolean)
@@ -2903,9 +2903,9 @@ STAGE PLANS:
           Column Types: smallint, bigint, float
           Table: default.over1k_part3
 
-PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and s="foo"
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and s="foo"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2924,7 +2924,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((i = 100) and (s = 'foo')) (type: boolean)
@@ -2983,9 +2983,9 @@ STAGE PLANS:
           Column Types: smallint, bigint, float
           Table: default.over1k_part3
 
-PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27 and s="foo"
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27 and s="foo"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3004,7 +3004,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s = 'foo') and (t = 27Y)) (type: boolean)
@@ -3063,9 +3063,9 @@ STAGE PLANS:
           Column Types: smallint, bigint, float
           Table: default.over1k_part3
 
-PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+PREHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27 and s="foo"
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+POSTHOOK: query: explain insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27 and s="foo"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3084,7 +3084,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1k
+                  alias: over1k_n3
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((i = 100) and (s = 'foo') and (t = 27Y)) (type: boolean)
@@ -3165,20 +3165,20 @@ STAGE PLANS:
           Column Types: smallint, bigint, float
           Table: default.over1k_part3
 
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where s="foo"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where s="foo"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part3@s=alice quirinius/t=27/i=65636
 POSTHOOK: Output: default@over1k_part3@s=bob ovid/t=27/i=65619
 POSTHOOK: Output: default@over1k_part3@s=david allen/t=27/i=65617
@@ -3195,89 +3195,89 @@ POSTHOOK: Output: default@over1k_part3@s=tom brown/t=27/i=65675
 POSTHOOK: Output: default@over1k_part3@s=ulysses underhill/t=27/i=65570
 POSTHOOK: Output: default@over1k_part3@s=wendy van buren/t=27/i=65680
 POSTHOOK: Output: default@over1k_part3@s=xavier quirinius/t=27/i=65599
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and s="foo"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and s="foo"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27 and s="foo"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27 and s="foo"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27 and s="foo"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27 and s="foo"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 PREHOOK: query: select sum(hash(*)) from over1k_part3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part3
@@ -3343,20 +3343,20 @@ POSTHOOK: query: create table over1k_part3(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part3
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where s="foo"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where s="foo"
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where s="foo"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 POSTHOOK: Output: default@over1k_part3@s=alice quirinius/t=27/i=65636
 POSTHOOK: Output: default@over1k_part3@s=bob ovid/t=27/i=65619
 POSTHOOK: Output: default@over1k_part3@s=david allen/t=27/i=65617
@@ -3373,89 +3373,89 @@ POSTHOOK: Output: default@over1k_part3@s=tom brown/t=27/i=65675
 POSTHOOK: Output: default@over1k_part3@s=ulysses underhill/t=27/i=65570
 POSTHOOK: Output: default@over1k_part3@s=wendy van buren/t=27/i=65680
 POSTHOOK: Output: default@over1k_part3@s=xavier quirinius/t=27/i=65599
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=alice quirinius,t=27,i=65636).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=bob ovid,t=27,i=65619).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=david allen,t=27,i=65617).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ethan laertes,t=27,i=65628).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=irene underhill,t=27,i=65787).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=jessica zipper,t=27,i=65778).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=mike zipper,t=27,i=65779).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar carson,t=27,i=65624).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=oscar ovid,t=27,i=65536).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=priscilla zipper,t=27,i=65622).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=quinn allen,t=27,i=65708).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=rachel carson,t=27,i=65677).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=tom brown,t=27,i=65675).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=ulysses underhill,t=27,i=65570).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=wendy van buren,t=27,i=65680).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).b SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).f SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_part3 PARTITION(s=xavier quirinius,t=27,i=65599).si SIMPLE [(over1k_n3)over1k_n3.FieldSchema(name:si, type:smallint, comment:null), ]
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and s="foo"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and s="foo"
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and s="foo"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27 and s="foo"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where t=27 and s="foo"
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27 and s="foo"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+POSTHOOK: Input: default@over1k_n3
+PREHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27 and s="foo"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k where i=100 and t=27 and s="foo"
+POSTHOOK: query: insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100 and t=27 and s="foo"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n3
 PREHOOK: query: select sum(hash(*)) from over1k_part3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part3

@@ -16,35 +16,35 @@ set mapred.input.dir.recursive=true;
 -- It does not matter, whether the output is merged or not. In this case,
 -- merging is turned off
 
-create table inputTbl1(key string, val string) stored as textfile;
-create table outputTbl1(key string, `values` bigint) stored as textfile;
+create table inputTbl1_n0(key string, val string) stored as textfile;
+create table outputTbl1_n0(key string, `values` bigint) stored as textfile;
 create table outputTbl2(key string, `values` bigint) stored as textfile;
 
-load data local inpath '../../data/files/T1.txt' into table inputTbl1;
+load data local inpath '../../data/files/T1.txt' into table inputTbl1_n0;
 
 explain
 FROM (
   select * from(
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   )subq
 ) a
-insert overwrite table outputTbl1 select *
+insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *;
 
 FROM (
   select * from(
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   )subq
 ) a
-insert overwrite table outputTbl1 select *
+insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1;
+select * from outputTbl1_n0;
 select * from outputTbl2;
 
 -- The following queries guarantee the correctness.

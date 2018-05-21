@@ -3,14 +3,14 @@ set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.autho
 
 -- SORT_BEFORE_DIFF
 
-create table src_autho_test as select * from src;
+create table src_autho_test_n2 as select * from src;
 
-grant All on table src_autho_test to user hive_test_user;
+grant All on table src_autho_test_n2 to user hive_test_user;
 
 set hive.security.authorization.enabled=true;
 
-show grant user hive_test_user on table src_autho_test;
+show grant user hive_test_user on table src_autho_test_n2;
 
-select key from src_autho_test order by key limit 20;
+select key from src_autho_test_n2 order by key limit 20;
 
-drop table src_autho_test;
+drop table src_autho_test_n2;

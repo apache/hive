@@ -1,21 +1,21 @@
-PREHOOK: query: CREATE TABLE mytable(val1 INT, val2 INT, val3 INT)
+PREHOOK: query: CREATE TABLE mytable_n1(val1 INT, val2 INT, val3 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mytable
-POSTHOOK: query: CREATE TABLE mytable(val1 INT, val2 INT, val3 INT)
+PREHOOK: Output: default@mytable_n1
+POSTHOOK: query: CREATE TABLE mytable_n1(val1 INT, val2 INT, val3 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mytable
+POSTHOOK: Output: default@mytable_n1
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM mytable src1, mytable src2
+FROM mytable_n1 src1, mytable_n1 src2
 WHERE src1.val1=src2.val1
   AND src1.val2 between 2450816 and 2451500
   AND src2.val2 between 2450816 and 2451500
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM mytable src1, mytable src2
+FROM mytable_n1 src1, mytable_n1 src2
 WHERE src1.val1=src2.val1
   AND src1.val2 between 2450816 and 2451500
   AND src2.val2 between 2450816 and 2451500

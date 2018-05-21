@@ -24,7 +24,7 @@ set hive.stats.reliable=true;
 -- 87 000001_0
 
 -- create a skewed table
-create table list_bucketing_static_part (key String, value String) 
+create table list_bucketing_static_part_n4 (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
     stored as DIRECTORIES
@@ -32,42 +32,42 @@ create table list_bucketing_static_part (key String, value String)
 
 -- list bucketing DML without merge. use bucketize to generate a few small files.
 explain extended
-insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
+insert overwrite table list_bucketing_static_part_n4 partition (ds = '2008-04-08',  hr = '11')
 select key, value from srcpart where ds = '2008-04-08';
 
-insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08', hr = '11')
+insert overwrite table list_bucketing_static_part_n4 partition (ds = '2008-04-08', hr = '11')
 select key, value from srcpart where ds = '2008-04-08';
 
 -- check DML result
-show partitions list_bucketing_static_part;
-desc formatted list_bucketing_static_part partition (ds='2008-04-08', hr='11');	
+show partitions list_bucketing_static_part_n4;
+desc formatted list_bucketing_static_part_n4 partition (ds='2008-04-08', hr='11');	
 
 select count(1) from srcpart where ds = '2008-04-08';
-select count(*) from list_bucketing_static_part;
+select count(*) from list_bucketing_static_part_n4;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.optimize.listbucketing=true;
 explain extended
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
-select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
+select * from list_bucketing_static_part_n4 where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
+select * from list_bucketing_static_part_n4 where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484';
 select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484';
 
 -- 51 and val_51 in the table so skewed data for 51 and val_14 should be none
 -- but query should succeed for 51 or 51 and val_14
 select * from srcpart where ds = '2008-04-08' and key = '51';
-select * from list_bucketing_static_part where key = '51';
+select * from list_bucketing_static_part_n4 where key = '51';
 select * from srcpart where ds = '2008-04-08' and key = '51' and value = 'val_14';
-select * from list_bucketing_static_part where key = '51' and value = 'val_14';
+select * from list_bucketing_static_part_n4 where key = '51' and value = 'val_14';
 
 -- queries with < <= > >= should work for skewed test although we don't benefit from pruning
 select count(1) from srcpart where ds = '2008-04-08' and key < '51';
-select count(1) from list_bucketing_static_part where key < '51';
+select count(1) from list_bucketing_static_part_n4 where key < '51';
 select count(1) from srcpart where ds = '2008-04-08' and key <= '51';
-select count(1) from list_bucketing_static_part where key <= '51';
+select count(1) from list_bucketing_static_part_n4 where key <= '51';
 select count(1) from srcpart where ds = '2008-04-08' and key > '51';
-select count(1) from list_bucketing_static_part where key > '51';
+select count(1) from list_bucketing_static_part_n4 where key > '51';
 select count(1) from srcpart where ds = '2008-04-08' and key >= '51';
-select count(1) from list_bucketing_static_part where key >= '51';
+select count(1) from list_bucketing_static_part_n4 where key >= '51';
 
 -- clean up
-drop table list_bucketing_static_part;
+drop table list_bucketing_static_part_n4;

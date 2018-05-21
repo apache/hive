@@ -5,7 +5,7 @@
 -- insert statements succeed. The insert statement succeeds even if the stats aggregator
 -- is set to null, since stats need not be reliable.
 
-create table tmptable(key string, value string);
+create table tmptable_n6(key string, value string);
 
 set hive.stats.dbclass=custom;
 set hive.stats.default.publisher=org.apache.hadoop.hive.ql.stats.DummyStatsPublisher;
@@ -15,17 +15,17 @@ set hive.compute.query.using.stats=false;
 
 set hive.test.dummystats.aggregator=connect;
 
-INSERT OVERWRITE TABLE tmptable select * from src;
-select count(1) from tmptable;
+INSERT OVERWRITE TABLE tmptable_n6 select * from src;
+select count(1) from tmptable_n6;
 
 set hive.test.dummystats.aggregator=closeConnection;
-INSERT OVERWRITE TABLE tmptable select * from src;
-select count(1) from tmptable;
+INSERT OVERWRITE TABLE tmptable_n6 select * from src;
+select count(1) from tmptable_n6;
 
 set hive.test.dummystats.aggregator=cleanUp;
-INSERT OVERWRITE TABLE tmptable select * from src;
-select count(1) from tmptable;
+INSERT OVERWRITE TABLE tmptable_n6 select * from src;
+select count(1) from tmptable_n6;
 
 set hive.stats.default.aggregator="";
-INSERT OVERWRITE TABLE tmptable select * from src;
-select count(1) from tmptable;
+INSERT OVERWRITE TABLE tmptable_n6 select * from src;
+select count(1) from tmptable_n6;

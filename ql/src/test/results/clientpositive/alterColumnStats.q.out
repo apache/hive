@@ -1,21 +1,21 @@
-PREHOOK: query: drop table p
+PREHOOK: query: drop table p_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table p
+POSTHOOK: query: drop table p_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: query: CREATE TABLE p_n0(insert_num int, c1 tinyint, c2 smallint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@p
-POSTHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: Output: default@p_n0
+POSTHOOK: query: CREATE TABLE p_n0(insert_num int, c1 tinyint, c2 smallint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@p
-PREHOOK: query: desc formatted p
+POSTHOOK: Output: default@p_n0
+PREHOOK: query: desc formatted p_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n0
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
@@ -46,23 +46,23 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert into p values (1,22,333)
+PREHOOK: query: insert into p_n0 values (1,22,333)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@p
-POSTHOOK: query: insert into p values (1,22,333)
+PREHOOK: Output: default@p_n0
+POSTHOOK: query: insert into p_n0 values (1,22,333)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@p
-POSTHOOK: Lineage: p.c1 SCRIPT []
-POSTHOOK: Lineage: p.c2 SCRIPT []
-POSTHOOK: Lineage: p.insert_num SCRIPT []
-PREHOOK: query: desc formatted p
+POSTHOOK: Output: default@p_n0
+POSTHOOK: Lineage: p_n0.c1 SCRIPT []
+POSTHOOK: Lineage: p_n0.c2 SCRIPT []
+POSTHOOK: Lineage: p_n0.insert_num SCRIPT []
+PREHOOK: query: desc formatted p_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n0
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	tinyint             	                    
@@ -93,20 +93,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: query: alter table p_n0 replace columns (insert_num int, c1 STRING, c2 STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@p
-PREHOOK: Output: default@p
-POSTHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: Input: default@p_n0
+PREHOOK: Output: default@p_n0
+POSTHOOK: query: alter table p_n0 replace columns (insert_num int, c1 STRING, c2 STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@p
-POSTHOOK: Output: default@p
-PREHOOK: query: desc formatted p
+POSTHOOK: Input: default@p_n0
+POSTHOOK: Output: default@p_n0
+PREHOOK: query: desc formatted p_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n0
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	string              	                    
@@ -138,12 +138,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted p c1
+PREHOOK: query: desc formatted p_n0 c1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p c1
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0 c1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n0
 col_name            	c1                  	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -157,12 +157,12 @@ num_falses
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted p c2
+PREHOOK: query: desc formatted p_n0 c2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p
-POSTHOOK: query: desc formatted p c2
+PREHOOK: Input: default@p_n0
+POSTHOOK: query: desc formatted p_n0 c2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p
+POSTHOOK: Input: default@p_n0
 col_name            	c2                  	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 

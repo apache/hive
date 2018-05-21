@@ -10,27 +10,27 @@ PREHOOK: Output: database:tv2
 POSTHOOK: query: CREATE DATABASE tv2
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:tv2
-PREHOOK: query: CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE invites_n1 (foo INT, bar STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@invites
-POSTHOOK: query: CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@invites_n1
+POSTHOOK: query: CREATE TABLE invites_n1 (foo INT, bar STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@invites
-PREHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites
+POSTHOOK: Output: default@invites_n1
+PREHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites_n1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@invites
+PREHOOK: Input: default@invites_n1
 PREHOOK: Output: database:tv1
 PREHOOK: Output: tv1@view1
-POSTHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites
+POSTHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites_n1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@invites
+POSTHOOK: Input: default@invites_n1
 POSTHOOK: Output: database:tv1
 POSTHOOK: Output: tv1@view1
-POSTHOOK: Lineage: view1.bar SIMPLE [(invites)invites.FieldSchema(name:bar, type:string, comment:null), ]
-POSTHOOK: Lineage: view1.ds SIMPLE [(invites)invites.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: view1.foo SIMPLE [(invites)invites.FieldSchema(name:foo, type:int, comment:null), ]
+POSTHOOK: Lineage: view1.bar SIMPLE [(invites_n1)invites_n1.FieldSchema(name:bar, type:string, comment:null), ]
+POSTHOOK: Lineage: view1.ds SIMPLE [(invites_n1)invites_n1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: view1.foo SIMPLE [(invites_n1)invites_n1.FieldSchema(name:foo, type:int, comment:null), ]
 PREHOOK: query: DESCRIBE EXTENDED tv1.view1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: tv1@view1
@@ -64,22 +64,22 @@ ds                  	string
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM tv2.view2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@invites
+PREHOOK: Input: default@invites_n1
 PREHOOK: Input: tv2@view2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM tv2.view2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@invites
+POSTHOOK: Input: default@invites_n1
 POSTHOOK: Input: tv2@view2
 #### A masked pattern was here ####
-PREHOOK: query: DROP TABLE invites
+PREHOOK: query: DROP TABLE invites_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@invites
-PREHOOK: Output: default@invites
-POSTHOOK: query: DROP TABLE invites
+PREHOOK: Input: default@invites_n1
+PREHOOK: Output: default@invites_n1
+POSTHOOK: query: DROP TABLE invites_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@invites
-POSTHOOK: Output: default@invites
+POSTHOOK: Input: default@invites_n1
+POSTHOOK: Output: default@invites_n1
 PREHOOK: query: DROP VIEW tv2.view2
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: tv2@view2

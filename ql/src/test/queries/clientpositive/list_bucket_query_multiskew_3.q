@@ -19,40 +19,40 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 -- 2. query result is right
 
 -- create a skewed table
-create table fact_daily (key String, value String) 
+create table fact_daily_n3 (key String, value String) 
 partitioned by (ds String, hr String) ;
 
 -- partition no skew
-insert overwrite table fact_daily partition (ds = '1', hr = '1')
+insert overwrite table fact_daily_n3 partition (ds = '1', hr = '1')
 select key, value from src;
-describe formatted fact_daily PARTITION (ds = '1', hr='1');
+describe formatted fact_daily_n3 PARTITION (ds = '1', hr='1');
 
 -- partition. skewed value is 484/238
-alter table fact_daily skewed by (key, value) on (('484','val_484'),('238','val_238')) stored as DIRECTORIES;
-insert overwrite table fact_daily partition (ds = '1', hr = '2')
+alter table fact_daily_n3 skewed by (key, value) on (('484','val_484'),('238','val_238')) stored as DIRECTORIES;
+insert overwrite table fact_daily_n3 partition (ds = '1', hr = '2')
 select key, value from src;
-describe formatted fact_daily PARTITION (ds = '1', hr='2');
+describe formatted fact_daily_n3 PARTITION (ds = '1', hr='2');
 
 -- another partition. skewed value is 327
-alter table fact_daily skewed by (key, value) on (('327','val_327')) stored as DIRECTORIES;
-insert overwrite table fact_daily partition (ds = '1', hr = '3')
+alter table fact_daily_n3 skewed by (key, value) on (('327','val_327')) stored as DIRECTORIES;
+insert overwrite table fact_daily_n3 partition (ds = '1', hr = '3')
 select key, value from src;
-describe formatted fact_daily PARTITION (ds = '1', hr='3');
+describe formatted fact_daily_n3 PARTITION (ds = '1', hr='3');
 
 -- query non-skewed partition
 explain extended
-select * from fact_daily where ds = '1' and  hr='1' and key='145';
-select * from fact_daily where ds = '1' and  hr='1' and key='145';
+select * from fact_daily_n3 where ds = '1' and  hr='1' and key='145';
+select * from fact_daily_n3 where ds = '1' and  hr='1' and key='145';
 explain extended
-select count(*) from fact_daily where ds = '1' and  hr='1';
-select count(*) from fact_daily where ds = '1' and  hr='1';
+select count(*) from fact_daily_n3 where ds = '1' and  hr='1';
+select count(*) from fact_daily_n3 where ds = '1' and  hr='1';
 	
 -- query skewed partition
 explain extended
-SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484');	
-SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484');
+SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='2' and (key='484' and value='val_484');	
+SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='2' and (key='484' and value='val_484');
 
 -- query another skewed partition
 explain extended
-SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327');	
-SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327');	
+SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='3' and (key='327' and value='val_327');	
+SELECT * FROM fact_daily_n3 WHERE ds='1' and hr='3' and (key='327' and value='val_327');	

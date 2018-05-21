@@ -1,52 +1,52 @@
-PREHOOK: query: drop table table1
+PREHOOK: query: drop table table1_n9
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table table1
+POSTHOOK: query: drop table table1_n9
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table table2
+PREHOOK: query: drop table table2_n5
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table table2
+POSTHOOK: query: drop table table2_n5
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table table1(key string, value string) clustered by (key, value)
+PREHOOK: query: create table table1_n9(key string, value string) clustered by (key, value)
 sorted by (key, value) into 1 BUCKETS stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: create table table1(key string, value string) clustered by (key, value)
+PREHOOK: Output: default@table1_n9
+POSTHOOK: query: create table table1_n9(key string, value string) clustered by (key, value)
 sorted by (key, value) into 1 BUCKETS stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: create table table2(key string, value string) clustered by (value, key)
+POSTHOOK: Output: default@table1_n9
+PREHOOK: query: create table table2_n5(key string, value string) clustered by (value, key)
 sorted by (value, key) into 1 BUCKETS stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: create table table2(key string, value string) clustered by (value, key)
+PREHOOK: Output: default@table2_n5
+POSTHOOK: query: create table table2_n5(key string, value string) clustered by (value, key)
 sorted by (value, key) into 1 BUCKETS stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: load data local inpath '../../data/files/SortCol1Col2/000000_0' overwrite into table table1
+POSTHOOK: Output: default@table2_n5
+PREHOOK: query: load data local inpath '../../data/files/SortCol1Col2/000000_0' overwrite into table table1_n9
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@table1
-POSTHOOK: query: load data local inpath '../../data/files/SortCol1Col2/000000_0' overwrite into table table1
+PREHOOK: Output: default@table1_n9
+POSTHOOK: query: load data local inpath '../../data/files/SortCol1Col2/000000_0' overwrite into table table1_n9
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@table1
-PREHOOK: query: load data local inpath '../../data/files/SortCol2Col1/000000_0' overwrite into table table2
+POSTHOOK: Output: default@table1_n9
+PREHOOK: query: load data local inpath '../../data/files/SortCol2Col1/000000_0' overwrite into table table2_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@table2
-POSTHOOK: query: load data local inpath '../../data/files/SortCol2Col1/000000_0' overwrite into table table2
+PREHOOK: Output: default@table2_n5
+POSTHOOK: query: load data local inpath '../../data/files/SortCol2Col1/000000_0' overwrite into table table2_n5
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2_n5
 PREHOOK: query: explain extended
-select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
+select /*+ mapjoin(b) */ count(*) from table1_n9 a join table2_n5 b on a.key=b.key and a.value=b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
+select /*+ mapjoin(b) */ count(*) from table1_n9 a join table2_n5 b on a.key=b.key and a.value=b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -115,7 +115,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: table1
+            base file name: table1_n9
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -128,11 +128,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.table1
+              name default.table1_n9
               numFiles 1
               numRows 0
               rawDataSize 0
-              serialization.ddl struct table1 { string key, string value}
+              serialization.ddl struct table1_n9 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 20
@@ -151,20 +151,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.table1
+                name default.table1_n9
                 numFiles 1
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct table1 { string key, string value}
+                serialization.ddl struct table1_n9 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 20
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.table1
-            name: default.table1
+              name: default.table1_n9
+            name: default.table1_n9
       Truncated Path -> Alias:
-        /table1 [a]
+        /table1_n9 [a]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -201,14 +201,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
+PREHOOK: query: select /*+ mapjoin(b) */ count(*) from table1_n9 a join table2_n5 b on a.key=b.key and a.value=b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table2
+PREHOOK: Input: default@table1_n9
+PREHOOK: Input: default@table2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
+POSTHOOK: query: select /*+ mapjoin(b) */ count(*) from table1_n9 a join table2_n5 b on a.key=b.key and a.value=b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table1_n9
+POSTHOOK: Input: default@table2_n5
 #### A masked pattern was here ####
 4

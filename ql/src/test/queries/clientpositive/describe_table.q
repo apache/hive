@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS name1 (name1 int, name2 string) PARTITIONED BY (name3
 ALTER TABLE name1 ADD PARTITION (name3=1);
 CREATE TABLE IF NOT EXISTS name2 (name3 int, name4 string);
 use name2;
-CREATE TABLE IF NOT EXISTS table1 (col1 int, col2 string);
+CREATE TABLE IF NOT EXISTS table1_n18 (col1 int, col2 string);
 
 use default;
 DESCRIBE name1.name1;
@@ -66,23 +66,23 @@ DESCRIBE name1.name2;
 DESCRIBE name1.name2 name3;
 DESCRIBE name1.name2 name4;
 
-DESCRIBE name2.table1;
-DESCRIBE name2.table1 col1;
-DESCRIBE name2.table1 col2;
+DESCRIBE name2.table1_n18;
+DESCRIBE name2.table1_n18 col1;
+DESCRIBE name2.table1_n18 col2;
 use name2;
-DESCRIBE table1;
-DESCRIBE table1 col1;
-DESCRIBE table1 col2;
+DESCRIBE table1_n18;
+DESCRIBE table1_n18 col1;
+DESCRIBE table1_n18 col2;
 
-DESCRIBE name2.table1;
-DESCRIBE name2.table1 col1;
-DESCRIBE name2.table1 col2;
+DESCRIBE name2.table1_n18;
+DESCRIBE name2.table1_n18 col1;
+DESCRIBE name2.table1_n18 col2;
 
-DROP TABLE IF EXISTS table1;
+DROP TABLE IF EXISTS table1_n18;
 use name1;
 DROP TABLE IF EXISTS name1;
 DROP TABLE IF EXISTS name2;
 use name2;
-DROP TABLE IF EXISTS table1;
+DROP TABLE IF EXISTS table1_n18;
 DROP DATABASE IF EXISTS name1;
 DROP DATABASE IF EXISTS name2;

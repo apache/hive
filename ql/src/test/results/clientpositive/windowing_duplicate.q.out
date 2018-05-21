@@ -10,7 +10,7 @@ POSTHOOK: query: create table mytable1 (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mytable1
-PREHOOK: query: create table t1 as
+PREHOOK: query: create table t1_n44 as
 select
   sum(bound3) OVER (PARTITION BY string1 ORDER BY mytime) as bound1
 from (
@@ -22,8 +22,8 @@ from (
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@mytable1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 as
+PREHOOK: Output: default@t1_n44
+POSTHOOK: query: create table t1_n44 as
 select
   sum(bound3) OVER (PARTITION BY string1 ORDER BY mytime) as bound1
 from (
@@ -35,5 +35,5 @@ from (
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@mytable1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.bound1 SCRIPT [(mytable1)mytable1.FieldSchema(name:mytime, type:timestamp, comment:null), (mytable1)mytable1.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Output: default@t1_n44
+POSTHOOK: Lineage: t1_n44.bound1 SCRIPT [(mytable1)mytable1.FieldSchema(name:mytime, type:timestamp, comment:null), (mytable1)mytable1.FieldSchema(name:string1, type:string, comment:null), ]

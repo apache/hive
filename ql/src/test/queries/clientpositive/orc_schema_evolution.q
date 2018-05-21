@@ -4,21 +4,21 @@ set hive.vectorized.execution.enabled=false;
 set hive.fetch.task.conversion=none;
 SET hive.exec.schema.evolution=true;
 
-create table src_orc (key smallint, val string) stored as orc;
+create table src_orc_n3 (key smallint, val string) stored as orc;
 create table src_orc2 (key smallint, val string) stored as orc;
 
 -- integer type widening
-insert overwrite table src_orc select * from src;
-select sum(hash(*)) from src_orc;
+insert overwrite table src_orc_n3 select * from src;
+select sum(hash(*)) from src_orc_n3;
 
-alter table src_orc change key key smallint;
-select sum(hash(*)) from src_orc;
+alter table src_orc_n3 change key key smallint;
+select sum(hash(*)) from src_orc_n3;
 
-alter table src_orc change key key int;
-select sum(hash(*)) from src_orc;
+alter table src_orc_n3 change key key int;
+select sum(hash(*)) from src_orc_n3;
 
-alter table src_orc change key key bigint;
-select sum(hash(*)) from src_orc;
+alter table src_orc_n3 change key key bigint;
+select sum(hash(*)) from src_orc_n3;
 
 -- replace columns for adding columns and type widening
 insert overwrite table src_orc2 select * from src;

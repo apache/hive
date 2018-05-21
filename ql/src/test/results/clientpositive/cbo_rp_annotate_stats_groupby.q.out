@@ -1,4 +1,4 @@
-PREHOOK: query: create table if not exists loc_staging (
+PREHOOK: query: create table if not exists loc_staging_n1 (
   state string,
   locid int,
   zip bigint,
@@ -6,8 +6,8 @@ PREHOOK: query: create table if not exists loc_staging (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@loc_staging
-POSTHOOK: query: create table if not exists loc_staging (
+PREHOOK: Output: default@loc_staging_n1
+POSTHOOK: query: create table if not exists loc_staging_n1 (
   state string,
   locid int,
   zip bigint,
@@ -15,46 +15,46 @@ POSTHOOK: query: create table if not exists loc_staging (
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@loc_staging
-PREHOOK: query: create table loc_orc like loc_staging
+POSTHOOK: Output: default@loc_staging_n1
+PREHOOK: query: create table loc_orc_n1 like loc_staging_n1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@loc_orc
-POSTHOOK: query: create table loc_orc like loc_staging
+PREHOOK: Output: default@loc_orc_n1
+POSTHOOK: query: create table loc_orc_n1 like loc_staging_n1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@loc_orc
-PREHOOK: query: alter table loc_orc set fileformat orc
+POSTHOOK: Output: default@loc_orc_n1
+PREHOOK: query: alter table loc_orc_n1 set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@loc_orc
-PREHOOK: Output: default@loc_orc
-POSTHOOK: query: alter table loc_orc set fileformat orc
+PREHOOK: Input: default@loc_orc_n1
+PREHOOK: Output: default@loc_orc_n1
+POSTHOOK: query: alter table loc_orc_n1 set fileformat orc
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@loc_orc
-POSTHOOK: Output: default@loc_orc
-PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+POSTHOOK: Input: default@loc_orc_n1
+POSTHOOK: Output: default@loc_orc_n1
+PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@loc_staging
-POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+PREHOOK: Output: default@loc_staging_n1
+POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@loc_staging
-PREHOOK: query: insert overwrite table loc_orc select * from loc_staging
+POSTHOOK: Output: default@loc_staging_n1
+PREHOOK: query: insert overwrite table loc_orc_n1 select * from loc_staging_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@loc_staging
-PREHOOK: Output: default@loc_orc
-POSTHOOK: query: insert overwrite table loc_orc select * from loc_staging
+PREHOOK: Input: default@loc_staging_n1
+PREHOOK: Output: default@loc_orc_n1
+POSTHOOK: query: insert overwrite table loc_orc_n1 select * from loc_staging_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@loc_staging
-POSTHOOK: Output: default@loc_orc
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
-PREHOOK: query: explain select * from loc_orc
+POSTHOOK: Input: default@loc_staging_n1
+POSTHOOK: Output: default@loc_orc_n1
+POSTHOOK: Lineage: loc_orc_n1.locid SIMPLE [(loc_staging_n1)loc_staging_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n1.state SIMPLE [(loc_staging_n1)loc_staging_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n1.year SIMPLE [(loc_staging_n1)loc_staging_n1.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n1.zip SIMPLE [(loc_staging_n1)loc_staging_n1.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: explain select * from loc_orc_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc
+POSTHOOK: query: explain select * from loc_orc_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -65,7 +65,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n1
           Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
@@ -73,26 +73,26 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: analyze table loc_orc compute statistics for columns state
+PREHOOK: query: analyze table loc_orc_n1 compute statistics for columns state
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc
-PREHOOK: Output: default@loc_orc
+PREHOOK: Input: default@loc_orc_n1
+PREHOOK: Output: default@loc_orc_n1
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc compute statistics for columns state
+POSTHOOK: query: analyze table loc_orc_n1 compute statistics for columns state
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc
-POSTHOOK: Output: default@loc_orc
+POSTHOOK: Input: default@loc_orc_n1
+POSTHOOK: Output: default@loc_orc_n1
 #### A masked pattern was here ####
 PREHOOK: query: explain select a, c, min(b)
 from ( select state as a, locid as b, count(*) as c
-       from loc_orc
+       from loc_orc_n1
        group by state,locid
      ) sq1
 group by a,c
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a, c, min(b)
 from ( select state as a, locid as b, count(*) as c
-       from loc_orc
+       from loc_orc_n1
        group by state,locid
      ) sq1
 group by a,c
@@ -107,7 +107,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: sq1:loc_orc
+            alias: sq1:loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -178,19 +178,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,year
+PREHOOK: query: analyze table loc_orc_n1 compute statistics for columns state,locid,year
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc
-PREHOOK: Output: default@loc_orc
+PREHOOK: Input: default@loc_orc_n1
+PREHOOK: Output: default@loc_orc_n1
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc compute statistics for columns state,locid,year
+POSTHOOK: query: analyze table loc_orc_n1 compute statistics for columns state,locid,year
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc
-POSTHOOK: Output: default@loc_orc
+POSTHOOK: Input: default@loc_orc_n1
+POSTHOOK: Output: default@loc_orc_n1
 #### A masked pattern was here ####
-PREHOOK: query: explain select year from loc_orc group by year
+PREHOOK: query: explain select year from loc_orc_n1 group by year
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select year from loc_orc group by year
+POSTHOOK: query: explain select year from loc_orc_n1 group by year
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -201,7 +201,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: year (type: int)
@@ -238,9 +238,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -251,7 +251,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -288,9 +288,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid with cube
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -301,7 +301,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -338,9 +338,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid with rollup
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with rollup
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid with rollup
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with rollup
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -351,7 +351,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -388,9 +388,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by rollup (state,locid)
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by rollup (state,locid)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by rollup (state,locid)
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by rollup (state,locid)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -401,7 +401,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -438,9 +438,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state))
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state))
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -451,7 +451,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -488,9 +488,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -501,7 +501,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -538,9 +538,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid),())
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid),())
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -551,7 +551,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -588,9 +588,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state,locid),(state),(locid),())
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state,locid),(state),(locid),())
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -601,7 +601,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -638,9 +638,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select year from loc_orc group by year
+PREHOOK: query: explain select year from loc_orc_n1 group by year
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select year from loc_orc group by year
+POSTHOOK: query: explain select year from loc_orc_n1 group by year
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -651,7 +651,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: year (type: int)
@@ -688,9 +688,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid with cube
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -701,7 +701,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -738,9 +738,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,zip from loc_orc group by state,zip
+PREHOOK: query: explain select state,zip from loc_orc_n1 group by state,zip
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,zip from loc_orc group by state,zip
+POSTHOOK: query: explain select state,zip from loc_orc_n1 group by state,zip
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -751,7 +751,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 752 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: state (type: string), zip (type: bigint)
@@ -788,9 +788,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid with cube
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -801,7 +801,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -838,9 +838,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid with rollup
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with rollup
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid with rollup
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with rollup
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -851,7 +851,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -888,9 +888,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by rollup (state,locid)
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by rollup (state,locid)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by rollup (state,locid)
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by rollup (state,locid)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -901,7 +901,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -938,9 +938,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state))
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state))
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -951,7 +951,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -988,9 +988,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1001,7 +1001,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -1038,9 +1038,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid),())
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state),(locid),())
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1051,7 +1051,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -1088,9 +1088,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state,locid),(state),(locid),())
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid grouping sets((state,locid),(state),(locid),())
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1101,7 +1101,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)
@@ -1138,9 +1138,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select year from loc_orc group by year
+PREHOOK: query: explain select year from loc_orc_n1 group by year
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select year from loc_orc group by year
+POSTHOOK: query: explain select year from loc_orc_n1 group by year
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1151,7 +1151,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: year (type: int)
@@ -1188,9 +1188,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc group by state,locid with cube
+PREHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: query: explain select state,locid from loc_orc_n1 group by state,locid with cube
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1201,7 +1201,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: loc_orc
+            alias: loc_orc_n1
             Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: state (type: string), locid (type: int)

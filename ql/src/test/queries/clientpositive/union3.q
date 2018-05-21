@@ -21,9 +21,9 @@ FROM (
 
 
 
-CREATE TABLE union_out (id int);
+CREATE TABLE union_out_n0 (id int);
 
-insert overwrite table union_out 
+insert overwrite table union_out_n0 
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -40,4 +40,4 @@ FROM (
   CLUSTER BY id
 ) a;
 
-select * from union_out;
+select * from union_out_n0;

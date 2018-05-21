@@ -4,19 +4,19 @@ PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: CREATE TABLE dest1(bytes1 BINARY,
+PREHOOK: query: CREATE TABLE dest1_n146(bytes1 BINARY,
                    bytes2 BINARY,
                    string STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(bytes1 BINARY,
+PREHOOK: Output: default@dest1_n146
+POSTHOOK: query: CREATE TABLE dest1_n146(bytes1 BINARY,
                    bytes2 BINARY,
                    string STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1
+POSTHOOK: Output: default@dest1_n146
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n146
 SELECT
   CAST(key AS BINARY),
   CAST(value AS BINARY),
@@ -25,8 +25,8 @@ ORDER BY value
 LIMIT 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1
+PREHOOK: Output: default@dest1_n146
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n146
 SELECT
   CAST(key AS BINARY),
   CAST(value AS BINARY),
@@ -35,21 +35,21 @@ ORDER BY value
 LIMIT 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.bytes1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.bytes2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.string SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT INTO TABLE dest1 SELECT NULL, NULL, NULL FROM dest1 LIMIT 1
+POSTHOOK: Output: default@dest1_n146
+POSTHOOK: Lineage: dest1_n146.bytes1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n146.bytes2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n146.string SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT INTO TABLE dest1_n146 SELECT NULL, NULL, NULL FROM dest1_n146 LIMIT 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT INTO TABLE dest1 SELECT NULL, NULL, NULL FROM dest1 LIMIT 1
+PREHOOK: Input: default@dest1_n146
+PREHOOK: Output: default@dest1_n146
+POSTHOOK: query: INSERT INTO TABLE dest1_n146 SELECT NULL, NULL, NULL FROM dest1_n146 LIMIT 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.bytes1 EXPRESSION []
-POSTHOOK: Lineage: dest1.bytes2 EXPRESSION []
-POSTHOOK: Lineage: dest1.string EXPRESSION []
+POSTHOOK: Input: default@dest1_n146
+POSTHOOK: Output: default@dest1_n146
+POSTHOOK: Lineage: dest1_n146.bytes1 EXPRESSION []
+POSTHOOK: Lineage: dest1_n146.bytes2 EXPRESSION []
+POSTHOOK: Lineage: dest1_n146.string EXPRESSION []
 PREHOOK: query: SELECT
   bytes1,
   bytes2,
@@ -65,9 +65,9 @@ PREHOOK: query: SELECT
   UNBASE64(BASE64(bytes1)),
   HEX(ENCODE(string, 'US-ASCII')),
   DECODE(ENCODE(string, 'US-ASCII'), 'US-ASCII')
-FROM dest1
+FROM dest1_n146
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n146
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
   bytes1,
@@ -84,9 +84,9 @@ POSTHOOK: query: SELECT
   UNBASE64(BASE64(bytes1)),
   HEX(ENCODE(string, 'US-ASCII')),
   DECODE(ENCODE(string, 'US-ASCII'), 'US-ASCII')
-FROM dest1
+FROM dest1_n146
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n146
 #### A masked pattern was here ####
 0	val_0	val_0	1	0val_0	val_	l_0	al_	30	0	MA==	0	76616C5F30	val_0
 0	val_0	val_0	1	0val_0	val_	l_0	al_	30	0	MA==	0	76616C5F30	val_0

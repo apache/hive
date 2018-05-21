@@ -89,31 +89,31 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view v
+POSTHOOK: query: drop view v_n13
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create view v as
+PREHOOK: query: create view v_n13 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE []
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE []
+PREHOOK: query: desc formatted v_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n13
 # col_name            	data_type           	comment             
 key                 	string              	                    
 	 	 
@@ -141,15 +141,15 @@ View Original Text: 	with q1 as ( select key from src where key = '5')
 View Expanded Text: 	with q1 as ( select `src`.`key` from `default`.`src` where `src`.`key` = '5')	 
 	                    	select `q1`.`key` from q1
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as
 select b.key, count(*) as c
 from src b
 group by b.key
@@ -161,8 +161,8 @@ having exists
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as
 select b.key, count(*) as c
 from src b
 group by b.key
@@ -174,15 +174,15 @@ having exists
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.c EXPRESSION [(src)b.null, ]
-POSTHOOK: Lineage: v.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.c EXPRESSION [(src)b.null, ]
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n13
 # col_name            	data_type           	comment             
 key                 	string              	                    
 c                   	bigint              	                    
@@ -223,15 +223,15 @@ View Expanded Text: 	select `b`.`key`, count(*) as `c`
 	                    	  where `a`.`key` = b.key and `a`.`value` > 'val_9'
 	                    	  )                 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as
 select *
 from src b
 where not exists
@@ -242,8 +242,8 @@ where not exists
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as
 select *
 from src b
 where not exists
@@ -254,15 +254,15 @@ where not exists
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: v.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n13.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n13
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -301,31 +301,31 @@ View Expanded Text: 	select `b`.`key`, `b`.`value`
 	                    	  where `b`.`value` = `a`.`value` and `a`.`value` > 'val_2'
 	                    	  )                 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select a.key from src a join src b on a.key=b.key
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select a.key from src a join src b on a.key=b.key
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select a.key from src a join src b on a.key=b.key
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select a.key from src a join src b on a.key=b.key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n13
 # col_name            	data_type           	comment             
 key                 	string              	                    
 	 	 
@@ -351,30 +351,30 @@ Sort Columns:       	[]
 View Original Text: 	select a.key from src a join src b on a.key=b.key	 
 View Expanded Text: 	select `a`.`key` from `default`.`src` `a` join `default`.`src` `b` on `a`.`key`=`b`.`key`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: CREATE VIEW view15 AS
+PREHOOK: query: CREATE VIEW view15_n0 AS
 SELECT key,COUNT(value) AS value_count
 FROM src
 GROUP BY key
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@view15
-POSTHOOK: query: CREATE VIEW view15 AS
+PREHOOK: Output: default@view15_n0
+POSTHOOK: query: CREATE VIEW view15_n0 AS
 SELECT key,COUNT(value) AS value_count
 FROM src
 GROUP BY key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@view15
-POSTHOOK: Lineage: view15.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: view15.value_count EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted view15
+POSTHOOK: Output: default@view15_n0
+POSTHOOK: Lineage: view15_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view15_n0.value_count EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted view15_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@view15
-POSTHOOK: query: desc formatted view15
+PREHOOK: Input: default@view15_n0
+POSTHOOK: query: desc formatted view15_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@view15
+POSTHOOK: Input: default@view15_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value_count         	bigint              	                    
@@ -405,27 +405,27 @@ View Expanded Text: 	SELECT `src`.`key`,COUNT(`src`.`value`) AS `value_count`
 	                    	FROM `default`.`src`
 	                    	GROUP BY `src`.`key`
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: CREATE VIEW view16 AS
+PREHOOK: query: CREATE VIEW view16_n0 AS
 SELECT DISTINCT value
 FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@view16
-POSTHOOK: query: CREATE VIEW view16 AS
+PREHOOK: Output: default@view16_n0
+POSTHOOK: query: CREATE VIEW view16_n0 AS
 SELECT DISTINCT value
 FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@view16
-POSTHOOK: Lineage: view16.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted view16
+POSTHOOK: Output: default@view16_n0
+POSTHOOK: Lineage: view16_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted view16_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@view16
-POSTHOOK: query: desc formatted view16
+PREHOOK: Input: default@view16_n0
+POSTHOOK: query: desc formatted view16_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@view16
+POSTHOOK: Input: default@view16_n0
 # col_name            	data_type           	comment             
 value               	string              	                    
 	 	 
@@ -453,31 +453,31 @@ View Original Text: 	SELECT DISTINCT value
 View Expanded Text: 	SELECT DISTINCT `src`.`value`	 
 	                    	FROM `default`.`src`
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select key from src
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select key from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select key from src
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select key from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n13
 # col_name            	data_type           	comment             
 key                 	string              	                    
 	 	 
@@ -503,32 +503,32 @@ Sort Columns:       	[]
 View Original Text: 	select key from src 	 
 View Expanded Text: 	select `src`.`key` from `default`.`src`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select * from src
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select * from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select * from src
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select * from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: v.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n13.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n13
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -555,32 +555,32 @@ Sort Columns:       	[]
 View Original Text: 	select * from src   	 
 View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select * from src intersect select * from src
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select * from src intersect select * from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select * from src intersect select * from src
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select * from src intersect select * from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: v.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n13.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n13
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -607,32 +607,32 @@ Sort Columns:       	[]
 View Original Text: 	select * from src intersect select * from src	 
 View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src` intersect select `src`.`key`, `src`.`value` from `default`.`src`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n13
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n13
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: drop view v_n13
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select * from src except select * from src
+POSTHOOK: Input: default@v_n13
+POSTHOOK: Output: default@v_n13
+PREHOOK: query: create view v_n13 as select * from src except select * from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select * from src except select * from src
+PREHOOK: Output: default@v_n13
+POSTHOOK: query: create view v_n13 as select * from src except select * from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: v.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n13
+POSTHOOK: Lineage: v_n13.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n13.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n13
+POSTHOOK: query: desc formatted v_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n13
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -659,9 +659,9 @@ Sort Columns:       	[]
 View Original Text: 	select * from src except select * from src	 
 View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src` except select `src`.`key`, `src`.`value` from `default`.`src`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: explain select * from v
+PREHOOK: query: explain select * from v_n13
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from v
+POSTHOOK: query: explain select * from v_n13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

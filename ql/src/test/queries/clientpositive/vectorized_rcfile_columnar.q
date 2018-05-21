@@ -3,7 +3,7 @@ set hive.mapred.mode=nonstrict;
 --This query must pass even when vectorized reader is not available for
 --RC files. The query must fall back to the non-vector mode and run successfully.
 
-CREATE table columnTable (key STRING, value STRING)
+CREATE table columnTable_n0 (key STRING, value STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 STORED AS
@@ -11,10 +11,10 @@ STORED AS
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat';
 
 FROM src
-INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value ORDER BY src.key, src.value LIMIT 10;
-describe columnTable;
+INSERT OVERWRITE TABLE columnTable_n0 SELECT src.key, src.value ORDER BY src.key, src.value LIMIT 10;
+describe columnTable_n0;
 
 SET hive.vectorized.execution.enabled=true;
 
-SELECT key, value FROM columnTable ORDER BY key;
+SELECT key, value FROM columnTable_n0 ORDER BY key;
 

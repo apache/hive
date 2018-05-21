@@ -1,42 +1,42 @@
-PREHOOK: query: create table a(key int, value int)
+PREHOOK: query: create table a_n7(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a(key int, value int)
+PREHOOK: Output: default@a_n7
+POSTHOOK: query: create table a_n7(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: insert into table a values (1,2),(1,2),(1,3),(2,3)
+POSTHOOK: Output: default@a_n7
+PREHOOK: query: insert into table a_n7 values (1,2),(1,2),(1,3),(2,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@a
-POSTHOOK: query: insert into table a values (1,2),(1,2),(1,3),(2,3)
+PREHOOK: Output: default@a_n7
+POSTHOOK: query: insert into table a_n7 values (1,2),(1,2),(1,3),(2,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.key SCRIPT []
-POSTHOOK: Lineage: a.value SCRIPT []
-PREHOOK: query: create table b(key int, value int)
+POSTHOOK: Output: default@a_n7
+POSTHOOK: Lineage: a_n7.key SCRIPT []
+POSTHOOK: Lineage: a_n7.value SCRIPT []
+PREHOOK: query: create table b_n5(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b(key int, value int)
+PREHOOK: Output: default@b_n5
+POSTHOOK: query: create table b_n5(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: insert into table b values (1,2),(2,3)
+POSTHOOK: Output: default@b_n5
+PREHOOK: query: insert into table b_n5 values (1,2),(2,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@b
-POSTHOOK: query: insert into table b values (1,2),(2,3)
+PREHOOK: Output: default@b_n5
+POSTHOOK: query: insert into table b_n5 values (1,2),(2,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key SCRIPT []
-POSTHOOK: Lineage: b.value SCRIPT []
-PREHOOK: query: explain select * from b intersect distinct select * from a intersect distinct select * from b intersect distinct select * from a intersect distinct select * from b
+POSTHOOK: Output: default@b_n5
+POSTHOOK: Lineage: b_n5.key SCRIPT []
+POSTHOOK: Lineage: b_n5.value SCRIPT []
+PREHOOK: query: explain select * from b_n5 intersect distinct select * from a_n7 intersect distinct select * from b_n5 intersect distinct select * from a_n7 intersect distinct select * from b_n5
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from b intersect distinct select * from a intersect distinct select * from b intersect distinct select * from a intersect distinct select * from b
+POSTHOOK: query: explain select * from b_n5 intersect distinct select * from a_n7 intersect distinct select * from b_n5 intersect distinct select * from a_n7 intersect distinct select * from b_n5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -58,7 +58,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -81,7 +81,7 @@ STAGE PLANS:
         Map 11 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -104,7 +104,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -127,7 +127,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -150,7 +150,7 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -307,9 +307,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain (select * from b intersect distinct select * from a) intersect distinct (select * from b intersect distinct select * from a)
+PREHOOK: query: explain (select * from b_n5 intersect distinct select * from a_n7) intersect distinct (select * from b_n5 intersect distinct select * from a_n7)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain (select * from b intersect distinct select * from a) intersect distinct (select * from b intersect distinct select * from a)
+POSTHOOK: query: explain (select * from b_n5 intersect distinct select * from a_n7) intersect distinct (select * from b_n5 intersect distinct select * from a_n7)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -330,7 +330,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -353,7 +353,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -376,7 +376,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -399,7 +399,7 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -535,9 +535,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from b intersect distinct (select * from a intersect distinct (select * from b intersect distinct (select * from a intersect distinct select * from b)))
+PREHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect distinct (select * from b_n5 intersect distinct (select * from a_n7 intersect distinct select * from b_n5)))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from b intersect distinct (select * from a intersect distinct (select * from b intersect distinct (select * from a intersect distinct select * from b)))
+POSTHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect distinct (select * from b_n5 intersect distinct (select * from a_n7 intersect distinct select * from b_n5)))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -559,7 +559,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -582,7 +582,7 @@ STAGE PLANS:
         Map 11 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -605,7 +605,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -628,7 +628,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -651,7 +651,7 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -808,9 +808,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain (((select * from b intersect distinct select * from a) intersect distinct select * from b) intersect distinct select * from a) intersect distinct select * from b
+PREHOOK: query: explain (((select * from b_n5 intersect distinct select * from a_n7) intersect distinct select * from b_n5) intersect distinct select * from a_n7) intersect distinct select * from b_n5
 PREHOOK: type: QUERY
-POSTHOOK: query: explain (((select * from b intersect distinct select * from a) intersect distinct select * from b) intersect distinct select * from a) intersect distinct select * from b
+POSTHOOK: query: explain (((select * from b_n5 intersect distinct select * from a_n7) intersect distinct select * from b_n5) intersect distinct select * from a_n7) intersect distinct select * from b_n5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -832,7 +832,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -855,7 +855,7 @@ STAGE PLANS:
         Map 11 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -878,7 +878,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -901,7 +901,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -924,7 +924,7 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1081,9 +1081,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from b intersect distinct (select * from a intersect distinct select * from b) intersect distinct select * from a intersect distinct select * from b
+PREHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect distinct select * from b_n5) intersect distinct select * from a_n7 intersect distinct select * from b_n5
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from b intersect distinct (select * from a intersect distinct select * from b) intersect distinct select * from a intersect distinct select * from b
+POSTHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect distinct select * from b_n5) intersect distinct select * from a_n7 intersect distinct select * from b_n5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1105,7 +1105,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1128,7 +1128,7 @@ STAGE PLANS:
         Map 11 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1151,7 +1151,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1174,7 +1174,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1197,7 +1197,7 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1354,9 +1354,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from b intersect distinct (select * from a intersect all select * from b)
+PREHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect all select * from b_n5)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from b intersect distinct (select * from a intersect all select * from b)
+POSTHOOK: query: explain select * from b_n5 intersect distinct (select * from a_n7 intersect all select * from b_n5)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1376,7 +1376,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1399,7 +1399,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1422,7 +1422,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1537,9 +1537,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from b intersect all (select * from a intersect all select * from b)
+PREHOOK: query: explain select * from b_n5 intersect all (select * from a_n7 intersect all select * from b_n5)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from b intersect all (select * from a intersect all select * from b)
+POSTHOOK: query: explain select * from b_n5 intersect all (select * from a_n7 intersect all select * from b_n5)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1559,7 +1559,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1582,7 +1582,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1605,7 +1605,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1727,9 +1727,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from b intersect all (select * from a intersect distinct select * from b)
+PREHOOK: query: explain select * from b_n5 intersect all (select * from a_n7 intersect distinct select * from b_n5)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from b intersect all (select * from a intersect distinct select * from b)
+POSTHOOK: query: explain select * from b_n5 intersect all (select * from a_n7 intersect distinct select * from b_n5)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1750,7 +1750,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n5
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)
@@ -1779,7 +1779,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n7
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int)

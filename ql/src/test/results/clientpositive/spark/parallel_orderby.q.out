@@ -1,32 +1,32 @@
-PREHOOK: query: create table src5 (key string, value string)
+PREHOOK: query: create table src5_n2 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src5
-POSTHOOK: query: create table src5 (key string, value string)
+PREHOOK: Output: default@src5_n2
+POSTHOOK: query: create table src5_n2 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src5
-PREHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5
+POSTHOOK: Output: default@src5_n2
+PREHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src5
-POSTHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5
+PREHOOK: Output: default@src5_n2
+POSTHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src5
-PREHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5
+POSTHOOK: Output: default@src5_n2
+PREHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src5
-POSTHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5
+PREHOOK: Output: default@src5_n2
+POSTHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src5
+POSTHOOK: Output: default@src5_n2
 PREHOOK: query: explain
-create table total_ordered as select * from src5 order by key, value
+create table total_ordered as select * from src5_n2 order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain
-create table total_ordered as select * from src5 order by key, value
+create table total_ordered as select * from src5_n2 order by key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -44,7 +44,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src5
+                  alias: src5_n2
                   Statistics: Num rows: 1 Data size: 5600 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -90,18 +90,18 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: create table total_ordered as select * from src5 order by key, value
+PREHOOK: query: create table total_ordered as select * from src5_n2 order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src5
+PREHOOK: Input: default@src5_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@total_ordered
-POSTHOOK: query: create table total_ordered as select * from src5 order by key, value
+POSTHOOK: query: create table total_ordered as select * from src5_n2 order by key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src5
+POSTHOOK: Input: default@src5_n2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@total_ordered
-POSTHOOK: Lineage: total_ordered.key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: total_ordered.value SIMPLE [(src5)src5.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: total_ordered.key SIMPLE [(src5_n2)src5_n2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: total_ordered.value SIMPLE [(src5_n2)src5_n2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: desc formatted total_ordered
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@total_ordered
@@ -201,18 +201,18 @@ POSTHOOK: query: drop table total_ordered
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@total_ordered
 POSTHOOK: Output: default@total_ordered
-PREHOOK: query: create table total_ordered as select * from src5 order by key, value
+PREHOOK: query: create table total_ordered as select * from src5_n2 order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src5
+PREHOOK: Input: default@src5_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@total_ordered
-POSTHOOK: query: create table total_ordered as select * from src5 order by key, value
+POSTHOOK: query: create table total_ordered as select * from src5_n2 order by key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src5
+POSTHOOK: Input: default@src5_n2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@total_ordered
-POSTHOOK: Lineage: total_ordered.key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: total_ordered.value SIMPLE [(src5)src5.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: total_ordered.key SIMPLE [(src5_n2)src5_n2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: total_ordered.value SIMPLE [(src5_n2)src5_n2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: desc formatted total_ordered
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@total_ordered

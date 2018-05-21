@@ -1,18 +1,18 @@
 --! qt:dataset:src
 set hive.optimize.constant.propagation=true;
 
-CREATE TABLE dest1(d date, t timestamp);
+CREATE TABLE dest1_n26(d date, t timestamp);
 
 EXPLAIN
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n26
 SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
        FROM src tablesample (1 rows);
 
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n26
 SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
        FROM src tablesample (1 rows);
 
-SELECT * FROM dest1;
+SELECT * FROM dest1_n26;
 
 SELECT key, value FROM src WHERE key = cast(86 as double);
 

@@ -6,30 +6,30 @@ set hive.merge.sparkfiles=true;
 
 -- SORT_QUERY_RESULTS
 
-create table dest1(key int, val int);
+create table dest1_n145(key int, val int);
 
 explain
-insert overwrite table dest1
+insert overwrite table dest1_n145
 select key, count(1) from src group by key;
 
-insert overwrite table dest1
+insert overwrite table dest1_n145
 select key, count(1) from src group by key;
 
-select * from dest1;
+select * from dest1_n145;
 
-drop table dest1;
+drop table dest1_n145;
 
-create table test_src(key string, value string) partitioned by (ds string);
-create table dest1(key string);
+create table test_src_n2(key string, value string) partitioned by (ds string);
+create table dest1_n145(key string);
 
-insert overwrite table test_src partition(ds='101') select * from src; 
-insert overwrite table test_src partition(ds='102') select * from src;
+insert overwrite table test_src_n2 partition(ds='101') select * from src; 
+insert overwrite table test_src_n2 partition(ds='102') select * from src;
 
 explain 
-insert overwrite table dest1 select key from test_src;
-insert overwrite table dest1 select key from test_src;
+insert overwrite table dest1_n145 select key from test_src_n2;
+insert overwrite table dest1_n145 select key from test_src_n2;
 
 set hive.merge.smallfiles.avgsize=16;
 explain
-insert overwrite table dest1 select key from test_src;
-insert overwrite table dest1 select key from test_src;
+insert overwrite table dest1_n145 select key from test_src_n2;
+insert overwrite table dest1_n145 select key from test_src_n2;

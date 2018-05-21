@@ -4,24 +4,24 @@ PREHOOK: Output: runworker
 POSTHOOK: query: CREATE TEMPORARY FUNCTION runWorker AS 'org.apache.hadoop.hive.ql.udf.UDFRunWorker'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: runworker
-PREHOOK: query: create table mydual(a int)
+PREHOOK: query: create table mydual_n0(a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mydual
-POSTHOOK: query: create table mydual(a int)
+PREHOOK: Output: default@mydual_n0
+POSTHOOK: query: create table mydual_n0(a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mydual
-PREHOOK: query: insert into mydual values(1)
+POSTHOOK: Output: default@mydual_n0
+PREHOOK: query: insert into mydual_n0 values(1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@mydual
-POSTHOOK: query: insert into mydual values(1)
+PREHOOK: Output: default@mydual_n0
+POSTHOOK: query: insert into mydual_n0 values(1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@mydual
-POSTHOOK: Lineage: mydual.a SCRIPT []
-PREHOOK: query: CREATE TABLE over10k(t tinyint,
+POSTHOOK: Output: default@mydual_n0
+POSTHOOK: Lineage: mydual_n0.a SCRIPT []
+PREHOOK: query: CREATE TABLE over10k_n9(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -36,8 +36,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: CREATE TABLE over10k(t tinyint,
+PREHOOK: Output: default@over10k_n9
+POSTHOOK: query: CREATE TABLE over10k_n9(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -52,16 +52,16 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k
+POSTHOOK: Output: default@over10k_n9
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k_n9
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k
+PREHOOK: Output: default@over10k_n9
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k_n9
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
-PREHOOK: query: CREATE TABLE over10k_orc_bucketed(t tinyint,
+POSTHOOK: Output: default@over10k_n9
+PREHOOK: query: CREATE TABLE over10k_orc_bucketed_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -74,8 +74,8 @@ PREHOOK: query: CREATE TABLE over10k_orc_bucketed(t tinyint,
            bin binary) CLUSTERED BY(si) INTO 4 BUCKETS STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: query: CREATE TABLE over10k_orc_bucketed(t tinyint,
+PREHOOK: Output: default@over10k_orc_bucketed_n0
+POSTHOOK: query: CREATE TABLE over10k_orc_bucketed_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -88,14 +88,14 @@ POSTHOOK: query: CREATE TABLE over10k_orc_bucketed(t tinyint,
            bin binary) CLUSTERED BY(si) INTO 4 BUCKETS STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k_orc_bucketed
-PREHOOK: query: select distinct si, si%4 from over10k order by si
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
+PREHOOK: query: select distinct si, si%4 from over10k_n9 order by si
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n9
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select distinct si, si%4 from over10k order by si
+POSTHOOK: query: select distinct si, si%4 from over10k_n9 order by si
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n9
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	NULL
 256	0
@@ -350,49 +350,49 @@ NULL	NULL
 509	1
 510	2
 511	3
-PREHOOK: query: insert into over10k_orc_bucketed select * from over10k
+PREHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
-PREHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k
+PREHOOK: Input: default@over10k_n9
+PREHOOK: Output: default@over10k_orc_bucketed_n0
+POSTHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
-POSTHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: Lineage: over10k_orc_bucketed.b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Input: default@over10k_n9
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.b SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.bin SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.bo SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.d SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.dec SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.f SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.i SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.s SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 4 items
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       8942 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7710 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7297 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7204 ### HDFS DATE ### hdfs://### HDFS PATH ###
-PREHOOK: query: insert into over10k_orc_bucketed select * from over10k
+PREHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
-PREHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k
+PREHOOK: Input: default@over10k_n9
+PREHOOK: Output: default@over10k_orc_bucketed_n0
+POSTHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
-POSTHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: Lineage: over10k_orc_bucketed.b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Input: default@over10k_n9
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.b SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.bin SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.bo SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.d SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.dec SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.f SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.i SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.s SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 8 items
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       8942 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       8942 ### HDFS DATE ### hdfs://### HDFS PATH ###
@@ -402,13 +402,13 @@ Found 8 items
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7297 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7204 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-rw-rw-   3 ### USER ### ### GROUP ###       7204 ### HDFS DATE ### hdfs://### HDFS PATH ###
-PREHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed
+PREHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k_orc_bucketed
+PREHOOK: Input: default@over10k_orc_bucketed_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed
+POSTHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k_orc_bucketed
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
@@ -418,17 +418,17 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
-PREHOOK: query: alter table over10k_orc_bucketed set TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: alter table over10k_orc_bucketed_n0 set TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@over10k_orc_bucketed
-PREHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: query: alter table over10k_orc_bucketed set TBLPROPERTIES ('transactional'='true')
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: default@over10k_orc_bucketed_n0
+POSTHOOK: query: alter table over10k_orc_bucketed_n0 set TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@over10k_orc_bucketed
-POSTHOOK: Output: default@over10k_orc_bucketed
-PREHOOK: query: explain select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by t, si, i
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
+PREHOOK: query: explain select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by t, si, i
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by t, si, i
+POSTHOOK: query: explain select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by t, si, i
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -445,7 +445,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k_orc_bucketed
+                  alias: over10k_orc_bucketed_n0
                   filterExpr: ((b = 4294967363L) and (t < 100Y)) (type: boolean)
                   Statistics: Num rows: 2098 Data size: 41920 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -481,13 +481,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by  t, si, i
+PREHOOK: query: select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by  t, si, i
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k_orc_bucketed
+PREHOOK: Input: default@over10k_orc_bucketed_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by  t, si, i
+POSTHOOK: query: select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by  t, si, i
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k_orc_bucketed
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 -3	344	65733
 -3	344	65733
@@ -495,9 +495,9 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	501	65585
 35	463	65646
 35	463	65646
-PREHOOK: query: explain select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
+PREHOOK: query: explain select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
+POSTHOOK: query: explain select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -514,7 +514,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k_orc_bucketed
+                  alias: over10k_orc_bucketed_n0
                   filterExpr: ((b = 4294967363L) and (t < 100Y)) (type: boolean)
                   Statistics: Num rows: 2098 Data size: 41920 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -551,13 +551,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
+PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k_orc_bucketed
+PREHOOK: Input: default@over10k_orc_bucketed_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
+POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k_orc_bucketed
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"writeid":0,"bucketid":536870912,"rowid":104}	5	501	65585
 {"writeid":0,"bucketid":536870912,"rowid":420}	5	501	65585
@@ -565,9 +565,9 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"writeid":0,"bucketid":536936448,"rowid":295}	-3	344	65733
 {"writeid":0,"bucketid":537067520,"rowid":173}	35	463	65646
 {"writeid":0,"bucketid":537067520,"rowid":406}	35	463	65646
-PREHOOK: query: explain update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
+PREHOOK: query: explain update over10k_orc_bucketed_n0 set i = 0 where b = 4294967363 and t < 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
+POSTHOOK: query: explain update over10k_orc_bucketed_n0 set i = 0 where b = 4294967363 and t < 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -586,7 +586,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k_orc_bucketed
+                  alias: over10k_orc_bucketed_n0
                   filterExpr: ((b = 4294967363L) and (t < 100Y)) (type: boolean)
                   Statistics: Num rows: 2098 Data size: 706986 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -617,7 +617,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.over10k_orc_bucketed
+                      name: default.over10k_orc_bucketed_n0
                   Write Type: UPDATE
 
   Stage: Stage-2
@@ -631,28 +631,28 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.over10k_orc_bucketed
+              name: default.over10k_orc_bucketed_n0
           Write Type: UPDATE
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
+PREHOOK: query: update over10k_orc_bucketed_n0 set i = 0 where b = 4294967363 and t < 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k_orc_bucketed
-PREHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: query: update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: default@over10k_orc_bucketed_n0
+POSTHOOK: query: update over10k_orc_bucketed_n0 set i = 0 where b = 4294967363 and t < 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k_orc_bucketed
-POSTHOOK: Output: default@over10k_orc_bucketed
-PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
+PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k_orc_bucketed
+PREHOOK: Input: default@over10k_orc_bucketed_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
+POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k_orc_bucketed
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	5	501	0
 {"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	5	501	0
@@ -660,9 +660,9 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":1}	-3	344	0
 {"writeid":### Masked writeid ###,"bucketid":537067520,"rowid":0}	35	463	0
 {"writeid":### Masked writeid ###,"bucketid":537067520,"rowid":1}	35	463	0
-PREHOOK: query: explain select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
+PREHOOK: query: explain select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
+POSTHOOK: query: explain select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -679,7 +679,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k_orc_bucketed
+                  alias: over10k_orc_bucketed_n0
                   Statistics: Num rows: 1229 Data size: 703430 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -722,25 +722,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
+PREHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k_orc_bucketed
+PREHOOK: Input: default@over10k_orc_bucketed_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
+POSTHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k_orc_bucketed
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: alter table over10k_orc_bucketed compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
+PREHOOK: query: alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 PREHOOK: type: ALTERTABLE_COMPACT
-POSTHOOK: query: alter table over10k_orc_bucketed compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
+POSTHOOK: query: alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 POSTHOOK: type: ALTERTABLE_COMPACT
-PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
+PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k_orc_bucketed
+PREHOOK: Input: default@over10k_orc_bucketed_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
+POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k_orc_bucketed
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":0}	5	501	0
 {"writeid":### Masked writeid ###,"bucketid":536870912,"rowid":1}	5	501	0
@@ -748,11 +748,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"writeid":### Masked writeid ###,"bucketid":536936448,"rowid":1}	-3	344	0
 {"writeid":### Masked writeid ###,"bucketid":537067520,"rowid":0}	35	463	0
 {"writeid":### Masked writeid ###,"bucketid":537067520,"rowid":1}	35	463	0
-PREHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
+PREHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k_orc_bucketed
+PREHOOK: Input: default@over10k_orc_bucketed_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
+POSTHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k_orc_bucketed
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###

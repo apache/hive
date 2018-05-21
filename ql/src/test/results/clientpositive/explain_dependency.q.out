@@ -1,66 +1,66 @@
-PREHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
+PREHOOK: query: CREATE VIEW V1_n6 AS SELECT key, value from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V1
-POSTHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
+PREHOOK: Output: default@V1_n6
+POSTHOOK: query: CREATE VIEW V1_n6 AS SELECT key, value from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V1
-POSTHOOK: Lineage: V1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE VIEW V2 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
+POSTHOOK: Output: default@V1_n6
+POSTHOOK: Lineage: V1_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: V1_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE VIEW V2_n1 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V2
-POSTHOOK: query: CREATE VIEW V2 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
+PREHOOK: Output: default@V2_n1
+POSTHOOK: query: CREATE VIEW V2_n1 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V2
-POSTHOOK: Lineage: V2.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: V2.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V2.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@V2_n1
+POSTHOOK: Lineage: V2_n1.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: V2_n1.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: V2_n1.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE VIEW V3 AS 
-  SELECT src1.key, src2.value FROM V2 src1 
+  SELECT src1.key, src2.value FROM V2_n1 src1 
   JOIN src src2 ON src1.key = src2.key WHERE src1.ds IS NOT NULL
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
-PREHOOK: Input: default@v2
+PREHOOK: Input: default@v2_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@V3
 POSTHOOK: query: CREATE VIEW V3 AS 
-  SELECT src1.key, src2.value FROM V2 src1 
+  SELECT src1.key, src2.value FROM V2_n1 src1 
   JOIN src src2 ON src1.key = src2.key WHERE src1.ds IS NOT NULL
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
-POSTHOOK: Input: default@v2
+POSTHOOK: Input: default@v2_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V3
 POSTHOOK: Lineage: V3.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: V3.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE VIEW V4 AS 
   SELECT src1.key, src2.value as value1, src3.value as value2 
-  FROM V1 src1 JOIN V2 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
+  FROM V1_n6 src1 JOIN V2_n1 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
-PREHOOK: Input: default@v1
-PREHOOK: Input: default@v2
+PREHOOK: Input: default@v1_n6
+PREHOOK: Input: default@v2_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@V4
 POSTHOOK: query: CREATE VIEW V4 AS 
   SELECT src1.key, src2.value as value1, src3.value as value2 
-  FROM V1 src1 JOIN V2 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
+  FROM V1_n6 src1 JOIN V2_n1 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
-POSTHOOK: Input: default@v1
-POSTHOOK: Input: default@v2
+POSTHOOK: Input: default@v1_n6
+POSTHOOK: Input: default@v2_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V4
 POSTHOOK: Lineage: V4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -98,26 +98,26 @@ POSTHOOK: query: EXPLAIN DEPENDENCY
   SELECT S1.key, S2.value FROM src S1 JOIN srcpart S2 ON S1.key = S2.key WHERE ds IS NOT NULL
 POSTHOOK: type: QUERY
 {"input_tables":[{"tablename":"default@src","tabletype":"MANAGED_TABLE"},{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}],"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}]}
-PREHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V1
+PREHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V1_n6
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V1
+POSTHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V1_n6
 POSTHOOK: type: QUERY
-{"input_tables":[{"tablename":"default@v1","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@src","tabletype":"MANAGED_TABLE","tableParents":"[default@v1]"}],"input_partitions":[]}
-PREHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V2
+{"input_tables":[{"tablename":"default@v1_n6","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@src","tabletype":"MANAGED_TABLE","tableParents":"[default@v1_n6]"}],"input_partitions":[]}
+PREHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V2_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V2
+POSTHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V2_n1
 POSTHOOK: type: QUERY
-{"input_tables":[{"tablename":"default@v2","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE","tableParents":"[default@v2]"}],"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}]}
+{"input_tables":[{"tablename":"default@v2_n1","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE","tableParents":"[default@v2_n1]"}],"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}]}
 PREHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V3
 POSTHOOK: type: QUERY
-{"input_tables":[{"tablename":"default@v3","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@v2","tabletype":"VIRTUAL_VIEW","tableParents":"[default@v3]"},{"tablename":"default@src","tabletype":"MANAGED_TABLE","tableParents":"[default@v3]"},{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE","tableParents":"[default@v2]"}],"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}]}
+{"input_tables":[{"tablename":"default@v3","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@v2_n1","tabletype":"VIRTUAL_VIEW","tableParents":"[default@v3]"},{"tablename":"default@src","tabletype":"MANAGED_TABLE","tableParents":"[default@v3]"},{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE","tableParents":"[default@v2_n1]"}],"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}]}
 PREHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V4
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM V4
 POSTHOOK: type: QUERY
-{"input_tables":[{"tablename":"default@v4","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@v1","tabletype":"VIRTUAL_VIEW","tableParents":"[default@v4]"},{"tablename":"default@v2","tabletype":"VIRTUAL_VIEW","tableParents":"[default@v4]"},{"tablename":"default@src","tabletype":"MANAGED_TABLE","tableParents":"[default@v4, default@v1]"},{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE","tableParents":"[default@v2]"}],"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}]}
+{"input_tables":[{"tablename":"default@v4","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@v1_n6","tabletype":"VIRTUAL_VIEW","tableParents":"[default@v4]"},{"tablename":"default@v2_n1","tabletype":"VIRTUAL_VIEW","tableParents":"[default@v4]"},{"tablename":"default@src","tabletype":"MANAGED_TABLE","tableParents":"[default@v4, default@v1_n6]"},{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE","tableParents":"[default@v2_n1]"}],"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}]}
 PREHOOK: query: CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart

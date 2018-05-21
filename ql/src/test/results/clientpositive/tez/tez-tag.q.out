@@ -1,175 +1,175 @@
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n9(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n9
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n9(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@srcbucket_mapjoin_n9
+PREHOOK: query: CREATE TABLE tab_part_n6 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_part_n6
+POSTHOOK: query: CREATE TABLE tab_part_n6 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@tab_part_n6
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n9 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n9
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n9 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: CREATE TABLE src2 as select * from src1
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n9
+PREHOOK: query: CREATE TABLE src2_n0 as select * from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src2
-POSTHOOK: query: CREATE TABLE src2 as select * from src1
+PREHOOK: Output: default@src2_n0
+POSTHOOK: query: CREATE TABLE src2_n0 as select * from src1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src2
-POSTHOOK: Lineage: src2.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src2.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert into src2 select * from src2
+POSTHOOK: Output: default@src2_n0
+POSTHOOK: Lineage: src2_n0.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src2_n0.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into src2_n0 select * from src2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src2
-PREHOOK: Output: default@src2
-POSTHOOK: query: insert into src2 select * from src2
+PREHOOK: Input: default@src2_n0
+PREHOOK: Output: default@src2_n0
+POSTHOOK: query: insert into src2_n0 select * from src2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src2
-POSTHOOK: Output: default@src2
-POSTHOOK: Lineage: src2.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src2.value SIMPLE [(src2)src2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: insert into src2 select * from src2
+POSTHOOK: Input: default@src2_n0
+POSTHOOK: Output: default@src2_n0
+POSTHOOK: Lineage: src2_n0.key SIMPLE [(src2_n0)src2_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src2_n0.value SIMPLE [(src2_n0)src2_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert into src2_n0 select * from src2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src2
-PREHOOK: Output: default@src2
-POSTHOOK: query: insert into src2 select * from src2
+PREHOOK: Input: default@src2_n0
+PREHOOK: Output: default@src2_n0
+POSTHOOK: query: insert into src2_n0 select * from src2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src2
-POSTHOOK: Output: default@src2
-POSTHOOK: Lineage: src2.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src2.value SIMPLE [(src2)src2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Input: default@src2_n0
+POSTHOOK: Output: default@src2_n0
+POSTHOOK: Lineage: src2_n0.key SIMPLE [(src2_n0)src2_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src2_n0.value SIMPLE [(src2_n0)src2_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n9 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n9
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n9 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n9
+POSTHOOK: Output: default@srcbucket_mapjoin_n9@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n9 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n9@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n9 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n9@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n9 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n9
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n9 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n9
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n9@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n9 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n9@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n9 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n9@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n9 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n9@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n9 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n9@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n9 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n9@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n9 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n9@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part_n6 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n9
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n9
+PREHOOK: Input: default@srcbucket_mapjoin_part_n9@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n6@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part_n6 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n9
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n9
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n9@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n6@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n6 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n9)srcbucket_mapjoin_part_n9.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n6 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n9)srcbucket_mapjoin_part_n9.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab_n5(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_n5
+POSTHOOK: query: CREATE TABLE tab_n5(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n5
+PREHOOK: query: insert overwrite table tab_n5 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n9
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n9
+PREHOOK: Input: default@srcbucket_mapjoin_n9@ds=2008-04-08
+PREHOOK: Output: default@tab_n5@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n5 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n9
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab2 (key int, value string, ds string)
+POSTHOOK: Input: default@srcbucket_mapjoin_n9
+POSTHOOK: Input: default@srcbucket_mapjoin_n9@ds=2008-04-08
+POSTHOOK: Output: default@tab_n5@ds=2008-04-08
+POSTHOOK: Lineage: tab_n5 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n9)srcbucket_mapjoin_n9.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n5 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n9)srcbucket_mapjoin_n9.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab2_n2 (key int, value string, ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab2
-POSTHOOK: query: CREATE TABLE tab2 (key int, value string, ds string)
+PREHOOK: Output: default@tab2_n2
+POSTHOOK: query: CREATE TABLE tab2_n2 (key int, value string, ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab2
+POSTHOOK: Output: default@tab2_n2
 Warning: Value had a \n character in it.
-PREHOOK: query: analyze table tab2 compute statistics
+PREHOOK: query: analyze table tab2_n2 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab2
-PREHOOK: Output: default@tab2
-POSTHOOK: query: analyze table tab2 compute statistics
+PREHOOK: Input: default@tab2_n2
+PREHOOK: Output: default@tab2_n2
+POSTHOOK: query: analyze table tab2_n2 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab2
-POSTHOOK: Output: default@tab2
-PREHOOK: query: analyze table tab2 compute statistics for columns
+POSTHOOK: Input: default@tab2_n2
+POSTHOOK: Output: default@tab2_n2
+PREHOOK: query: analyze table tab2_n2 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@tab2
-PREHOOK: Output: default@tab2
+PREHOOK: Input: default@tab2_n2
+PREHOOK: Output: default@tab2_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: analyze table tab2 compute statistics for columns
+POSTHOOK: query: analyze table tab2_n2 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@tab2
-POSTHOOK: Output: default@tab2
+POSTHOOK: Input: default@tab2_n2
+POSTHOOK: Output: default@tab2_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: query: explain select count(*) from tab_n5 a join tab_part_n6 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+POSTHOOK: query: explain select count(*) from tab_n5 a join tab_part_n6 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -200,7 +200,7 @@ Stage-0
                     Filter Operator [FIL_28] (rows=500 width=4)
                       predicate:key is not null
                       TableScan [TS_6] (rows=500 width=4)
-                        default@tab_part,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                        default@tab_part_n6,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
               <-Reducer 2 [SIMPLE_EDGE]
                 SHUFFLE [RS_12]
                   PartitionCols:_col0
@@ -214,7 +214,7 @@ Stage-0
                         Filter Operator [FIL_26] (rows=242 width=95)
                           predicate:(key is not null and value is not null)
                           TableScan [TS_0] (rows=242 width=95)
-                            default@tab,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                            default@tab_n5,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                   <-Map 5 [SIMPLE_EDGE]
                     SHUFFLE [RS_10]
                       PartitionCols:_col0
@@ -225,26 +225,26 @@ Stage-0
                           TableScan [TS_3] (rows=25 width=89)
                             default@src1,c,Tbl:COMPLETE,Col:COMPLETE,Output:["value"]
 
-PREHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: query: select count(*) from tab_n5 a join tab_part_n6 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n5
+PREHOOK: Input: default@tab_n5@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n6
+PREHOOK: Input: default@tab_part_n6@ds=2008-04-08
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+POSTHOOK: query: select count(*) from tab_n5 a join tab_part_n6 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n5
+POSTHOOK: Input: default@tab_n5@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n6
+POSTHOOK: Input: default@tab_part_n6@ds=2008-04-08
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 40
-PREHOOK: query: explain select count(*) from (select x.key as key, min(x.value) as value from tab2 x group by x.key) a join (select x.key as key, min(x.value) as value from tab2 x group by x.key) b on a.key = b.key join src1 c on a.value = c.value where c.key < 0
+PREHOOK: query: explain select count(*) from (select x.key as key, min(x.value) as value from tab2_n2 x group by x.key) a join (select x.key as key, min(x.value) as value from tab2_n2 x group by x.key) b on a.key = b.key join src1 c on a.value = c.value where c.key < 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from (select x.key as key, min(x.value) as value from tab2 x group by x.key) a join (select x.key as key, min(x.value) as value from tab2 x group by x.key) b on a.key = b.key join src1 c on a.value = c.value where c.key < 0
+POSTHOOK: query: explain select count(*) from (select x.key as key, min(x.value) as value from tab2_n2 x group by x.key) a join (select x.key as key, min(x.value) as value from tab2_n2 x group by x.key) b on a.key = b.key join src1 c on a.value = c.value where c.key < 0
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -295,7 +295,7 @@ Stage-0
                             Filter Operator [FIL_36] (rows=1 width=88)
                               predicate:key is not null
                               TableScan [TS_0] (rows=1 width=88)
-                                default@tab2,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                                default@tab2_n2,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                       <-Map 5 [SIMPLE_EDGE]
                         SHUFFLE [RS_12]
                           PartitionCols:_col0
@@ -304,5 +304,5 @@ Stage-0
                             Filter Operator [FIL_37] (rows=1 width=4)
                               predicate:key is not null
                               TableScan [TS_8] (rows=1 width=4)
-                                default@tab2,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                                default@tab2_n2,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 

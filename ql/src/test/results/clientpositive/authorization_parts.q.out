@@ -1,55 +1,55 @@
-PREHOOK: query: create table tpart(i int, j int) partitioned by (k string)
+PREHOOK: query: create table tpart_n0(i int, j int) partitioned by (k string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tpart
-POSTHOOK: query: create table tpart(i int, j int) partitioned by (k string)
+PREHOOK: Output: default@tpart_n0
+POSTHOOK: query: create table tpart_n0(i int, j int) partitioned by (k string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tpart
+POSTHOOK: Output: default@tpart_n0
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: default@tpart
+PREHOOK: Output: default@tpart_n0
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tpart
-POSTHOOK: Output: default@tpart@k=1
+POSTHOOK: Output: default@tpart_n0
+POSTHOOK: Output: default@tpart_n0@k=1
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: default@tpart
+PREHOOK: Output: default@tpart_n0
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tpart
-POSTHOOK: Output: default@tpart@k=2
-PREHOOK: query: select count(*) from tpart
+POSTHOOK: Output: default@tpart_n0
+POSTHOOK: Output: default@tpart_n0@k=2
+PREHOOK: query: select count(*) from tpart_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tpart
-PREHOOK: Input: default@tpart@k=1
-PREHOOK: Input: default@tpart@k=2
+PREHOOK: Input: default@tpart_n0
+PREHOOK: Input: default@tpart_n0@k=1
+PREHOOK: Input: default@tpart_n0@k=2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tpart
+POSTHOOK: query: select count(*) from tpart_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tpart
-POSTHOOK: Input: default@tpart@k=1
-POSTHOOK: Input: default@tpart@k=2
+POSTHOOK: Input: default@tpart_n0
+POSTHOOK: Input: default@tpart_n0@k=1
+POSTHOOK: Input: default@tpart_n0@k=2
 #### A masked pattern was here ####
 0
-PREHOOK: query: analyze table tpart partition (k) compute statistics
+PREHOOK: query: analyze table tpart_n0 partition (k) compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tpart
-PREHOOK: Input: default@tpart@k=1
-PREHOOK: Input: default@tpart@k=2
-PREHOOK: Output: default@tpart
-PREHOOK: Output: default@tpart@k=1
-PREHOOK: Output: default@tpart@k=2
-POSTHOOK: query: analyze table tpart partition (k) compute statistics
+PREHOOK: Input: default@tpart_n0
+PREHOOK: Input: default@tpart_n0@k=1
+PREHOOK: Input: default@tpart_n0@k=2
+PREHOOK: Output: default@tpart_n0
+PREHOOK: Output: default@tpart_n0@k=1
+PREHOOK: Output: default@tpart_n0@k=2
+POSTHOOK: query: analyze table tpart_n0 partition (k) compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tpart
-POSTHOOK: Input: default@tpart@k=1
-POSTHOOK: Input: default@tpart@k=2
-POSTHOOK: Output: default@tpart
-POSTHOOK: Output: default@tpart@k=1
-POSTHOOK: Output: default@tpart@k=2
+POSTHOOK: Input: default@tpart_n0
+POSTHOOK: Input: default@tpart_n0@k=1
+POSTHOOK: Input: default@tpart_n0@k=2
+POSTHOOK: Output: default@tpart_n0
+POSTHOOK: Output: default@tpart_n0@k=1
+POSTHOOK: Output: default@tpart_n0@k=2

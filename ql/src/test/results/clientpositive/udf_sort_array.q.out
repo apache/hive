@@ -106,7 +106,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [{"c":3,"b":5,"a":1},{"a":1,"c":6,"b":8},{"b":2,"a":9,"c":7}]
-PREHOOK: query: CREATE TABLE dest1 (
+PREHOOK: query: CREATE TABLE dest1_n130 (
 	tinyints ARRAY<TINYINT>,
 	smallints ARRAY<SMALLINT>,
 	ints ARRAY<INT>,
@@ -119,8 +119,8 @@ PREHOOK: query: CREATE TABLE dest1 (
 ) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1 (
+PREHOOK: Output: default@dest1_n130
+POSTHOOK: query: CREATE TABLE dest1_n130 (
 	tinyints ARRAY<TINYINT>,
 	smallints ARRAY<SMALLINT>,
 	ints ARRAY<INT>,
@@ -133,27 +133,27 @@ POSTHOOK: query: CREATE TABLE dest1 (
 ) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1
+POSTHOOK: Output: default@dest1_n130
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1_n130
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@dest1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1
+PREHOOK: Output: default@dest1_n130
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1_n130
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n130
 PREHOOK: query: SELECT	sort_array(tinyints), sort_array(smallints), sort_array(ints),
 	sort_array(bigints), sort_array(booleans), sort_array(floats),
 	sort_array(doubles), sort_array(strings), sort_array(timestamps)
-	FROM dest1
+	FROM dest1_n130
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n130
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT	sort_array(tinyints), sort_array(smallints), sort_array(ints),
 	sort_array(bigints), sort_array(booleans), sort_array(floats),
 	sort_array(doubles), sort_array(strings), sort_array(timestamps)
-	FROM dest1
+	FROM dest1_n130
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n130
 #### A masked pattern was here ####
 [1,2,3,4,5]	[1,2,7,8,9]	[4,8,16,32,64]	[1,100,246,357,1000]	[false,true]	[1.414,1.618,2.718,3.141]	[1.41421,1.61803,2.71828,3.14159]	["","aramis","athos","portos"]	["1970-01-05 13:51:04.042","1970-01-07 00:54:54.442","1970-01-16 12:50:35.242"]

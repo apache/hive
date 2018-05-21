@@ -1,8 +1,8 @@
-PREHOOK: query: drop table if exists acid_ivot_stage
+PREHOOK: query: drop table if exists acid_ivot_stage_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists acid_ivot_stage
+POSTHOOK: query: drop table if exists acid_ivot_stage_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table acid_ivot_stage(
+PREHOOK: query: create table acid_ivot_stage_n0(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -17,8 +17,8 @@ PREHOOK: query: create table acid_ivot_stage(
     cboolean2 BOOLEAN) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acid_ivot_stage
-POSTHOOK: query: create table acid_ivot_stage(
+PREHOOK: Output: default@acid_ivot_stage_n0
+POSTHOOK: query: create table acid_ivot_stage_n0(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -33,16 +33,16 @@ POSTHOOK: query: create table acid_ivot_stage(
     cboolean2 BOOLEAN) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acid_ivot_stage
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_ivot_stage
+POSTHOOK: Output: default@acid_ivot_stage_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_ivot_stage_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@acid_ivot_stage
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_ivot_stage
+PREHOOK: Output: default@acid_ivot_stage_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_ivot_stage_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@acid_ivot_stage
-PREHOOK: query: create table acid_ivot(
+POSTHOOK: Output: default@acid_ivot_stage_n0
+PREHOOK: query: create table acid_ivot_n0(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -57,8 +57,8 @@ PREHOOK: query: create table acid_ivot(
     cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acid_ivot
-POSTHOOK: query: create table acid_ivot(
+PREHOOK: Output: default@acid_ivot_n0
+POSTHOOK: query: create table acid_ivot_n0(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -73,66 +73,66 @@ POSTHOOK: query: create table acid_ivot(
     cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acid_ivot
-PREHOOK: query: insert into acid_ivot select * from acid_ivot_stage
+POSTHOOK: Output: default@acid_ivot_n0
+PREHOOK: query: insert into acid_ivot_n0 select * from acid_ivot_stage_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_ivot_stage
-PREHOOK: Output: default@acid_ivot
-POSTHOOK: query: insert into acid_ivot select * from acid_ivot_stage
+PREHOOK: Input: default@acid_ivot_stage_n0
+PREHOOK: Output: default@acid_ivot_n0
+POSTHOOK: query: insert into acid_ivot_n0 select * from acid_ivot_stage_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_ivot_stage
-POSTHOOK: Output: default@acid_ivot
-POSTHOOK: Lineage: acid_ivot.cbigint SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.cboolean1 SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.cboolean2 SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.cdouble SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.cfloat SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.cint SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.csmallint SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.cstring1 SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.cstring2 SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.ctimestamp1 SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.ctimestamp2 SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: acid_ivot.ctinyint SIMPLE [(acid_ivot_stage)acid_ivot_stage.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: select count(*) from acid_ivot
+POSTHOOK: Input: default@acid_ivot_stage_n0
+POSTHOOK: Output: default@acid_ivot_n0
+POSTHOOK: Lineage: acid_ivot_n0.cbigint SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.cboolean1 SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.cboolean2 SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.cdouble SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.cfloat SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.cint SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.csmallint SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.cstring1 SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.cstring2 SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.ctimestamp1 SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.ctimestamp2 SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: acid_ivot_n0.ctinyint SIMPLE [(acid_ivot_stage_n0)acid_ivot_stage_n0.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select count(*) from acid_ivot_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_ivot
+PREHOOK: Input: default@acid_ivot_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from acid_ivot
+POSTHOOK: query: select count(*) from acid_ivot_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_ivot
+POSTHOOK: Input: default@acid_ivot_n0
 #### A masked pattern was here ####
 12288
-PREHOOK: query: insert into table acid_ivot values
+PREHOOK: query: insert into table acid_ivot_n0 values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@acid_ivot
-POSTHOOK: query: insert into table acid_ivot values
+PREHOOK: Output: default@acid_ivot_n0
+POSTHOOK: query: insert into table acid_ivot_n0 values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@acid_ivot
-POSTHOOK: Lineage: acid_ivot.cbigint SCRIPT []
-POSTHOOK: Lineage: acid_ivot.cboolean1 SCRIPT []
-POSTHOOK: Lineage: acid_ivot.cboolean2 SCRIPT []
-POSTHOOK: Lineage: acid_ivot.cdouble SCRIPT []
-POSTHOOK: Lineage: acid_ivot.cfloat SCRIPT []
-POSTHOOK: Lineage: acid_ivot.cint SCRIPT []
-POSTHOOK: Lineage: acid_ivot.csmallint SCRIPT []
-POSTHOOK: Lineage: acid_ivot.cstring1 SCRIPT []
-POSTHOOK: Lineage: acid_ivot.cstring2 SCRIPT []
-POSTHOOK: Lineage: acid_ivot.ctimestamp1 SCRIPT []
-POSTHOOK: Lineage: acid_ivot.ctimestamp2 SCRIPT []
-POSTHOOK: Lineage: acid_ivot.ctinyint SCRIPT []
-PREHOOK: query: select count(*) from acid_ivot
+POSTHOOK: Output: default@acid_ivot_n0
+POSTHOOK: Lineage: acid_ivot_n0.cbigint SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.cboolean1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.cboolean2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.cdouble SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.cfloat SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.cint SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.csmallint SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.cstring1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.cstring2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.ctimestamp1 SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.ctimestamp2 SCRIPT []
+POSTHOOK: Lineage: acid_ivot_n0.ctinyint SCRIPT []
+PREHOOK: query: select count(*) from acid_ivot_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_ivot
+PREHOOK: Input: default@acid_ivot_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from acid_ivot
+POSTHOOK: query: select count(*) from acid_ivot_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_ivot
+POSTHOOK: Input: default@acid_ivot_n0
 #### A masked pattern was here ####
 12290

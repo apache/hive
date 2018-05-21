@@ -136,22 +136,22 @@ having p_name in
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from part_subq)
 ;
 
-CREATE TABLE src_null (key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE;
-LOAD DATA LOCAL INPATH "../../data/files/kv1.txt" INTO TABLE src_null;
-INSERT INTO src_null values('5444', null);
+CREATE TABLE src_null_n4 (key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE;
+LOAD DATA LOCAL INPATH "../../data/files/kv1.txt" INTO TABLE src_null_n4;
+INSERT INTO src_null_n4 values('5444', null);
 
 explain
 select key, value, count(*)
-from src_null b
-where NOT EXISTS (select key from src_null where src_null.value <> b.value)
+from src_null_n4 b
+where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)
 group by key, value
-having count(*) not in (select count(*) from src_null s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
+having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
 
 select key, value, count(*)
-from src_null b
-where NOT EXISTS (select key from src_null where src_null.value <> b.value)
+from src_null_n4 b
+where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)
 group by key, value
-having count(*) not in (select count(*) from src_null s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
+having count(*) not in (select count(*) from src_null_n4 s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
 
-DROP TABLE src_null;
+DROP TABLE src_null_n4;
 DROP TABLE part_subq;

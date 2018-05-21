@@ -1,42 +1,42 @@
-PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1_n9 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@test_table1_n9
+POSTHOOK: query: CREATE TABLE test_table1_n9 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@test_table1_n9
+PREHOOK: query: CREATE TABLE test_table2_n9 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@test_table2_n9
+POSTHOOK: query: CREATE TABLE test_table2_n9 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n9
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 SELECT *
-INSERT OVERWRITE TABLE test_table2 SELECT *
+INSERT OVERWRITE TABLE test_table1_n9 SELECT *
+INSERT OVERWRITE TABLE test_table2_n9 SELECT *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1
-PREHOOK: Output: default@test_table2
+PREHOOK: Output: default@test_table1_n9
+PREHOOK: Output: default@test_table2_n9
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 SELECT *
-INSERT OVERWRITE TABLE test_table2 SELECT *
+INSERT OVERWRITE TABLE test_table1_n9 SELECT *
+INSERT OVERWRITE TABLE test_table2_n9 SELECT *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1
-POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@test_table1_n9
+POSTHOOK: Output: default@test_table2_n9
+POSTHOOK: Lineage: test_table1_n9.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n9.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n9.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n9.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
-SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+SELECT /*+mapjoin(b)*/ count(*) FROM test_table1_n9 a JOIN test_table2_n9 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+SELECT /*+mapjoin(b)*/ count(*) FROM test_table1_n9 a JOIN test_table2_n9 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -95,14 +95,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+PREHOOK: query: SELECT /*+mapjoin(b)*/ count(*) FROM test_table1_n9 a JOIN test_table2_n9 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table1_n9
+PREHOOK: Input: default@test_table2_n9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+POSTHOOK: query: SELECT /*+mapjoin(b)*/ count(*) FROM test_table1_n9 a JOIN test_table2_n9 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table1_n9
+POSTHOOK: Input: default@test_table2_n9
 #### A masked pattern was here ####
 1028

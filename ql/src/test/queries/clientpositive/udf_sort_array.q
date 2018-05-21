@@ -31,7 +31,7 @@ SELECT sort_array(array(map("b", 2, "a", 9, "c", 7), map("c", 3, "b", 5, "a", 1)
 
 
 -- Test it against data in a table.
-CREATE TABLE dest1 (
+CREATE TABLE dest1_n130 (
 	tinyints ARRAY<TINYINT>,
 	smallints ARRAY<SMALLINT>,
 	ints ARRAY<INT>,
@@ -43,9 +43,9 @@ CREATE TABLE dest1 (
 	timestamps ARRAY<TIMESTAMP>
 ) STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1;
+LOAD DATA LOCAL INPATH '../../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1_n130;
 
 SELECT	sort_array(tinyints), sort_array(smallints), sort_array(ints),
 	sort_array(bigints), sort_array(booleans), sort_array(floats),
 	sort_array(doubles), sort_array(strings), sort_array(timestamps)
-	FROM dest1;
+	FROM dest1_n130;

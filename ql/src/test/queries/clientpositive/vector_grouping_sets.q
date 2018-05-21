@@ -41,29 +41,29 @@ stored as textfile;
 
 LOAD DATA LOCAL INPATH '../../data/files/store_200' OVERWRITE INTO TABLE store_txt;
 
-create table store
+create table store_n1
 stored as orc as
 select * from store_txt;
 
 explain vectorization expression
 select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup;
 
 select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup;
 
 explain vectorization expression
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup;
 
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup;
 
  explain
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by rollup(s_store_id);

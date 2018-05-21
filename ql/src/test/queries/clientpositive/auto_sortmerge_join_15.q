@@ -5,11 +5,11 @@ set hive.explain.user=false;
 
 set hive.exec.reducers.max = 1;
 
-CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
-CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+CREATE TABLE tbl1_n11(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+CREATE TABLE tbl2_n10(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
-insert overwrite table tbl1 select * from src where key < 20;
-insert overwrite table tbl2 select * from src where key < 10;
+insert overwrite table tbl1_n11 select * from src where key < 20;
+insert overwrite table tbl2_n10 select * from src where key < 10;
 
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
@@ -22,7 +22,7 @@ set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask.size=10;
 
 explain
-select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key;
+select count(*) FROM tbl1_n11 a LEFT OUTER JOIN tbl2_n10 b ON a.key = b.key;
 
 explain
-select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key;
+select count(*) FROM tbl1_n11 a RIGHT OUTER JOIN tbl2_n10 b ON a.key = b.key;

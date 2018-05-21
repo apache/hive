@@ -1,8 +1,8 @@
-PREHOOK: query: drop table customer_address
+PREHOOK: query: drop table customer_address_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table customer_address
+POSTHOOK: query: drop table customer_address_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table customer_address
+PREHOOK: query: create table customer_address_n0
 (
     ca_address_sk             int,
     ca_address_id             string,
@@ -21,8 +21,8 @@ PREHOOK: query: create table customer_address
 row format delimited fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@customer_address
-POSTHOOK: query: create table customer_address
+PREHOOK: Output: default@customer_address_n0
+POSTHOOK: query: create table customer_address_n0
 (
     ca_address_sk             int,
     ca_address_id             string,
@@ -41,36 +41,36 @@ POSTHOOK: query: create table customer_address
 row format delimited fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@customer_address
-PREHOOK: query: load data local inpath '../../data/files/customer_address.txt' overwrite into table customer_address
+POSTHOOK: Output: default@customer_address_n0
+PREHOOK: query: load data local inpath '../../data/files/customer_address.txt' overwrite into table customer_address_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@customer_address
-POSTHOOK: query: load data local inpath '../../data/files/customer_address.txt' overwrite into table customer_address
+PREHOOK: Output: default@customer_address_n0
+POSTHOOK: query: load data local inpath '../../data/files/customer_address.txt' overwrite into table customer_address_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@customer_address
-PREHOOK: query: analyze table customer_address compute statistics
+POSTHOOK: Output: default@customer_address_n0
+PREHOOK: query: analyze table customer_address_n0 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@customer_address
-PREHOOK: Output: default@customer_address
-POSTHOOK: query: analyze table customer_address compute statistics
+PREHOOK: Input: default@customer_address_n0
+PREHOOK: Output: default@customer_address_n0
+POSTHOOK: query: analyze table customer_address_n0 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@customer_address
-POSTHOOK: Output: default@customer_address
-PREHOOK: query: analyze table customer_address compute statistics for columns ca_state, ca_zip
+POSTHOOK: Input: default@customer_address_n0
+POSTHOOK: Output: default@customer_address_n0
+PREHOOK: query: analyze table customer_address_n0 compute statistics for columns ca_state, ca_zip
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@customer_address
-PREHOOK: Output: default@customer_address
+PREHOOK: Input: default@customer_address_n0
+PREHOOK: Output: default@customer_address_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table customer_address compute statistics for columns ca_state, ca_zip
+POSTHOOK: query: analyze table customer_address_n0 compute statistics for columns ca_state, ca_zip
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@customer_address
-POSTHOOK: Output: default@customer_address
+POSTHOOK: Input: default@customer_address_n0
+POSTHOOK: Output: default@customer_address_n0
 #### A masked pattern was here ####
-PREHOOK: query: explain select count(*) from customer_address a join customer_address b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
+PREHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from customer_address a join customer_address b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
+POSTHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -160,9 +160,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select count(*) from customer_address a join customer_address b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
+PREHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from customer_address a join customer_address b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
+POSTHOOK: query: explain select count(*) from customer_address_n0 a join customer_address_n0 b on (a.ca_zip = b.ca_zip and a.ca_state = b.ca_state)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -252,11 +252,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table customer_address
+PREHOOK: query: drop table customer_address_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@customer_address
-PREHOOK: Output: default@customer_address
-POSTHOOK: query: drop table customer_address
+PREHOOK: Input: default@customer_address_n0
+PREHOOK: Output: default@customer_address_n0
+POSTHOOK: query: drop table customer_address_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@customer_address
-POSTHOOK: Output: default@customer_address
+POSTHOOK: Input: default@customer_address_n0
+POSTHOOK: Output: default@customer_address_n0

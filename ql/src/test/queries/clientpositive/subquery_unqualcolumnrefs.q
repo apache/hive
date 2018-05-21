@@ -1,9 +1,9 @@
 --! qt:dataset:src
 --! qt:dataset:part
 set hive.mapred.mode=nonstrict;
-create table src11 (key1 string, value1 string);
+create table src11_n0 (key1 string, value1 string);
 
-create table part2( 
+create table part2_n2( 
     p2_partkey INT,
     p2_name STRING,
     p2_mfgr STRING,
@@ -16,7 +16,7 @@ create table part2(
 );
 
 -- non agg, corr
-explain select * from src11 where src11.key1 in (select key from src where src11.value1 = value and key > '9');
+explain select * from src11_n0 where src11_n0.key1 in (select key from src where src11_n0.value1 = value and key > '9');
 
 explain select * from src a where a.key in (select key from src where a.value = value and key > '9');
 

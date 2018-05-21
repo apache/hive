@@ -1,101 +1,101 @@
-PREHOOK: query: drop table varchar_udf_1
+PREHOOK: query: drop table varchar_udf_1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table varchar_udf_1
+POSTHOOK: query: drop table varchar_udf_1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC
+PREHOOK: query: create table varchar_udf_1_n0 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@varchar_udf_1
-POSTHOOK: query: create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC
+PREHOOK: Output: default@varchar_udf_1_n0
+POSTHOOK: query: create table varchar_udf_1_n0 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@varchar_udf_1
-PREHOOK: query: insert overwrite table varchar_udf_1
+POSTHOOK: Output: default@varchar_udf_1_n0
+PREHOOK: query: insert overwrite table varchar_udf_1_n0
   select key, value, key, value from src where key = '238' limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@varchar_udf_1
-POSTHOOK: query: insert overwrite table varchar_udf_1
+PREHOOK: Output: default@varchar_udf_1_n0
+POSTHOOK: query: insert overwrite table varchar_udf_1_n0
   select key, value, key, value from src where key = '238' limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@varchar_udf_1
-POSTHOOK: Lineage: varchar_udf_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: varchar_udf_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: varchar_udf_1.c3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: varchar_udf_1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert into varchar_udf_1 values (NULL, NULL, NULL, NULL)
+POSTHOOK: Output: default@varchar_udf_1_n0
+POSTHOOK: Lineage: varchar_udf_1_n0.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1_n0.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1_n0.c3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1_n0.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into varchar_udf_1_n0 values (NULL, NULL, NULL, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@varchar_udf_1
-POSTHOOK: query: insert into varchar_udf_1 values (NULL, NULL, NULL, NULL)
+PREHOOK: Output: default@varchar_udf_1_n0
+POSTHOOK: query: insert into varchar_udf_1_n0 values (NULL, NULL, NULL, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@varchar_udf_1
-POSTHOOK: Lineage: varchar_udf_1.c1 EXPRESSION []
-POSTHOOK: Lineage: varchar_udf_1.c2 EXPRESSION []
-POSTHOOK: Lineage: varchar_udf_1.c3 EXPRESSION []
-POSTHOOK: Lineage: varchar_udf_1.c4 EXPRESSION []
-PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_txt
+POSTHOOK: Output: default@varchar_udf_1_n0
+POSTHOOK: Lineage: varchar_udf_1_n0.c1 EXPRESSION []
+POSTHOOK: Lineage: varchar_udf_1_n0.c2 EXPRESSION []
+POSTHOOK: Lineage: varchar_udf_1_n0.c3 EXPRESSION []
+POSTHOOK: Lineage: varchar_udf_1_n0.c4 EXPRESSION []
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_txt_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_txt
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_txt_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE DECIMAL_UDF_txt (key decimal(20,10), value int)
+PREHOOK: query: CREATE TABLE DECIMAL_UDF_txt_n0 (key decimal(20,10), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_UDF_txt
-POSTHOOK: query: CREATE TABLE DECIMAL_UDF_txt (key decimal(20,10), value int)
+PREHOOK: Output: default@DECIMAL_UDF_txt_n0
+POSTHOOK: query: CREATE TABLE DECIMAL_UDF_txt_n0 (key decimal(20,10), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_UDF_txt
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF_txt
+POSTHOOK: Output: default@DECIMAL_UDF_txt_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF_txt_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@decimal_udf_txt
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF_txt
+PREHOOK: Output: default@decimal_udf_txt_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF_txt_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@decimal_udf_txt
-PREHOOK: query: CREATE TABLE DECIMAL_UDF (key decimal(20,10), value int)
+POSTHOOK: Output: default@decimal_udf_txt_n0
+PREHOOK: query: CREATE TABLE DECIMAL_UDF_n1 (key decimal(20,10), value int)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_UDF
-POSTHOOK: query: CREATE TABLE DECIMAL_UDF (key decimal(20,10), value int)
+PREHOOK: Output: default@DECIMAL_UDF_n1
+POSTHOOK: query: CREATE TABLE DECIMAL_UDF_n1 (key decimal(20,10), value int)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_UDF
-PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF SELECT * FROM DECIMAL_UDF_txt
+POSTHOOK: Output: default@DECIMAL_UDF_n1
+PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF_n1 SELECT * FROM DECIMAL_UDF_txt_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf_txt
-PREHOOK: Output: default@decimal_udf
-POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF SELECT * FROM DECIMAL_UDF_txt
+PREHOOK: Input: default@decimal_udf_txt_n0
+PREHOOK: Output: default@decimal_udf_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF_n1 SELECT * FROM DECIMAL_UDF_txt_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf_txt
-POSTHOOK: Output: default@decimal_udf
-POSTHOOK: Lineage: decimal_udf.key SIMPLE [(decimal_udf_txt)decimal_udf_txt.FieldSchema(name:key, type:decimal(20,10), comment:null), ]
-POSTHOOK: Lineage: decimal_udf.value SIMPLE [(decimal_udf_txt)decimal_udf_txt.FieldSchema(name:value, type:int, comment:null), ]
-PREHOOK: query: insert into DECIMAL_UDF values (NULL, NULL)
+POSTHOOK: Input: default@decimal_udf_txt_n0
+POSTHOOK: Output: default@decimal_udf_n1
+POSTHOOK: Lineage: decimal_udf_n1.key SIMPLE [(decimal_udf_txt_n0)decimal_udf_txt_n0.FieldSchema(name:key, type:decimal(20,10), comment:null), ]
+POSTHOOK: Lineage: decimal_udf_n1.value SIMPLE [(decimal_udf_txt_n0)decimal_udf_txt_n0.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: insert into DECIMAL_UDF_n1 values (NULL, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@decimal_udf
-POSTHOOK: query: insert into DECIMAL_UDF values (NULL, NULL)
+PREHOOK: Output: default@decimal_udf_n1
+POSTHOOK: query: insert into DECIMAL_UDF_n1 values (NULL, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@decimal_udf
-POSTHOOK: Lineage: decimal_udf.key EXPRESSION []
-POSTHOOK: Lineage: decimal_udf.value EXPRESSION []
+POSTHOOK: Output: default@decimal_udf_n1
+POSTHOOK: Lineage: decimal_udf_n1.key EXPRESSION []
+POSTHOOK: Lineage: decimal_udf_n1.value EXPRESSION []
 PREHOOK: query: drop table if exists count_case_groupby
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists count_case_groupby
@@ -133,14 +133,14 @@ select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -158,7 +158,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n0
                   Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: c2 regexp 'val' (type: boolean), c4 regexp 'val' (type: boolean), (c2 regexp 'val' = c4 regexp 'val') (type: boolean)
@@ -190,17 +190,17 @@ PREHOOK: query: select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 NULL	NULL	NULL
 true	true	true
@@ -209,14 +209,14 @@ select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -234,7 +234,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n0
                   Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: regexp_extract(c2, 'val_([0-9]+)', 1) (type: string), regexp_extract(c4, 'val_([0-9]+)', 1) (type: string), (regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)) (type: boolean)
@@ -266,17 +266,17 @@ PREHOOK: query: select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 238	238	true
 NULL	NULL	NULL
@@ -285,14 +285,14 @@ select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -310,7 +310,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n0
                   Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: regexp_replace(c2, 'val', 'replaced') (type: string), regexp_replace(c4, 'val', 'replaced') (type: string), (regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')) (type: boolean)
@@ -342,17 +342,17 @@ PREHOOK: query: select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 NULL	NULL	NULL
 replaced_238	replaced_238	true
@@ -361,14 +361,14 @@ select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -386,7 +386,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n0
                   Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: c2 regexp 'val' (type: boolean), c4 regexp 'val' (type: boolean), (c2 regexp 'val' = c4 regexp 'val') (type: boolean)
@@ -418,17 +418,17 @@ PREHOOK: query: select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 NULL	NULL	NULL
 true	true	true
@@ -437,14 +437,14 @@ select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -462,7 +462,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n0
                   Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -507,17 +507,17 @@ PREHOOK: query: select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 238	238	true
 NULL	NULL	NULL
@@ -526,14 +526,14 @@ select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -551,7 +551,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n0
                   Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -596,23 +596,23 @@ PREHOOK: query: select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1
+from varchar_udf_1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1
+from varchar_udf_1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n0
 #### A masked pattern was here ####
 NULL	NULL	NULL
 replaced_238	replaced_238	true
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -630,7 +630,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n1
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: power(key, 2) (type: double)
@@ -658,13 +658,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
+PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 0.0
 0.0
@@ -710,14 +710,14 @@ SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
-FROM DECIMAL_UDF WHERE key = 10
+FROM DECIMAL_UDF_n1 WHERE key = 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
-FROM DECIMAL_UDF WHERE key = 10
+FROM DECIMAL_UDF_n1 WHERE key = 10
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -735,7 +735,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n1
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = 10) (type: boolean)
@@ -770,22 +770,22 @@ PREHOOK: query: SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
-FROM DECIMAL_UDF WHERE key = 10
+FROM DECIMAL_UDF_n1 WHERE key = 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
-FROM DECIMAL_UDF WHERE key = 10
+FROM DECIMAL_UDF_n1 WHERE key = 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 22026.465794806718	2.302585092994046	2.302585092994046	1.0	1.0	1.0	1.0	3.1622776601683795
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -803,7 +803,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n1
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: power(key, 2) (type: double)
@@ -831,13 +831,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
+PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 0.0
 0.0
@@ -883,14 +883,14 @@ SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
-FROM DECIMAL_UDF WHERE key = 10
+FROM DECIMAL_UDF_n1 WHERE key = 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
-FROM DECIMAL_UDF WHERE key = 10
+FROM DECIMAL_UDF_n1 WHERE key = 10
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -908,7 +908,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n1
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = 10) (type: boolean)
@@ -943,17 +943,17 @@ PREHOOK: query: SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
-FROM DECIMAL_UDF WHERE key = 10
+FROM DECIMAL_UDF_n1 WHERE key = 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
   log10(key), sqrt(key)
-FROM DECIMAL_UDF WHERE key = 10
+FROM DECIMAL_UDF_n1 WHERE key = 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n1
 #### A masked pattern was here ####
 22026.465794806718	2.302585092994046	2.302585092994046	1.0	1.0	1.0	1.0	3.1622776601683795
 PREHOOK: query: explain vectorization expression
@@ -1210,30 +1210,30 @@ key2	1
 key3	0
 key4	1
 key5	0
-PREHOOK: query: drop table varchar_udf_1
+PREHOOK: query: drop table varchar_udf_1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@varchar_udf_1
-PREHOOK: Output: default@varchar_udf_1
-POSTHOOK: query: drop table varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n0
+PREHOOK: Output: default@varchar_udf_1_n0
+POSTHOOK: query: drop table varchar_udf_1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@varchar_udf_1
-POSTHOOK: Output: default@varchar_udf_1
-PREHOOK: query: DROP TABLE DECIMAL_UDF_txt
+POSTHOOK: Input: default@varchar_udf_1_n0
+POSTHOOK: Output: default@varchar_udf_1_n0
+PREHOOK: query: DROP TABLE DECIMAL_UDF_txt_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@decimal_udf_txt
-PREHOOK: Output: default@decimal_udf_txt
-POSTHOOK: query: DROP TABLE DECIMAL_UDF_txt
+PREHOOK: Input: default@decimal_udf_txt_n0
+PREHOOK: Output: default@decimal_udf_txt_n0
+POSTHOOK: query: DROP TABLE DECIMAL_UDF_txt_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@decimal_udf_txt
-POSTHOOK: Output: default@decimal_udf_txt
-PREHOOK: query: DROP TABLE DECIMAL_UDF
+POSTHOOK: Input: default@decimal_udf_txt_n0
+POSTHOOK: Output: default@decimal_udf_txt_n0
+PREHOOK: query: DROP TABLE DECIMAL_UDF_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@decimal_udf
-PREHOOK: Output: default@decimal_udf
-POSTHOOK: query: DROP TABLE DECIMAL_UDF
+PREHOOK: Input: default@decimal_udf_n1
+PREHOOK: Output: default@decimal_udf_n1
+POSTHOOK: query: DROP TABLE DECIMAL_UDF_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@decimal_udf
-POSTHOOK: Output: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n1
+POSTHOOK: Output: default@decimal_udf_n1
 PREHOOK: query: drop table count_case_groupby
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@count_case_groupby

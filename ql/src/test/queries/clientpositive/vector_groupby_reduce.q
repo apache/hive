@@ -3,7 +3,7 @@ set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
-create table store_sales_txt
+create table store_sales_txt_n0
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -32,9 +32,9 @@ create table store_sales_txt
 row format delimited fields terminated by '|'
 stored as textfile;
 
-LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt;
+LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt_n0;
 
-create table store_sales
+create table store_sales_n3
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -66,7 +66,7 @@ tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384");
 
 set hive.exec.dynamic.partition.mode=nonstrict;
 
-insert overwrite table store_sales
+insert overwrite table store_sales_n3
 select 
 ss_sold_date_sk           ,
     ss_sold_time_sk       ,
@@ -92,13 +92,13 @@ ss_sold_date_sk           ,
     ss_net_paid           ,
     ss_net_paid_inc_tax   ,
     ss_net_profit         
- from store_sales_txt;
+ from store_sales_txt_n0;
 
 explain vectorization expression
 select 
   ss_ticket_number
 from
-  store_sales
+  store_sales_n3
 group by ss_ticket_number
 order by ss_ticket_number
 limit 20;
@@ -106,7 +106,7 @@ limit 20;
 select 
   ss_ticket_number
 from
-  store_sales
+  store_sales_n3
 group by ss_ticket_number
 order by ss_ticket_number
 limit 20;
@@ -120,7 +120,7 @@ from
     (select 
         ss_ticket_number
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number) a
 group by ss_ticket_number
 order by m;
@@ -131,7 +131,7 @@ from
     (select 
         ss_ticket_number
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number) a
 group by ss_ticket_number
 order by m;
@@ -145,7 +145,7 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_net_profit) np, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     where ss_ticket_number = 1
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number
@@ -157,7 +157,7 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_net_profit) np, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     where ss_ticket_number = 1
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number
@@ -171,7 +171,7 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_net_profit) np, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk;
@@ -182,7 +182,7 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_wholesale_cost) wc, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk;

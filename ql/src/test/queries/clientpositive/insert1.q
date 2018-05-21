@@ -33,7 +33,7 @@ SELECT * FROM result;
 
 USE default;
 CREATE DATABASE db1;
-CREATE TABLE db1.result(col1 STRING);
-INSERT OVERWRITE TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1;
-INSERT INTO TABLE db1.result SELECT 'db1_insert2' FROM src LIMIT 1;
-SELECT * FROM db1.result;
+CREATE TABLE db1.result_n0(col1 STRING);
+INSERT OVERWRITE TABLE db1.result_n0 SELECT 'db1_insert1' FROM src LIMIT 1;
+INSERT INTO TABLE db1.result_n0 SELECT 'db1_insert2' FROM src LIMIT 1;
+SELECT * FROM db1.result_n0;

@@ -1,11 +1,11 @@
-PREHOOK: query: CREATE TABLE dest1(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n173(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n173
+POSTHOOK: query: CREATE TABLE dest1_n173(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n173
 PREHOOK: query: EXPLAIN
 FROM (
  FROM 
@@ -19,7 +19,7 @@ FROM (
  ON (a.c1 = b.c3)
  SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4
 ) c
-INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4 where c.c3 IS NULL AND c.c1 IS NOT NULL
+INSERT OVERWRITE TABLE dest1_n173 SELECT c.c1, c.c2, c.c3, c.c4 where c.c3 IS NULL AND c.c1 IS NOT NULL
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM (
@@ -34,7 +34,7 @@ FROM (
  ON (a.c1 = b.c3)
  SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4
 ) c
-INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4 where c.c3 IS NULL AND c.c1 IS NOT NULL
+INSERT OVERWRITE TABLE dest1_n173 SELECT c.c1, c.c2, c.c3, c.c4 where c.c3 IS NULL AND c.c1 IS NOT NULL
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -101,7 +101,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest1
+                    name: default.dest1_n173
               Select Operator
                 expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string)
                 outputColumnNames: c1, c2, c3, c4
@@ -126,7 +126,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n173
 
   Stage: Stage-2
     Stats Work
@@ -134,7 +134,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: c1, c2, c3, c4
           Column Types: int, string, int, string
-          Table: default.dest1
+          Table: default.dest1_n173
 
   Stage: Stage-3
     Map Reduce
@@ -171,10 +171,10 @@ PREHOOK: query: FROM (
  ON (a.c1 = b.c3)
  SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4
 ) c
-INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4 where c.c3 IS NULL AND c.c1 IS NOT NULL
+INSERT OVERWRITE TABLE dest1_n173 SELECT c.c1, c.c2, c.c3, c.c4 where c.c3 IS NULL AND c.c1 IS NOT NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n173
 POSTHOOK: query: FROM (
  FROM 
   (
@@ -187,21 +187,21 @@ POSTHOOK: query: FROM (
  ON (a.c1 = b.c3)
  SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4
 ) c
-INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4 where c.c3 IS NULL AND c.c1 IS NOT NULL
+INSERT OVERWRITE TABLE dest1_n173 SELECT c.c1, c.c2, c.c3, c.c4 where c.c3 IS NULL AND c.c1 IS NOT NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION []
-POSTHOOK: Lineage: dest1.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n173
+POSTHOOK: Lineage: dest1_n173.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n173.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n173.c3 EXPRESSION []
+POSTHOOK: Lineage: dest1_n173.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n173.* FROM dest1_n173
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n173
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n173.* FROM dest1_n173
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n173
 #### A masked pattern was here ####
 11	val_11	NULL	NULL
 12	val_12	NULL	NULL

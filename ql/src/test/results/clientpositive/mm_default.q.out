@@ -46,14 +46,14 @@ POSTHOOK: query: create table mm2 like mm0
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mm2
-PREHOOK: query: create table acid1 like acid0
+PREHOOK: query: create table acid1_n0 like acid0
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acid1
-POSTHOOK: query: create table acid1 like acid0
+PREHOOK: Output: default@acid1_n0
+POSTHOOK: query: create table acid1_n0 like acid0
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acid1
+POSTHOOK: Output: default@acid1_n0
 PREHOOK: query: create table mm3 as select key from src limit 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -73,14 +73,14 @@ POSTHOOK: query: create table mm4 (key string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mm4
-PREHOOK: query: create table acid2 (key string) stored as ORC  tblproperties("transactional"="true")
+PREHOOK: query: create table acid2_n0 (key string) stored as ORC  tblproperties("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acid2
-POSTHOOK: query: create table acid2 (key string) stored as ORC  tblproperties("transactional"="true")
+PREHOOK: Output: default@acid2_n0
+POSTHOOK: query: create table acid2_n0 (key string) stored as ORC  tblproperties("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acid2
+POSTHOOK: Output: default@acid2_n0
 PREHOOK: query: create table non_mm1 tblproperties("transactional"="false")
  as select key from src limit 1
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -270,12 +270,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted acid1
+PREHOOK: query: desc formatted acid1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@acid1
-POSTHOOK: query: desc formatted acid1
+PREHOOK: Input: default@acid1_n0
+POSTHOOK: query: desc formatted acid1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@acid1
+POSTHOOK: Input: default@acid1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 	 	 
@@ -305,12 +305,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted acid2
+PREHOOK: query: desc formatted acid2_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@acid2
-POSTHOOK: query: desc formatted acid2
+PREHOOK: Input: default@acid2_n0
+POSTHOOK: query: desc formatted acid2_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@acid2
+POSTHOOK: Input: default@acid2_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 	 	 
@@ -405,19 +405,19 @@ POSTHOOK: query: drop table acid0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid0
 POSTHOOK: Output: default@acid0
-PREHOOK: query: drop table acid1
+PREHOOK: query: drop table acid1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@acid1
-PREHOOK: Output: default@acid1
-POSTHOOK: query: drop table acid1
+PREHOOK: Input: default@acid1_n0
+PREHOOK: Output: default@acid1_n0
+POSTHOOK: query: drop table acid1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@acid1
-POSTHOOK: Output: default@acid1
-PREHOOK: query: drop table acid2
+POSTHOOK: Input: default@acid1_n0
+POSTHOOK: Output: default@acid1_n0
+PREHOOK: query: drop table acid2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@acid2
-PREHOOK: Output: default@acid2
-POSTHOOK: query: drop table acid2
+PREHOOK: Input: default@acid2_n0
+PREHOOK: Output: default@acid2_n0
+POSTHOOK: query: drop table acid2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@acid2
-POSTHOOK: Output: default@acid2
+POSTHOOK: Input: default@acid2_n0
+POSTHOOK: Output: default@acid2_n0

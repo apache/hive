@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE episodes (
+PREHOOK: query: CREATE TABLE episodes_n0 (
   title string COMMENT "episode title",
   air_date string COMMENT "initial date",
   doctor int COMMENT "main actor playing the Doctor in episode")
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@episodes
-POSTHOOK: query: CREATE TABLE episodes (
+PREHOOK: Output: default@episodes_n0
+POSTHOOK: query: CREATE TABLE episodes_n0 (
   title string COMMENT "episode title",
   air_date string COMMENT "initial date",
   doctor int COMMENT "main actor playing the Doctor in episode")
 STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@episodes
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
+POSTHOOK: Output: default@episodes_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@episodes
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
+PREHOOK: Output: default@episodes_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@episodes
-PREHOOK: query: CREATE TABLE episodes_partitioned (
+POSTHOOK: Output: default@episodes_n0
+PREHOOK: query: CREATE TABLE episodes_partitioned_n0 (
   title string COMMENT "episode title",
   air_date string COMMENT "initial date",
   doctor int COMMENT "main actor playing the Doctor in episode")
@@ -30,8 +30,8 @@ PARTITIONED BY (doctor_pt INT)
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@episodes_partitioned
-POSTHOOK: query: CREATE TABLE episodes_partitioned (
+PREHOOK: Output: default@episodes_partitioned_n0
+POSTHOOK: query: CREATE TABLE episodes_partitioned_n0 (
   title string COMMENT "episode title",
   air_date string COMMENT "initial date",
   doctor int COMMENT "main actor playing the Doctor in episode")
@@ -39,51 +39,51 @@ PARTITIONED BY (doctor_pt INT)
 STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@episodes_partitioned
-PREHOOK: query: INSERT OVERWRITE TABLE episodes_partitioned PARTITION (doctor_pt)
-SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes
+POSTHOOK: Output: default@episodes_partitioned_n0
+PREHOOK: query: INSERT OVERWRITE TABLE episodes_partitioned_n0 PARTITION (doctor_pt)
+SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@episodes
-PREHOOK: Output: default@episodes_partitioned
-POSTHOOK: query: INSERT OVERWRITE TABLE episodes_partitioned PARTITION (doctor_pt)
-SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes
+PREHOOK: Input: default@episodes_n0
+PREHOOK: Output: default@episodes_partitioned_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE episodes_partitioned_n0 PARTITION (doctor_pt)
+SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@episodes
-POSTHOOK: Output: default@episodes_partitioned@doctor_pt=1
-POSTHOOK: Output: default@episodes_partitioned@doctor_pt=11
-POSTHOOK: Output: default@episodes_partitioned@doctor_pt=2
-POSTHOOK: Output: default@episodes_partitioned@doctor_pt=4
-POSTHOOK: Output: default@episodes_partitioned@doctor_pt=5
-POSTHOOK: Output: default@episodes_partitioned@doctor_pt=6
-POSTHOOK: Output: default@episodes_partitioned@doctor_pt=9
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=11).air_date SIMPLE [(episodes)episodes.FieldSchema(name:air_date, type:string, comment:initial date), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=11).doctor SIMPLE [(episodes)episodes.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=11).title SIMPLE [(episodes)episodes.FieldSchema(name:title, type:string, comment:episode title), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=1).air_date SIMPLE [(episodes)episodes.FieldSchema(name:air_date, type:string, comment:initial date), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=1).doctor SIMPLE [(episodes)episodes.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=1).title SIMPLE [(episodes)episodes.FieldSchema(name:title, type:string, comment:episode title), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=2).air_date SIMPLE [(episodes)episodes.FieldSchema(name:air_date, type:string, comment:initial date), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=2).doctor SIMPLE [(episodes)episodes.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=2).title SIMPLE [(episodes)episodes.FieldSchema(name:title, type:string, comment:episode title), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=4).air_date SIMPLE [(episodes)episodes.FieldSchema(name:air_date, type:string, comment:initial date), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=4).doctor SIMPLE [(episodes)episodes.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=4).title SIMPLE [(episodes)episodes.FieldSchema(name:title, type:string, comment:episode title), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=5).air_date SIMPLE [(episodes)episodes.FieldSchema(name:air_date, type:string, comment:initial date), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=5).doctor SIMPLE [(episodes)episodes.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=5).title SIMPLE [(episodes)episodes.FieldSchema(name:title, type:string, comment:episode title), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=6).air_date SIMPLE [(episodes)episodes.FieldSchema(name:air_date, type:string, comment:initial date), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=6).doctor SIMPLE [(episodes)episodes.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=6).title SIMPLE [(episodes)episodes.FieldSchema(name:title, type:string, comment:episode title), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=9).air_date SIMPLE [(episodes)episodes.FieldSchema(name:air_date, type:string, comment:initial date), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=9).doctor SIMPLE [(episodes)episodes.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
-POSTHOOK: Lineage: episodes_partitioned PARTITION(doctor_pt=9).title SIMPLE [(episodes)episodes.FieldSchema(name:title, type:string, comment:episode title), ]
+POSTHOOK: Input: default@episodes_n0
+POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=1
+POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=11
+POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=2
+POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=4
+POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=5
+POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=6
+POSTHOOK: Output: default@episodes_partitioned_n0@doctor_pt=9
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=11).air_date SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:air_date, type:string, comment:initial date), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=11).doctor SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=11).title SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:title, type:string, comment:episode title), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=1).air_date SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:air_date, type:string, comment:initial date), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=1).doctor SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=1).title SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:title, type:string, comment:episode title), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=2).air_date SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:air_date, type:string, comment:initial date), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=2).doctor SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=2).title SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:title, type:string, comment:episode title), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=4).air_date SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:air_date, type:string, comment:initial date), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=4).doctor SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=4).title SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:title, type:string, comment:episode title), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=5).air_date SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:air_date, type:string, comment:initial date), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=5).doctor SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=5).title SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:title, type:string, comment:episode title), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=6).air_date SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:air_date, type:string, comment:initial date), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=6).doctor SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=6).title SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:title, type:string, comment:episode title), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=9).air_date SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:air_date, type:string, comment:initial date), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=9).doctor SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:doctor, type:int, comment:main actor playing the Doctor in episode), ]
+POSTHOOK: Lineage: episodes_partitioned_n0 PARTITION(doctor_pt=9).title SIMPLE [(episodes_n0)episodes_n0.FieldSchema(name:title, type:string, comment:episode title), ]
 title	air_date	doctor	doctor_pt
-PREHOOK: query: DESCRIBE FORMATTED episodes_partitioned
+PREHOOK: query: DESCRIBE FORMATTED episodes_partitioned_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@episodes_partitioned
-POSTHOOK: query: DESCRIBE FORMATTED episodes_partitioned
+PREHOOK: Input: default@episodes_partitioned_n0
+POSTHOOK: query: DESCRIBE FORMATTED episodes_partitioned_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@episodes_partitioned
+POSTHOOK: Input: default@episodes_partitioned_n0
 col_name	data_type	comment
 # col_name            	data_type           	comment             
 title               	string              	episode title       
@@ -107,7 +107,7 @@ Table Parameters:
 	numPartitions       	7                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	3077                
+	totalSize           	3098                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -120,12 +120,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE episodes_partitioned
+PREHOOK: query: ALTER TABLE episodes_partitioned_n0
 SET SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 WITH
 SERDEPROPERTIES ('avro.schema.literal'='{
   "namespace": "testing.hive.avro.serde",
-  "name": "episodes",
+  "name": "episodes_n0",
   "type": "record",
   "fields": [
     {
@@ -152,14 +152,14 @@ SERDEPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 PREHOOK: type: ALTERTABLE_SERIALIZER
-PREHOOK: Input: default@episodes_partitioned
-PREHOOK: Output: default@episodes_partitioned
-POSTHOOK: query: ALTER TABLE episodes_partitioned
+PREHOOK: Input: default@episodes_partitioned_n0
+PREHOOK: Output: default@episodes_partitioned_n0
+POSTHOOK: query: ALTER TABLE episodes_partitioned_n0
 SET SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 WITH
 SERDEPROPERTIES ('avro.schema.literal'='{
   "namespace": "testing.hive.avro.serde",
-  "name": "episodes",
+  "name": "episodes_n0",
   "type": "record",
   "fields": [
     {
@@ -186,14 +186,14 @@ SERDEPROPERTIES ('avro.schema.literal'='{
   ]
 }')
 POSTHOOK: type: ALTERTABLE_SERIALIZER
-POSTHOOK: Input: default@episodes_partitioned
-POSTHOOK: Output: default@episodes_partitioned
-PREHOOK: query: DESCRIBE FORMATTED episodes_partitioned
+POSTHOOK: Input: default@episodes_partitioned_n0
+POSTHOOK: Output: default@episodes_partitioned_n0
+PREHOOK: query: DESCRIBE FORMATTED episodes_partitioned_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@episodes_partitioned
-POSTHOOK: query: DESCRIBE FORMATTED episodes_partitioned
+PREHOOK: Input: default@episodes_partitioned_n0
+POSTHOOK: query: DESCRIBE FORMATTED episodes_partitioned_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@episodes_partitioned
+POSTHOOK: Input: default@episodes_partitioned_n0
 col_name	data_type	comment
 # col_name            	data_type           	comment             
 title               	string              	episode title       
@@ -219,7 +219,7 @@ Table Parameters:
 	numPartitions       	7                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	3077                
+	totalSize           	3098                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -231,13 +231,13 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
-	avro.schema.literal 	{\n  \"namespace\": \"testing.hive.avro.serde\",\n  \"name\": \"episodes\",\n  \"type\": \"record\",\n  \"fields\": [\n    {\n      \"name\":\"title\",\n      \"type\":\"string\",\n      \"doc\":\"episode title\"\n    },\n    {\n      \"name\":\"air_date\",\n      \"type\":\"string\",\n      \"doc\":\"initial date\"\n    },\n    {\n      \"name\":\"doctor\",\n      \"type\":\"int\",\n      \"doc\":\"main actor playing the Doctor in episode\"\n    },\n     {\n       \"name\":\"value\",\n       \"type\":\"int\",\n       \"default\":0,\n       \"doc\":\"default value\"\n     }\n  ]\n}
+	avro.schema.literal 	{\n  \"namespace\": \"testing.hive.avro.serde\",\n  \"name\": \"episodes_n0\",\n  \"type\": \"record\",\n  \"fields\": [\n    {\n      \"name\":\"title\",\n      \"type\":\"string\",\n      \"doc\":\"episode title\"\n    },\n    {\n      \"name\":\"air_date\",\n      \"type\":\"string\",\n      \"doc\":\"initial date\"\n    },\n    {\n      \"name\":\"doctor\",\n      \"type\":\"int\",\n      \"doc\":\"main actor playing the Doctor in episode\"\n    },\n     {\n       \"name\":\"value\",\n       \"type\":\"int\",\n       \"default\":0,\n       \"doc\":\"default value\"\n     }\n  ]\n}
 	serialization.format	1                   
 PREHOOK: query: EXPLAIN
-SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
+SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
+SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -249,84 +249,84 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: episodes_partitioned
-          Statistics: Num rows: 3 Data size: 8890 Basic stats: COMPLETE Column stats: NONE
+          alias: episodes_partitioned_n0
+          Statistics: Num rows: 3 Data size: 8950 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: title (type: string), air_date (type: string), doctor (type: int), value (type: int), doctor_pt (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-            Statistics: Num rows: 3 Data size: 8890 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 8950 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
+PREHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@episodes_partitioned
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=11
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=9
+PREHOOK: Input: default@episodes_partitioned_n0
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
+POSTHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@episodes_partitioned
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=11
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=9
+POSTHOOK: Input: default@episodes_partitioned_n0
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
-episodes_partitioned.title	episodes_partitioned.air_date	episodes_partitioned.doctor	episodes_partitioned.value	episodes_partitioned.doctor_pt
+episodes_partitioned_n0.title	episodes_partitioned_n0.air_date	episodes_partitioned_n0.doctor	episodes_partitioned_n0.value	episodes_partitioned_n0.doctor_pt
 Rose	26 March 2005	9	0	9
 The Doctor's Wife	14 May 2011	11	0	11
 The Eleventh Hour	3 April 2010	11	0	11
-PREHOOK: query: SELECT * FROM episodes_partitioned ORDER BY air_date LIMIT 5
+PREHOOK: query: SELECT * FROM episodes_partitioned_n0 ORDER BY air_date LIMIT 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@episodes_partitioned
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=1
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=11
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=2
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=4
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=5
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=6
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=9
+PREHOOK: Input: default@episodes_partitioned_n0
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=1
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=2
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=4
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=5
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=6
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM episodes_partitioned ORDER BY air_date LIMIT 5
+POSTHOOK: query: SELECT * FROM episodes_partitioned_n0 ORDER BY air_date LIMIT 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@episodes_partitioned
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=1
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=11
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=2
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=4
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=5
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=6
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=9
+POSTHOOK: Input: default@episodes_partitioned_n0
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=1
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=2
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=4
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=5
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=6
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
-episodes_partitioned.title	episodes_partitioned.air_date	episodes_partitioned.doctor	episodes_partitioned.value	episodes_partitioned.doctor_pt
+episodes_partitioned_n0.title	episodes_partitioned_n0.air_date	episodes_partitioned_n0.doctor	episodes_partitioned_n0.value	episodes_partitioned_n0.doctor_pt
 An Unearthly Child	23 November 1963	1	0	1
 Horror of Fang Rock	3 September 1977	4	0	4
 Rose	26 March 2005	9	0	9
 The Doctor's Wife	14 May 2011	11	0	11
 The Eleventh Hour	3 April 2010	11	0	11
-PREHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt = 6
+PREHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt = 6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@episodes_partitioned
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=6
+PREHOOK: Input: default@episodes_partitioned_n0
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=6
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt = 6
+POSTHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt = 6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@episodes_partitioned
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=6
+POSTHOOK: Input: default@episodes_partitioned_n0
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=6
 #### A masked pattern was here ####
-episodes_partitioned.title	episodes_partitioned.air_date	episodes_partitioned.doctor	episodes_partitioned.value	episodes_partitioned.doctor_pt
+episodes_partitioned_n0.title	episodes_partitioned_n0.air_date	episodes_partitioned_n0.doctor	episodes_partitioned_n0.value	episodes_partitioned_n0.doctor_pt
 The Mysterious Planet	6 September 1986	6	0	6
-PREHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt = 7 LIMIT 5
+PREHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt = 7 LIMIT 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@episodes_partitioned
+PREHOOK: Input: default@episodes_partitioned_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt = 7 LIMIT 5
+POSTHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt = 7 LIMIT 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@episodes_partitioned
+POSTHOOK: Input: default@episodes_partitioned_n0
 #### A masked pattern was here ####
-episodes_partitioned.title	episodes_partitioned.air_date	episodes_partitioned.doctor	episodes_partitioned.value	episodes_partitioned.doctor_pt
+episodes_partitioned_n0.title	episodes_partitioned_n0.air_date	episodes_partitioned_n0.doctor	episodes_partitioned_n0.value	episodes_partitioned_n0.doctor_pt
 PREHOOK: query: EXPLAIN
-SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
+SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
+SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -338,15 +338,15 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: episodes_partitioned
-            Statistics: Num rows: 3 Data size: 8890 Basic stats: COMPLETE Column stats: NONE
+            alias: episodes_partitioned_n0
+            Statistics: Num rows: 3 Data size: 8950 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: title (type: string), air_date (type: string), doctor (type: int), value (type: int), doctor_pt (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 3 Data size: 8890 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 8950 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 3 Data size: 8890 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 8950 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -359,68 +359,68 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
+PREHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@episodes_partitioned
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=11
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=9
+PREHOOK: Input: default@episodes_partitioned_n0
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt > 6
+POSTHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt > 6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@episodes_partitioned
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=11
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=9
+POSTHOOK: Input: default@episodes_partitioned_n0
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
-episodes_partitioned.title	episodes_partitioned.air_date	episodes_partitioned.doctor	episodes_partitioned.value	episodes_partitioned.doctor_pt
+episodes_partitioned_n0.title	episodes_partitioned_n0.air_date	episodes_partitioned_n0.doctor	episodes_partitioned_n0.value	episodes_partitioned_n0.doctor_pt
 Rose	26 March 2005	9	0	9
 The Doctor's Wife	14 May 2011	11	0	11
 The Eleventh Hour	3 April 2010	11	0	11
-PREHOOK: query: SELECT * FROM episodes_partitioned ORDER BY air_date LIMIT 5
+PREHOOK: query: SELECT * FROM episodes_partitioned_n0 ORDER BY air_date LIMIT 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@episodes_partitioned
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=1
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=11
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=2
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=4
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=5
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=6
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=9
+PREHOOK: Input: default@episodes_partitioned_n0
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=1
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=2
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=4
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=5
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=6
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM episodes_partitioned ORDER BY air_date LIMIT 5
+POSTHOOK: query: SELECT * FROM episodes_partitioned_n0 ORDER BY air_date LIMIT 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@episodes_partitioned
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=1
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=11
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=2
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=4
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=5
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=6
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=9
+POSTHOOK: Input: default@episodes_partitioned_n0
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=1
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=11
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=2
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=4
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=5
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=6
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=9
 #### A masked pattern was here ####
-episodes_partitioned.title	episodes_partitioned.air_date	episodes_partitioned.doctor	episodes_partitioned.value	episodes_partitioned.doctor_pt
+episodes_partitioned_n0.title	episodes_partitioned_n0.air_date	episodes_partitioned_n0.doctor	episodes_partitioned_n0.value	episodes_partitioned_n0.doctor_pt
 An Unearthly Child	23 November 1963	1	0	1
 Horror of Fang Rock	3 September 1977	4	0	4
 Rose	26 March 2005	9	0	9
 The Doctor's Wife	14 May 2011	11	0	11
 The Eleventh Hour	3 April 2010	11	0	11
-PREHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt = 6
+PREHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt = 6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@episodes_partitioned
-PREHOOK: Input: default@episodes_partitioned@doctor_pt=6
+PREHOOK: Input: default@episodes_partitioned_n0
+PREHOOK: Input: default@episodes_partitioned_n0@doctor_pt=6
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt = 6
+POSTHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt = 6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@episodes_partitioned
-POSTHOOK: Input: default@episodes_partitioned@doctor_pt=6
+POSTHOOK: Input: default@episodes_partitioned_n0
+POSTHOOK: Input: default@episodes_partitioned_n0@doctor_pt=6
 #### A masked pattern was here ####
-episodes_partitioned.title	episodes_partitioned.air_date	episodes_partitioned.doctor	episodes_partitioned.value	episodes_partitioned.doctor_pt
+episodes_partitioned_n0.title	episodes_partitioned_n0.air_date	episodes_partitioned_n0.doctor	episodes_partitioned_n0.value	episodes_partitioned_n0.doctor_pt
 The Mysterious Planet	6 September 1986	6	0	6
-PREHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt = 7 LIMIT 5
+PREHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt = 7 LIMIT 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@episodes_partitioned
+PREHOOK: Input: default@episodes_partitioned_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM episodes_partitioned WHERE doctor_pt = 7 LIMIT 5
+POSTHOOK: query: SELECT * FROM episodes_partitioned_n0 WHERE doctor_pt = 7 LIMIT 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@episodes_partitioned
+POSTHOOK: Input: default@episodes_partitioned_n0
 #### A masked pattern was here ####
-episodes_partitioned.title	episodes_partitioned.air_date	episodes_partitioned.doctor	episodes_partitioned.value	episodes_partitioned.doctor_pt
+episodes_partitioned_n0.title	episodes_partitioned_n0.air_date	episodes_partitioned_n0.doctor	episodes_partitioned_n0.value	episodes_partitioned_n0.doctor_pt

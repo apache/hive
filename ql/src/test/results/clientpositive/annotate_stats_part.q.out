@@ -1,4 +1,4 @@
-PREHOOK: query: create table if not exists loc_staging (
+PREHOOK: query: create table if not exists loc_staging_n4 (
   state string,
   locid int,
   zip bigint,
@@ -6,8 +6,8 @@ PREHOOK: query: create table if not exists loc_staging (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@loc_staging
-POSTHOOK: query: create table if not exists loc_staging (
+PREHOOK: Output: default@loc_staging_n4
+POSTHOOK: query: create table if not exists loc_staging_n4 (
   state string,
   locid int,
   zip bigint,
@@ -15,34 +15,34 @@ POSTHOOK: query: create table if not exists loc_staging (
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@loc_staging
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging
+POSTHOOK: Output: default@loc_staging_n4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@loc_staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging
+PREHOOK: Output: default@loc_staging_n4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@loc_staging
-PREHOOK: query: create table if not exists loc_orc (
+POSTHOOK: Output: default@loc_staging_n4
+PREHOOK: query: create table if not exists loc_orc_n4 (
   state string,
   locid int,
   zip bigint
 ) partitioned by(year string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@loc_orc
-POSTHOOK: query: create table if not exists loc_orc (
+PREHOOK: Output: default@loc_orc_n4
+POSTHOOK: query: create table if not exists loc_orc_n4 (
   state string,
   locid int,
   zip bigint
 ) partitioned by(year string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@loc_orc
-PREHOOK: query: explain select * from loc_orc
+POSTHOOK: Output: default@loc_orc_n4
+PREHOOK: query: explain select * from loc_orc_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc
+POSTHOOK: query: explain select * from loc_orc_n4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -53,7 +53,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
@@ -61,24 +61,24 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: insert overwrite table loc_orc partition(year) select * from loc_staging
+PREHOOK: query: insert overwrite table loc_orc_n4 partition(year) select * from loc_staging_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@loc_staging
-PREHOOK: Output: default@loc_orc
-POSTHOOK: query: insert overwrite table loc_orc partition(year) select * from loc_staging
+PREHOOK: Input: default@loc_staging_n4
+PREHOOK: Output: default@loc_orc_n4
+POSTHOOK: query: insert overwrite table loc_orc_n4 partition(year) select * from loc_staging_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@loc_staging
-POSTHOOK: Output: default@loc_orc@year=2001
-POSTHOOK: Output: default@loc_orc@year=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: loc_orc PARTITION(year=2001).locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc PARTITION(year=2001).state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc PARTITION(year=2001).zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
-POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
-PREHOOK: query: explain select * from loc_orc
+POSTHOOK: Input: default@loc_staging_n4
+POSTHOOK: Output: default@loc_orc_n4@year=2001
+POSTHOOK: Output: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=2001).locid SIMPLE [(loc_staging_n4)loc_staging_n4.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=2001).state SIMPLE [(loc_staging_n4)loc_staging_n4.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=2001).zip SIMPLE [(loc_staging_n4)loc_staging_n4.FieldSchema(name:zip, type:bigint, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=__HIVE_DEFAULT_PARTITION__).locid SIMPLE [(loc_staging_n4)loc_staging_n4.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=__HIVE_DEFAULT_PARTITION__).state SIMPLE [(loc_staging_n4)loc_staging_n4.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n4 PARTITION(year=__HIVE_DEFAULT_PARTITION__).zip SIMPLE [(loc_staging_n4)loc_staging_n4.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: explain select * from loc_orc_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc
+POSTHOOK: query: explain select * from loc_orc_n4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -89,7 +89,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 18 Data size: 14640 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
@@ -97,19 +97,19 @@ STAGE PLANS:
             Statistics: Num rows: 18 Data size: 6840 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: analyze table loc_orc partition(year='2001') compute statistics
+PREHOOK: query: analyze table loc_orc_n4 partition(year='2001') compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@loc_orc
-PREHOOK: Output: default@loc_orc
-PREHOOK: Output: default@loc_orc@year=2001
-POSTHOOK: query: analyze table loc_orc partition(year='2001') compute statistics
+PREHOOK: Input: default@loc_orc_n4
+PREHOOK: Output: default@loc_orc_n4
+PREHOOK: Output: default@loc_orc_n4@year=2001
+POSTHOOK: query: analyze table loc_orc_n4 partition(year='2001') compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@loc_orc
-POSTHOOK: Output: default@loc_orc
-POSTHOOK: Output: default@loc_orc@year=2001
-PREHOOK: query: explain select * from loc_orc where year='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: Input: default@loc_orc_n4
+POSTHOOK: Output: default@loc_orc_n4
+POSTHOOK: Output: default@loc_orc_n4@year=2001
+PREHOOK: query: explain select * from loc_orc_n4 where year='__HIVE_DEFAULT_PARTITION__'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc where year='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: query: explain select * from loc_orc_n4 where year='__HIVE_DEFAULT_PARTITION__'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -120,7 +120,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 8 Data size: 5048 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '__HIVE_DEFAULT_PARTITION__' (type: string)
@@ -128,9 +128,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 5048 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: explain select * from loc_orc
+PREHOOK: query: explain select * from loc_orc_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc
+POSTHOOK: query: explain select * from loc_orc_n4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -141,7 +141,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 7 Data size: 3338 Basic stats: PARTIAL Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
@@ -149,9 +149,9 @@ STAGE PLANS:
             Statistics: Num rows: 7 Data size: 3338 Basic stats: PARTIAL Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: explain select * from loc_orc where year='2001'
+PREHOOK: query: explain select * from loc_orc_n4 where year='2001'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc where year='2001'
+POSTHOOK: query: explain select * from loc_orc_n4 where year='2001'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -162,7 +162,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 7 Data size: 2050 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '2001' (type: string)
@@ -170,21 +170,21 @@ STAGE PLANS:
             Statistics: Num rows: 7 Data size: 2050 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: analyze table loc_orc partition(year) compute statistics
+PREHOOK: query: analyze table loc_orc_n4 partition(year) compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@loc_orc
-PREHOOK: Output: default@loc_orc
-PREHOOK: Output: default@loc_orc@year=2001
-PREHOOK: Output: default@loc_orc@year=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: query: analyze table loc_orc partition(year) compute statistics
+PREHOOK: Input: default@loc_orc_n4
+PREHOOK: Output: default@loc_orc_n4
+PREHOOK: Output: default@loc_orc_n4@year=2001
+PREHOOK: Output: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: analyze table loc_orc_n4 partition(year) compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@loc_orc
-POSTHOOK: Output: default@loc_orc
-POSTHOOK: Output: default@loc_orc@year=2001
-POSTHOOK: Output: default@loc_orc@year=__HIVE_DEFAULT_PARTITION__
-PREHOOK: query: explain select * from loc_orc where year='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: Input: default@loc_orc_n4
+POSTHOOK: Output: default@loc_orc_n4
+POSTHOOK: Output: default@loc_orc_n4@year=2001
+POSTHOOK: Output: default@loc_orc_n4@year=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: explain select * from loc_orc_n4 where year='__HIVE_DEFAULT_PARTITION__'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc where year='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: query: explain select * from loc_orc_n4 where year='__HIVE_DEFAULT_PARTITION__'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -195,7 +195,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '__HIVE_DEFAULT_PARTITION__' (type: string)
@@ -203,9 +203,9 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: explain select * from loc_orc
+PREHOOK: query: explain select * from loc_orc_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc
+POSTHOOK: query: explain select * from loc_orc_n4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -216,7 +216,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 8 Data size: 3814 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
@@ -224,9 +224,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 3040 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: explain select * from loc_orc where year='2001' or year='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: query: explain select * from loc_orc_n4 where year='2001' or year='__HIVE_DEFAULT_PARTITION__'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc where year='2001' or year='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: query: explain select * from loc_orc_n4 where year='2001' or year='__HIVE_DEFAULT_PARTITION__'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -237,7 +237,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 8 Data size: 3814 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
@@ -245,9 +245,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 3040 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: explain select * from loc_orc where year='2001' and year='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: query: explain select * from loc_orc_n4 where year='2001' and year='__HIVE_DEFAULT_PARTITION__'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc where year='2001' and year='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: query: explain select * from loc_orc_n4 where year='2001' and year='__HIVE_DEFAULT_PARTITION__'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -258,7 +258,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
           Filter Operator
             predicate: false (type: boolean)
@@ -269,23 +269,23 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: PARTIAL
               ListSink
 
-PREHOOK: query: analyze table loc_orc partition(year='2001') compute statistics for columns state,locid
+PREHOOK: query: analyze table loc_orc_n4 partition(year='2001') compute statistics for columns state,locid
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc
-PREHOOK: Input: default@loc_orc@year=2001
-PREHOOK: Output: default@loc_orc
-PREHOOK: Output: default@loc_orc@year=2001
+PREHOOK: Input: default@loc_orc_n4
+PREHOOK: Input: default@loc_orc_n4@year=2001
+PREHOOK: Output: default@loc_orc_n4
+PREHOOK: Output: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc partition(year='2001') compute statistics for columns state,locid
+POSTHOOK: query: analyze table loc_orc_n4 partition(year='2001') compute statistics for columns state,locid
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc
-POSTHOOK: Input: default@loc_orc@year=2001
-POSTHOOK: Output: default@loc_orc
-POSTHOOK: Output: default@loc_orc@year=2001
+POSTHOOK: Input: default@loc_orc_n4
+POSTHOOK: Input: default@loc_orc_n4@year=2001
+POSTHOOK: Output: default@loc_orc_n4
+POSTHOOK: Output: default@loc_orc_n4@year=2001
 #### A masked pattern was here ####
-PREHOOK: query: explain select zip from loc_orc
+PREHOOK: query: explain select zip from loc_orc_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select zip from loc_orc
+POSTHOOK: query: explain select zip from loc_orc_n4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -296,7 +296,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 8 Data size: 838 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: zip (type: bigint)
@@ -304,9 +304,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 838 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: explain select state from loc_orc
+PREHOOK: query: explain select state from loc_orc_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state from loc_orc
+POSTHOOK: query: explain select state from loc_orc_n4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -317,7 +317,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string)
@@ -325,9 +325,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 688 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: explain select year from loc_orc
+PREHOOK: query: explain select year from loc_orc_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select year from loc_orc
+POSTHOOK: query: explain select year from loc_orc_n4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -338,7 +338,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 8 Data size: 2246 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: year (type: string)
@@ -346,9 +346,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 1472 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc
+PREHOOK: query: explain select state,locid from loc_orc_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc
+POSTHOOK: query: explain select state,locid from loc_orc_n4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -359,7 +359,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int)
@@ -367,9 +367,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 720 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc where year='2001'
+PREHOOK: query: explain select state,locid from loc_orc_n4 where year='2001'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc where year='2001'
+POSTHOOK: query: explain select state,locid from loc_orc_n4 where year='2001'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -380,7 +380,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 7 Data size: 630 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int)
@@ -388,9 +388,9 @@ STAGE PLANS:
             Statistics: Num rows: 7 Data size: 630 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain select state,locid from loc_orc where year!='2001'
+PREHOOK: query: explain select state,locid from loc_orc_n4 where year!='2001'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select state,locid from loc_orc where year!='2001'
+POSTHOOK: query: explain select state,locid from loc_orc_n4 where year!='2001'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -401,7 +401,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 1 Data size: 284 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int)
@@ -409,9 +409,9 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 284 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: explain select * from loc_orc
+PREHOOK: query: explain select * from loc_orc_n4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc
+POSTHOOK: query: explain select * from loc_orc_n4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -422,7 +422,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 8 Data size: 2192 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
@@ -430,9 +430,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 2192 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: explain select locid from loc_orc where locid>0 and year='2001'
+PREHOOK: query: explain select locid from loc_orc_n4 where locid>0 and year='2001'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select locid from loc_orc where locid>0 and year='2001'
+POSTHOOK: query: explain select locid from loc_orc_n4 where locid>0 and year='2001'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -443,7 +443,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (locid > 0) (type: boolean)
@@ -454,9 +454,9 @@ STAGE PLANS:
               Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
-PREHOOK: query: explain select locid,year from loc_orc where locid>0 and year='2001'
+PREHOOK: query: explain select locid,year from loc_orc_n4 where locid>0 and year='2001'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select locid,year from loc_orc where locid>0 and year='2001'
+POSTHOOK: query: explain select locid,year from loc_orc_n4 where locid>0 and year='2001'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -467,7 +467,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (locid > 0) (type: boolean)
@@ -478,9 +478,9 @@ STAGE PLANS:
               Statistics: Num rows: 7 Data size: 644 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
-PREHOOK: query: explain select * from (select locid,year from loc_orc) test where locid>0 and year='2001'
+PREHOOK: query: explain select * from (select locid,year from loc_orc_n4) test where locid>0 and year='2001'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from (select locid,year from loc_orc) test where locid>0 and year='2001'
+POSTHOOK: query: explain select * from (select locid,year from loc_orc_n4) test where locid>0 and year='2001'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -491,7 +491,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n4
           Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (locid > 0) (type: boolean)

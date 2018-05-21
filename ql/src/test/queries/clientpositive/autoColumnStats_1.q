@@ -14,188 +14,188 @@ set hive.auto.convert.join.noconditionaltask.size=10000;
 set hive.auto.convert.sortmerge.join.bigtable.selection.policy = org.apache.hadoop.hive.ql.optimizer.TableSizeBasedBigTableSelectorForAutoSMJ;
 set hive.optimize.bucketingsorting=false;
 
-drop table src_multi1;
+drop table src_multi1_n1;
 
-create table src_multi1 like src;
+create table src_multi1_n1 like src;
 
-insert overwrite table src_multi1 select * from src;
+insert overwrite table src_multi1_n1 select * from src;
 
-explain extended select * from src_multi1;
+explain extended select * from src_multi1_n1;
 
-describe formatted src_multi1;
+describe formatted src_multi1_n1;
 
-drop table a;
-drop table b;
-create table a like src;
-create table b like src;
-
-from src
-insert overwrite table a select *
-insert overwrite table b select *;
-
-describe formatted a;
-describe formatted b;
-
-drop table a;
-drop table b;
-create table a like src;
-create table b like src;
+drop table a_n12;
+drop table b_n9;
+create table a_n12 like src;
+create table b_n9 like src;
 
 from src
-insert overwrite table a select *
-insert into table b select *;
+insert overwrite table a_n12 select *
+insert overwrite table b_n9 select *;
 
-describe formatted a;
-describe formatted b;
+describe formatted a_n12;
+describe formatted b_n9;
+
+drop table a_n12;
+drop table b_n9;
+create table a_n12 like src;
+create table b_n9 like src;
+
+from src
+insert overwrite table a_n12 select *
+insert into table b_n9 select *;
+
+describe formatted a_n12;
+describe formatted b_n9;
 
 
-drop table src_multi2;
+drop table src_multi2_n2;
 
-create table src_multi2 like src;
+create table src_multi2_n2 like src;
 
-insert overwrite table src_multi2 select subq.key, src.value from (select * from src union select * from src1)subq join src on subq.key=src.key;
+insert overwrite table src_multi2_n2 select subq.key, src.value from (select * from src union select * from src1)subq join src on subq.key=src.key;
 
-describe formatted src_multi2;
+describe formatted src_multi2_n2;
 
 
-drop table nzhang_part14;
+drop table nzhang_part14_n1;
 
-create table if not exists nzhang_part14 (key string)
+create table if not exists nzhang_part14_n1 (key string)
   partitioned by (value string);
 
-desc formatted nzhang_part14;
+desc formatted nzhang_part14_n1;
 
-insert overwrite table nzhang_part14 partition(value) 
+insert overwrite table nzhang_part14_n1 partition(value) 
 select key, value from (
-  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a_n12 
   union all
-  select * from (select 'k2' as key, '' as value from src limit 2)b
+  select * from (select 'k2' as key, '' as value from src limit 2)b_n9
   union all 
-  select * from (select 'k3' as key, ' ' as value from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value from src limit 2)c_n2
 ) T;
 
-desc formatted nzhang_part14 partition (value=' ');
+desc formatted nzhang_part14_n1 partition (value=' ');
 
-explain select key from nzhang_part14;
-
-
-drop table src5;
-
-create table src5 as select key, value from src limit 5; 
-
-insert overwrite table nzhang_part14 partition(value)
-select key, value from src5; 
-
-explain select key from nzhang_part14;
+explain select key from nzhang_part14_n1;
 
 
-create table alter5 ( col1 string ) partitioned by (dt string);
+drop table src5_n0;
 
-alter table alter5 add partition (dt='a') location 'parta';
+create table src5_n0 as select key, value from src limit 5; 
 
-describe formatted alter5 partition (dt='a');
+insert overwrite table nzhang_part14_n1 partition(value)
+select key, value from src5_n0; 
 
-insert overwrite table alter5 partition (dt='a') select key from src ;
-
-describe formatted alter5 partition (dt='a');
-
-explain select * from alter5 where dt='a';
+explain select key from nzhang_part14_n1;
 
 
-drop table src_stat_part;
-create table src_stat_part(key string, value string) partitioned by (partitionId int);
+create table alter5_n0 ( col1 string ) partitioned by (dt string);
 
-insert overwrite table src_stat_part partition (partitionId=1)
+alter table alter5_n0 add partition (dt='a') location 'parta';
+
+describe formatted alter5_n0 partition (dt='a');
+
+insert overwrite table alter5_n0 partition (dt='a') select key from src ;
+
+describe formatted alter5_n0 partition (dt='a');
+
+explain select * from alter5_n0 where dt='a';
+
+
+drop table src_stat_part_n0;
+create table src_stat_part_n0(key string, value string) partitioned by (partitionId int);
+
+insert overwrite table src_stat_part_n0 partition (partitionId=1)
 select * from src1 limit 5;
 
-describe formatted src_stat_part PARTITION(partitionId=1);
+describe formatted src_stat_part_n0 PARTITION(partitionId=1);
 
-insert overwrite table src_stat_part partition (partitionId=2)
+insert overwrite table src_stat_part_n0 partition (partitionId=2)
 select * from src1;
 
-describe formatted src_stat_part PARTITION(partitionId=2);
+describe formatted src_stat_part_n0 PARTITION(partitionId=2);
 
-drop table srcbucket_mapjoin;
-CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
-drop table tab_part;
-CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
-drop table srcbucket_mapjoin_part;
-CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+drop table srcbucket_mapjoin_n6;
+CREATE TABLE srcbucket_mapjoin_n6(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
+drop table tab_part_n4;
+CREATE TABLE tab_part_n4 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+drop table srcbucket_mapjoin_part_n7;
+CREATE TABLE srcbucket_mapjoin_part_n7 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
 
-load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n6 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n6 partition(ds='2008-04-08');
 
-load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08');
 
-insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part;
+insert overwrite table tab_part_n4 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n7;
 
-describe formatted tab_part partition (ds='2008-04-08');
+describe formatted tab_part_n4 partition (ds='2008-04-08');
 
-CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
-insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin;
+CREATE TABLE tab_n3(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
+insert overwrite table tab_n3 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n6;
 
-describe formatted tab partition (ds='2008-04-08');
+describe formatted tab_n3 partition (ds='2008-04-08');
 
-drop table nzhang_part14;
+drop table nzhang_part14_n1;
 
-create table if not exists nzhang_part14 (key string, value string)
+create table if not exists nzhang_part14_n1 (key string, value string)
   partitioned by (ds string, hr string);
 
-describe formatted nzhang_part14;
+describe formatted nzhang_part14_n1;
 
-insert overwrite table nzhang_part14 partition(ds, hr) 
+insert overwrite table nzhang_part14_n1 partition(ds, hr) 
 select key, value, ds, hr from (
-  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a_n12 
   union all
-  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b
+  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b_n9
   union all 
-  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c_n2
 ) T;
 
-desc formatted nzhang_part14 partition(ds='1', hr='3');
+desc formatted nzhang_part14_n1 partition(ds='1', hr='3');
 
 
-INSERT OVERWRITE TABLE nzhang_part14 PARTITION (ds='2010-03-03', hr)
+INSERT OVERWRITE TABLE nzhang_part14_n1 PARTITION (ds='2010-03-03', hr)
 SELECT key, value, hr FROM srcpart WHERE ds is not null and hr>10;
 
-desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12');
+desc formatted nzhang_part14_n1 PARTITION(ds='2010-03-03', hr='12');
 
 
-drop table nzhang_part14;
-create table if not exists nzhang_part14 (key string, value string)
+drop table nzhang_part14_n1;
+create table if not exists nzhang_part14_n1 (key string, value string)
 partitioned by (ds string, hr string);
 
-INSERT OVERWRITE TABLE nzhang_part14 PARTITION (ds='2010-03-03', hr)
+INSERT OVERWRITE TABLE nzhang_part14_n1 PARTITION (ds='2010-03-03', hr)
 SELECT key, value, hr FROM srcpart WHERE ds is not null and hr>10;
 
-desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12');
+desc formatted nzhang_part14_n1 PARTITION(ds='2010-03-03', hr='12');
 
-drop table a;
-create table a (key string, value string)
+drop table a_n12;
+create table a_n12 (key string, value string)
 partitioned by (ds string, hr string);
 
-drop table b;
-create table b (key string, value string)
+drop table b_n9;
+create table b_n9 (key string, value string)
 partitioned by (ds string, hr string);
 
-drop table c;
-create table c (key string, value string)
+drop table c_n2;
+create table c_n2 (key string, value string)
 partitioned by (ds string, hr string);
 
 
 FROM srcpart 
-INSERT OVERWRITE TABLE a PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
-INSERT OVERWRITE TABLE b PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
-INSERT OVERWRITE TABLE c PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0;
+INSERT OVERWRITE TABLE a_n12 PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
+INSERT OVERWRITE TABLE b_n9 PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
+INSERT OVERWRITE TABLE c_n2 PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0;
 
-explain select key from a;
-explain select value from b;
-explain select key from b;
-explain select value from c;
-explain select key from c;
+explain select key from a_n12;
+explain select value from b_n9;
+explain select key from b_n9;
+explain select value from c_n2;
+explain select key from c_n2;
 

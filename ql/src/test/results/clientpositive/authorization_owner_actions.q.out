@@ -1,60 +1,60 @@
-PREHOOK: query: create table t1(i int)
+PREHOOK: query: create table t1_n108(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(i int)
+PREHOOK: Output: default@t1_n108
+POSTHOOK: query: create table t1_n108(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: ALTER TABLE t1 SET SERDEPROPERTIES ('field.delim' = ',')
+POSTHOOK: Output: default@t1_n108
+PREHOOK: query: ALTER TABLE t1_n108 SET SERDEPROPERTIES ('field.delim' = ',')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: ALTER TABLE t1 SET SERDEPROPERTIES ('field.delim' = ',')
+PREHOOK: Input: default@t1_n108
+PREHOOK: Output: default@t1_n108
+POSTHOOK: query: ALTER TABLE t1_n108 SET SERDEPROPERTIES ('field.delim' = ',')
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: drop table t1
+POSTHOOK: Input: default@t1_n108
+POSTHOOK: Output: default@t1_n108
+PREHOOK: query: drop table t1_n108
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n108
+PREHOOK: Output: default@t1_n108
+POSTHOOK: query: drop table t1_n108
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: create table t1(i int)
+POSTHOOK: Input: default@t1_n108
+POSTHOOK: Output: default@t1_n108
+PREHOOK: query: create table t1_n108(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(i int)
+PREHOOK: Output: default@t1_n108
+POSTHOOK: query: create table t1_n108(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: create view vt1 as select * from t1
+POSTHOOK: Output: default@t1_n108
+PREHOOK: query: create view vt1_n0 as select * from t1_n108
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n108
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vt1
-POSTHOOK: query: create view vt1 as select * from t1
+PREHOOK: Output: default@vt1_n0
+POSTHOOK: query: create view vt1_n0 as select * from t1_n108
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n108
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vt1
-POSTHOOK: Lineage: vt1.i SIMPLE [(t1)t1.FieldSchema(name:i, type:int, comment:null), ]
-PREHOOK: query: drop view vt1
+POSTHOOK: Output: default@vt1_n0
+POSTHOOK: Lineage: vt1_n0.i SIMPLE [(t1_n108)t1_n108.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: drop view vt1_n0
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@vt1
-PREHOOK: Output: default@vt1
-POSTHOOK: query: drop view vt1
+PREHOOK: Input: default@vt1_n0
+PREHOOK: Output: default@vt1_n0
+POSTHOOK: query: drop view vt1_n0
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@vt1
-POSTHOOK: Output: default@vt1
-PREHOOK: query: alter table t1 rename to tnew1
+POSTHOOK: Input: default@vt1_n0
+POSTHOOK: Output: default@vt1_n0
+PREHOOK: query: alter table t1_n108 rename to tnew1
 PREHOOK: type: ALTERTABLE_RENAME
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table t1 rename to tnew1
+PREHOOK: Input: default@t1_n108
+PREHOOK: Output: default@t1_n108
+POSTHOOK: query: alter table t1_n108 rename to tnew1
 POSTHOOK: type: ALTERTABLE_RENAME
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n108
+POSTHOOK: Output: default@t1_n108
 POSTHOOK: Output: default@tnew1

@@ -1,16 +1,16 @@
-PREHOOK: query: CREATE TABLE dest_g1(key INT, value DOUBLE) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_g1_n0(key INT, value DOUBLE) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_g1
-POSTHOOK: query: CREATE TABLE dest_g1(key INT, value DOUBLE) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_g1_n0
+POSTHOOK: query: CREATE TABLE dest_g1_n0(key INT, value DOUBLE) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_g1
+POSTHOOK: Output: default@dest_g1_n0
 PREHOOK: query: EXPLAIN
-FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+FROM src INSERT OVERWRITE TABLE dest_g1_n0 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+FROM src INSERT OVERWRITE TABLE dest_g1_n0 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -54,7 +54,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest_g1
+                  name: default.dest_g1_n0
             Select Operator
               expressions: _col0 (type: int), _col1 (type: double)
               outputColumnNames: key, value
@@ -74,7 +74,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_g1
+              name: default.dest_g1_n0
 
   Stage: Stage-2
     Stats Work
@@ -82,7 +82,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, double
-          Table: default.dest_g1
+          Table: default.dest_g1_n0
 
   Stage: Stage-3
     Map Reduce
@@ -107,23 +107,23 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest_g1_n0 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest_g1
-POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+PREHOOK: Output: default@dest_g1_n0
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest_g1_n0 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest_g1
-POSTHOOK: Lineage: dest_g1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_g1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest_g1.* FROM dest_g1
+POSTHOOK: Output: default@dest_g1_n0
+POSTHOOK: Lineage: dest_g1_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_g1_n0.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest_g1_n0.* FROM dest_g1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_g1
+PREHOOK: Input: default@dest_g1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest_g1.* FROM dest_g1
+POSTHOOK: query: SELECT dest_g1_n0.* FROM dest_g1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_g1
+POSTHOOK: Input: default@dest_g1_n0
 #### A masked pattern was here ####
 0	0.0
 10	10.0

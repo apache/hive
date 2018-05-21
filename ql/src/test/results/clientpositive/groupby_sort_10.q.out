@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+PREHOOK: query: CREATE TABLE T1_n149(key STRING, val STRING) PARTITIONED BY (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+PREHOOK: Output: default@T1_n149
+POSTHOOK: query: CREATE TABLE T1_n149(key STRING, val STRING) PARTITIONED BY (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1')
+POSTHOOK: Output: default@T1_n149
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n149 PARTITION (ds='1')
 SELECT * from src where key = 0 or key = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1')
+PREHOOK: Output: default@t1_n149@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n149 PARTITION (ds='1')
 SELECT * from src where key = 0 or key = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t1@ds=1
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN select distinct key from T1
+POSTHOOK: Output: default@t1_n149@ds=1
+POSTHOOK: Lineage: t1_n149 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n149 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN select distinct key from T1_n149
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select distinct key from T1
+POSTHOOK: query: EXPLAIN select distinct key from T1_n149
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -33,7 +33,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n149
             Statistics: Num rows: 4 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
@@ -59,33 +59,33 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select distinct key from T1
+PREHOOK: query: select distinct key from T1_n149
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
+PREHOOK: Input: default@t1_n149
+PREHOOK: Input: default@t1_n149@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct key from T1
+POSTHOOK: query: select distinct key from T1_n149
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Input: default@t1_n149@ds=1
 #### A masked pattern was here ####
 0
 11
-PREHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='2')
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n149 PARTITION (ds='2')
 SELECT * from src where key = 0 or key = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t1@ds=2
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='2')
+PREHOOK: Output: default@t1_n149@ds=2
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n149 PARTITION (ds='2')
 SELECT * from src where key = 0 or key = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t1@ds=2
-POSTHOOK: Lineage: t1 PARTITION(ds=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=2).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN select distinct key from T1
+POSTHOOK: Output: default@t1_n149@ds=2
+POSTHOOK: Lineage: t1_n149 PARTITION(ds=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n149 PARTITION(ds=2).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN select distinct key from T1_n149
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select distinct key from T1
+POSTHOOK: query: EXPLAIN select distinct key from T1_n149
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -96,7 +96,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n149
             Statistics: Num rows: 8 Data size: 60 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
@@ -134,25 +134,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select distinct key from T1
+PREHOOK: query: select distinct key from T1_n149
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
-PREHOOK: Input: default@t1@ds=2
+PREHOOK: Input: default@t1_n149
+PREHOOK: Input: default@t1_n149@ds=1
+PREHOOK: Input: default@t1_n149@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct key from T1
+POSTHOOK: query: select distinct key from T1_n149
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
-POSTHOOK: Input: default@t1@ds=2
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Input: default@t1_n149@ds=1
+POSTHOOK: Input: default@t1_n149@ds=2
 #### A masked pattern was here ####
 0
 11
-PREHOOK: query: DROP TABLE T1
+PREHOOK: query: DROP TABLE T1_n149
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: DROP TABLE T1
+PREHOOK: Input: default@t1_n149
+PREHOOK: Output: default@t1_n149
+POSTHOOK: query: DROP TABLE T1_n149
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Output: default@t1_n149

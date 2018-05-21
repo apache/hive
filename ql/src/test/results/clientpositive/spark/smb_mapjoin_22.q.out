@@ -1,40 +1,40 @@
-PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING)
+PREHOOK: query: CREATE TABLE test_table1_n10 (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING)
+PREHOOK: Output: default@test_table1_n10
+POSTHOOK: query: CREATE TABLE test_table1_n10 (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING)
+POSTHOOK: Output: default@test_table1_n10
+PREHOOK: query: CREATE TABLE test_table2_n10 (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING)
+PREHOOK: Output: default@test_table2_n10
+POSTHOOK: query: CREATE TABLE test_table2_n10 (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n10
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 SELECT *
+INSERT OVERWRITE TABLE test_table1_n10 SELECT *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1
+PREHOOK: Output: default@test_table1_n10
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 SELECT *
+INSERT OVERWRITE TABLE test_table1_n10 SELECT *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1
-POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2
-SELECT * FROM test_table1
+POSTHOOK: Output: default@test_table1_n10
+POSTHOOK: Lineage: test_table1_n10.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2_n10
+SELECT * FROM test_table1_n10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2
-SELECT * FROM test_table1
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2_n10
+SELECT * FROM test_table1_n10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -49,7 +49,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test_table1
+                  alias: test_table1_n10
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string)
@@ -62,7 +62,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.test_table2
+                          name: default.test_table2_n10
             Execution mode: vectorized
 
   Stage: Stage-0
@@ -73,113 +73,113 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n10
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table2
-SELECT * FROM test_table1
+PREHOOK: query: INSERT OVERWRITE TABLE test_table2_n10
+SELECT * FROM test_table1_n10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table2
-SELECT * FROM test_table1
+PREHOOK: Input: default@test_table1_n10
+PREHOOK: Output: default@test_table2_n10
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table2_n10
+SELECT * FROM test_table1_n10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table2.key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select count(*) from test_table1
+POSTHOOK: Input: default@test_table1_n10
+POSTHOOK: Output: default@test_table2_n10
+POSTHOOK: Lineage: test_table2_n10.key SIMPLE [(test_table1_n10)test_table1_n10.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table2_n10.value SIMPLE [(test_table1_n10)test_table1_n10.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from test_table1_n10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table1
+POSTHOOK: query: select count(*) from test_table1_n10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1_n10
 #### A masked pattern was here ####
 500
-PREHOOK: query: select count(*) from test_table1 tablesample (bucket 2 out of 2) s
+PREHOOK: query: select count(*) from test_table1_n10 tablesample (bucket 2 out of 2) s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table1 tablesample (bucket 2 out of 2) s
+POSTHOOK: query: select count(*) from test_table1_n10 tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1_n10
 #### A masked pattern was here ####
 257
-PREHOOK: query: select count(*) from test_table2
+PREHOOK: query: select count(*) from test_table2_n10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2
+POSTHOOK: query: select count(*) from test_table2_n10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n10
 #### A masked pattern was here ####
 500
-PREHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s
+PREHOOK: query: select count(*) from test_table2_n10 tablesample (bucket 2 out of 2) s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s
+POSTHOOK: query: select count(*) from test_table2_n10 tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n10
 #### A masked pattern was here ####
 257
-PREHOOK: query: drop table test_table1
+PREHOOK: query: drop table test_table1_n10
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test_table1
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: drop table test_table1
+PREHOOK: Input: default@test_table1_n10
+PREHOOK: Output: default@test_table1_n10
+POSTHOOK: query: drop table test_table1_n10
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: drop table test_table2
+POSTHOOK: Input: default@test_table1_n10
+POSTHOOK: Output: default@test_table1_n10
+PREHOOK: query: drop table test_table2_n10
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test_table2
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: drop table test_table2
+PREHOOK: Input: default@test_table2_n10
+PREHOOK: Output: default@test_table2_n10
+POSTHOOK: query: drop table test_table2_n10
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING)
+POSTHOOK: Input: default@test_table2_n10
+POSTHOOK: Output: default@test_table2_n10
+PREHOOK: query: CREATE TABLE test_table1_n10 (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING)
+PREHOOK: Output: default@test_table1_n10
+POSTHOOK: query: CREATE TABLE test_table1_n10 (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING)
+POSTHOOK: Output: default@test_table1_n10
+PREHOOK: query: CREATE TABLE test_table2_n10 (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING)
+PREHOOK: Output: default@test_table2_n10
+POSTHOOK: query: CREATE TABLE test_table2_n10 (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n10
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 SELECT *
+INSERT OVERWRITE TABLE test_table1_n10 SELECT *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1
+PREHOOK: Output: default@test_table1_n10
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 SELECT *
+INSERT OVERWRITE TABLE test_table1_n10 SELECT *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1
-POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2
-SELECT * FROM test_table1
+POSTHOOK: Output: default@test_table1_n10
+POSTHOOK: Lineage: test_table1_n10.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2_n10
+SELECT * FROM test_table1_n10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2
-SELECT * FROM test_table1
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table2_n10
+SELECT * FROM test_table1_n10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -194,7 +194,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test_table1
+                  alias: test_table1_n10
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string)
@@ -207,7 +207,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.test_table2
+                          name: default.test_table2_n10
             Execution mode: vectorized
 
   Stage: Stage-0
@@ -218,57 +218,57 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n10
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table2
-SELECT * FROM test_table1
+PREHOOK: query: INSERT OVERWRITE TABLE test_table2_n10
+SELECT * FROM test_table1_n10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table2
-SELECT * FROM test_table1
+PREHOOK: Input: default@test_table1_n10
+PREHOOK: Output: default@test_table2_n10
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table2_n10
+SELECT * FROM test_table1_n10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table2.key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select count(*) from test_table1
+POSTHOOK: Input: default@test_table1_n10
+POSTHOOK: Output: default@test_table2_n10
+POSTHOOK: Lineage: test_table2_n10.key SIMPLE [(test_table1_n10)test_table1_n10.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table2_n10.value SIMPLE [(test_table1_n10)test_table1_n10.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from test_table1_n10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table1
+POSTHOOK: query: select count(*) from test_table1_n10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1_n10
 #### A masked pattern was here ####
 500
-PREHOOK: query: select count(*) from test_table1 tablesample (bucket 2 out of 2) s
+PREHOOK: query: select count(*) from test_table1_n10 tablesample (bucket 2 out of 2) s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table1 tablesample (bucket 2 out of 2) s
+POSTHOOK: query: select count(*) from test_table1_n10 tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1_n10
 #### A masked pattern was here ####
 257
-PREHOOK: query: select count(*) from test_table2
+PREHOOK: query: select count(*) from test_table2_n10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2
+POSTHOOK: query: select count(*) from test_table2_n10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n10
 #### A masked pattern was here ####
 500
-PREHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s
+PREHOOK: query: select count(*) from test_table2_n10 tablesample (bucket 2 out of 2) s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s
+POSTHOOK: query: select count(*) from test_table2_n10 tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n10
 #### A masked pattern was here ####
 257

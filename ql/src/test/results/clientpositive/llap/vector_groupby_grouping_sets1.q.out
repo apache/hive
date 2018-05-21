@@ -1,42 +1,42 @@
-PREHOOK: query: CREATE TABLE T1_text(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_text_n0(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text
-POSTHOOK: query: CREATE TABLE T1_text(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: Output: default@T1_text_n0
+POSTHOOK: query: CREATE TABLE T1_text_n0(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text
+POSTHOOK: Output: default@T1_text_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1_text
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text
+PREHOOK: Output: default@t1_text_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1_text
-PREHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+POSTHOOK: Output: default@t1_text_n0
+PREHOOK: query: CREATE TABLE T1_n30 STORED AS ORC AS SELECT * FROM T1_text_n0
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@t1_text
+PREHOOK: Input: default@t1_text_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+PREHOOK: Output: default@T1_n30
+POSTHOOK: query: CREATE TABLE T1_n30 STORED AS ORC AS SELECT * FROM T1_text_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@t1_text
+POSTHOOK: Input: default@t1_text_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: t1.a SIMPLE [(t1_text)t1_text.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.b SIMPLE [(t1_text)t1_text.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.c SIMPLE [(t1_text)t1_text.FieldSchema(name:c, type:string, comment:null), ]
-t1_text.a	t1_text.b	t1_text.c
-PREHOOK: query: SELECT * FROM T1
+POSTHOOK: Output: default@T1_n30
+POSTHOOK: Lineage: t1_n30.a SIMPLE [(t1_text_n0)t1_text_n0.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n30.b SIMPLE [(t1_text_n0)t1_text_n0.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n30.c SIMPLE [(t1_text_n0)t1_text_n0.FieldSchema(name:c, type:string, comment:null), ]
+t1_text_n0.a	t1_text_n0.b	t1_text_n0.c
+PREHOOK: query: SELECT * FROM T1_n30
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM T1
+POSTHOOK: query: SELECT * FROM T1_n30
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
-t1.a	t1.b	t1.c
+t1_n30.a	t1_n30.b	t1_n30.c
 1	1	3
 2	2	4
 2	3	5
@@ -44,10 +44,10 @@ t1.a	t1.b	t1.c
 5	2	2
 8	1	1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, count(*) from T1 group by a, b with cube
+SELECT a, b, count(*) from T1_n30 group by a, b with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, count(*) from T1 group by a, b with cube
+SELECT a, b, count(*) from T1_n30 group by a, b with cube
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -69,7 +69,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n30
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -181,13 +181,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube
+PREHOOK: query: SELECT a, b, count(*) from T1_n30 group by a, b with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube
+POSTHOOK: query: SELECT a, b, count(*) from T1_n30 group by a, b with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
 a	b	_c2
 1	1	1
@@ -206,10 +206,10 @@ NULL	2	3
 NULL	3	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, count(*) from T1 group by cube(a, b)
+SELECT a, b, count(*) from T1_n30 group by cube(a, b)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, count(*) from T1 group by cube(a, b)
+SELECT a, b, count(*) from T1_n30 group by cube(a, b)
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -231,7 +231,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n30
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -343,13 +343,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) from T1 group by cube(a, b)
+PREHOOK: query: SELECT a, b, count(*) from T1_n30 group by cube(a, b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) from T1 group by cube(a, b)
+POSTHOOK: query: SELECT a, b, count(*) from T1_n30 group by cube(a, b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
 a	b	_c2
 1	1	1
@@ -368,10 +368,10 @@ NULL	2	3
 NULL	3	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
+SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
+SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -393,7 +393,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n30
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -505,13 +505,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
+PREHOOK: query: SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
+POSTHOOK: query: SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ())
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
 a	b	_c2
 1	1	1
@@ -530,10 +530,10 @@ NULL	2	3
 NULL	3	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b))
+SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b GROUPING SETS (a, (a, b))
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b))
+SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b GROUPING SETS (a, (a, b))
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -555,7 +555,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n30
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -667,13 +667,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b))
+PREHOOK: query: SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b GROUPING SETS (a, (a, b))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b))
+POSTHOOK: query: SELECT a, b, count(*) FROM T1_n30 GROUP BY a, b GROUPING SETS (a, (a, b))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
 a	b	_c2
 1	1	1
@@ -688,10 +688,10 @@ a	b	_c2
 8	1	1
 8	NULL	1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c)
+SELECT a FROM T1_n30 GROUP BY a, b, c GROUPING SETS (a, b, c)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c)
+SELECT a FROM T1_n30 GROUP BY a, b, c GROUPING SETS (a, b, c)
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -713,7 +713,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n30
                   Statistics: Num rows: 6 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -820,13 +820,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c)
+PREHOOK: query: SELECT a FROM T1_n30 GROUP BY a, b, c GROUPING SETS (a, b, c)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c)
+POSTHOOK: query: SELECT a FROM T1_n30 GROUP BY a, b, c GROUPING SETS (a, b, c)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
 a
 1
@@ -844,10 +844,10 @@ NULL
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a))
+SELECT a FROM T1_n30 GROUP BY a GROUPING SETS ((a), (a))
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a))
+SELECT a FROM T1_n30 GROUP BY a GROUPING SETS ((a), (a))
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -869,7 +869,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n30
                   Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -967,13 +967,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a))
+PREHOOK: query: SELECT a FROM T1_n30 GROUP BY a GROUPING SETS ((a), (a))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a))
+POSTHOOK: query: SELECT a FROM T1_n30 GROUP BY a GROUPING SETS ((a), (a))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
 a
 1
@@ -982,10 +982,10 @@ a
 5
 8
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b)
+SELECT a + b, count(*) FROM T1_n30 GROUP BY a + b GROUPING SETS (a+b)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b)
+SELECT a + b, count(*) FROM T1_n30 GROUP BY a + b GROUPING SETS (a+b)
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1007,7 +1007,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n30
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1111,13 +1111,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b)
+PREHOOK: query: SELECT a + b, count(*) FROM T1_n30 GROUP BY a + b GROUPING SETS (a+b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b)
+POSTHOOK: query: SELECT a + b, count(*) FROM T1_n30 GROUP BY a + b GROUPING SETS (a+b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n30
 #### A masked pattern was here ####
 _c0	_c1
 2.0	1

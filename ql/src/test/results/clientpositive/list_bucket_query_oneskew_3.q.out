@@ -1,11 +1,11 @@
-PREHOOK: query: CREATE TABLE fact_daily(x int, y STRING, z STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE fact_daily_n0(x int, y STRING, z STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: CREATE TABLE fact_daily(x int, y STRING, z STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@fact_daily_n0
+POSTHOOK: query: CREATE TABLE fact_daily_n0(x int, y STRING, z STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@fact_daily
+POSTHOOK: Output: default@fact_daily_n0
 PREHOOK: query: CREATE TABLE fact_tz(x int, y STRING, z STRING) PARTITIONED BY (ds STRING, hr STRING)	
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -58,49 +58,49 @@ POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).x EXPRESSION [(src)src.FieldSche
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=3).z SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 #### A masked pattern was here ####
-PREHOOK: query: alter table fact_daily skewed by (x) on (484,238)
+PREHOOK: query: alter table fact_daily_n0 skewed by (x) on (484,238)
 PREHOOK: type: ALTERTABLE_SKEWED
-PREHOOK: Input: default@fact_daily
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: alter table fact_daily skewed by (x) on (484,238)
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Output: default@fact_daily_n0
+POSTHOOK: query: alter table fact_daily_n0 skewed by (x) on (484,238)
 POSTHOOK: type: ALTERTABLE_SKEWED
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Output: default@fact_daily
-PREHOOK: query: ALTER TABLE fact_daily SET TBLPROPERTIES('EXTERNAL'='TRUE')
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Output: default@fact_daily_n0
+PREHOOK: query: ALTER TABLE fact_daily_n0 SET TBLPROPERTIES('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@fact_daily
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: ALTER TABLE fact_daily SET TBLPROPERTIES('EXTERNAL'='TRUE')
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Output: default@fact_daily_n0
+POSTHOOK: query: ALTER TABLE fact_daily_n0 SET TBLPROPERTIES('EXTERNAL'='TRUE')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Output: default@fact_daily
-PREHOOK: query: ALTER TABLE fact_daily ADD PARTITION (ds='1')	
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Output: default@fact_daily_n0
+PREHOOK: query: ALTER TABLE fact_daily_n0 ADD PARTITION (ds='1')	
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: ALTER TABLE fact_daily ADD PARTITION (ds='1')	
+PREHOOK: Output: default@fact_daily_n0
+POSTHOOK: query: ALTER TABLE fact_daily_n0 ADD PARTITION (ds='1')	
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: default@fact_daily
-POSTHOOK: Output: default@fact_daily@ds=1
+POSTHOOK: Output: default@fact_daily_n0
+POSTHOOK: Output: default@fact_daily_n0@ds=1
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
-PREHOOK: Input: default@fact_daily
-PREHOOK: Output: default@fact_daily@ds=1
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Output: default@fact_daily_n0@ds=1
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTBLPART_SKEWED_LOCATION
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1
-POSTHOOK: Output: default@fact_daily@ds=1
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Input: default@fact_daily_n0@ds=1
+POSTHOOK: Output: default@fact_daily_n0@ds=1
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1')
+PREHOOK: query: describe formatted fact_daily_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@fact_daily
-POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1')
+PREHOOK: Input: default@fact_daily_n0
+POSTHOOK: query: describe formatted fact_daily_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily_n0
 # col_name            	data_type           	comment             
 x                   	int                 	                    
 y                   	string              	                    
@@ -113,7 +113,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	fact_daily          	 
+Table:              	fact_daily_n0       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
@@ -134,15 +134,15 @@ Skewed Values:      	[[238], [484]]
 #### A masked pattern was here ####
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
+PREHOOK: query: SELECT * FROM fact_daily_n0 WHERE ds='1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Input: default@fact_daily_n0@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
+POSTHOOK: query: SELECT * FROM fact_daily_n0 WHERE ds='1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Input: default@fact_daily_n0@ds=1
 #### A masked pattern was here ####
 238	val_238	val_238	1
 238	val_238	val_238	1
@@ -150,9 +150,9 @@ POSTHOOK: Input: default@fact_daily@ds=1
 278	val_278	val_278	1
 484	val_484	val_484	1
 86	val_86	val_86	1
-PREHOOK: query: explain extended SELECT x FROM fact_daily WHERE ds='1' and not (x = 86)
+PREHOOK: query: explain extended SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended SELECT x FROM fact_daily WHERE ds='1' and not (x = 86)
+POSTHOOK: query: explain extended SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -174,11 +174,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string:string
 #### A masked pattern was here ####
-              name default.fact_daily
+              name default.fact_daily_n0
               numFiles 3
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct fact_daily { i32 x, string y, string z}
+              serialization.ddl struct fact_daily_n0 { i32 x, string y, string z}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 117
@@ -196,19 +196,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string:string
 #### A masked pattern was here ####
-                name default.fact_daily
+                name default.fact_daily_n0
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct fact_daily { i32 x, string y, string z}
+                serialization.ddl struct fact_daily_n0 { i32 x, string y, string z}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.fact_daily
-            name: default.fact_daily
+              name: default.fact_daily_n0
+            name: default.fact_daily_n0
       Processor Tree:
         TableScan
-          alias: fact_daily
+          alias: fact_daily_n0
           Statistics: Num rows: 2 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -221,15 +221,15 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and not (x = 86)
+PREHOOK: query: SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1
+PREHOOK: Input: default@fact_daily_n0
+PREHOOK: Input: default@fact_daily_n0@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and not (x = 86)
+POSTHOOK: query: SELECT x FROM fact_daily_n0 WHERE ds='1' and not (x = 86)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1
+POSTHOOK: Input: default@fact_daily_n0
+POSTHOOK: Input: default@fact_daily_n0@ds=1
 #### A masked pattern was here ####
 238
 238

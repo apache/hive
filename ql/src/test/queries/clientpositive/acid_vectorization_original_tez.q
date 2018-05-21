@@ -23,10 +23,10 @@ set hive.explain.user=false;
 
 
 CREATE TEMPORARY FUNCTION runWorker AS 'org.apache.hadoop.hive.ql.udf.UDFRunWorker';
-create table mydual(a int);
-insert into mydual values(1);
+create table mydual_n0(a int);
+insert into mydual_n0 values(1);
 
-CREATE TABLE over10k(t tinyint,
+CREATE TABLE over10k_n9(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -41,9 +41,9 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
 --oddly this has 9999 rows not > 10K
-LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k;
+LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k_n9;
 
-CREATE TABLE over10k_orc_bucketed(t tinyint,
+CREATE TABLE over10k_orc_bucketed_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -56,42 +56,42 @@ CREATE TABLE over10k_orc_bucketed(t tinyint,
            bin binary) CLUSTERED BY(si) INTO 4 BUCKETS STORED AS ORC;
 
 -- this produces about 250 distinct values across all 4 equivalence classes
-select distinct si, si%4 from over10k order by si;
+select distinct si, si%4 from over10k_n9 order by si;
 
--- explain insert into over10k_orc_bucketed select * from over10k;
-insert into over10k_orc_bucketed select * from over10k;
+-- explain insert into over10k_orc_bucketed_n0 select * from over10k_n9;
+insert into over10k_orc_bucketed_n0 select * from over10k_n9;
 
-dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/over10k_orc_bucketed;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/over10k_orc_bucketed_n0;
 -- create copy_N files
-insert into over10k_orc_bucketed select * from over10k;
+insert into over10k_orc_bucketed_n0 select * from over10k_n9;
 
 -- this output of this is masked in .out - it is visible in .orig
-dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/over10k_orc_bucketed;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/over10k_orc_bucketed_n0;
 
 --this actually shows the data files in the .out on Tez but not LLAP
-select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed;
+select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed_n0;
 
 -- convert table to acid
-alter table over10k_orc_bucketed set TBLPROPERTIES ('transactional'='true');
+alter table over10k_orc_bucketed_n0 set TBLPROPERTIES ('transactional'='true');
 
 -- this should vectorize (and push predicate to storage: filterExpr in TableScan )
 --             Execution mode: vectorized (both Map and Reducer)
-explain select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by t, si, i;
-select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by  t, si, i;
+explain select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by t, si, i;
+select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by  t, si, i;
 
 -- this should vectorize (and push predicate to storage: filterExpr in TableScan )
 --            Execution mode: vectorized
-explain select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID;
-select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID;
+explain select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID;
+select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID;
 
 -- this should vectorize (and push predicate to storage: filterExpr in TableScan )
 -- same as above
-explain update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100;
-update over10k_orc_bucketed set i = 0 where b = 4294967363 and t < 100;
+explain update over10k_orc_bucketed_n0 set i = 0 where b = 4294967363 and t < 100;
+update over10k_orc_bucketed_n0 set i = 0 where b = 4294967363 and t < 100;
 
 -- this should produce the same result (data) as previous time this exact query ran
 -- ROW__ID will be different (same bucketProperty)
-select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID;
+select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID;
 
 -- The idea below was to do check sum queries to ensure that ROW__IDs are unique
 -- to run Compaction and to check that ROW__IDs are the same before and after compaction (for rows
@@ -100,23 +100,23 @@ select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 
 -- this doesn't vectorize
 -- use explain VECTORIZATION DETAIL to see
 -- notVectorizedReason: Key expression for GROUPBY operator: Vectorizing complex type STRUCT not supported
-explain select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1;
+explain select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1;
 
 -- this test that there are no duplicate ROW__IDs so should produce no output
-select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1;
+select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1;
 
 -- schedule compactor
-alter table over10k_orc_bucketed compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500');
+alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500');
 
 
 --  run compactor - this currently fails with
 -- Invalid resource request, requested memory < 0, or requested memory > max configured, requestedMemory=1536, maxMemory=512
--- select runWorker() from mydual;
+-- select runWorker() from mydual_n0;
 
 -- show compactions;
 
 -- this should produce the same (data + ROW__ID) as before compaction
-select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID;
+select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID;
 
 -- this test that there are no duplicate ROW__IDs so should produce no output
-select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1;
+select ROW__ID, count(*) from over10k_orc_bucketed_n0 group by ROW__ID having count(*) > 1;

@@ -1,93 +1,93 @@
-PREHOOK: query: CREATE TABLE exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: query: CREATE TABLE exchange_part_test1_n0 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@exchange_part_test1
-POSTHOOK: query: CREATE TABLE exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: Output: default@exchange_part_test1_n0
+POSTHOOK: query: CREATE TABLE exchange_part_test1_n0 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@exchange_part_test1
-PREHOOK: query: CREATE TABLE exchange_part_test2 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+POSTHOOK: Output: default@exchange_part_test1_n0
+PREHOOK: query: CREATE TABLE exchange_part_test2_n0 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@exchange_part_test2
-POSTHOOK: query: CREATE TABLE exchange_part_test2 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: Output: default@exchange_part_test2_n0
+POSTHOOK: query: CREATE TABLE exchange_part_test2_n0 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@exchange_part_test2
-PREHOOK: query: SHOW PARTITIONS exchange_part_test1
+POSTHOOK: Output: default@exchange_part_test2_n0
+PREHOOK: query: SHOW PARTITIONS exchange_part_test1_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@exchange_part_test1
-POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
+PREHOOK: Input: default@exchange_part_test1_n0
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test1_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@exchange_part_test1
-PREHOOK: query: SHOW PARTITIONS exchange_part_test2
+POSTHOOK: Input: default@exchange_part_test1_n0
+PREHOOK: query: SHOW PARTITIONS exchange_part_test2_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@exchange_part_test2
-POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: Input: default@exchange_part_test2_n0
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test2_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@exchange_part_test2
-PREHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2014-01-03', hr='1')
+POSTHOOK: Input: default@exchange_part_test2_n0
+PREHOOK: query: ALTER TABLE exchange_part_test1_n0 ADD PARTITION (ds='2014-01-03', hr='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@exchange_part_test1
-POSTHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2014-01-03', hr='1')
+PREHOOK: Output: default@exchange_part_test1_n0
+POSTHOOK: query: ALTER TABLE exchange_part_test1_n0 ADD PARTITION (ds='2014-01-03', hr='1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@exchange_part_test1
-POSTHOOK: Output: default@exchange_part_test1@ds=2014-01-03/hr=1
-PREHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='1')
+POSTHOOK: Output: default@exchange_part_test1_n0
+POSTHOOK: Output: default@exchange_part_test1_n0@ds=2014-01-03/hr=1
+PREHOOK: query: ALTER TABLE exchange_part_test2_n0 ADD PARTITION (ds='2013-04-05', hr='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@exchange_part_test2
-POSTHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='1')
+PREHOOK: Output: default@exchange_part_test2_n0
+POSTHOOK: query: ALTER TABLE exchange_part_test2_n0 ADD PARTITION (ds='2013-04-05', hr='1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@exchange_part_test2
-POSTHOOK: Output: default@exchange_part_test2@ds=2013-04-05/hr=1
-PREHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='2')
+POSTHOOK: Output: default@exchange_part_test2_n0
+POSTHOOK: Output: default@exchange_part_test2_n0@ds=2013-04-05/hr=1
+PREHOOK: query: ALTER TABLE exchange_part_test2_n0 ADD PARTITION (ds='2013-04-05', hr='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@exchange_part_test2
-POSTHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='2')
+PREHOOK: Output: default@exchange_part_test2_n0
+POSTHOOK: query: ALTER TABLE exchange_part_test2_n0 ADD PARTITION (ds='2013-04-05', hr='2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@exchange_part_test2
-POSTHOOK: Output: default@exchange_part_test2@ds=2013-04-05/hr=2
-PREHOOK: query: SHOW PARTITIONS exchange_part_test1
+POSTHOOK: Output: default@exchange_part_test2_n0
+POSTHOOK: Output: default@exchange_part_test2_n0@ds=2013-04-05/hr=2
+PREHOOK: query: SHOW PARTITIONS exchange_part_test1_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@exchange_part_test1
-POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
+PREHOOK: Input: default@exchange_part_test1_n0
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test1_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@exchange_part_test1
+POSTHOOK: Input: default@exchange_part_test1_n0
 ds=2014-01-03/hr=1
-PREHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: query: SHOW PARTITIONS exchange_part_test2_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@exchange_part_test2
-POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: Input: default@exchange_part_test2_n0
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test2_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@exchange_part_test2
+POSTHOOK: Input: default@exchange_part_test2_n0
 ds=2013-04-05/hr=1
 ds=2013-04-05/hr=2
-PREHOOK: query: ALTER TABLE exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05') WITH TABLE exchange_part_test2
+PREHOOK: query: ALTER TABLE exchange_part_test1_n0 EXCHANGE PARTITION (ds='2013-04-05') WITH TABLE exchange_part_test2_n0
 PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
-PREHOOK: Input: default@exchange_part_test2
-PREHOOK: Output: default@exchange_part_test1
-POSTHOOK: query: ALTER TABLE exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05') WITH TABLE exchange_part_test2
+PREHOOK: Input: default@exchange_part_test2_n0
+PREHOOK: Output: default@exchange_part_test1_n0
+POSTHOOK: query: ALTER TABLE exchange_part_test1_n0 EXCHANGE PARTITION (ds='2013-04-05') WITH TABLE exchange_part_test2_n0
 POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
-POSTHOOK: Input: default@exchange_part_test2
-POSTHOOK: Input: default@exchange_part_test2@ds=2013-04-05/hr=1
-POSTHOOK: Input: default@exchange_part_test2@ds=2013-04-05/hr=2
-POSTHOOK: Output: default@exchange_part_test1
-POSTHOOK: Output: default@exchange_part_test1@ds=2013-04-05/hr=1
-POSTHOOK: Output: default@exchange_part_test1@ds=2013-04-05/hr=2
-POSTHOOK: Output: default@exchange_part_test2@ds=2013-04-05/hr=1
-POSTHOOK: Output: default@exchange_part_test2@ds=2013-04-05/hr=2
-PREHOOK: query: SHOW PARTITIONS exchange_part_test1
+POSTHOOK: Input: default@exchange_part_test2_n0
+POSTHOOK: Input: default@exchange_part_test2_n0@ds=2013-04-05/hr=1
+POSTHOOK: Input: default@exchange_part_test2_n0@ds=2013-04-05/hr=2
+POSTHOOK: Output: default@exchange_part_test1_n0
+POSTHOOK: Output: default@exchange_part_test1_n0@ds=2013-04-05/hr=1
+POSTHOOK: Output: default@exchange_part_test1_n0@ds=2013-04-05/hr=2
+POSTHOOK: Output: default@exchange_part_test2_n0@ds=2013-04-05/hr=1
+POSTHOOK: Output: default@exchange_part_test2_n0@ds=2013-04-05/hr=2
+PREHOOK: query: SHOW PARTITIONS exchange_part_test1_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@exchange_part_test1
-POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
+PREHOOK: Input: default@exchange_part_test1_n0
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test1_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@exchange_part_test1
+POSTHOOK: Input: default@exchange_part_test1_n0
 ds=2013-04-05/hr=1
 ds=2013-04-05/hr=2
 ds=2014-01-03/hr=1
-PREHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: query: SHOW PARTITIONS exchange_part_test2_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@exchange_part_test2
-POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: Input: default@exchange_part_test2_n0
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test2_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@exchange_part_test2
+POSTHOOK: Input: default@exchange_part_test2_n0

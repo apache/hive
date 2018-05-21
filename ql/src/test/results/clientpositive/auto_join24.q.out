@@ -1,28 +1,28 @@
-PREHOOK: query: create table tst1(key STRING, cnt INT)
+PREHOOK: query: create table tst1_n2(key STRING, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tst1
-POSTHOOK: query: create table tst1(key STRING, cnt INT)
+PREHOOK: Output: default@tst1_n2
+POSTHOOK: query: create table tst1_n2(key STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tst1
-PREHOOK: query: INSERT OVERWRITE TABLE tst1
+POSTHOOK: Output: default@tst1_n2
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n2
 SELECT a.key, count(1) FROM src a group by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1
+PREHOOK: Output: default@tst1_n2
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n2
 SELECT a.key, count(1) FROM src a group by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1
-POSTHOOK: Lineage: tst1.cnt EXPRESSION [(src)a.null, ]
-POSTHOOK: Lineage: tst1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: default@tst1_n2
+POSTHOOK: Lineage: tst1_n2.cnt EXPRESSION [(src)a.null, ]
+POSTHOOK: Lineage: tst1_n2.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain 
-SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+SELECT sum(a.cnt)  FROM tst1_n2 a JOIN tst1_n2 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+SELECT sum(a.cnt)  FROM tst1_n2 a JOIN tst1_n2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -106,12 +106,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+PREHOOK: query: SELECT sum(a.cnt)  FROM tst1_n2 a JOIN tst1_n2 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tst1
+PREHOOK: Input: default@tst1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+POSTHOOK: query: SELECT sum(a.cnt)  FROM tst1_n2 a JOIN tst1_n2 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n2
 #### A masked pattern was here ####
 500

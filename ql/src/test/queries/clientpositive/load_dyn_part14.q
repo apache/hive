@@ -1,16 +1,16 @@
 --! qt:dataset:src
 -- SORT_QUERY_RESULTS
 
-create table if not exists nzhang_part14 (key string)
+create table if not exists nzhang_part14_n0 (key string)
   partitioned by (value string);
 
-describe extended nzhang_part14;
+describe extended nzhang_part14_n0;
 
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 
 explain
-insert overwrite table nzhang_part14 partition(value) 
+insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -19,7 +19,7 @@ select key, value from (
   select * from (select 'k3' as key, ' ' as value from src limit 2)c
 ) T;
 
-insert overwrite table nzhang_part14 partition(value) 
+insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -29,8 +29,8 @@ select key, value from (
 ) T;
 
 
-show partitions nzhang_part14;
+show partitions nzhang_part14_n0;
 
-select * from nzhang_part14 where value <> 'a';
+select * from nzhang_part14_n0 where value <> 'a';
 
 

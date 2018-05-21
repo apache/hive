@@ -198,11 +198,11 @@ POSTHOOK: Input: default@u3
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: drop view if exists v
+PREHOOK: query: drop view if exists v_n12
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view if exists v
+POSTHOOK: query: drop view if exists v_n12
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create view v as select distinct * from 
+PREHOOK: query: create view v_n12 as select distinct * from 
 (
 select distinct * from u1
 union  
@@ -215,8 +215,8 @@ PREHOOK: Input: default@u1
 PREHOOK: Input: default@u2
 PREHOOK: Input: default@u3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select distinct * from 
+PREHOOK: Output: default@v_n12
+POSTHOOK: query: create view v_n12 as select distinct * from 
 (
 select distinct * from u1
 union  
@@ -229,32 +229,32 @@ POSTHOOK: Input: default@u1
 POSTHOOK: Input: default@u2
 POSTHOOK: Input: default@u3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), (u3)u3.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: v.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), (u3)u3.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n12
+POSTHOOK: Lineage: v_n12.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), (u3)u3.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n12.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), (u3)u3.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe extended v_n12
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n12
+POSTHOOK: query: describe extended v_n12
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n12
 key                 	string              	                    
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@u1
 PREHOOK: Input: default@u2
 PREHOOK: Input: default@u3
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@u1
 POSTHOOK: Input: default@u2
 POSTHOOK: Input: default@u3
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n12
 #### A masked pattern was here ####
 0	val_0
 10	val_10
@@ -262,15 +262,15 @@ POSTHOOK: Input: default@v
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: drop view if exists v
+PREHOOK: query: drop view if exists v_n12
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view if exists v
+PREHOOK: Input: default@v_n12
+PREHOOK: Output: default@v_n12
+POSTHOOK: query: drop view if exists v_n12
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select tab.* from 
+POSTHOOK: Input: default@v_n12
+POSTHOOK: Output: default@v_n12
+PREHOOK: query: create view v_n12 as select tab.* from 
 (
 select distinct * from u1
 union  
@@ -280,8 +280,8 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@u1
 PREHOOK: Input: default@u2
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select tab.* from 
+PREHOOK: Output: default@v_n12
+POSTHOOK: query: create view v_n12 as select tab.* from 
 (
 select distinct * from u1
 union  
@@ -291,43 +291,43 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@u1
 POSTHOOK: Input: default@u2
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: v.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n12
+POSTHOOK: Lineage: v_n12.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n12.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe extended v_n12
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n12
+POSTHOOK: query: describe extended v_n12
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n12
 key                 	string              	                    
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@u1
 PREHOOK: Input: default@u2
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@u1
 POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n12
 #### A masked pattern was here ####
 0	val_0
 10	val_10
 100	val_100
-PREHOOK: query: drop view if exists v
+PREHOOK: query: drop view if exists v_n12
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view if exists v
+PREHOOK: Input: default@v_n12
+PREHOOK: Output: default@v_n12
+POSTHOOK: query: drop view if exists v_n12
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select * from 
+POSTHOOK: Input: default@v_n12
+POSTHOOK: Output: default@v_n12
+PREHOOK: query: create view v_n12 as select * from 
 (
 select distinct u1.* from u1
 union all 
@@ -337,8 +337,8 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@u1
 PREHOOK: Input: default@u2
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select * from 
+PREHOOK: Output: default@v_n12
+POSTHOOK: query: create view v_n12 as select * from 
 (
 select distinct u1.* from u1
 union all 
@@ -348,30 +348,30 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@u1
 POSTHOOK: Input: default@u2
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: v.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n12
+POSTHOOK: Lineage: v_n12.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n12.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe extended v_n12
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n12
+POSTHOOK: query: describe extended v_n12
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n12
 key                 	string              	                    
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@u1
 PREHOOK: Input: default@u2
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@u1
 POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n12
 #### A masked pattern was here ####
 0	val_0
 0	val_0

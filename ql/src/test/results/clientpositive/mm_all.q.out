@@ -1,57 +1,57 @@
-PREHOOK: query: drop table intermediate
+PREHOOK: query: drop table intermediate_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table intermediate
+POSTHOOK: query: drop table intermediate_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
+PREHOOK: query: create table intermediate_n0(key int) partitioned by (p int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@intermediate
-POSTHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
+PREHOOK: Output: default@intermediate_n0
+POSTHOOK: query: create table intermediate_n0(key int) partitioned by (p int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@intermediate
-PREHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+POSTHOOK: Output: default@intermediate_n0
+PREHOOK: query: insert into table intermediate_n0 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=455
-POSTHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+PREHOOK: Output: default@intermediate_n0@p=455
+POSTHOOK: query: insert into table intermediate_n0 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=455
+POSTHOOK: Output: default@intermediate_n0@p=455
 POSTHOOK: Lineage: ###Masked###
-PREHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+PREHOOK: query: insert into table intermediate_n0 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=456
-POSTHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+PREHOOK: Output: default@intermediate_n0@p=456
+POSTHOOK: query: insert into table intermediate_n0 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=456
+POSTHOOK: Output: default@intermediate_n0@p=456
 POSTHOOK: Lineage: ###Masked###
-PREHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+PREHOOK: query: insert into table intermediate_n0 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=457
-POSTHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+PREHOOK: Output: default@intermediate_n0@p=457
+POSTHOOK: query: insert into table intermediate_n0 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=457
+POSTHOOK: Output: default@intermediate_n0@p=457
 POSTHOOK: Lineage: ###Masked###
-PREHOOK: query: drop table part_mm
+PREHOOK: query: drop table part_mm_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table part_mm
+POSTHOOK: query: drop table part_mm_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: query: create table part_mm_n0(key int) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_mm
-POSTHOOK: query: create table part_mm(key int) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: Output: default@part_mm_n0
+POSTHOOK: query: create table part_mm_n0(key int) partitioned by (key_mm int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_mm
-PREHOOK: query: explain insert into table part_mm partition(key_mm=455) select key from intermediate
+POSTHOOK: Output: default@part_mm_n0
+PREHOOK: query: explain insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table part_mm partition(key_mm=455) select key from intermediate
+POSTHOOK: query: explain insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -68,7 +68,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: intermediate
+            alias: intermediate_n0
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int)
@@ -81,7 +81,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.part_mm
+                    name: default.part_mm_n0
                 Write Type: INSERT
               Select Operator
                 expressions: _col0 (type: int), UDFToInteger('455') (type: int)
@@ -134,7 +134,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.part_mm
+              name: default.part_mm_n0
           micromanaged table: true
 
   Stage: Stage-2
@@ -143,7 +143,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key
           Column Types: int
-          Table: default.part_mm
+          Table: default.part_mm_n0
 
   Stage: Stage-3
     Merge File Operator
@@ -162,62 +162,62 @@ STAGE PLANS:
   Stage: Stage-6
     Dependency Collection
 
-PREHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
+PREHOOK: query: insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
-PREHOOK: Output: default@part_mm@key_mm=455
-POSTHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@part_mm_n0@key_mm=455
+POSTHOOK: query: insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
-POSTHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@part_mm_n0@key_mm=455
 POSTHOOK: Lineage: ###Masked###
-PREHOOK: query: insert into table part_mm partition(key_mm=456) select key from intermediate
+PREHOOK: query: insert into table part_mm_n0 partition(key_mm=456) select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
-PREHOOK: Output: default@part_mm@key_mm=456
-POSTHOOK: query: insert into table part_mm partition(key_mm=456) select key from intermediate
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@part_mm_n0@key_mm=456
+POSTHOOK: query: insert into table part_mm_n0 partition(key_mm=456) select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
-POSTHOOK: Output: default@part_mm@key_mm=456
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@part_mm_n0@key_mm=456
 POSTHOOK: Lineage: ###Masked###
-PREHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
+PREHOOK: query: insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
-PREHOOK: Output: default@part_mm@key_mm=455
-POSTHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
+PREHOOK: Output: default@part_mm_n0@key_mm=455
+POSTHOOK: query: insert into table part_mm_n0 partition(key_mm=455) select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
-POSTHOOK: Output: default@part_mm@key_mm=455
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@part_mm_n0@key_mm=455
 POSTHOOK: Lineage: ###Masked###
-PREHOOK: query: select * from part_mm order by key, key_mm
+PREHOOK: query: select * from part_mm_n0 order by key, key_mm
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_mm
-PREHOOK: Input: default@part_mm@key_mm=455
-PREHOOK: Input: default@part_mm@key_mm=456
+PREHOOK: Input: default@part_mm_n0
+PREHOOK: Input: default@part_mm_n0@key_mm=455
+PREHOOK: Input: default@part_mm_n0@key_mm=456
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_mm order by key, key_mm
+POSTHOOK: query: select * from part_mm_n0 order by key, key_mm
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_mm
-POSTHOOK: Input: default@part_mm@key_mm=455
-POSTHOOK: Input: default@part_mm@key_mm=456
+POSTHOOK: Input: default@part_mm_n0
+POSTHOOK: Input: default@part_mm_n0@key_mm=455
+POSTHOOK: Input: default@part_mm_n0@key_mm=456
 #### A masked pattern was here ####
 0	455
 0	455
@@ -237,17 +237,17 @@ POSTHOOK: Input: default@part_mm@key_mm=456
 103	455
 103	455
 103	456
-PREHOOK: query: select * from part_mm order by key, key_mm
+PREHOOK: query: select * from part_mm_n0 order by key, key_mm
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_mm
-PREHOOK: Input: default@part_mm@key_mm=455
-PREHOOK: Input: default@part_mm@key_mm=456
+PREHOOK: Input: default@part_mm_n0
+PREHOOK: Input: default@part_mm_n0@key_mm=455
+PREHOOK: Input: default@part_mm_n0@key_mm=456
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_mm order by key, key_mm
+POSTHOOK: query: select * from part_mm_n0 order by key, key_mm
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_mm
-POSTHOOK: Input: default@part_mm@key_mm=455
-POSTHOOK: Input: default@part_mm@key_mm=456
+POSTHOOK: Input: default@part_mm_n0
+POSTHOOK: Input: default@part_mm_n0@key_mm=455
+POSTHOOK: Input: default@part_mm_n0@key_mm=456
 #### A masked pattern was here ####
 0	455
 0	455
@@ -267,34 +267,34 @@ POSTHOOK: Input: default@part_mm@key_mm=456
 103	455
 103	455
 103	456
-PREHOOK: query: truncate table part_mm
+PREHOOK: query: truncate table part_mm_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@part_mm@key_mm=455
-PREHOOK: Output: default@part_mm@key_mm=456
-POSTHOOK: query: truncate table part_mm
+PREHOOK: Output: default@part_mm_n0@key_mm=455
+PREHOOK: Output: default@part_mm_n0@key_mm=456
+POSTHOOK: query: truncate table part_mm_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@part_mm@key_mm=455
-POSTHOOK: Output: default@part_mm@key_mm=456
-PREHOOK: query: select * from part_mm order by key, key_mm
+POSTHOOK: Output: default@part_mm_n0@key_mm=455
+POSTHOOK: Output: default@part_mm_n0@key_mm=456
+PREHOOK: query: select * from part_mm_n0 order by key, key_mm
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_mm
-PREHOOK: Input: default@part_mm@key_mm=455
-PREHOOK: Input: default@part_mm@key_mm=456
+PREHOOK: Input: default@part_mm_n0
+PREHOOK: Input: default@part_mm_n0@key_mm=455
+PREHOOK: Input: default@part_mm_n0@key_mm=456
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_mm order by key, key_mm
+POSTHOOK: query: select * from part_mm_n0 order by key, key_mm
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_mm
-POSTHOOK: Input: default@part_mm@key_mm=455
-POSTHOOK: Input: default@part_mm@key_mm=456
+POSTHOOK: Input: default@part_mm_n0
+POSTHOOK: Input: default@part_mm_n0@key_mm=455
+POSTHOOK: Input: default@part_mm_n0@key_mm=456
 #### A masked pattern was here ####
-PREHOOK: query: drop table part_mm
+PREHOOK: query: drop table part_mm_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_mm
-PREHOOK: Output: default@part_mm
-POSTHOOK: query: drop table part_mm
+PREHOOK: Input: default@part_mm_n0
+PREHOOK: Output: default@part_mm_n0
+POSTHOOK: query: drop table part_mm_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_mm
-POSTHOOK: Output: default@part_mm
+POSTHOOK: Input: default@part_mm_n0
+POSTHOOK: Output: default@part_mm_n0
 PREHOOK: query: drop table simple_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table simple_mm
@@ -307,19 +307,19 @@ POSTHOOK: query: create table simple_mm(key int) stored as orc tblproperties ("t
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@simple_mm
-PREHOOK: query: insert into table simple_mm select key from intermediate
+PREHOOK: query: insert into table simple_mm select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@simple_mm
-POSTHOOK: query: insert into table simple_mm select key from intermediate
+POSTHOOK: query: insert into table simple_mm select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@simple_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select * from simple_mm order by key
@@ -336,19 +336,19 @@ POSTHOOK: Input: default@simple_mm
 98
 100
 103
-PREHOOK: query: insert into table simple_mm select key from intermediate
+PREHOOK: query: insert into table simple_mm select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@simple_mm
-POSTHOOK: query: insert into table simple_mm select key from intermediate
+POSTHOOK: query: insert into table simple_mm select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@simple_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select * from simple_mm order by key
@@ -407,19 +407,19 @@ POSTHOOK: query: create table dp_mm (key int) partitioned by (key1 string, key2 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dp_mm
-PREHOOK: query: insert into table dp_mm partition (key1='123', key2) select key, key from intermediate
+PREHOOK: query: insert into table dp_mm partition (key1='123', key2) select key, key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@dp_mm@key1=123
-POSTHOOK: query: insert into table dp_mm partition (key1='123', key2) select key, key from intermediate
+POSTHOOK: query: insert into table dp_mm partition (key1='123', key2) select key, key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@dp_mm@key1=123/key2=0
 POSTHOOK: Output: default@dp_mm@key1=123/key2=10
 POSTHOOK: Output: default@dp_mm@key1=123/key2=100
@@ -476,25 +476,25 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_mm
 PREHOOK: query: insert into table union_mm 
 select temps.p from (
-select key as p from intermediate 
+select key as p from intermediate_n0 
 union all 
-select key + 1 as p from intermediate ) temps
+select key + 1 as p from intermediate_n0 ) temps
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@union_mm
 POSTHOOK: query: insert into table union_mm 
 select temps.p from (
-select key as p from intermediate 
+select key as p from intermediate_n0 
 union all 
-select key + 1 as p from intermediate ) temps
+select key + 1 as p from intermediate_n0 ) temps
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@union_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select * from union_mm order by id
@@ -520,32 +520,32 @@ POSTHOOK: Input: default@union_mm
 PREHOOK: query: insert into table union_mm 
 select p from
 (
-select key + 1 as p from intermediate
+select key + 1 as p from intermediate_n0
 union all
-select key from intermediate
+select key from intermediate_n0
 ) tab group by p
 union all
-select key + 2 as p from intermediate
+select key + 2 as p from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@union_mm
 POSTHOOK: query: insert into table union_mm 
 select p from
 (
-select key + 1 as p from intermediate
+select key + 1 as p from intermediate_n0
 union all
-select key from intermediate
+select key from intermediate_n0
 ) tab group by p
 union all
-select key + 2 as p from intermediate
+select key + 2 as p from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@union_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select * from union_mm order by id
@@ -588,46 +588,46 @@ POSTHOOK: Input: default@union_mm
 PREHOOK: query: insert into table union_mm
 SELECT p FROM
 (
-  SELECT key + 1 as p FROM intermediate
+  SELECT key + 1 as p FROM intermediate_n0
   UNION ALL
   SELECT key as p FROM ( 
     SELECT distinct key FROM (
       SELECT key FROM (
-        SELECT key + 2 as key FROM intermediate
+        SELECT key + 2 as key FROM intermediate_n0
         UNION ALL
-        SELECT key FROM intermediate
+        SELECT key FROM intermediate_n0
       )t1 
     group by key)t2
   )t3
 )t4
 group by p
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@union_mm
 POSTHOOK: query: insert into table union_mm
 SELECT p FROM
 (
-  SELECT key + 1 as p FROM intermediate
+  SELECT key + 1 as p FROM intermediate_n0
   UNION ALL
   SELECT key as p FROM ( 
     SELECT distinct key FROM (
       SELECT key FROM (
-        SELECT key + 2 as key FROM intermediate
+        SELECT key + 2 as key FROM intermediate_n0
         UNION ALL
-        SELECT key FROM intermediate
+        SELECT key FROM intermediate_n0
       )t1 
     group by key)t2
   )t3
 )t4
 group by p
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@union_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select * from union_mm order by id
@@ -700,25 +700,25 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partunion_mm
 PREHOOK: query: insert into table partunion_mm partition(key)
 select temps.* from (
-select key as p, key from intermediate 
+select key as p, key from intermediate_n0 
 union all 
-select key + 1 as p, key + 1 from intermediate ) temps
+select key + 1 as p, key + 1 from intermediate_n0 ) temps
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@partunion_mm
 POSTHOOK: query: insert into table partunion_mm partition(key)
 select temps.* from (
-select key as p, key from intermediate 
+select key as p, key from intermediate_n0 
 union all 
-select key + 1 as p, key + 1 from intermediate ) temps
+select key + 1 as p, key + 1 from intermediate_n0 ) temps
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@partunion_mm@key=0
 POSTHOOK: Output: default@partunion_mm@key=1
 POSTHOOK: Output: default@partunion_mm@key=10
@@ -802,20 +802,20 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skew_mm
 PREHOOK: query: insert into table skew_mm 
-select key, key, key from intermediate
+select key, key, key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@skew_mm
 POSTHOOK: query: insert into table skew_mm 
-select key, key, key from intermediate
+select key, key, key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@skew_mm
 POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
@@ -853,24 +853,24 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@skew_dp_union_mm
 PREHOOK: query: insert into table skew_dp_union_mm partition (k3)
-select key as i, key as j, key as k, key as l from intermediate
+select key as i, key as j, key as k, key as l from intermediate_n0
 union all 
-select key +1 as i, key +2 as j, key +3 as k, key +4 as l from intermediate
+select key +1 as i, key +2 as j, key +3 as k, key +4 as l from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@skew_dp_union_mm
 POSTHOOK: query: insert into table skew_dp_union_mm partition (k3)
-select key as i, key as j, key as k, key as l from intermediate
+select key as i, key as j, key as k, key as l from intermediate_n0
 union all 
-select key +1 as i, key +2 as j, key +3 as k, key +4 as l from intermediate
+select key +1 as i, key +2 as j, key +3 as k, key +4 as l from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@skew_dp_union_mm@k3=0
 POSTHOOK: Output: default@skew_dp_union_mm@k3=10
 POSTHOOK: Output: default@skew_dp_union_mm@k3=100
@@ -979,19 +979,19 @@ POSTHOOK: query: create table merge0_mm (id int) stored as orc tblproperties("tr
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge0_mm
-PREHOOK: query: insert into table merge0_mm select key from intermediate
+PREHOOK: query: insert into table merge0_mm select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@merge0_mm
-POSTHOOK: query: insert into table merge0_mm select key from intermediate
+POSTHOOK: query: insert into table merge0_mm select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@merge0_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select * from merge0_mm
@@ -1008,19 +1008,19 @@ POSTHOOK: Input: default@merge0_mm
 10
 100
 103
-PREHOOK: query: insert into table merge0_mm select key from intermediate
+PREHOOK: query: insert into table merge0_mm select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@merge0_mm
-POSTHOOK: query: insert into table merge0_mm select key from intermediate
+POSTHOOK: query: insert into table merge0_mm select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@merge0_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select * from merge0_mm
@@ -1059,19 +1059,19 @@ POSTHOOK: query: create table merge2_mm (id int) tblproperties("transactional"="
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge2_mm
-PREHOOK: query: insert into table merge2_mm select key from intermediate
+PREHOOK: query: insert into table merge2_mm select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@merge2_mm
-POSTHOOK: query: insert into table merge2_mm select key from intermediate
+POSTHOOK: query: insert into table merge2_mm select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@merge2_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select * from merge2_mm
@@ -1088,19 +1088,19 @@ POSTHOOK: Input: default@merge2_mm
 10
 100
 103
-PREHOOK: query: insert into table merge2_mm select key from intermediate
+PREHOOK: query: insert into table merge2_mm select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@merge2_mm
-POSTHOOK: query: insert into table merge2_mm select key from intermediate
+POSTHOOK: query: insert into table merge2_mm select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@merge2_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: select * from merge2_mm
@@ -1139,19 +1139,19 @@ POSTHOOK: query: create table merge1_mm (id int) partitioned by (key int) stored
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge1_mm
-PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
+PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@merge1_mm
-POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
+POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@merge1_mm@key=0
 POSTHOOK: Output: default@merge1_mm@key=10
 POSTHOOK: Output: default@merge1_mm@key=100
@@ -1190,19 +1190,19 @@ POSTHOOK: Input: default@merge1_mm@key=98
 98	98
 100	100
 103	103
-PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
+PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@merge1_mm
-POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
+POSTHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@merge1_mm@key=0
 POSTHOOK: Output: default@merge1_mm@key=10
 POSTHOOK: Output: default@merge1_mm@key=100
@@ -1259,20 +1259,20 @@ PREHOOK: query: drop table ctas0_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table ctas0_mm
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate
+PREHOOK: query: create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate_n0
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas0_mm
-POSTHOOK: query: create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate
+POSTHOOK: query: create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas0_mm
 POSTHOOK: Lineage: ###Masked###
@@ -1304,21 +1304,21 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table ctas1_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table ctas1_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as
-  select * from intermediate union all select * from intermediate
+  select * from intermediate_n0 union all select * from intermediate_n0
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas1_mm
 POSTHOOK: query: create table ctas1_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as
-  select * from intermediate union all select * from intermediate
+  select * from intermediate_n0 union all select * from intermediate_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas1_mm
 POSTHOOK: Lineage: ###Masked###
@@ -1375,24 +1375,24 @@ POSTHOOK: query: create table multi0_2_mm (key int, key2 int)  tblproperties("tr
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi0_2_mm
-PREHOOK: query: from intermediate
+PREHOOK: query: from intermediate_n0
 insert overwrite table multi0_1_mm select key, p
 insert overwrite table multi0_2_mm select p, key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@multi0_1_mm
 PREHOOK: Output: default@multi0_2_mm
-POSTHOOK: query: from intermediate
+POSTHOOK: query: from intermediate_n0
 insert overwrite table multi0_1_mm select key, p
 insert overwrite table multi0_2_mm select p, key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@multi0_1_mm
 POSTHOOK: Output: default@multi0_2_mm
 POSTHOOK: Lineage: ###Masked###
@@ -1427,24 +1427,24 @@ POSTHOOK: Input: default@multi0_2_mm
 456	10
 457	100
 457	103
-PREHOOK: query: from intermediate
+PREHOOK: query: from intermediate_n0
 insert into table multi0_1_mm select p, key
 insert overwrite table multi0_2_mm select key, p
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@multi0_1_mm
 PREHOOK: Output: default@multi0_2_mm
-POSTHOOK: query: from intermediate
+POSTHOOK: query: from intermediate_n0
 insert into table multi0_1_mm select p, key
 insert overwrite table multi0_2_mm select key, p
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@multi0_1_mm
 POSTHOOK: Output: default@multi0_2_mm
 POSTHOOK: Lineage: ###Masked###
@@ -1513,24 +1513,24 @@ POSTHOOK: query: create table multi1_mm (key int, key2 int) partitioned by (p in
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi1_mm
-PREHOOK: query: from intermediate
+PREHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p=1) select p, key
 insert into table multi1_mm partition(p=2) select key, p
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@multi1_mm@p=1
 PREHOOK: Output: default@multi1_mm@p=2
-POSTHOOK: query: from intermediate
+POSTHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p=1) select p, key
 insert into table multi1_mm partition(p=2) select key, p
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Output: default@multi1_mm@p=2
 POSTHOOK: Lineage: ###Masked###
@@ -1561,24 +1561,24 @@ POSTHOOK: Input: default@multi1_mm@p=2
 456	10	1
 457	100	1
 457	103	1
-PREHOOK: query: from intermediate
+PREHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p=2) select p, key
 insert overwrite table multi1_mm partition(p=1) select key, p
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@multi1_mm@p=1
 PREHOOK: Output: default@multi1_mm@p=2
-POSTHOOK: query: from intermediate
+POSTHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p=2) select p, key
 insert overwrite table multi1_mm partition(p=1) select key, p
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Output: default@multi1_mm@p=2
 POSTHOOK: Lineage: ###Masked###
@@ -1615,24 +1615,24 @@ POSTHOOK: Input: default@multi1_mm@p=2
 456	10	2
 457	100	2
 457	103	2
-PREHOOK: query: from intermediate
+PREHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p) select p, key, p
 insert into table multi1_mm partition(p=1) select key, p
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@multi1_mm
 PREHOOK: Output: default@multi1_mm@p=1
-POSTHOOK: query: from intermediate
+POSTHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p) select p, key, p
 insert into table multi1_mm partition(p=1) select key, p
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Output: default@multi1_mm@p=455
 POSTHOOK: Output: default@multi1_mm@p=456
@@ -1695,24 +1695,24 @@ POSTHOOK: Input: default@multi1_mm@p=457
 457	100	457
 457	103	2
 457	103	457
-PREHOOK: query: from intermediate
+PREHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p) select p, key, 1
 insert into table multi1_mm partition(p=1) select key, p
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@multi1_mm
 PREHOOK: Output: default@multi1_mm@p=1
-POSTHOOK: query: from intermediate
+POSTHOOK: query: from intermediate_n0
 insert into table multi1_mm partition(p) select p, key, 1
 insert into table multi1_mm partition(p=1) select key, p
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
@@ -1798,19 +1798,19 @@ POSTHOOK: query: create table stats_mm(key int)  tblproperties("transactional"="
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_mm
-PREHOOK: query: insert into table stats_mm  select key from intermediate
+PREHOOK: query: insert into table stats_mm  select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@stats_mm
-POSTHOOK: query: insert into table stats_mm  select key from intermediate
+POSTHOOK: query: insert into table stats_mm  select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@stats_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: desc formatted stats_mm
@@ -1848,19 +1848,19 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert into table stats_mm  select key from intermediate
+PREHOOK: query: insert into table stats_mm  select key from intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@stats_mm
-POSTHOOK: query: insert into table stats_mm  select key from intermediate
+POSTHOOK: query: insert into table stats_mm  select key from intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@stats_mm
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: desc formatted stats_mm
@@ -2090,19 +2090,19 @@ POSTHOOK: query: CREATE TEMPORARY TABLE temp1 (a int) TBLPROPERTIES ("transactio
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp1
-PREHOOK: query: INSERT INTO temp1 SELECT key FROM intermediate
+PREHOOK: query: INSERT INTO temp1 SELECT key FROM intermediate_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Input: default@intermediate_n0@p=455
+PREHOOK: Input: default@intermediate_n0@p=456
+PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@temp1
-POSTHOOK: query: INSERT INTO temp1 SELECT key FROM intermediate
+POSTHOOK: query: INSERT INTO temp1 SELECT key FROM intermediate_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Input: default@intermediate_n0@p=455
+POSTHOOK: Input: default@intermediate_n0@p=456
+POSTHOOK: Input: default@intermediate_n0@p=457
 POSTHOOK: Output: default@temp1
 POSTHOOK: Lineage: ###Masked###
 PREHOOK: query: DESC EXTENDED temp1
@@ -2128,11 +2128,11 @@ POSTHOOK: Input: default@temp1
 10
 100
 103
-PREHOOK: query: drop table intermediate
+PREHOOK: query: drop table intermediate_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@intermediate
-PREHOOK: Output: default@intermediate
-POSTHOOK: query: drop table intermediate
+PREHOOK: Input: default@intermediate_n0
+PREHOOK: Output: default@intermediate_n0
+POSTHOOK: query: drop table intermediate_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Output: default@intermediate
+POSTHOOK: Input: default@intermediate_n0
+POSTHOOK: Output: default@intermediate_n0

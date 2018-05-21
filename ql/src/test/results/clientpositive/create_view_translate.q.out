@@ -1,28 +1,28 @@
-PREHOOK: query: drop view if exists v
+PREHOOK: query: drop view if exists v_n7
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view if exists v
+POSTHOOK: query: drop view if exists v_n7
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: drop view if exists w
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view if exists w
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create view v as select cast(key as string) from src
+PREHOOK: query: create view v_n7 as select cast(key as string) from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select cast(key as string) from src
+PREHOOK: Output: default@v_n7
+POSTHOOK: query: create view v_n7 as select cast(key as string) from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: describe formatted v
+POSTHOOK: Output: default@v_n7
+POSTHOOK: Lineage: v_n7.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: describe formatted v_n7
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe formatted v
+PREHOOK: Input: default@v_n7
+POSTHOOK: query: describe formatted v_n7
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n7
 # col_name            	data_type           	comment             
 key                 	string              	                    
 	 	 
@@ -100,14 +100,14 @@ View Expanded Text: 	select `a`.`key`, `a`.`value` from (
 	                    	  select `src`.`key`, `src`.`value` from `default`.`src`
 	                    	) `a`               
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n7
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n7
+PREHOOK: Output: default@v_n7
+POSTHOOK: query: drop view v_n7
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
+POSTHOOK: Input: default@v_n7
+POSTHOOK: Output: default@v_n7
 PREHOOK: query: drop view w
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@w

@@ -1,5 +1,5 @@
 --! qt:dataset:src
-CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
+CREATE TABLE dest1_n70(key INT, value STRING) STORED AS TEXTFILE;
 
 EXPLAIN
 FROM (
@@ -8,7 +8,7 @@ FROM (
   USING 'cat'
   AS (tkey, tvalue) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\003'
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue;
+INSERT OVERWRITE TABLE dest1_n70 SELECT tkey, tvalue;
 
 FROM (
   FROM src
@@ -16,6 +16,6 @@ FROM (
   USING 'cat'
   AS (tkey, tvalue) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\003'
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue;
+INSERT OVERWRITE TABLE dest1_n70 SELECT tkey, tvalue;
 
-SELECT dest1.* FROM dest1;
+SELECT dest1_n70.* FROM dest1_n70;

@@ -36,7 +36,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ssb/customer/' into ta
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@customer_ext
-PREHOOK: query: CREATE TABLE `customer`(
+PREHOOK: query: CREATE TABLE `customer_n0`(
   `c_custkey` bigint, 
   `c_name` string, 
   `c_address` string, 
@@ -50,8 +50,8 @@ STORED AS ORC
 TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@customer
-POSTHOOK: query: CREATE TABLE `customer`(
+PREHOOK: Output: default@customer_n0
+POSTHOOK: query: CREATE TABLE `customer_n0`(
   `c_custkey` bigint, 
   `c_name` string, 
   `c_address` string, 
@@ -65,25 +65,25 @@ STORED AS ORC
 TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@customer
-PREHOOK: query: INSERT INTO `customer`
+POSTHOOK: Output: default@customer_n0
+PREHOOK: query: INSERT INTO `customer_n0`
 SELECT * FROM `customer_ext`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer_ext
-PREHOOK: Output: default@customer
-POSTHOOK: query: INSERT INTO `customer`
+PREHOOK: Output: default@customer_n0
+POSTHOOK: query: INSERT INTO `customer_n0`
 SELECT * FROM `customer_ext`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer_ext
-POSTHOOK: Output: default@customer
-POSTHOOK: Lineage: customer.c_address SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_address, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_city SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_city, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_custkey SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_custkey, type:bigint, comment:null), ]
-POSTHOOK: Lineage: customer.c_mktsegment SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_mktsegment, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_name SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_name, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_nation SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_nation, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_phone SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_phone, type:string, comment:null), ]
-POSTHOOK: Lineage: customer.c_region SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_region, type:string, comment:null), ]
+POSTHOOK: Output: default@customer_n0
+POSTHOOK: Lineage: customer_n0.c_address SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_address, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_city SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_city, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_custkey SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_custkey, type:bigint, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_mktsegment SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_mktsegment, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_name SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_name, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_nation SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_phone SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_phone, type:string, comment:null), ]
+POSTHOOK: Lineage: customer_n0.c_region SIMPLE [(customer_ext)customer_ext.FieldSchema(name:c_region, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE `dates_ext`(
   `d_datekey` bigint, 
   `d_date` string, 
@@ -464,7 +464,7 @@ PREHOOK: query: CREATE TABLE `lineorder`(
   `lo_commitdate` bigint, 
   `lo_shipmode` string,
   primary key (`lo_orderkey`) disable rely,
-  constraint fk1 foreign key (`lo_custkey`) references `customer`(`c_custkey`) disable rely,
+  constraint fk1 foreign key (`lo_custkey`) references `customer_n0`(`c_custkey`) disable rely,
   constraint fk2 foreign key (`lo_orderdate`) references `dates`(`d_datekey`) disable rely,
   constraint fk3 foreign key (`lo_partkey`) references `ssb_part`(`p_partkey`) disable rely,
   constraint fk4 foreign key (`lo_suppkey`) references `supplier`(`s_suppkey`) disable rely)
@@ -492,7 +492,7 @@ POSTHOOK: query: CREATE TABLE `lineorder`(
   `lo_commitdate` bigint, 
   `lo_shipmode` string,
   primary key (`lo_orderkey`) disable rely,
-  constraint fk1 foreign key (`lo_custkey`) references `customer`(`c_custkey`) disable rely,
+  constraint fk1 foreign key (`lo_custkey`) references `customer_n0`(`c_custkey`) disable rely,
   constraint fk2 foreign key (`lo_orderdate`) references `dates`(`d_datekey`) disable rely,
   constraint fk3 foreign key (`lo_partkey`) references `ssb_part`(`p_partkey`) disable rely,
   constraint fk4 foreign key (`lo_suppkey`) references `supplier`(`s_suppkey`) disable rely)
@@ -528,15 +528,15 @@ POSTHOOK: Lineage: lineorder.lo_shippriority SIMPLE [(lineorder_ext)lineorder_ex
 POSTHOOK: Lineage: lineorder.lo_suppkey SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_suppkey, type:bigint, comment:null), ]
 POSTHOOK: Lineage: lineorder.lo_supplycost SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
 POSTHOOK: Lineage: lineorder.lo_tax SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_tax, type:double, comment:null), ]
-PREHOOK: query: analyze table customer compute statistics for columns
+PREHOOK: query: analyze table customer_n0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@customer
-PREHOOK: Output: default@customer
+PREHOOK: Input: default@customer_n0
+PREHOOK: Output: default@customer_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table customer compute statistics for columns
+POSTHOOK: query: analyze table customer_n0 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@customer
-POSTHOOK: Output: default@customer
+POSTHOOK: Input: default@customer_n0
+POSTHOOK: Output: default@customer_n0
 #### A masked pattern was here ####
 PREHOOK: query: analyze table dates compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
@@ -601,14 +601,14 @@ SELECT
   lo_extendedprice * lo_discount discounted_price,
   lo_revenue - lo_supplycost net_revenue
 FROM
-  customer, dates, lineorder, ssb_part, supplier
+  customer_n0, dates, lineorder, ssb_part, supplier
 where
   lo_orderdate = d_datekey
   and lo_partkey = p_partkey
   and lo_suppkey = s_suppkey
   and lo_custkey = c_custkey
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@customer
+PREHOOK: Input: default@customer_n0
 PREHOOK: Input: default@dates
 PREHOOK: Input: default@lineorder
 PREHOOK: Input: default@ssb_part
@@ -638,14 +638,14 @@ SELECT
   lo_extendedprice * lo_discount discounted_price,
   lo_revenue - lo_supplycost net_revenue
 FROM
-  customer, dates, lineorder, ssb_part, supplier
+  customer_n0, dates, lineorder, ssb_part, supplier
 where
   lo_orderdate = d_datekey
   and lo_partkey = p_partkey
   and lo_suppkey = s_suppkey
   and lo_custkey = c_custkey
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@customer_n0
 POSTHOOK: Input: default@dates
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Input: default@ssb_part
@@ -1226,7 +1226,7 @@ select
     c_nation, s_nation, d_year,
     sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1244,7 +1244,7 @@ select
     c_nation, s_nation, d_year,
     sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1339,7 +1339,7 @@ PREHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1356,7 +1356,7 @@ POSTHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1451,7 +1451,7 @@ PREHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1468,7 +1468,7 @@ POSTHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1563,7 +1563,7 @@ PREHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1580,7 +1580,7 @@ POSTHOOK: query: explain
 select 
     c_city, s_city, d_year, sum(lo_revenue) as lo_revenue
 from 
-    customer, lineorder, supplier, dates
+    customer_n0, lineorder, supplier, dates
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1676,7 +1676,7 @@ select
     d_year, c_nation,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1695,7 +1695,7 @@ select
     d_year, c_nation,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1788,7 +1788,7 @@ select
     d_year, s_nation, p_category,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1808,7 +1808,7 @@ select
     d_year, s_nation, p_category,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1902,7 +1902,7 @@ select
     d_year, s_city, p_brand1,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey
@@ -1922,7 +1922,7 @@ select
     d_year, s_city, p_brand1,
     sum(lo_revenue - lo_supplycost) as profit
 from 
-    dates, customer, supplier, ssb_part, lineorder
+    dates, customer_n0, supplier, ssb_part, lineorder
 where 
     lo_custkey = c_custkey
     and lo_suppkey = s_suppkey

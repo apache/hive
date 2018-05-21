@@ -1,4 +1,4 @@
-PREHOOK: query: create table if not exists loc_staging (
+PREHOOK: query: create table if not exists loc_staging_n5 (
   state string,
   locid int,
   zip bigint,
@@ -6,8 +6,8 @@ PREHOOK: query: create table if not exists loc_staging (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@loc_staging
-POSTHOOK: query: create table if not exists loc_staging (
+PREHOOK: Output: default@loc_staging_n5
+POSTHOOK: query: create table if not exists loc_staging_n5 (
   state string,
   locid int,
   zip bigint,
@@ -15,56 +15,56 @@ POSTHOOK: query: create table if not exists loc_staging (
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@loc_staging
-PREHOOK: query: create table loc_orc like loc_staging
+POSTHOOK: Output: default@loc_staging_n5
+PREHOOK: query: create table loc_orc_n5 like loc_staging_n5
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@loc_orc
-POSTHOOK: query: create table loc_orc like loc_staging
+PREHOOK: Output: default@loc_orc_n5
+POSTHOOK: query: create table loc_orc_n5 like loc_staging_n5
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@loc_orc
-PREHOOK: query: alter table loc_orc set fileformat orc
+POSTHOOK: Output: default@loc_orc_n5
+PREHOOK: query: alter table loc_orc_n5 set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@loc_orc
-PREHOOK: Output: default@loc_orc
-POSTHOOK: query: alter table loc_orc set fileformat orc
+PREHOOK: Input: default@loc_orc_n5
+PREHOOK: Output: default@loc_orc_n5
+POSTHOOK: query: alter table loc_orc_n5 set fileformat orc
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@loc_orc
-POSTHOOK: Output: default@loc_orc
-PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+POSTHOOK: Input: default@loc_orc_n5
+POSTHOOK: Output: default@loc_orc_n5
+PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@loc_staging
-POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+PREHOOK: Output: default@loc_staging_n5
+POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging_n5
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@loc_staging
-PREHOOK: query: insert overwrite table loc_orc select * from loc_staging
+POSTHOOK: Output: default@loc_staging_n5
+PREHOOK: query: insert overwrite table loc_orc_n5 select * from loc_staging_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@loc_staging
-PREHOOK: Output: default@loc_orc
-POSTHOOK: query: insert overwrite table loc_orc select * from loc_staging
+PREHOOK: Input: default@loc_staging_n5
+PREHOOK: Output: default@loc_orc_n5
+POSTHOOK: query: insert overwrite table loc_orc_n5 select * from loc_staging_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@loc_staging
-POSTHOOK: Output: default@loc_orc
-POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
-PREHOOK: query: analyze table loc_orc compute statistics for columns state, locid, zip, year
+POSTHOOK: Input: default@loc_staging_n5
+POSTHOOK: Output: default@loc_orc_n5
+POSTHOOK: Lineage: loc_orc_n5.locid SIMPLE [(loc_staging_n5)loc_staging_n5.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n5.state SIMPLE [(loc_staging_n5)loc_staging_n5.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n5.year SIMPLE [(loc_staging_n5)loc_staging_n5.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_n5.zip SIMPLE [(loc_staging_n5)loc_staging_n5.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: analyze table loc_orc_n5 compute statistics for columns state, locid, zip, year
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc
-PREHOOK: Output: default@loc_orc
+PREHOOK: Input: default@loc_orc_n5
+PREHOOK: Output: default@loc_orc_n5
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc compute statistics for columns state, locid, zip, year
+POSTHOOK: query: analyze table loc_orc_n5 compute statistics for columns state, locid, zip, year
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc
-POSTHOOK: Output: default@loc_orc
+POSTHOOK: Input: default@loc_orc_n5
+POSTHOOK: Output: default@loc_orc_n5
 #### A masked pattern was here ####
-PREHOOK: query: explain select * from loc_orc
+PREHOOK: query: explain select * from loc_orc_n5
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc
+POSTHOOK: query: explain select * from loc_orc_n5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -75,7 +75,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n5
           Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
@@ -83,9 +83,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain select * from loc_orc limit 4
+PREHOOK: query: explain select * from loc_orc_n5 limit 4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc limit 4
+POSTHOOK: query: explain select * from loc_orc_n5 limit 4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -96,7 +96,7 @@ STAGE PLANS:
       limit: 4
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n5
           Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
@@ -107,9 +107,9 @@ STAGE PLANS:
               Statistics: Num rows: 4 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
-PREHOOK: query: explain select * from loc_orc limit 16
+PREHOOK: query: explain select * from loc_orc_n5 limit 16
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc limit 16
+POSTHOOK: query: explain select * from loc_orc_n5 limit 16
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -120,7 +120,7 @@ STAGE PLANS:
       limit: 16
       Processor Tree:
         TableScan
-          alias: loc_orc
+          alias: loc_orc_n5
           Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
@@ -131,9 +131,9 @@ STAGE PLANS:
               Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
-PREHOOK: query: explain select * from loc_orc limit 0
+PREHOOK: query: explain select * from loc_orc_n5 limit 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from loc_orc limit 0
+POSTHOOK: query: explain select * from loc_orc_n5 limit 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

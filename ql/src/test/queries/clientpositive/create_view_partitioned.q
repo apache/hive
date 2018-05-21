@@ -87,11 +87,11 @@ DROP VIEW vp3;
 
 -- HIVE-16828
 set hive.security.authorization.enabled=true;
-CREATE TABLE table1 (id int) PARTITIONED BY (year int);
+CREATE TABLE table1_n12 (id int) PARTITIONED BY (year int);
 -- create partitioned view
-CREATE VIEW view1 partitioned on (year) as select id, year from table1;
+CREATE VIEW view1_n0 partitioned on (year) as select id, year from table1_n12;
 
-select year from view1;
+select year from view1_n0;
 
-Drop view view1;
-drop table table1;
+Drop view view1_n0;
+drop table table1_n12;

@@ -99,18 +99,18 @@ drop table ut;
 
 set hive.vectorized.execution.enabled=true;
 
-create table TABLE1(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+create table TABLE1_n3(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
 
-create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+create table table2_n1 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
 
-CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1;
+CREATE OR REPLACE VIEW view_n123456789 as select EMP_NAME, EMP_ID from TABLE1_n3;
 
-explain formatted select count(*) from TABLE3;
+explain formatted select count(*) from view_n123456789;
 
-drop table table2;
+drop table table2_n1;
 
-create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+create table table2_n1 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
 
-CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1 UNION ALL select EMP_NAME,EMP_ID from TABLE2;
+CREATE OR REPLACE VIEW view_n123456789 as select EMP_NAME, EMP_ID from TABLE1_n3 UNION ALL select EMP_NAME,EMP_ID from TABLE2_n1;
 
-explain formatted select count(*) from TABLE3;
+explain formatted select count(*) from view_n123456789;

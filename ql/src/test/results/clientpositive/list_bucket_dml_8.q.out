@@ -1,25 +1,25 @@
-PREHOOK: query: create table list_bucketing_dynamic_part (key String, value String) 
+PREHOOK: query: create table list_bucketing_dynamic_part_n2 (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
     stored as DIRECTORIES
     STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@list_bucketing_dynamic_part
-POSTHOOK: query: create table list_bucketing_dynamic_part (key String, value String) 
+PREHOOK: Output: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: create table list_bucketing_dynamic_part_n2 (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
     stored as DIRECTORIES
     STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@list_bucketing_dynamic_part
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2
 PREHOOK: query: explain extended
-insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -58,15 +58,15 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.list_bucketing_dynamic_part
+                      name default.list_bucketing_dynamic_part_n2
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
+                      serialization.ddl struct list_bucketing_dynamic_part_n2 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                    name: default.list_bucketing_dynamic_part
+                    name: default.list_bucketing_dynamic_part_n2
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
@@ -247,15 +247,15 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.list_bucketing_dynamic_part
+                name default.list_bucketing_dynamic_part_n2
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
+                serialization.ddl struct list_bucketing_dynamic_part_n2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              name: default.list_bucketing_dynamic_part
+              name: default.list_bucketing_dynamic_part_n2
 
   Stage: Stage-2
     Stats Work
@@ -264,42 +264,42 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.list_bucketing_dynamic_part
+          Table: default.list_bucketing_dynamic_part_n2
           Is Table Level Stats: false
 
-PREHOOK: query: insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+PREHOOK: query: insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@list_bucketing_dynamic_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+PREHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08
+POSTHOOK: query: insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=a1
-POSTHOOK: Output: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=b1
-POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=a1).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=a1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=b1).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=b1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: show partitions list_bucketing_dynamic_part
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+POSTHOOK: Lineage: list_bucketing_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=a1).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: list_bucketing_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=a1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: list_bucketing_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=b1).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: list_bucketing_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=b1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions list_bucketing_dynamic_part_n2
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: query: show partitions list_bucketing_dynamic_part
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: show partitions list_bucketing_dynamic_part_n2
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@list_bucketing_dynamic_part
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
 ds=2008-04-08/hr=a1
 ds=2008-04-08/hr=b1
-PREHOOK: query: desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1')
+PREHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='a1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: query: desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1')
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='a1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@list_bucketing_dynamic_part
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -312,7 +312,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, a1]    	 
 Database:           	default             	 
-Table:              	list_bucketing_dynamic_part	 
+Table:              	list_bucketing_dynamic_part_n2	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -335,12 +335,12 @@ Skewed Columns:     	[key, value]
 Skewed Values:      	[[103, val_103], [484, val_484], [51, val_14]]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1')
+PREHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: query: desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1')
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@list_bucketing_dynamic_part
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -353,7 +353,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, b1]    	 
 Database:           	default             	 
-Table:              	list_bucketing_dynamic_part	 
+Table:              	list_bucketing_dynamic_part_n2	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -375,23 +375,23 @@ Stored As SubDirectories:	Yes
 Skewed Columns:     	[key, value]        	 
 Skewed Values:      	[[103, val_103], [484, val_484], [51, val_14]]	 
 #### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[103, val_103]=/list_bucketing_dynamic_part/ds=2008-04-08/hr=b1/key=103/value=val_103, [484, val_484]=/list_bucketing_dynamic_part/ds=2008-04-08/hr=b1/key=484/value=val_484}	 
+Skewed Value to Truncated Path:	{[103, val_103]=/list_bucketing_dynamic_part_n2/ds=2008-04-08/hr=b1/key=103/value=val_103, [484, val_484]=/list_bucketing_dynamic_part_n2/ds=2008-04-08/hr=b1/key=484/value=val_484}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1') concatenate
+PREHOOK: query: alter table list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1') concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
-PREHOOK: Input: default@list_bucketing_dynamic_part
-PREHOOK: Output: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=b1
-POSTHOOK: query: alter table list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1') concatenate
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+PREHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+POSTHOOK: query: alter table list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1') concatenate
 POSTHOOK: type: ALTER_PARTITION_MERGE
-POSTHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: Output: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=b1
-PREHOOK: query: desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1')
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
+PREHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: query: desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1')
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@list_bucketing_dynamic_part
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -404,7 +404,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, b1]    	 
 Database:           	default             	 
-Table:              	list_bucketing_dynamic_part	 
+Table:              	list_bucketing_dynamic_part_n2	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	3                   
@@ -425,7 +425,7 @@ Stored As SubDirectories:	Yes
 Skewed Columns:     	[key, value]        	 
 Skewed Values:      	[[103, val_103], [484, val_484], [51, val_14]]	 
 #### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[103, val_103]=/list_bucketing_dynamic_part/ds=2008-04-08/hr=b1/key=103/value=val_103, [484, val_484]=/list_bucketing_dynamic_part/ds=2008-04-08/hr=b1/key=484/value=val_484}	 
+Skewed Value to Truncated Path:	{[103, val_103]=/list_bucketing_dynamic_part_n2/ds=2008-04-08/hr=b1/key=103/value=val_103, [484, val_484]=/list_bucketing_dynamic_part_n2/ds=2008-04-08/hr=b1/key=484/value=val_484}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: select count(1) from srcpart where ds = '2008-04-08'
@@ -437,24 +437,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 1000
-PREHOOK: query: select count(*) from list_bucketing_dynamic_part
+PREHOOK: query: select count(*) from list_bucketing_dynamic_part_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@list_bucketing_dynamic_part
-PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=a1
-PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=b1
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from list_bucketing_dynamic_part
+POSTHOOK: query: select count(*) from list_bucketing_dynamic_part_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=a1
-POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=b1
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
 #### A masked pattern was here ####
 1000
 PREHOOK: query: explain extended
-select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484'
+select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484'
+select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -478,13 +478,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.list_bucketing_dynamic_part
+              name default.list_bucketing_dynamic_part_n2
               numFiles 2
               numRows 16
               partition_columns ds/hr
               partition_columns.types string:string
               rawDataSize 136
-              serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
+              serialization.ddl struct list_bucketing_dynamic_part_n2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 310
@@ -501,16 +501,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.list_bucketing_dynamic_part
+                name default.list_bucketing_dynamic_part_n2
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
+                serialization.ddl struct list_bucketing_dynamic_part_n2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              name: default.list_bucketing_dynamic_part
-            name: default.list_bucketing_dynamic_part
+              name: default.list_bucketing_dynamic_part_n2
+            name: default.list_bucketing_dynamic_part_n2
           Partition
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
@@ -524,13 +524,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.list_bucketing_dynamic_part
+              name default.list_bucketing_dynamic_part_n2
               numFiles 3
               numRows 984
               partition_columns ds/hr
               partition_columns.types string:string
               rawDataSize 9488
-              serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
+              serialization.ddl struct list_bucketing_dynamic_part_n2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 10586
@@ -547,19 +547,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.list_bucketing_dynamic_part
+                name default.list_bucketing_dynamic_part_n2
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct list_bucketing_dynamic_part { string key, string value}
+                serialization.ddl struct list_bucketing_dynamic_part_n2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              name: default.list_bucketing_dynamic_part
-            name: default.list_bucketing_dynamic_part
+              name: default.list_bucketing_dynamic_part_n2
+            name: default.list_bucketing_dynamic_part_n2
       Processor Tree:
         TableScan
-          alias: list_bucketing_dynamic_part
+          alias: list_bucketing_dynamic_part_n2
           Statistics: Num rows: 1000 Data size: 9624 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -572,17 +572,17 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2406 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484'
+PREHOOK: query: select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@list_bucketing_dynamic_part
-PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=a1
-PREHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=b1
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484'
+POSTHOOK: query: select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=a1
-POSTHOOK: Input: default@list_bucketing_dynamic_part@ds=2008-04-08/hr=b1
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=a1
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2@ds=2008-04-08/hr=b1
 #### A masked pattern was here ####
 484	val_484	2008-04-08	b1
 484	val_484	2008-04-08	b1
@@ -600,11 +600,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 484	val_484	2008-04-08	11
 484	val_484	2008-04-08	12
-PREHOOK: query: drop table list_bucketing_dynamic_part
+PREHOOK: query: drop table list_bucketing_dynamic_part_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@list_bucketing_dynamic_part
-PREHOOK: Output: default@list_bucketing_dynamic_part
-POSTHOOK: query: drop table list_bucketing_dynamic_part
+PREHOOK: Input: default@list_bucketing_dynamic_part_n2
+PREHOOK: Output: default@list_bucketing_dynamic_part_n2
+POSTHOOK: query: drop table list_bucketing_dynamic_part_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: Output: default@list_bucketing_dynamic_part
+POSTHOOK: Input: default@list_bucketing_dynamic_part_n2
+POSTHOOK: Output: default@list_bucketing_dynamic_part_n2

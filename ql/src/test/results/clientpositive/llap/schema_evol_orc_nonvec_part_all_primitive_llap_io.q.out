@@ -1,40 +1,40 @@
-PREHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: query: CREATE TABLE schema_evolution_data_n40(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: Output: default@schema_evolution_data_n40
+POSTHOOK: query: CREATE TABLE schema_evolution_data_n40(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+POSTHOOK: Output: default@schema_evolution_data_n40
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n40
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+PREHOOK: Output: default@schema_evolution_data_n40
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n40
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+POSTHOOK: Output: default@schema_evolution_data_n40
+PREHOOK: query: CREATE TABLE schema_evolution_data_2_n13(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@schema_evolution_data_2
-POSTHOOK: query: CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: Output: default@schema_evolution_data_2_n13
+POSTHOOK: query: CREATE TABLE schema_evolution_data_2_n13(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@schema_evolution_data_2
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2
+POSTHOOK: Output: default@schema_evolution_data_2_n13
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2_n13
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@schema_evolution_data_2
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2
+PREHOOK: Output: default@schema_evolution_data_2_n13
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2_n13
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@schema_evolution_data_2
-PREHOOK: query: CREATE TABLE part_change_various_various_boolean_to_bigint(insert_num int,
+POSTHOOK: Output: default@schema_evolution_data_2_n13
+PREHOOK: query: CREATE TABLE part_change_various_various_boolean_to_bigint_n5(insert_num int,
               c1 TINYINT, c2 SMALLINT, c3 INT, c4 BIGINT, c5 FLOAT, c6 DOUBLE, c7 DECIMAL(38,18), c8 STRING, c9 TIMESTAMP,
               c10 BOOLEAN, c11 SMALLINT, c12 INT, c13 BIGINT, c14 FLOAT, c15 DOUBLE, c16 DECIMAL(38,18), c17 STRING, c18 CHAR(25), c19 VARCHAR(25), c20 TIMESTAMP,
               c21 BOOLEAN, c22 TINYINT, c23 INT, c24 BIGINT, c25 FLOAT, c26 DOUBLE, c27 DECIMAL(38,18), c28 STRING, c29 CHAR(25), c30 VARCHAR(25), c31 TIMESTAMP,
@@ -43,8 +43,8 @@ PREHOOK: query: CREATE TABLE part_change_various_various_boolean_to_bigint(inser
               b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_various_various_boolean_to_bigint
-POSTHOOK: query: CREATE TABLE part_change_various_various_boolean_to_bigint(insert_num int,
+PREHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5
+POSTHOOK: query: CREATE TABLE part_change_various_various_boolean_to_bigint_n5(insert_num int,
               c1 TINYINT, c2 SMALLINT, c3 INT, c4 BIGINT, c5 FLOAT, c6 DOUBLE, c7 DECIMAL(38,18), c8 STRING, c9 TIMESTAMP,
               c10 BOOLEAN, c11 SMALLINT, c12 INT, c13 BIGINT, c14 FLOAT, c15 DOUBLE, c16 DECIMAL(38,18), c17 STRING, c18 CHAR(25), c19 VARCHAR(25), c20 TIMESTAMP,
               c21 BOOLEAN, c22 TINYINT, c23 INT, c24 BIGINT, c25 FLOAT, c26 DOUBLE, c27 DECIMAL(38,18), c28 STRING, c29 CHAR(25), c30 VARCHAR(25), c31 TIMESTAMP,
@@ -53,92 +53,92 @@ POSTHOOK: query: CREATE TABLE part_change_various_various_boolean_to_bigint(inse
               b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint
-PREHOOK: query: insert into table part_change_various_various_boolean_to_bigint partition(part=1) SELECT insert_num,
+POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5
+PREHOOK: query: insert into table part_change_various_various_boolean_to_bigint_n5 partition(part=1) SELECT insert_num,
              tinyint1, smallint1, int1, bigint1, float1, double1, decimal1, boolean_str, timestamp1,
              boolean1, smallint1, int1, bigint1, float1, double1, decimal1, tinyint_str, tinyint_str, tinyint_str, timestamp1,
              boolean1, tinyint1, int1, bigint1, float1, double1, decimal1, smallint_str, smallint_str, smallint_str, timestamp1,
              boolean1, tinyint1, smallint1, bigint1, float1, double1, decimal1, int_str, int_str, int_str, timestamp1,
              boolean1, tinyint1, smallint1, int1, float1, double1, decimal1, bigint_str, bigint_str, bigint_str, timestamp1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n40
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_various_various_boolean_to_bigint@part=1
-POSTHOOK: query: insert into table part_change_various_various_boolean_to_bigint partition(part=1) SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n40
+PREHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5@part=1
+POSTHOOK: query: insert into table part_change_various_various_boolean_to_bigint_n5 partition(part=1) SELECT insert_num,
              tinyint1, smallint1, int1, bigint1, float1, double1, decimal1, boolean_str, timestamp1,
              boolean1, smallint1, int1, bigint1, float1, double1, decimal1, tinyint_str, tinyint_str, tinyint_str, timestamp1,
              boolean1, tinyint1, int1, bigint1, float1, double1, decimal1, smallint_str, smallint_str, smallint_str, timestamp1,
              boolean1, tinyint1, smallint1, bigint1, float1, double1, decimal1, int_str, int_str, int_str, timestamp1,
              boolean1, tinyint1, smallint1, int1, float1, double1, decimal1, bigint_str, bigint_str, bigint_str, timestamp1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n40
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint@part=1
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c10 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c11 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c12 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c13 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c14 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c15 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c16 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c17 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c18 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c19 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c20 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c21 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c22 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c23 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c24 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c25 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c26 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c27 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c28 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c29 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c30 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c31 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c32 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c33 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c34 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c35 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c36 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c37 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c38 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c39 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c40 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c41 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c42 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c43 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c44 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c45 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c46 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c47 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c48 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c49 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c50 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c51 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c52 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c53 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n40
+POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5@part=1
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c13 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c14 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c15 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c16 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c17 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c18 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c19 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c20 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c21 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c22 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c23 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c24 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c25 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c26 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c27 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c28 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c29 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c30 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c31 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c32 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c33 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c34 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c35 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c36 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c37 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c38 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c39 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c40 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c41 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c42 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c43 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c44 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c45 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c46 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c47 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c48 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c49 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c50 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c51 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c52 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c53 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:insert_num, type:int, comment:null), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19	_col20	_col21	_col22	_col23	_col24	_col25	_col26	_col27	_col28	_col29	_col30	_col31	_col32	_col33	_col34	_col35	_col36	_col37	_col38	_col39	_col40	_col41	_col42	_col43	_col44	_col45	_col46	_col47	_col48	_col49	_col50	_col51	_col52	_col53	_col54
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_various_various_boolean_to_bigint
-PREHOOK: Input: default@part_change_various_various_boolean_to_bigint@part=1
+PREHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5
+PREHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint
-POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint@part=1
+POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5
+POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19	c20	c21	c22	c23	c24	c25	c26	c27	c28	c29	c30	c31	c32	c33	c34	c35	c36	c37	c38	c39	c40	c41	c42	c43	c44	c45	c46	c47	c48	c49	c50	c51	c52	c53	b
 101	1	-128	NULL	-2147483648	NULL	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	true	6229-06-28 02:54:28.970117179	true	NULL	-2147483648	NULL	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	-128	-128                     	-128	6229-06-28 02:54:28.970117179	true	-128	-2147483648	NULL	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	–32768	–32768                   	–32768	6229-06-28 02:54:28.970117179	true	-128	NULL	NULL	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	-2147483648	-2147483648              	-2147483648	6229-06-28 02:54:28.970117179	true	-128	NULL	-2147483648	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	–9223372036854775808	–9223372036854775808     	–9223372036854775808	6229-06-28 02:54:28.970117179	original
@@ -146,7 +146,7 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	original
 104	1	23	834	203332	888888857923222	-100.35978	30.774	66475.561431000000000000	true	1978-08-02 06:34:14	true	834	203332	888888857923222	-100.35978	30.774	66475.561431000000000000	23	23                       	23	1978-08-02 06:34:14	true	23	203332	888888857923222	-100.35978	30.774	66475.561431000000000000	834	834                      	834	1978-08-02 06:34:14	true	23	834	888888857923222	-100.35978	30.774	66475.561431000000000000	203332	203332                   	203332	1978-08-02 06:34:14	true	23	834	203332	-100.35978	30.774	66475.561431000000000000	888888857923222	888888857923222          	888888857923222	1978-08-02 06:34:14	original
 105	1	-99	-28300	-999992	-222282153733	NULL	46114.28	9250340.750000000000000000	false	1991-01-06 16:20:39.72036854	false	-28300	-999992	-222282153733	NULL	46114.28	9250340.750000000000000000	-99	-99                      	-99	1991-01-06 16:20:39.72036854	false	-99	-999992	-222282153733	NULL	46114.28	9250340.750000000000000000	-28300	-28300                   	-28300	1991-01-06 16:20:39.72036854	false	-99	-28300	-222282153733	NULL	46114.28	9250340.750000000000000000	-999992	-999992                  	-999992	1991-01-06 16:20:39.72036854	false	-99	-28300	-999992	NULL	46114.28	9250340.750000000000000000	-222282153733	-222282153733            	-222282153733	1991-01-06 16:20:39.72036854	original
-PREHOOK: query: alter table part_change_various_various_boolean_to_bigint replace columns (insert_num int,
+PREHOOK: query: alter table part_change_various_various_boolean_to_bigint_n5 replace columns (insert_num int,
              c1 BOOLEAN, c2 BOOLEAN, c3 BOOLEAN, c4 BOOLEAN, c5 BOOLEAN, c6 BOOLEAN, c7 BOOLEAN, c8 BOOLEAN, c9 BOOLEAN,
              c10 TINYINT, c11 TINYINT, c12 TINYINT, c13 TINYINT, c14 TINYINT, c15 TINYINT, c16 TINYINT, c17 TINYINT, c18 TINYINT, c19 TINYINT, c20 TINYINT,
              c21 SMALLINT, c22 SMALLINT, c23 SMALLINT, c24 SMALLINT, c25 SMALLINT, c26 SMALLINT, c27 SMALLINT, c28 SMALLINT, c29 SMALLINT, c30 SMALLINT, c31 SMALLINT,
@@ -154,9 +154,9 @@ PREHOOK: query: alter table part_change_various_various_boolean_to_bigint replac
              c43 BIGINT, c44 BIGINT, c45 BIGINT, c46 BIGINT, c47 BIGINT, c48 BIGINT, c49 BIGINT, c50 BIGINT, c51 BIGINT, c52 BIGINT, c53 BIGINT,
              b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_various_various_boolean_to_bigint
-PREHOOK: Output: default@part_change_various_various_boolean_to_bigint
-POSTHOOK: query: alter table part_change_various_various_boolean_to_bigint replace columns (insert_num int,
+PREHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5
+PREHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5
+POSTHOOK: query: alter table part_change_various_various_boolean_to_bigint_n5 replace columns (insert_num int,
              c1 BOOLEAN, c2 BOOLEAN, c3 BOOLEAN, c4 BOOLEAN, c5 BOOLEAN, c6 BOOLEAN, c7 BOOLEAN, c8 BOOLEAN, c9 BOOLEAN,
              c10 TINYINT, c11 TINYINT, c12 TINYINT, c13 TINYINT, c14 TINYINT, c15 TINYINT, c16 TINYINT, c17 TINYINT, c18 TINYINT, c19 TINYINT, c20 TINYINT,
              c21 SMALLINT, c22 SMALLINT, c23 SMALLINT, c24 SMALLINT, c25 SMALLINT, c26 SMALLINT, c27 SMALLINT, c28 SMALLINT, c29 SMALLINT, c30 SMALLINT, c31 SMALLINT,
@@ -164,89 +164,89 @@ POSTHOOK: query: alter table part_change_various_various_boolean_to_bigint repla
              c43 BIGINT, c44 BIGINT, c45 BIGINT, c46 BIGINT, c47 BIGINT, c48 BIGINT, c49 BIGINT, c50 BIGINT, c51 BIGINT, c52 BIGINT, c53 BIGINT,
              b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint
-POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint
-PREHOOK: query: insert into table part_change_various_various_boolean_to_bigint partition(part=1) SELECT insert_num,
+POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5
+POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5
+PREHOOK: query: insert into table part_change_various_various_boolean_to_bigint_n5 partition(part=1) SELECT insert_num,
              boolean1, boolean1, boolean1, boolean1, boolean1, boolean1, boolean1, boolean1, boolean1,
              tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1,
              smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1,
              int1, int1, int1, int1, int1, int1, int1, int1, int1, int1, int1,
              bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, 
-              'new' FROM schema_evolution_data
+              'new' FROM schema_evolution_data_n40
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_various_various_boolean_to_bigint@part=1
-POSTHOOK: query: insert into table part_change_various_various_boolean_to_bigint partition(part=1) SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n40
+PREHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5@part=1
+POSTHOOK: query: insert into table part_change_various_various_boolean_to_bigint_n5 partition(part=1) SELECT insert_num,
              boolean1, boolean1, boolean1, boolean1, boolean1, boolean1, boolean1, boolean1, boolean1,
              tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1,
              smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1,
              int1, int1, int1, int1, int1, int1, int1, int1, int1, int1, int1,
              bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, 
-              'new' FROM schema_evolution_data
+              'new' FROM schema_evolution_data_n40
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint@part=1
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c10 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c11 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c12 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c13 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c14 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c15 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c16 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c17 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c18 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c19 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c20 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c21 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c22 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c23 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c24 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c25 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c26 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c27 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c28 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c29 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c30 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c31 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c32 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c33 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c34 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c35 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c36 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c37 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c38 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c39 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c40 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c41 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c42 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c43 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c44 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c45 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c46 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c47 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c48 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c49 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c50 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c51 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c52 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c53 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n40
+POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5@part=1
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c13 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c14 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c15 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c16 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c17 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c18 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c19 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c20 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c21 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c22 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c23 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c24 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c25 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c26 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c27 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c28 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c29 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c30 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c31 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c32 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c33 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c34 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c35 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c36 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c37 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c38 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c39 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c40 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c41 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c42 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c43 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c44 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c45 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c46 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c47 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c48 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c49 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c50 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c51 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c52 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c53 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_boolean_to_bigint_n5 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	boolean1	boolean1	boolean1	boolean1	boolean1	boolean1	boolean1	boolean1	boolean1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	smallint1	int1	int1	int1	int1	int1	int1	int1	int1	int1	int1	int1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	bigint1	_c54
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint_n5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint_n5
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -265,7 +265,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_various_various_boolean_to_bigint
+                  alias: part_change_various_various_boolean_to_bigint_n5
                   Statistics: Num rows: 10 Data size: 1228 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: boolean), c2 (type: boolean), c3 (type: boolean), c4 (type: boolean), c5 (type: boolean), c6 (type: boolean), c7 (type: boolean), c8 (type: boolean), c9 (type: boolean), c10 (type: tinyint), c11 (type: tinyint), c12 (type: tinyint), c13 (type: tinyint), c14 (type: tinyint), c15 (type: tinyint), c16 (type: tinyint), c17 (type: tinyint), c18 (type: tinyint), c19 (type: tinyint), c20 (type: tinyint), c21 (type: smallint), c22 (type: smallint), c23 (type: smallint), c24 (type: smallint), c25 (type: smallint), c26 (type: smallint), c27 (type: smallint), c28 (type: smallint), c29 (type: smallint), c30 (type: smallint), c31 (type: smallint), c32 (type: int), c33 (type: int), c34 (type: int), c35 (type: int), c36 (type: int), c37 (type: int), c38 (type: int), c39 (type: int), c40 (type: int), c41 (type: int), c42 (type: int), c43 (type: bigint), c44 (type: bigint), c45 (type: bigint), c46 (type: bigint), c47 (type: bigint), c48 (type: bigint), c49 (type: bigint), c50 (type: bigint), c51 (type: bigint), c52 (type: bigint), c53 (type: bigint), b (type: string)
@@ -287,15 +287,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_various_various_boolean_to_bigint
-PREHOOK: Input: default@part_change_various_various_boolean_to_bigint@part=1
+PREHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5
+PREHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint
-POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint@part=1
+POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5
+POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19	c20	c21	c22	c23	c24	c25	c26	c27	c28	c29	c30	c31	c32	c33	c34	c35	c36	c37	c38	c39	c40	c41	c42	c43	c44	c45	c46	c47	c48	c49	c50	c51	c52	c53	b
 101	1	true	NULL	true	NULL	NULL	NULL	true	NULL	true	1	NULL	NULL	NULL	NULL	NULL	NULL	-128	-128	-128	NULL	1	-128	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	-128	NULL	NULL	NULL	NULL	NULL	-2147483648	-2147483648	-2147483648	NULL	1	-128	NULL	-2147483648	NULL	NULL	NULL	NULL	NULL	NULL	134416490068	original
@@ -308,91 +308,91 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 104	1	true	true	true	true	true	true	true	true	true	23	23	23	23	23	23	23	23	23	23	23	834	834	834	834	834	834	834	834	834	834	834	203332	203332	203332	203332	203332	203332	203332	203332	203332	203332	203332	888888857923222	888888857923222	888888857923222	888888857923222	888888857923222	888888857923222	888888857923222	888888857923222	888888857923222	888888857923222	888888857923222	new
 105	1	false	false	false	false	false	false	false	false	false	-99	-99	-99	-99	-99	-99	-99	-99	-99	-99	-99	-28300	-28300	-28300	-28300	-28300	-28300	-28300	-28300	-28300	-28300	-28300	-999992	-999992	-999992	-999992	-999992	-999992	-999992	-999992	-999992	-999992	-999992	-222282153733	-222282153733	-222282153733	-222282153733	-222282153733	-222282153733	-222282153733	-222282153733	-222282153733	-222282153733	-222282153733	new
 105	1	true	true	true	true	NULL	true	true	NULL	true	0	NULL	NULL	NULL	NULL	NULL	NULL	-99	-99	-99	NULL	0	-99	NULL	NULL	NULL	NULL	NULL	-28300	-28300	-28300	NULL	0	-99	-28300	NULL	NULL	46114	9250340	-999992	-999992	-999992	663207639	0	-99	-28300	-999992	NULL	46114	9250340	-222282153733	-222282153733	-222282153733	663207639	original
-PREHOOK: query: drop table part_change_various_various_boolean_to_bigint
+PREHOOK: query: drop table part_change_various_various_boolean_to_bigint_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_various_various_boolean_to_bigint
-PREHOOK: Output: default@part_change_various_various_boolean_to_bigint
-POSTHOOK: query: drop table part_change_various_various_boolean_to_bigint
+PREHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5
+PREHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5
+POSTHOOK: query: drop table part_change_various_various_boolean_to_bigint_n5
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint
-POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint
-PREHOOK: query: CREATE TABLE part_change_various_various_decimal_to_double(insert_num int,
+POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint_n5
+POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint_n5
+PREHOOK: query: CREATE TABLE part_change_various_various_decimal_to_double_n5(insert_num int,
             c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 STRING, c9 CHAR(25), c10 VARCHAR(25), c11 TIMESTAMP,
             c12 BOOLEAN, c13 TINYINT, c14 SMALLINT, c15 INT, c16 BIGINT, c17 DECIMAL(38,18), c18 DOUBLE, c19 STRING, c20 CHAR(25), c21 VARCHAR(25), c22 TIMESTAMP,
             c23 BOOLEAN, c24 TINYINT, c25 SMALLINT, c26 INT, c27 BIGINT, c28 DECIMAL(38,18), c29 FLOAT, c30 STRING, c31 CHAR(25), c32 VARCHAR(25), c33 TIMESTAMP,
             b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_various_various_decimal_to_double
-POSTHOOK: query: CREATE TABLE part_change_various_various_decimal_to_double(insert_num int,
+PREHOOK: Output: default@part_change_various_various_decimal_to_double_n5
+POSTHOOK: query: CREATE TABLE part_change_various_various_decimal_to_double_n5(insert_num int,
             c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 STRING, c9 CHAR(25), c10 VARCHAR(25), c11 TIMESTAMP,
             c12 BOOLEAN, c13 TINYINT, c14 SMALLINT, c15 INT, c16 BIGINT, c17 DECIMAL(38,18), c18 DOUBLE, c19 STRING, c20 CHAR(25), c21 VARCHAR(25), c22 TIMESTAMP,
             c23 BOOLEAN, c24 TINYINT, c25 SMALLINT, c26 INT, c27 BIGINT, c28 DECIMAL(38,18), c29 FLOAT, c30 STRING, c31 CHAR(25), c32 VARCHAR(25), c33 TIMESTAMP,
             b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_various_various_decimal_to_double
-PREHOOK: query: insert into table part_change_various_various_decimal_to_double partition(part=1) SELECT insert_num,
+POSTHOOK: Output: default@part_change_various_various_decimal_to_double_n5
+PREHOOK: query: insert into table part_change_various_various_decimal_to_double_n5 partition(part=1) SELECT insert_num,
             boolean1, tinyint1, smallint1, int1, bigint1, float1, double1, decimal_str, decimal_str, decimal_str, timestamp1,
             boolean1, tinyint1, smallint1, int1, bigint1, decimal1, double1, float_str, float_str, float_str, timestamp1,
             boolean1, tinyint1, smallint1, int1, bigint1, decimal1, float1, double_str, double_str, double_str, timestamp1,
-            'original' FROM schema_evolution_data
+            'original' FROM schema_evolution_data_n40
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_various_various_decimal_to_double@part=1
-POSTHOOK: query: insert into table part_change_various_various_decimal_to_double partition(part=1) SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n40
+PREHOOK: Output: default@part_change_various_various_decimal_to_double_n5@part=1
+POSTHOOK: query: insert into table part_change_various_various_decimal_to_double_n5 partition(part=1) SELECT insert_num,
             boolean1, tinyint1, smallint1, int1, bigint1, float1, double1, decimal_str, decimal_str, decimal_str, timestamp1,
             boolean1, tinyint1, smallint1, int1, bigint1, decimal1, double1, float_str, float_str, float_str, timestamp1,
             boolean1, tinyint1, smallint1, int1, bigint1, decimal1, float1, double_str, double_str, double_str, timestamp1,
-            'original' FROM schema_evolution_data
+            'original' FROM schema_evolution_data_n40
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_various_various_decimal_to_double@part=1
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c10 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c11 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c12 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c13 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c14 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c15 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c16 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c17 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c18 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c19 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c20 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c21 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c22 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c23 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c24 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c25 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c26 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c27 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c28 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c29 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c30 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c31 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c32 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c33 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c9 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n40
+POSTHOOK: Output: default@part_change_various_various_decimal_to_double_n5@part=1
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c10 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c13 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c14 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c15 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c16 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c17 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c18 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c19 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c20 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c21 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c22 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c23 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c24 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c25 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c26 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c27 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c28 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c29 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c30 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c31 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c32 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c33 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c9 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:insert_num, type:int, comment:null), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19	_col20	_col21	_col22	_col23	_col24	_col25	_col26	_col27	_col28	_col29	_col30	_col31	_col32	_col33	_col34
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_various_various_decimal_to_double
-PREHOOK: Input: default@part_change_various_various_decimal_to_double@part=1
+PREHOOK: Input: default@part_change_various_various_decimal_to_double_n5
+PREHOOK: Input: default@part_change_various_various_decimal_to_double_n5@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_various_various_decimal_to_double
-POSTHOOK: Input: default@part_change_various_various_decimal_to_double@part=1
+POSTHOOK: Input: default@part_change_various_various_decimal_to_double_n5
+POSTHOOK: Input: default@part_change_various_various_decimal_to_double_n5@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19	c20	c21	c22	c23	c24	c25	c26	c27	c28	c29	c30	c31	c32	c33	b
 101	1	true	-128	NULL	-2147483648	NULL	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	99999999999999999999.9999	99999999999999999999.9999	6229-06-28 02:54:28.970117179	true	-128	NULL	-2147483648	NULL	99999999999999999999.999999999999999999	1.7976931348623157E308	340282347000000000000000000000000000000000	3402823470000000000000000	3402823470000000000000000	6229-06-28 02:54:28.970117179	true	-128	NULL	-2147483648	NULL	99999999999999999999.999999999999999999	Infinity	1.79769313486231570E+308	1.79769313486231570E+308 	1.79769313486231570E+308	6229-06-28 02:54:28.970117179	original
@@ -400,79 +400,79 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	original
 104	1	true	23	834	203332	888888857923222	-100.35978	30.774	66475.561431	66475.561431             	66475.561431	1978-08-02 06:34:14	true	23	834	203332	888888857923222	66475.561431000000000000	30.774	-100.3597812	-100.3597812             	-100.3597812	1978-08-02 06:34:14	true	23	834	203332	888888857923222	66475.561431000000000000	-100.35978	30.774	30.774                   	30.774	1978-08-02 06:34:14	original
 105	1	false	-99	-28300	-999992	-222282153733	NULL	46114.28	9250340.75	9250340.75               	9250340.75	1991-01-06 16:20:39.72036854	false	-99	-28300	-999992	-222282153733	9250340.750000000000000000	46114.28	–32768	–32768                   	–32768	1991-01-06 16:20:39.72036854	false	-99	-28300	-999992	-222282153733	9250340.750000000000000000	NULL	46114.28	46114.28                 	46114.28	1991-01-06 16:20:39.72036854	original
-PREHOOK: query: alter table part_change_various_various_decimal_to_double replace columns (insert_num int,
+PREHOOK: query: alter table part_change_various_various_decimal_to_double_n5 replace columns (insert_num int,
              c1 DECIMAL(38,18), c2 DECIMAL(38,18), c3 DECIMAL(38,18), c4 DECIMAL(38,18), c5 DECIMAL(38,18), c6 DECIMAL(38,18), c7 DECIMAL(38,18), c8 DECIMAL(38,18), c9 DECIMAL(38,18), c10 DECIMAL(38,18), c11 DECIMAL(38,18), 
              c12 FLOAT, c13 FLOAT, c14 FLOAT, c15 FLOAT, c16 FLOAT, c17 FLOAT, c18 FLOAT, c19 FLOAT, c20 FLOAT, c21 FLOAT, c22 FLOAT,
              c23 DOUBLE, c24 DOUBLE, c25 DOUBLE, c26 DOUBLE, c27 DOUBLE, c28 DOUBLE, c29 DOUBLE, c30 DOUBLE, c31 DOUBLE, c32 DOUBLE, c33 DOUBLE,
              b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_various_various_decimal_to_double
-PREHOOK: Output: default@part_change_various_various_decimal_to_double
-POSTHOOK: query: alter table part_change_various_various_decimal_to_double replace columns (insert_num int,
+PREHOOK: Input: default@part_change_various_various_decimal_to_double_n5
+PREHOOK: Output: default@part_change_various_various_decimal_to_double_n5
+POSTHOOK: query: alter table part_change_various_various_decimal_to_double_n5 replace columns (insert_num int,
              c1 DECIMAL(38,18), c2 DECIMAL(38,18), c3 DECIMAL(38,18), c4 DECIMAL(38,18), c5 DECIMAL(38,18), c6 DECIMAL(38,18), c7 DECIMAL(38,18), c8 DECIMAL(38,18), c9 DECIMAL(38,18), c10 DECIMAL(38,18), c11 DECIMAL(38,18), 
              c12 FLOAT, c13 FLOAT, c14 FLOAT, c15 FLOAT, c16 FLOAT, c17 FLOAT, c18 FLOAT, c19 FLOAT, c20 FLOAT, c21 FLOAT, c22 FLOAT,
              c23 DOUBLE, c24 DOUBLE, c25 DOUBLE, c26 DOUBLE, c27 DOUBLE, c28 DOUBLE, c29 DOUBLE, c30 DOUBLE, c31 DOUBLE, c32 DOUBLE, c33 DOUBLE,
              b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_various_various_decimal_to_double
-POSTHOOK: Output: default@part_change_various_various_decimal_to_double
-PREHOOK: query: insert into table part_change_various_various_decimal_to_double partition(part=1) SELECT insert_num,
+POSTHOOK: Input: default@part_change_various_various_decimal_to_double_n5
+POSTHOOK: Output: default@part_change_various_various_decimal_to_double_n5
+PREHOOK: query: insert into table part_change_various_various_decimal_to_double_n5 partition(part=1) SELECT insert_num,
              decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1,
              float1, float1, float1, float1, float1, float1, float1, float1, float1, float1, float1,
              double1, double1, double1, double1, double1, double1, double1, double1, double1, double1, double1,
-             'new' FROM schema_evolution_data_2 WHERE insert_num=111
+             'new' FROM schema_evolution_data_2_n13 WHERE insert_num=111
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
-PREHOOK: Output: default@part_change_various_various_decimal_to_double@part=1
-POSTHOOK: query: insert into table part_change_various_various_decimal_to_double partition(part=1) SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_2_n13
+PREHOOK: Output: default@part_change_various_various_decimal_to_double_n5@part=1
+POSTHOOK: query: insert into table part_change_various_various_decimal_to_double_n5 partition(part=1) SELECT insert_num,
              decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1,
              float1, float1, float1, float1, float1, float1, float1, float1, float1, float1, float1,
              double1, double1, double1, double1, double1, double1, double1, double1, double1, double1, double1,
-             'new' FROM schema_evolution_data_2 WHERE insert_num=111
+             'new' FROM schema_evolution_data_2_n13 WHERE insert_num=111
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
-POSTHOOK: Output: default@part_change_various_various_decimal_to_double@part=1
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c13 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c14 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c15 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c16 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c17 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c18 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c19 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c20 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c21 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c22 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c23 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c24 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c25 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c26 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c27 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c28 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c29 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c30 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c31 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c32 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c33 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_decimal_to_double PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_2_n13
+POSTHOOK: Output: default@part_change_various_various_decimal_to_double_n5@part=1
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c13 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c14 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c15 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c16 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c17 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c18 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c19 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c20 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c21 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c22 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c23 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c24 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c25 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c26 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c27 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c28 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c29 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c30 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c31 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c32 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c33 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_decimal_to_double_n5 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	decimal1	float1	float1	float1	float1	float1	float1	float1	float1	float1	float1	float1	double1	double1	double1	double1	double1	double1	double1	double1	double1	double1	double1	_c34
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double_n5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double_n5
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -491,7 +491,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_various_various_decimal_to_double
+                  alias: part_change_various_various_decimal_to_double_n5
                   Statistics: Num rows: 6 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: decimal(38,18)), c2 (type: decimal(38,18)), c3 (type: decimal(38,18)), c4 (type: decimal(38,18)), c5 (type: decimal(38,18)), c6 (type: decimal(38,18)), c7 (type: decimal(38,18)), c8 (type: decimal(38,18)), c9 (type: decimal(38,18)), c10 (type: decimal(38,18)), c11 (type: decimal(38,18)), c12 (type: float), c13 (type: float), c14 (type: float), c15 (type: float), c16 (type: float), c17 (type: float), c18 (type: float), c19 (type: float), c20 (type: float), c21 (type: float), c22 (type: float), c23 (type: double), c24 (type: double), c25 (type: double), c26 (type: double), c27 (type: double), c28 (type: double), c29 (type: double), c30 (type: double), c31 (type: double), c32 (type: double), c33 (type: double), b (type: string)
@@ -513,15 +513,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_various_various_decimal_to_double
-PREHOOK: Input: default@part_change_various_various_decimal_to_double@part=1
+PREHOOK: Input: default@part_change_various_various_decimal_to_double_n5
+PREHOOK: Input: default@part_change_various_various_decimal_to_double_n5@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_various_various_decimal_to_double
-POSTHOOK: Input: default@part_change_various_various_decimal_to_double@part=1
+POSTHOOK: Input: default@part_change_various_various_decimal_to_double_n5
+POSTHOOK: Input: default@part_change_various_various_decimal_to_double_n5@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19	c20	c21	c22	c23	c24	c25	c26	c27	c28	c29	c30	c31	c32	c33	b
 101	1	1.000000000000000000	-128.000000000000000000	NULL	-2147483648.000000000000000000	NULL	NULL	NULL	99999999999999999999.999999999999999999	99999999999999999999.999900000000000000	99999999999999999999.999900000000000000	134416490068.970120000000000000	1.0	-128.0	NULL	-2.14748365E9	NULL	1.0E20	Infinity	Infinity	3.4028236E24	3.4028236E24	1.3441649E11	1.0	-128.0	NULL	-2.147483648E9	NULL	1.0E20	Infinity	1.7976931348623157E308	1.7976931348623157E308	1.7976931348623157E308	1.3441649006897012E11	original
@@ -530,54 +530,54 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 104	1	1.000000000000000000	23.000000000000000000	834.000000000000000000	203332.000000000000000000	888888857923222.000000000000000000	-100.359780000000000000	30.774000000000000000	66475.561431000000000000	66475.561431000000000000	66475.561431000000000000	270912854.000000000000000000	1.0	23.0	834.0	203332.0	8.8888885E14	66475.56	30.774	-100.35978	-100.35978	-100.35978	2.70912864E8	1.0	23.0	834.0	203332.0	8.88888857923222E14	66475.561431	-100.35978	30.774	30.774	30.774	2.70912854E8	original
 105	1	0.000000000000000000	-99.000000000000000000	-28300.000000000000000000	-999992.000000000000000000	-222282153733.000000000000000000	NULL	46114.280000000000000000	9250340.750000000000000000	9250340.750000000000000000	9250340.750000000000000000	663207639.720368500000000000	0.0	-99.0	-28300.0	-999992.0	-2.22282154E11	9250341.0	46114.28	NULL	NULL	NULL	6.6320762E8	0.0	-99.0	-28300.0	-999992.0	-2.22282153733E11	9250340.75	NULL	46114.28	46114.28	46114.28	6.632076397203685E8	original
 111	1	-46114.284799488000000000	-46114.284799488000000000	-46114.284799488000000000	-46114.284799488000000000	-46114.284799488000000000	-46114.284799488000000000	-46114.284799488000000000	-46114.284799488000000000	-46114.284799488000000000	-46114.284799488000000000	-46114.284799488000000000	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	-9.0E-8	new
-PREHOOK: query: drop table part_change_various_various_decimal_to_double
+PREHOOK: query: drop table part_change_various_various_decimal_to_double_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_various_various_decimal_to_double
-PREHOOK: Output: default@part_change_various_various_decimal_to_double
-POSTHOOK: query: drop table part_change_various_various_decimal_to_double
+PREHOOK: Input: default@part_change_various_various_decimal_to_double_n5
+PREHOOK: Output: default@part_change_various_various_decimal_to_double_n5
+POSTHOOK: query: drop table part_change_various_various_decimal_to_double_n5
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_various_various_decimal_to_double
-POSTHOOK: Output: default@part_change_various_various_decimal_to_double
-PREHOOK: query: CREATE TABLE part_change_various_various_timestamp(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT)
+POSTHOOK: Input: default@part_change_various_various_decimal_to_double_n5
+POSTHOOK: Output: default@part_change_various_various_decimal_to_double_n5
+PREHOOK: query: CREATE TABLE part_change_various_various_timestamp_n5(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_various_various_timestamp
-POSTHOOK: query: CREATE TABLE part_change_various_various_timestamp(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT)
+PREHOOK: Output: default@part_change_various_various_timestamp_n5
+POSTHOOK: query: CREATE TABLE part_change_various_various_timestamp_n5(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_various_various_timestamp
-PREHOOK: query: insert into table part_change_various_various_timestamp partition(part=1) SELECT insert_num, boolean1, tinyint1, smallint1, int1, bigint1, float1, double1, decimal1, timestamp_str, timestamp_str, timestamp_str, date1, 'original' FROM schema_evolution_data
+POSTHOOK: Output: default@part_change_various_various_timestamp_n5
+PREHOOK: query: insert into table part_change_various_various_timestamp_n5 partition(part=1) SELECT insert_num, boolean1, tinyint1, smallint1, int1, bigint1, float1, double1, decimal1, timestamp_str, timestamp_str, timestamp_str, date1, 'original' FROM schema_evolution_data_n40
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_various_various_timestamp@part=1
-POSTHOOK: query: insert into table part_change_various_various_timestamp partition(part=1) SELECT insert_num, boolean1, tinyint1, smallint1, int1, bigint1, float1, double1, decimal1, timestamp_str, timestamp_str, timestamp_str, date1, 'original' FROM schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n40
+PREHOOK: Output: default@part_change_various_various_timestamp_n5@part=1
+POSTHOOK: query: insert into table part_change_various_various_timestamp_n5 partition(part=1) SELECT insert_num, boolean1, tinyint1, smallint1, int1, bigint1, float1, double1, decimal1, timestamp_str, timestamp_str, timestamp_str, date1, 'original' FROM schema_evolution_data_n40
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_various_various_timestamp@part=1
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c10 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c11 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c12 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n40
+POSTHOOK: Output: default@part_change_various_various_timestamp_n5@part=1
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:boolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c10 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c11 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:insert_num, type:int, comment:null), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_various_various_timestamp
-PREHOOK: Input: default@part_change_various_various_timestamp@part=1
+PREHOOK: Input: default@part_change_various_various_timestamp_n5
+PREHOOK: Input: default@part_change_various_various_timestamp_n5@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_various_various_timestamp
-POSTHOOK: Input: default@part_change_various_various_timestamp@part=1
+POSTHOOK: Input: default@part_change_various_various_timestamp_n5
+POSTHOOK: Input: default@part_change_various_various_timestamp_n5@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	b
 101	1	true	-128	NULL	-2147483648	NULL	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	6229-06-28 02:54:28.970117179	6229-06-28 02:54:28.97011	6229-06-28 02:54:28.97011	1950-12-18	original
@@ -585,42 +585,42 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	b
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	original
 104	1	true	23	834	203332	888888857923222	-100.35978	30.774	66475.561431000000000000	1978-08-02 06:34:14	1978-08-02 06:34:14      	1978-08-02 06:34:14	2021-09-24	original
 105	1	false	-99	-28300	-999992	-222282153733	NULL	46114.28	9250340.750000000000000000	1991-01-06 16:20:39.72036854	1991-01-06 16:20:39.72036	1991-01-06 16:20:39.72036	2024-11-11	original
-PREHOOK: query: alter table part_change_various_various_timestamp replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING)
+PREHOOK: query: alter table part_change_various_various_timestamp_n5 replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_various_various_timestamp
-PREHOOK: Output: default@part_change_various_various_timestamp
-POSTHOOK: query: alter table part_change_various_various_timestamp replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING)
+PREHOOK: Input: default@part_change_various_various_timestamp_n5
+PREHOOK: Output: default@part_change_various_various_timestamp_n5
+POSTHOOK: query: alter table part_change_various_various_timestamp_n5 replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_various_various_timestamp
-POSTHOOK: Output: default@part_change_various_various_timestamp
-PREHOOK: query: insert into table part_change_various_various_timestamp partition(part=1) SELECT insert_num, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'new' FROM schema_evolution_data_2 WHERE insert_num=111
+POSTHOOK: Input: default@part_change_various_various_timestamp_n5
+POSTHOOK: Output: default@part_change_various_various_timestamp_n5
+PREHOOK: query: insert into table part_change_various_various_timestamp_n5 partition(part=1) SELECT insert_num, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'new' FROM schema_evolution_data_2_n13 WHERE insert_num=111
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
-PREHOOK: Output: default@part_change_various_various_timestamp@part=1
-POSTHOOK: query: insert into table part_change_various_various_timestamp partition(part=1) SELECT insert_num, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'new' FROM schema_evolution_data_2 WHERE insert_num=111
+PREHOOK: Input: default@schema_evolution_data_2_n13
+PREHOOK: Output: default@part_change_various_various_timestamp_n5@part=1
+POSTHOOK: query: insert into table part_change_various_various_timestamp_n5 partition(part=1) SELECT insert_num, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'new' FROM schema_evolution_data_2_n13 WHERE insert_num=111
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
-POSTHOOK: Output: default@part_change_various_various_timestamp@part=1
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_2_n13
+POSTHOOK: Output: default@part_change_various_various_timestamp_n5@part=1
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_timestamp_n5 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	_c13
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp_n5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp_n5
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -639,7 +639,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_various_various_timestamp
+                  alias: part_change_various_various_timestamp_n5
                   Statistics: Num rows: 6 Data size: 6973 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: timestamp), c2 (type: timestamp), c3 (type: timestamp), c4 (type: timestamp), c5 (type: timestamp), c6 (type: timestamp), c7 (type: timestamp), c8 (type: timestamp), c9 (type: timestamp), c10 (type: timestamp), c11 (type: timestamp), c12 (type: timestamp), b (type: string)
@@ -661,15 +661,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_various_various_timestamp
-PREHOOK: Input: default@part_change_various_various_timestamp@part=1
+PREHOOK: Input: default@part_change_various_various_timestamp_n5
+PREHOOK: Input: default@part_change_various_various_timestamp_n5@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_various_various_timestamp
-POSTHOOK: Input: default@part_change_various_various_timestamp@part=1
+POSTHOOK: Input: default@part_change_various_various_timestamp_n5
+POSTHOOK: Input: default@part_change_various_various_timestamp_n5@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	b
 101	1	1969-12-31 16:00:00.001	1969-12-31 15:59:59.872	NULL	1969-12-06 19:28:36.352	NULL	NULL	NULL	NULL	6229-06-28 02:54:28.970117179	6229-06-28 02:54:28.97011	6229-06-28 02:54:28.97011	1950-12-18 00:00:00	original
@@ -678,46 +678,46 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	b
 104	1	1969-12-31 16:00:00.001	1969-12-31 16:00:00.023	1969-12-31 16:00:00.834	1969-12-31 16:03:23.332	NULL	1969-12-31 15:58:19.640220643	1969-12-31 16:00:30.774	1970-01-01 10:27:55.561431	1978-08-02 06:34:14	1978-08-02 06:34:14	1978-08-02 06:34:14	2021-09-24 00:00:00	original
 105	1	1969-12-31 16:00:00	1969-12-31 15:59:59.901	1969-12-31 15:59:31.7	1969-12-31 15:43:20.008	1962-12-15 22:57:26.267	NULL	1970-01-01 04:48:34.28	1970-04-17 17:32:20.75	1991-01-06 16:20:39.72036854	1991-01-06 16:20:39.72036	1991-01-06 16:20:39.72036	2024-11-11 00:00:00	original
 111	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	new
-PREHOOK: query: drop table part_change_various_various_timestamp
+PREHOOK: query: drop table part_change_various_various_timestamp_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_various_various_timestamp
-PREHOOK: Output: default@part_change_various_various_timestamp
-POSTHOOK: query: drop table part_change_various_various_timestamp
+PREHOOK: Input: default@part_change_various_various_timestamp_n5
+PREHOOK: Output: default@part_change_various_various_timestamp_n5
+POSTHOOK: query: drop table part_change_various_various_timestamp_n5
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_various_various_timestamp
-POSTHOOK: Output: default@part_change_various_various_timestamp
-PREHOOK: query: CREATE TABLE part_change_various_various_date(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
+POSTHOOK: Input: default@part_change_various_various_timestamp_n5
+POSTHOOK: Output: default@part_change_various_various_timestamp_n5
+PREHOOK: query: CREATE TABLE part_change_various_various_date_n5(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_various_various_date
-POSTHOOK: query: CREATE TABLE part_change_various_various_date(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
+PREHOOK: Output: default@part_change_various_various_date_n5
+POSTHOOK: query: CREATE TABLE part_change_various_various_date_n5(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_various_various_date
-PREHOOK: query: insert into table part_change_various_various_date partition(part=1) SELECT insert_num, date_str, date_str, date_str, timestamp1, 'original' FROM schema_evolution_data
+POSTHOOK: Output: default@part_change_various_various_date_n5
+PREHOOK: query: insert into table part_change_various_various_date_n5 partition(part=1) SELECT insert_num, date_str, date_str, date_str, timestamp1, 'original' FROM schema_evolution_data_n40
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_various_various_date@part=1
-POSTHOOK: query: insert into table part_change_various_various_date partition(part=1) SELECT insert_num, date_str, date_str, date_str, timestamp1, 'original' FROM schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n40
+PREHOOK: Output: default@part_change_various_various_date_n5@part=1
+POSTHOOK: query: insert into table part_change_various_various_date_n5 partition(part=1) SELECT insert_num, date_str, date_str, date_str, timestamp1, 'original' FROM schema_evolution_data_n40
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_various_various_date@part=1
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:date_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c2 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:date_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c3 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:date_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n40
+POSTHOOK: Output: default@part_change_various_various_date_n5@part=1
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:date_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).c2 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:date_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).c3 EXPRESSION [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:date_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n40)schema_evolution_data_n40.FieldSchema(name:insert_num, type:int, comment:null), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_various_various_date
-PREHOOK: Input: default@part_change_various_various_date@part=1
+PREHOOK: Input: default@part_change_various_various_date_n5
+PREHOOK: Input: default@part_change_various_various_date_n5@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_various_various_date
-POSTHOOK: Input: default@part_change_various_various_date@part=1
+POSTHOOK: Input: default@part_change_various_various_date_n5
+POSTHOOK: Input: default@part_change_various_various_date_n5@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	b
 101	1	1950-12-18	1950-12-18               	1950-12-18	6229-06-28 02:54:28.970117179	original
@@ -725,34 +725,34 @@ insert_num	part	c1	c2	c3	c4	b
 103	1		                         		NULL	original
 104	1	2021-09-24	2021-09-24               	2021-09-24	1978-08-02 06:34:14	original
 105	1	2024-11-11	2024-11-11               	2024-11-11	1991-01-06 16:20:39.72036854	original
-PREHOOK: query: alter table part_change_various_various_date replace columns (insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, b STRING)
+PREHOOK: query: alter table part_change_various_various_date_n5 replace columns (insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_various_various_date
-PREHOOK: Output: default@part_change_various_various_date
-POSTHOOK: query: alter table part_change_various_various_date replace columns (insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, b STRING)
+PREHOOK: Input: default@part_change_various_various_date_n5
+PREHOOK: Output: default@part_change_various_various_date_n5
+POSTHOOK: query: alter table part_change_various_various_date_n5 replace columns (insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_various_various_date
-POSTHOOK: Output: default@part_change_various_various_date
-PREHOOK: query: insert into table part_change_various_various_date partition(part=1) SELECT insert_num, date1, date1, date1, date1, 'new' FROM schema_evolution_data_2 WHERE insert_num=111
+POSTHOOK: Input: default@part_change_various_various_date_n5
+POSTHOOK: Output: default@part_change_various_various_date_n5
+PREHOOK: query: insert into table part_change_various_various_date_n5 partition(part=1) SELECT insert_num, date1, date1, date1, date1, 'new' FROM schema_evolution_data_2_n13 WHERE insert_num=111
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
-PREHOOK: Output: default@part_change_various_various_date@part=1
-POSTHOOK: query: insert into table part_change_various_various_date partition(part=1) SELECT insert_num, date1, date1, date1, date1, 'new' FROM schema_evolution_data_2 WHERE insert_num=111
+PREHOOK: Input: default@schema_evolution_data_2_n13
+PREHOOK: Output: default@part_change_various_various_date_n5@part=1
+POSTHOOK: query: insert into table part_change_various_various_date_n5 partition(part=1) SELECT insert_num, date1, date1, date1, date1, 'new' FROM schema_evolution_data_2_n13 WHERE insert_num=111
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
-POSTHOOK: Output: default@part_change_various_various_date@part=1
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_2_n13
+POSTHOOK: Output: default@part_change_various_various_date_n5@part=1
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_date_n5 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n13)schema_evolution_data_2_n13.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	date1	date1	date1	date1	_c5
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
+select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date_n5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
+select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date_n5
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -771,7 +771,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_various_various_date
+                  alias: part_change_various_various_date_n5
                   Statistics: Num rows: 6 Data size: 2496 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: date), c2 (type: date), c3 (type: date), c4 (type: date), b (type: string)
@@ -793,15 +793,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_various_various_date
-PREHOOK: Input: default@part_change_various_various_date@part=1
+PREHOOK: Input: default@part_change_various_various_date_n5
+PREHOOK: Input: default@part_change_various_various_date_n5@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_various_various_date
-POSTHOOK: Input: default@part_change_various_various_date@part=1
+POSTHOOK: Input: default@part_change_various_various_date_n5
+POSTHOOK: Input: default@part_change_various_various_date_n5@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	b
 101	1	1950-12-18	1950-12-18	1950-12-18	6229-06-28	original
@@ -810,68 +810,68 @@ insert_num	part	c1	c2	c3	c4	b
 104	1	2021-09-24	2021-09-24	2021-09-24	1978-08-02	original
 105	1	2024-11-11	2024-11-11	2024-11-11	1991-01-06	original
 111	1	1964-01-24	1964-01-24	1964-01-24	1964-01-24	new
-PREHOOK: query: drop table part_change_various_various_date
+PREHOOK: query: drop table part_change_various_various_date_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_various_various_date
-PREHOOK: Output: default@part_change_various_various_date
-POSTHOOK: query: drop table part_change_various_various_date
+PREHOOK: Input: default@part_change_various_various_date_n5
+PREHOOK: Output: default@part_change_various_various_date_n5
+POSTHOOK: query: drop table part_change_various_various_date_n5
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_various_various_date
-POSTHOOK: Output: default@part_change_various_various_date
-PREHOOK: query: CREATE TABLE part_change_same_type_different_params(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT)
+POSTHOOK: Input: default@part_change_various_various_date_n5
+POSTHOOK: Output: default@part_change_various_various_date_n5
+PREHOOK: query: CREATE TABLE part_change_same_type_different_params_n5(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_same_type_different_params
-POSTHOOK: query: CREATE TABLE part_change_same_type_different_params(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT)
+PREHOOK: Output: default@part_change_same_type_different_params_n5
+POSTHOOK: query: CREATE TABLE part_change_same_type_different_params_n5(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_same_type_different_params
-PREHOOK: query: CREATE TABLE same_type1_a_txt(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING)
+POSTHOOK: Output: default@part_change_same_type_different_params_n5
+PREHOOK: query: CREATE TABLE same_type1_a_txt_n5(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING)
 row format delimited fields terminated by '|'
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@same_type1_a_txt
-POSTHOOK: query: CREATE TABLE same_type1_a_txt(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING)
+PREHOOK: Output: default@same_type1_a_txt_n5
+POSTHOOK: query: CREATE TABLE same_type1_a_txt_n5(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING)
 row format delimited fields terminated by '|'
 stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@same_type1_a_txt
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_a.txt' overwrite into table same_type1_a_txt
+POSTHOOK: Output: default@same_type1_a_txt_n5
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_a.txt' overwrite into table same_type1_a_txt_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@same_type1_a_txt
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_a.txt' overwrite into table same_type1_a_txt
+PREHOOK: Output: default@same_type1_a_txt_n5
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_a.txt' overwrite into table same_type1_a_txt_n5
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@same_type1_a_txt
-PREHOOK: query: insert into table part_change_same_type_different_params partition(part=1) select * from same_type1_a_txt
+POSTHOOK: Output: default@same_type1_a_txt_n5
+PREHOOK: query: insert into table part_change_same_type_different_params_n5 partition(part=1) select * from same_type1_a_txt_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@same_type1_a_txt
-PREHOOK: Output: default@part_change_same_type_different_params@part=1
-POSTHOOK: query: insert into table part_change_same_type_different_params partition(part=1) select * from same_type1_a_txt
+PREHOOK: Input: default@same_type1_a_txt_n5
+PREHOOK: Output: default@part_change_same_type_different_params_n5@part=1
+POSTHOOK: query: insert into table part_change_same_type_different_params_n5 partition(part=1) select * from same_type1_a_txt_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@same_type1_a_txt
-POSTHOOK: Output: default@part_change_same_type_different_params@part=1
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).b SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c1 SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:c1, type:char(12), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c2 SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:c2, type:char(25), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c3 SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:c3, type:varchar(25), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c4 SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:c4, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c5 SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:c5, type:decimal(12,4), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c6 SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:c6, type:decimal(20,10), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).insert_num SIMPLE [(same_type1_a_txt)same_type1_a_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
-same_type1_a_txt.insert_num	same_type1_a_txt.c1	same_type1_a_txt.c2	same_type1_a_txt.c3	same_type1_a_txt.c4	same_type1_a_txt.c5	same_type1_a_txt.c6	same_type1_a_txt.b
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
+POSTHOOK: Input: default@same_type1_a_txt_n5
+POSTHOOK: Output: default@part_change_same_type_different_params_n5@part=1
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).b SIMPLE [(same_type1_a_txt_n5)same_type1_a_txt_n5.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c1 SIMPLE [(same_type1_a_txt_n5)same_type1_a_txt_n5.FieldSchema(name:c1, type:char(12), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c2 SIMPLE [(same_type1_a_txt_n5)same_type1_a_txt_n5.FieldSchema(name:c2, type:char(25), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c3 SIMPLE [(same_type1_a_txt_n5)same_type1_a_txt_n5.FieldSchema(name:c3, type:varchar(25), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c4 SIMPLE [(same_type1_a_txt_n5)same_type1_a_txt_n5.FieldSchema(name:c4, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c5 SIMPLE [(same_type1_a_txt_n5)same_type1_a_txt_n5.FieldSchema(name:c5, type:decimal(12,4), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c6 SIMPLE [(same_type1_a_txt_n5)same_type1_a_txt_n5.FieldSchema(name:c6, type:decimal(20,10), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).insert_num SIMPLE [(same_type1_a_txt_n5)same_type1_a_txt_n5.FieldSchema(name:insert_num, type:int, comment:null), ]
+same_type1_a_txt_n5.insert_num	same_type1_a_txt_n5.c1	same_type1_a_txt_n5.c2	same_type1_a_txt_n5.c3	same_type1_a_txt_n5.c4	same_type1_a_txt_n5.c5	same_type1_a_txt_n5.c6	same_type1_a_txt_n5.b
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_same_type_different_params
-PREHOOK: Input: default@part_change_same_type_different_params@part=1
+PREHOOK: Input: default@part_change_same_type_different_params_n5
+PREHOOK: Input: default@part_change_same_type_different_params_n5@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_same_type_different_params
-POSTHOOK: Input: default@part_change_same_type_different_params@part=1
+POSTHOOK: Input: default@part_change_same_type_different_params_n5
+POSTHOOK: Input: default@part_change_same_type_different_params_n5@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	b
 1	1	excess      	corporation believable   	gateway 	thumb repe	76855494.3900	NULL	original
@@ -879,93 +879,93 @@ insert_num	part	c1	c2	c3	c4	c5	c6	b
 3	1	hibernation 	country detox coyotes    	ball pulse candle	direct	1413570.3000	8.3095808155	original
 4	1	aquarium    	encounter existent amuse 	fuse light headlock	bumper adm	5475414.6500	25937.6752563004	original
 5	1	123456789012	1234567890123456789012345	1234567890123456789012345	1234567890	12345678.1234	1234567890.0987654321	original
-PREHOOK: query: alter table part_change_same_type_different_params replace columns (insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+PREHOOK: query: alter table part_change_same_type_different_params_n5 replace columns (insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_same_type_different_params
-PREHOOK: Output: default@part_change_same_type_different_params
-POSTHOOK: query: alter table part_change_same_type_different_params replace columns (insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+PREHOOK: Input: default@part_change_same_type_different_params_n5
+PREHOOK: Output: default@part_change_same_type_different_params_n5
+POSTHOOK: query: alter table part_change_same_type_different_params_n5 replace columns (insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_same_type_different_params
-POSTHOOK: Output: default@part_change_same_type_different_params
-PREHOOK: query: CREATE TABLE same_type1_b_txt(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+POSTHOOK: Input: default@part_change_same_type_different_params_n5
+POSTHOOK: Output: default@part_change_same_type_different_params_n5
+PREHOOK: query: CREATE TABLE same_type1_b_txt_n5(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
 row format delimited fields terminated by '|'
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@same_type1_b_txt
-POSTHOOK: query: CREATE TABLE same_type1_b_txt(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+PREHOOK: Output: default@same_type1_b_txt_n5
+POSTHOOK: query: CREATE TABLE same_type1_b_txt_n5(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
 row format delimited fields terminated by '|'
 stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@same_type1_b_txt
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_b.txt' overwrite into table same_type1_b_txt
+POSTHOOK: Output: default@same_type1_b_txt_n5
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_b.txt' overwrite into table same_type1_b_txt_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@same_type1_b_txt
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_b.txt' overwrite into table same_type1_b_txt
+PREHOOK: Output: default@same_type1_b_txt_n5
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_b.txt' overwrite into table same_type1_b_txt_n5
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@same_type1_b_txt
-PREHOOK: query: insert into table part_change_same_type_different_params partition(part=1) select * from same_type1_b_txt
+POSTHOOK: Output: default@same_type1_b_txt_n5
+PREHOOK: query: insert into table part_change_same_type_different_params_n5 partition(part=1) select * from same_type1_b_txt_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@same_type1_b_txt
-PREHOOK: Output: default@part_change_same_type_different_params@part=1
-POSTHOOK: query: insert into table part_change_same_type_different_params partition(part=1) select * from same_type1_b_txt
+PREHOOK: Input: default@same_type1_b_txt_n5
+PREHOOK: Output: default@part_change_same_type_different_params_n5@part=1
+POSTHOOK: query: insert into table part_change_same_type_different_params_n5 partition(part=1) select * from same_type1_b_txt_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@same_type1_b_txt
-POSTHOOK: Output: default@part_change_same_type_different_params@part=1
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).b SIMPLE [(same_type1_b_txt)same_type1_b_txt.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c1 SIMPLE [(same_type1_b_txt)same_type1_b_txt.FieldSchema(name:c1, type:char(8), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c2 SIMPLE [(same_type1_b_txt)same_type1_b_txt.FieldSchema(name:c2, type:char(32), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c3 SIMPLE [(same_type1_b_txt)same_type1_b_txt.FieldSchema(name:c3, type:varchar(15), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c4 SIMPLE [(same_type1_b_txt)same_type1_b_txt.FieldSchema(name:c4, type:varchar(18), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c5 SIMPLE [(same_type1_b_txt)same_type1_b_txt.FieldSchema(name:c5, type:decimal(10,2), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).c6 SIMPLE [(same_type1_b_txt)same_type1_b_txt.FieldSchema(name:c6, type:decimal(25,15), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=1).insert_num SIMPLE [(same_type1_b_txt)same_type1_b_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
-same_type1_b_txt.insert_num	same_type1_b_txt.c1	same_type1_b_txt.c2	same_type1_b_txt.c3	same_type1_b_txt.c4	same_type1_b_txt.c5	same_type1_b_txt.c6	same_type1_b_txt.b
-PREHOOK: query: CREATE TABLE same_type1_c_txt(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+POSTHOOK: Input: default@same_type1_b_txt_n5
+POSTHOOK: Output: default@part_change_same_type_different_params_n5@part=1
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).b SIMPLE [(same_type1_b_txt_n5)same_type1_b_txt_n5.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c1 SIMPLE [(same_type1_b_txt_n5)same_type1_b_txt_n5.FieldSchema(name:c1, type:char(8), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c2 SIMPLE [(same_type1_b_txt_n5)same_type1_b_txt_n5.FieldSchema(name:c2, type:char(32), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c3 SIMPLE [(same_type1_b_txt_n5)same_type1_b_txt_n5.FieldSchema(name:c3, type:varchar(15), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c4 SIMPLE [(same_type1_b_txt_n5)same_type1_b_txt_n5.FieldSchema(name:c4, type:varchar(18), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c5 SIMPLE [(same_type1_b_txt_n5)same_type1_b_txt_n5.FieldSchema(name:c5, type:decimal(10,2), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).c6 SIMPLE [(same_type1_b_txt_n5)same_type1_b_txt_n5.FieldSchema(name:c6, type:decimal(25,15), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=1).insert_num SIMPLE [(same_type1_b_txt_n5)same_type1_b_txt_n5.FieldSchema(name:insert_num, type:int, comment:null), ]
+same_type1_b_txt_n5.insert_num	same_type1_b_txt_n5.c1	same_type1_b_txt_n5.c2	same_type1_b_txt_n5.c3	same_type1_b_txt_n5.c4	same_type1_b_txt_n5.c5	same_type1_b_txt_n5.c6	same_type1_b_txt_n5.b
+PREHOOK: query: CREATE TABLE same_type1_c_txt_n5(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
 row format delimited fields terminated by '|'
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@same_type1_c_txt
-POSTHOOK: query: CREATE TABLE same_type1_c_txt(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+PREHOOK: Output: default@same_type1_c_txt_n5
+POSTHOOK: query: CREATE TABLE same_type1_c_txt_n5(insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
 row format delimited fields terminated by '|'
 stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@same_type1_c_txt
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_c.txt' overwrite into table same_type1_c_txt
+POSTHOOK: Output: default@same_type1_c_txt_n5
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_c.txt' overwrite into table same_type1_c_txt_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@same_type1_c_txt
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_c.txt' overwrite into table same_type1_c_txt
+PREHOOK: Output: default@same_type1_c_txt_n5
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/same_type1_c.txt' overwrite into table same_type1_c_txt_n5
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@same_type1_c_txt
-PREHOOK: query: insert into table part_change_same_type_different_params partition(part=2) select * from same_type1_c_txt
+POSTHOOK: Output: default@same_type1_c_txt_n5
+PREHOOK: query: insert into table part_change_same_type_different_params_n5 partition(part=2) select * from same_type1_c_txt_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@same_type1_c_txt
-PREHOOK: Output: default@part_change_same_type_different_params@part=2
-POSTHOOK: query: insert into table part_change_same_type_different_params partition(part=2) select * from same_type1_c_txt
+PREHOOK: Input: default@same_type1_c_txt_n5
+PREHOOK: Output: default@part_change_same_type_different_params_n5@part=2
+POSTHOOK: query: insert into table part_change_same_type_different_params_n5 partition(part=2) select * from same_type1_c_txt_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@same_type1_c_txt
-POSTHOOK: Output: default@part_change_same_type_different_params@part=2
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).b SIMPLE [(same_type1_c_txt)same_type1_c_txt.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).c1 SIMPLE [(same_type1_c_txt)same_type1_c_txt.FieldSchema(name:c1, type:char(8), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).c2 SIMPLE [(same_type1_c_txt)same_type1_c_txt.FieldSchema(name:c2, type:char(32), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).c3 SIMPLE [(same_type1_c_txt)same_type1_c_txt.FieldSchema(name:c3, type:varchar(15), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).c4 SIMPLE [(same_type1_c_txt)same_type1_c_txt.FieldSchema(name:c4, type:varchar(18), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).c5 SIMPLE [(same_type1_c_txt)same_type1_c_txt.FieldSchema(name:c5, type:decimal(10,2), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).c6 SIMPLE [(same_type1_c_txt)same_type1_c_txt.FieldSchema(name:c6, type:decimal(25,15), comment:null), ]
-POSTHOOK: Lineage: part_change_same_type_different_params PARTITION(part=2).insert_num SIMPLE [(same_type1_c_txt)same_type1_c_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
-same_type1_c_txt.insert_num	same_type1_c_txt.c1	same_type1_c_txt.c2	same_type1_c_txt.c3	same_type1_c_txt.c4	same_type1_c_txt.c5	same_type1_c_txt.c6	same_type1_c_txt.b
+POSTHOOK: Input: default@same_type1_c_txt_n5
+POSTHOOK: Output: default@part_change_same_type_different_params_n5@part=2
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=2).b SIMPLE [(same_type1_c_txt_n5)same_type1_c_txt_n5.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=2).c1 SIMPLE [(same_type1_c_txt_n5)same_type1_c_txt_n5.FieldSchema(name:c1, type:char(8), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=2).c2 SIMPLE [(same_type1_c_txt_n5)same_type1_c_txt_n5.FieldSchema(name:c2, type:char(32), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=2).c3 SIMPLE [(same_type1_c_txt_n5)same_type1_c_txt_n5.FieldSchema(name:c3, type:varchar(15), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=2).c4 SIMPLE [(same_type1_c_txt_n5)same_type1_c_txt_n5.FieldSchema(name:c4, type:varchar(18), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=2).c5 SIMPLE [(same_type1_c_txt_n5)same_type1_c_txt_n5.FieldSchema(name:c5, type:decimal(10,2), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=2).c6 SIMPLE [(same_type1_c_txt_n5)same_type1_c_txt_n5.FieldSchema(name:c6, type:decimal(25,15), comment:null), ]
+POSTHOOK: Lineage: part_change_same_type_different_params_n5 PARTITION(part=2).insert_num SIMPLE [(same_type1_c_txt_n5)same_type1_c_txt_n5.FieldSchema(name:insert_num, type:int, comment:null), ]
+same_type1_c_txt_n5.insert_num	same_type1_c_txt_n5.c1	same_type1_c_txt_n5.c2	same_type1_c_txt_n5.c3	same_type1_c_txt_n5.c4	same_type1_c_txt_n5.c5	same_type1_c_txt_n5.c6	same_type1_c_txt_n5.b
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
+select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params_n5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
+select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params_n5
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -984,7 +984,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_same_type_different_params
+                  alias: part_change_same_type_different_params_n5
                   Statistics: Num rows: 13 Data size: 9347 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: char(8)), c2 (type: char(32)), c3 (type: varchar(15)), c4 (type: varchar(18)), c5 (type: decimal(10,2)), c6 (type: decimal(25,15)), b (type: string)
@@ -1006,17 +1006,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_same_type_different_params
-PREHOOK: Input: default@part_change_same_type_different_params@part=1
-PREHOOK: Input: default@part_change_same_type_different_params@part=2
+PREHOOK: Input: default@part_change_same_type_different_params_n5
+PREHOOK: Input: default@part_change_same_type_different_params_n5@part=1
+PREHOOK: Input: default@part_change_same_type_different_params_n5@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,b from part_change_same_type_different_params_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_same_type_different_params
-POSTHOOK: Input: default@part_change_same_type_different_params@part=1
-POSTHOOK: Input: default@part_change_same_type_different_params@part=2
+POSTHOOK: Input: default@part_change_same_type_different_params_n5
+POSTHOOK: Input: default@part_change_same_type_different_params_n5@part=1
+POSTHOOK: Input: default@part_change_same_type_different_params_n5@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	b
 1	1	excess  	corporation believable          	gateway 	thumb repe	76855494.39	NULL	original
@@ -1032,11 +1032,11 @@ insert_num	part	c1	c2	c3	c4	c5	c6	b
 7	1	wig feel	social fork drum                	search bump	conclusion percept	8.31	NULL	new
 8	1	bubble f	drain loyal station             	racket	antique business	0.69	22.832613278741300	new
 9	1	12345678	12345678901234567890123456789012	123456789012345	123456789012345678	NULL	1234567890.543210987654321	new
-PREHOOK: query: drop table part_change_same_type_different_params
+PREHOOK: query: drop table part_change_same_type_different_params_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_same_type_different_params
-PREHOOK: Output: default@part_change_same_type_different_params
-POSTHOOK: query: drop table part_change_same_type_different_params
+PREHOOK: Input: default@part_change_same_type_different_params_n5
+PREHOOK: Output: default@part_change_same_type_different_params_n5
+POSTHOOK: query: drop table part_change_same_type_different_params_n5
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_same_type_different_params
-POSTHOOK: Output: default@part_change_same_type_different_params
+POSTHOOK: Input: default@part_change_same_type_different_params_n5
+POSTHOOK: Output: default@part_change_same_type_different_params_n5

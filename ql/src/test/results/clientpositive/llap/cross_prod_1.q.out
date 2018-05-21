@@ -1,21 +1,21 @@
-PREHOOK: query: create table X as
+PREHOOK: query: create table X_n0 as
 select distinct * from src order by key limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@X
-POSTHOOK: query: create table X as
+PREHOOK: Output: default@X_n0
+POSTHOOK: query: create table X_n0 as
 select distinct * from src order by key limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@X
-POSTHOOK: Lineage: x.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: x.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@X_n0
+POSTHOOK: Lineage: x_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: x_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from X as A, X as B order by A.key, B.key
+PREHOOK: query: explain select * from X_n0 as A, X_n0 as B order by A.key, B.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from X as A, X as B order by A.key, B.key
+POSTHOOK: query: explain select * from X_n0 as A, X_n0 as B order by A.key, B.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -98,13 +98,13 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from X as A, X as B order by A.key, B.key
+PREHOOK: query: select * from X_n0 as A, X_n0 as B order by A.key, B.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@x
+PREHOOK: Input: default@x_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from X as A, X as B order by A.key, B.key
+POSTHOOK: query: select * from X_n0 as A, X_n0 as B order by A.key, B.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x
+POSTHOOK: Input: default@x_n0
 #### A masked pattern was here ####
 0	val_0	0	val_0
 0	val_0	10	val_10
@@ -207,9 +207,9 @@ POSTHOOK: Input: default@x
 114	val_114	113	val_113
 114	val_114	114	val_114
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from X as A join X as B on A.key<B.key
+PREHOOK: query: explain select * from X_n0 as A join X_n0 as B on A.key<B.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from X as A join X as B on A.key<B.key
+POSTHOOK: query: explain select * from X_n0 as A join X_n0 as B on A.key<B.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -280,13 +280,13 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from X as A join X as B on A.key<B.key order by A.key, B.key
+PREHOOK: query: select * from X_n0 as A join X_n0 as B on A.key<B.key order by A.key, B.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@x
+PREHOOK: Input: default@x_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from X as A join X as B on A.key<B.key order by A.key, B.key
+POSTHOOK: query: select * from X_n0 as A join X_n0 as B on A.key<B.key order by A.key, B.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x
+POSTHOOK: Input: default@x_n0
 #### A masked pattern was here ####
 0	val_0	10	val_10
 0	val_0	100	val_100
@@ -334,9 +334,9 @@ POSTHOOK: Input: default@x
 111	val_111	114	val_114
 113	val_113	114	val_114
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from X as A join X as B on A.key between "103" and "105"
+PREHOOK: query: explain select * from X_n0 as A join X_n0 as B on A.key between "103" and "105"
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from X as A join X as B on A.key between "103" and "105"
+POSTHOOK: query: explain select * from X_n0 as A join X_n0 as B on A.key between "103" and "105"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -409,13 +409,13 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from X as A join X as B on A.key between "103" and "105" order by A.key, B.key
+PREHOOK: query: select * from X_n0 as A join X_n0 as B on A.key between "103" and "105" order by A.key, B.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@x
+PREHOOK: Input: default@x_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from X as A join X as B on A.key between "103" and "105" order by A.key, B.key
+POSTHOOK: query: select * from X_n0 as A join X_n0 as B on A.key between "103" and "105" order by A.key, B.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x
+POSTHOOK: Input: default@x_n0
 #### A masked pattern was here ####
 103	val_103	0	val_0
 103	val_103	10	val_10
@@ -448,9 +448,9 @@ POSTHOOK: Input: default@x
 105	val_105	113	val_113
 105	val_105	114	val_114
 Warning: Shuffle Join MERGEJOIN[12][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from X as A, X as B, X as C
+PREHOOK: query: explain select * from X_n0 as A, X_n0 as B, X_n0 as C
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from X as A, X as B, X as C
+POSTHOOK: query: explain select * from X_n0 as A, X_n0 as B, X_n0 as C
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -541,13 +541,13 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from X as A, X as B, X as C order by A.key, B.key, C.key
+PREHOOK: query: select * from X_n0 as A, X_n0 as B, X_n0 as C order by A.key, B.key, C.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@x
+PREHOOK: Input: default@x_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from X as A, X as B, X as C order by A.key, B.key, C.key
+POSTHOOK: query: select * from X_n0 as A, X_n0 as B, X_n0 as C order by A.key, B.key, C.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x
+POSTHOOK: Input: default@x_n0
 #### A masked pattern was here ####
 0	val_0	0	val_0	0	val_0
 0	val_0	0	val_0	10	val_10
@@ -1550,9 +1550,9 @@ POSTHOOK: Input: default@x
 114	val_114	114	val_114	113	val_113
 114	val_114	114	val_114	114	val_114
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from X as A join X as B on A.key in ("103", "104", "105")
+PREHOOK: query: explain select * from X_n0 as A join X_n0 as B on A.key in ("103", "104", "105")
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from X as A join X as B on A.key in ("103", "104", "105")
+POSTHOOK: query: explain select * from X_n0 as A join X_n0 as B on A.key in ("103", "104", "105")
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1625,13 +1625,13 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from X as A join X as B on A.key in ("103", "104", "105") order by A.key, B.key
+PREHOOK: query: select * from X_n0 as A join X_n0 as B on A.key in ("103", "104", "105") order by A.key, B.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@x
+PREHOOK: Input: default@x_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from X as A join X as B on A.key in ("103", "104", "105") order by A.key, B.key
+POSTHOOK: query: select * from X_n0 as A join X_n0 as B on A.key in ("103", "104", "105") order by A.key, B.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x
+POSTHOOK: Input: default@x_n0
 #### A masked pattern was here ####
 103	val_103	0	val_0
 103	val_103	10	val_10
@@ -1664,9 +1664,9 @@ POSTHOOK: Input: default@x
 105	val_105	113	val_113
 105	val_105	114	val_114
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select A.key, count(*)  from X as A, X as B group by A.key
+PREHOOK: query: explain select A.key, count(*)  from X_n0 as A, X_n0 as B group by A.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select A.key, count(*)  from X as A, X as B group by A.key
+POSTHOOK: query: explain select A.key, count(*)  from X_n0 as A, X_n0 as B group by A.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1755,13 +1755,13 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select A.key, count(*)  from X as A, X as B group by A.key order by A.key
+PREHOOK: query: select A.key, count(*)  from X_n0 as A, X_n0 as B group by A.key order by A.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@x
+PREHOOK: Input: default@x_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select A.key, count(*)  from X as A, X as B group by A.key order by A.key
+POSTHOOK: query: select A.key, count(*)  from X_n0 as A, X_n0 as B group by A.key order by A.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x
+POSTHOOK: Input: default@x_n0
 #### A masked pattern was here ####
 0	10
 10	10
@@ -1774,9 +1774,9 @@ POSTHOOK: Input: default@x
 113	10
 114	10
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from X as A left outer join X as B on (A.key = B.key or A.value between "val_103" and "val_105")
+PREHOOK: query: explain select * from X_n0 as A left outer join X_n0 as B on (A.key = B.key or A.value between "val_103" and "val_105")
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from X as A left outer join X as B on (A.key = B.key or A.value between "val_103" and "val_105")
+POSTHOOK: query: explain select * from X_n0 as A left outer join X_n0 as B on (A.key = B.key or A.value between "val_103" and "val_105")
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1847,9 +1847,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from X as A right outer join X as B on (A.key = B.key or A.value between "val_103" and "val_105")
+PREHOOK: query: explain select * from X_n0 as A right outer join X_n0 as B on (A.key = B.key or A.value between "val_103" and "val_105")
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from X as A right outer join X as B on (A.key = B.key or A.value between "val_103" and "val_105")
+POSTHOOK: query: explain select * from X_n0 as A right outer join X_n0 as B on (A.key = B.key or A.value between "val_103" and "val_105")
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1920,9 +1920,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from X as A full outer join X as B on (A.key = B.key or A.value between "val_103" and "val_105")
+PREHOOK: query: explain select * from X_n0 as A full outer join X_n0 as B on (A.key = B.key or A.value between "val_103" and "val_105")
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from X as A full outer join X as B on (A.key = B.key or A.value between "val_103" and "val_105")
+POSTHOOK: query: explain select * from X_n0 as A full outer join X_n0 as B on (A.key = B.key or A.value between "val_103" and "val_105")
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1993,9 +1993,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from (select X.key, count(*) from X group by X.key) as A, (select X.key, count(*) from X group by X.key) as B
+PREHOOK: query: explain select * from (select X_n0.key, count(*) from X_n0 group by X_n0.key) as A, (select X_n0.key, count(*) from X_n0 group by X_n0.key) as B
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from (select X.key, count(*) from X group by X.key) as A, (select X.key, count(*) from X group by X.key) as B
+POSTHOOK: query: explain select * from (select X_n0.key, count(*) from X_n0 group by X_n0.key) as A, (select X_n0.key, count(*) from X_n0 group by X_n0.key) as B
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2014,7 +2014,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: x
+                  alias: x_n0
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -2092,13 +2092,13 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from (select X.key, count(*) from X group by X.key) as A, (select X.key, count(*) from X group by X.key) as B order by A.key, B.key
+PREHOOK: query: select * from (select X_n0.key, count(*) from X_n0 group by X_n0.key) as A, (select X_n0.key, count(*) from X_n0 group by X_n0.key) as B order by A.key, B.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@x
+PREHOOK: Input: default@x_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select X.key, count(*) from X group by X.key) as A, (select X.key, count(*) from X group by X.key) as B order by A.key, B.key
+POSTHOOK: query: select * from (select X_n0.key, count(*) from X_n0 group by X_n0.key) as A, (select X_n0.key, count(*) from X_n0 group by X_n0.key) as B order by A.key, B.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x
+POSTHOOK: Input: default@x_n0
 #### A masked pattern was here ####
 0	1	0	1
 0	1	10	1
@@ -2201,9 +2201,9 @@ POSTHOOK: Input: default@x
 114	1	113	1
 114	1	114	1
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from (select * from X union all select * from X as y) a join X
+PREHOOK: query: explain select * from (select * from X_n0 union all select * from X_n0 as y) a join X_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from (select * from X union all select * from X as y) a join X
+POSTHOOK: query: explain select * from (select * from X_n0 union all select * from X_n0 as y) a join X_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2222,7 +2222,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: x
+                  alias: x_n0
                   Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -2252,7 +2252,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: x
+                  alias: x_n0
                   Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -2292,13 +2292,13 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_1]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: select * from (select * from X union all select * from X as y) a join X order by a.key, X.key
+PREHOOK: query: select * from (select * from X_n0 union all select * from X_n0 as y) a join X_n0 order by a.key, X_n0.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@x
+PREHOOK: Input: default@x_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select * from X union all select * from X as y) a join X order by a.key, X.key
+POSTHOOK: query: select * from (select * from X_n0 union all select * from X_n0 as y) a join X_n0 order by a.key, X_n0.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x
+POSTHOOK: Input: default@x_n0
 #### A masked pattern was here ####
 0	val_0	0	val_0
 0	val_0	0	val_0

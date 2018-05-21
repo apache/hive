@@ -1,14 +1,14 @@
-PREHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE partitioned1_n1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@partitioned1
-POSTHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
+PREHOOK: Output: default@partitioned1_n1
+POSTHOOK: query: CREATE TABLE partitioned1_n1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@partitioned1
-PREHOOK: query: explain insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+POSTHOOK: Output: default@partitioned1_n1
+PREHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+POSTHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -47,7 +47,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.partitioned1
+                        name: default.partitioned1_n1
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
                     outputColumnNames: a, b, part
@@ -102,7 +102,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.partitioned1
+              name: default.partitioned1_n1
 
   Stage: Stage-2
     Stats Work
@@ -110,7 +110,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: a, b
           Column Types: int, string
-          Table: default.partitioned1
+          Table: default.partitioned1_n1
 
   Stage: Stage-3
     Map Reduce
@@ -122,7 +122,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-5
     Map Reduce
@@ -134,7 +134,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-6
     Move Operator
@@ -142,23 +142,23 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+PREHOOK: query: insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@partitioned1@part=1
-POSTHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
+PREHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: query: insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@partitioned1@part=1
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a SCRIPT []
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).b SCRIPT []
 col1	col2
-PREHOOK: query: desc formatted partitioned1 partition(part=1)
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1)
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	comment
 # col_name            	data_type           	comment             
 a                   	int                 	                    
@@ -171,7 +171,7 @@ part                	int
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	partitioned1        	 
+Table:              	partitioned1_n1     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
@@ -191,12 +191,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted partitioned1 partition(part=1) a
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1) a
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
 col_name            	a                   	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
@@ -210,20 +210,20 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: alter table partitioned1 add columns(c int, d string)
+PREHOOK: query: alter table partitioned1_n1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@partitioned1
-PREHOOK: Output: default@partitioned1
-POSTHOOK: query: alter table partitioned1 add columns(c int, d string)
+PREHOOK: Input: default@partitioned1_n1
+PREHOOK: Output: default@partitioned1_n1
+POSTHOOK: query: alter table partitioned1_n1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@partitioned1
-POSTHOOK: Output: default@partitioned1
-PREHOOK: query: desc formatted partitioned1 partition(part=1)
+POSTHOOK: Input: default@partitioned1_n1
+POSTHOOK: Output: default@partitioned1_n1
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1)
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	comment
 # col_name            	data_type           	comment             
 a                   	int                 	                    
@@ -236,7 +236,7 @@ part                	int
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	partitioned1        	 
+Table:              	partitioned1_n1     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
@@ -256,9 +256,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: query: explain insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+POSTHOOK: query: explain insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -297,7 +297,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.partitioned1
+                        name: default.partitioned1_n1
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), UDFToInteger('2') (type: int)
                     outputColumnNames: a, b, c, d, part
@@ -352,7 +352,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.partitioned1
+              name: default.partitioned1_n1
 
   Stage: Stage-2
     Stats Work
@@ -360,7 +360,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: a, b, c, d
           Column Types: int, string, int, string
-          Table: default.partitioned1
+          Table: default.partitioned1_n1
 
   Stage: Stage-3
     Map Reduce
@@ -372,7 +372,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-5
     Map Reduce
@@ -384,7 +384,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-6
     Move Operator
@@ -392,25 +392,25 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: query: insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@partitioned1@part=2
-POSTHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
+PREHOOK: Output: default@partitioned1_n1@part=2
+POSTHOOK: query: insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@partitioned1@part=2
-POSTHOOK: Lineage: partitioned1 PARTITION(part=2).a SCRIPT []
-POSTHOOK: Lineage: partitioned1 PARTITION(part=2).b SCRIPT []
-POSTHOOK: Lineage: partitioned1 PARTITION(part=2).c SCRIPT []
-POSTHOOK: Lineage: partitioned1 PARTITION(part=2).d SCRIPT []
+POSTHOOK: Output: default@partitioned1_n1@part=2
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=2).a SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=2).b SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=2).c SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=2).d SCRIPT []
 col1	col2	col3	col4
-PREHOOK: query: desc formatted partitioned1 partition(part=2)
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=2)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=2)
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=2)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	comment
 # col_name            	data_type           	comment             
 a                   	int                 	                    
@@ -425,7 +425,7 @@ part                	int
 # Detailed Partition Information	 	 
 Partition Value:    	[2]                 	 
 Database:           	default             	 
-Table:              	partitioned1        	 
+Table:              	partitioned1_n1     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\"}}
@@ -445,12 +445,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted partitioned1 partition(part=2) c
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=2) c
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=2) c
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=2) c
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
 col_name            	c                   	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
@@ -464,9 +464,9 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+PREHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+POSTHOOK: query: explain insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -505,7 +505,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.partitioned1
+                        name: default.partitioned1_n1
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), UDFToInteger('1') (type: int)
                     outputColumnNames: a, b, c, d, part
@@ -560,7 +560,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.partitioned1
+              name: default.partitioned1_n1
 
   Stage: Stage-2
     Stats Work
@@ -568,7 +568,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: a, b, c, d
           Column Types: int, string, int, string
-          Table: default.partitioned1
+          Table: default.partitioned1_n1
 
   Stage: Stage-3
     Map Reduce
@@ -580,7 +580,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-5
     Map Reduce
@@ -592,7 +592,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.partitioned1
+                  name: default.partitioned1_n1
 
   Stage: Stage-6
     Move Operator
@@ -600,25 +600,25 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+PREHOOK: query: insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@partitioned1@part=1
-POSTHOOK: query: insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
+PREHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: query: insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@partitioned1@part=1
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a SCRIPT []
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).c SCRIPT []
-POSTHOOK: Lineage: partitioned1 PARTITION(part=1).d SCRIPT []
+POSTHOOK: Output: default@partitioned1_n1@part=1
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).c SCRIPT []
+POSTHOOK: Lineage: partitioned1_n1 PARTITION(part=1).d SCRIPT []
 col1	col2	col3	col4
-PREHOOK: query: desc formatted partitioned1 partition(part=1)
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1)
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	comment
 # col_name            	data_type           	comment             
 a                   	int                 	                    
@@ -631,7 +631,7 @@ part                	int
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	partitioned1        	 
+Table:              	partitioned1_n1     	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
@@ -651,12 +651,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted partitioned1 partition(part=1) a
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1) a
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
 col_name            	a                   	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
@@ -670,12 +670,12 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted partitioned1 partition(part=1) c
+PREHOOK: query: desc formatted partitioned1_n1 partition(part=1) c
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@partitioned1
-POSTHOOK: query: desc formatted partitioned1 partition(part=1) c
+PREHOOK: Input: default@partitioned1_n1
+POSTHOOK: query: desc formatted partitioned1_n1 partition(part=1) c
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@partitioned1
+POSTHOOK: Input: default@partitioned1_n1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	bitvector	comment
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
 c                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 

@@ -1,42 +1,42 @@
-PREHOOK: query: drop table intermediate
+PREHOOK: query: drop table intermediate_n4
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table intermediate
+POSTHOOK: query: drop table intermediate_n4
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false")
+PREHOOK: query: create table intermediate_n4(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@intermediate
-POSTHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false")
+PREHOOK: Output: default@intermediate_n4
+POSTHOOK: query: create table intermediate_n4(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@intermediate
-PREHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+POSTHOOK: Output: default@intermediate_n4
+PREHOOK: query: insert into table intermediate_n4 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=455
-POSTHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+PREHOOK: Output: default@intermediate_n4@p=455
+POSTHOOK: query: insert into table intermediate_n4 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=455
-POSTHOOK: Lineage: intermediate PARTITION(p=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+POSTHOOK: Output: default@intermediate_n4@p=455
+POSTHOOK: Lineage: intermediate_n4 PARTITION(p=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate_n4 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=456
-POSTHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+PREHOOK: Output: default@intermediate_n4@p=456
+POSTHOOK: query: insert into table intermediate_n4 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=456
-POSTHOOK: Lineage: intermediate PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+POSTHOOK: Output: default@intermediate_n4@p=456
+POSTHOOK: Lineage: intermediate_n4 PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate_n4 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=457
-POSTHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+PREHOOK: Output: default@intermediate_n4@p=457
+POSTHOOK: query: insert into table intermediate_n4 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=457
-POSTHOOK: Lineage: intermediate PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: default@intermediate_n4@p=457
+POSTHOOK: Lineage: intermediate_n4 PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: drop table intermediate_nonpart
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table intermediate_nonpart
@@ -57,22 +57,22 @@ POSTHOOK: query: create table intermediate_nonpart(key int, p int) tblproperties
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermediate_nonpart
-PREHOOK: query: insert into intermediate_nonpart select * from intermediate
+PREHOOK: query: insert into intermediate_nonpart select * from intermediate_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n4
+PREHOOK: Input: default@intermediate_n4@p=455
+PREHOOK: Input: default@intermediate_n4@p=456
+PREHOOK: Input: default@intermediate_n4@p=457
 PREHOOK: Output: default@intermediate_nonpart
-POSTHOOK: query: insert into intermediate_nonpart select * from intermediate
+POSTHOOK: query: insert into intermediate_nonpart select * from intermediate_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n4
+POSTHOOK: Input: default@intermediate_n4@p=455
+POSTHOOK: Input: default@intermediate_n4@p=456
+POSTHOOK: Input: default@intermediate_n4@p=457
 POSTHOOK: Output: default@intermediate_nonpart
-POSTHOOK: Lineage: intermediate_nonpart.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: intermediate_nonpart.p SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: intermediate_nonpart.key SIMPLE [(intermediate_n4)intermediate_n4.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: intermediate_nonpart.p SIMPLE [(intermediate_n4)intermediate_n4.FieldSchema(name:p, type:int, comment:null), ]
 PREHOOK: query: create table intermmediate_nonpart(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -81,22 +81,22 @@ POSTHOOK: query: create table intermmediate_nonpart(key int, p int) tblpropertie
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermmediate_nonpart
-PREHOOK: query: insert into intermmediate_nonpart select * from intermediate
+PREHOOK: query: insert into intermmediate_nonpart select * from intermediate_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n4
+PREHOOK: Input: default@intermediate_n4@p=455
+PREHOOK: Input: default@intermediate_n4@p=456
+PREHOOK: Input: default@intermediate_n4@p=457
 PREHOOK: Output: default@intermmediate_nonpart
-POSTHOOK: query: insert into intermmediate_nonpart select * from intermediate
+POSTHOOK: query: insert into intermmediate_nonpart select * from intermediate_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n4
+POSTHOOK: Input: default@intermediate_n4@p=455
+POSTHOOK: Input: default@intermediate_n4@p=456
+POSTHOOK: Input: default@intermediate_n4@p=457
 POSTHOOK: Output: default@intermmediate_nonpart
-POSTHOOK: Lineage: intermmediate_nonpart.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: intermmediate_nonpart.p SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: intermmediate_nonpart.key SIMPLE [(intermediate_n4)intermediate_n4.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: intermmediate_nonpart.p SIMPLE [(intermediate_n4)intermediate_n4.FieldSchema(name:p, type:int, comment:null), ]
 PREHOOK: query: create table intermmediate(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -105,25 +105,25 @@ POSTHOOK: query: create table intermmediate(key int) partitioned by (p int) tblp
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermmediate
-PREHOOK: query: insert into table intermmediate partition(p) select key, p from intermediate
+PREHOOK: query: insert into table intermmediate partition(p) select key, p from intermediate_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n4
+PREHOOK: Input: default@intermediate_n4@p=455
+PREHOOK: Input: default@intermediate_n4@p=456
+PREHOOK: Input: default@intermediate_n4@p=457
 PREHOOK: Output: default@intermmediate
-POSTHOOK: query: insert into table intermmediate partition(p) select key, p from intermediate
+POSTHOOK: query: insert into table intermmediate partition(p) select key, p from intermediate_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n4
+POSTHOOK: Input: default@intermediate_n4@p=455
+POSTHOOK: Input: default@intermediate_n4@p=456
+POSTHOOK: Input: default@intermediate_n4@p=457
 POSTHOOK: Output: default@intermmediate@p=455
 POSTHOOK: Output: default@intermmediate@p=456
 POSTHOOK: Output: default@intermmediate@p=457
-POSTHOOK: Lineage: intermmediate PARTITION(p=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: intermmediate PARTITION(p=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: intermmediate PARTITION(p=457).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: intermmediate PARTITION(p=455).key SIMPLE [(intermediate_n4)intermediate_n4.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: intermmediate PARTITION(p=456).key SIMPLE [(intermediate_n4)intermediate_n4.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: intermmediate PARTITION(p=457).key SIMPLE [(intermediate_n4)intermediate_n4.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: export table intermediate_nonpart to 'ql/test/data/exports/intermediate_nonpart'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@intermediate_nonpart
@@ -140,17 +140,17 @@ POSTHOOK: query: export table intermmediate_nonpart to 'ql/test/data/exports/int
 POSTHOOK: type: EXPORT
 POSTHOOK: Input: default@intermmediate_nonpart
 #### A masked pattern was here ####
-PREHOOK: query: export table intermediate to 'ql/test/data/exports/intermediate_part'
+PREHOOK: query: export table intermediate_n4 to 'ql/test/data/exports/intermediate_part'
 PREHOOK: type: EXPORT
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n4@p=455
+PREHOOK: Input: default@intermediate_n4@p=456
+PREHOOK: Input: default@intermediate_n4@p=457
 #### A masked pattern was here ####
-POSTHOOK: query: export table intermediate to 'ql/test/data/exports/intermediate_part'
+POSTHOOK: query: export table intermediate_n4 to 'ql/test/data/exports/intermediate_part'
 POSTHOOK: type: EXPORT
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n4@p=455
+POSTHOOK: Input: default@intermediate_n4@p=456
+POSTHOOK: Input: default@intermediate_n4@p=457
 #### A masked pattern was here ####
 PREHOOK: query: export table intermmediate to 'ql/test/data/exports/intermmediate_part'
 PREHOOK: type: EXPORT

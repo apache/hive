@@ -6,11 +6,11 @@ set mapred.reduce.tasks=31;
 
 -- SORT_QUERY_RESULTS
 
-CREATE TABLE dest_g1(key INT, value DOUBLE) STORED AS TEXTFILE;
+CREATE TABLE dest_g1_n0(key INT, value DOUBLE) STORED AS TEXTFILE;
 
 EXPLAIN
-FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key;
+FROM src INSERT OVERWRITE TABLE dest_g1_n0 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key;
 
-FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key;
+FROM src INSERT OVERWRITE TABLE dest_g1_n0 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key;
 
-SELECT dest_g1.* FROM dest_g1;
+SELECT dest_g1_n0.* FROM dest_g1_n0;

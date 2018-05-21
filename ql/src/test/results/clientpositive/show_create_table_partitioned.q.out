@@ -1,22 +1,22 @@
-PREHOOK: query: CREATE EXTERNAL TABLE tmp_showcrt1 (key string, newvalue boolean COMMENT 'a new value')
+PREHOOK: query: CREATE EXTERNAL TABLE tmp_showcrt1_n2 (key string, newvalue boolean COMMENT 'a new value')
 COMMENT 'temporary table'
 PARTITIONED BY (value bigint COMMENT 'some value')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmp_showcrt1
-POSTHOOK: query: CREATE EXTERNAL TABLE tmp_showcrt1 (key string, newvalue boolean COMMENT 'a new value')
+PREHOOK: Output: default@tmp_showcrt1_n2
+POSTHOOK: query: CREATE EXTERNAL TABLE tmp_showcrt1_n2 (key string, newvalue boolean COMMENT 'a new value')
 COMMENT 'temporary table'
 PARTITIONED BY (value bigint COMMENT 'some value')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmp_showcrt1
-PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+POSTHOOK: Output: default@tmp_showcrt1_n2
+PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n2
 PREHOOK: type: SHOW_CREATETABLE
-PREHOOK: Input: default@tmp_showcrt1
-POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+PREHOOK: Input: default@tmp_showcrt1_n2
+POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n2
 POSTHOOK: type: SHOW_CREATETABLE
-POSTHOOK: Input: default@tmp_showcrt1
-CREATE EXTERNAL TABLE `tmp_showcrt1`(
+POSTHOOK: Input: default@tmp_showcrt1_n2
+CREATE EXTERNAL TABLE `tmp_showcrt1_n2`(
   `key` string, 
   `newvalue` boolean COMMENT 'a new value')
 COMMENT 'temporary table'
@@ -33,11 +33,11 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-PREHOOK: query: DROP TABLE tmp_showcrt1
+PREHOOK: query: DROP TABLE tmp_showcrt1_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tmp_showcrt1
-PREHOOK: Output: default@tmp_showcrt1
-POSTHOOK: query: DROP TABLE tmp_showcrt1
+PREHOOK: Input: default@tmp_showcrt1_n2
+PREHOOK: Output: default@tmp_showcrt1_n2
+POSTHOOK: query: DROP TABLE tmp_showcrt1_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tmp_showcrt1
-POSTHOOK: Output: default@tmp_showcrt1
+POSTHOOK: Input: default@tmp_showcrt1_n2
+POSTHOOK: Output: default@tmp_showcrt1_n2

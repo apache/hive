@@ -7,6 +7,6 @@ set user.name=hive_test_user;
 
 -- verify that sql std auth can be set as the authorizer with hive cli, while metastore authorization api calls are disabled (for cli)
 
-create table t_cli(i int);
+create table t_cli_n1(i int);
 
-create view v_cli (i) as select i from t_cli;
+create view v_cli_n0 (i) as select i from t_cli_n1;

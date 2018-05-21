@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE staging(t tinyint,
+PREHOOK: query: CREATE TABLE staging_n6(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -13,8 +13,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@staging
-POSTHOOK: query: CREATE TABLE staging(t tinyint,
+PREHOOK: Output: default@staging_n6
+POSTHOOK: query: CREATE TABLE staging_n6(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -29,24 +29,24 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@staging
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
+POSTHOOK: Output: default@staging_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
+PREHOOK: Output: default@staging_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@staging
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE staging
+POSTHOOK: Output: default@staging_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE staging_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE staging
+PREHOOK: Output: default@staging_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE staging_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@staging
-PREHOOK: query: CREATE TABLE orc_ppd_staging(t tinyint,
+POSTHOOK: Output: default@staging_n6
+PREHOOK: query: CREATE TABLE orc_ppd_staging_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -62,8 +62,8 @@ PREHOOK: query: CREATE TABLE orc_ppd_staging(t tinyint,
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: CREATE TABLE orc_ppd_staging(t tinyint,
+PREHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: query: CREATE TABLE orc_ppd_staging_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -79,71 +79,71 @@ POSTHOOK: query: CREATE TABLE orc_ppd_staging(t tinyint,
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_ppd_staging
-PREHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging order by t, s
+POSTHOOK: Output: default@orc_ppd_staging_n0
+PREHOOK: query: insert overwrite table orc_ppd_staging_n0 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging_n6 order by t, s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
-PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging order by t, s
+PREHOOK: Input: default@staging_n6
+PREHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: query: insert overwrite table orc_ppd_staging_n0 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging_n6 order by t, s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@staging
-POSTHOOK: Output: default@orc_ppd_staging
-POSTHOOK: Lineage: orc_ppd_staging.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.c EXPRESSION [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.da EXPRESSION [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.v EXPRESSION [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-PREHOOK: query: insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1
+POSTHOOK: Input: default@staging_n6
+POSTHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: Lineage: orc_ppd_staging_n0.b SIMPLE [(staging_n6)staging_n6.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.bin SIMPLE [(staging_n6)staging_n6.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.bo SIMPLE [(staging_n6)staging_n6.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.c EXPRESSION [(staging_n6)staging_n6.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.d SIMPLE [(staging_n6)staging_n6.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.da EXPRESSION [(staging_n6)staging_n6.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.dec SIMPLE [(staging_n6)staging_n6.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.f SIMPLE [(staging_n6)staging_n6.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.i SIMPLE [(staging_n6)staging_n6.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.s SIMPLE [(staging_n6)staging_n6.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.si SIMPLE [(staging_n6)staging_n6.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.t SIMPLE [(staging_n6)staging_n6.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.v EXPRESSION [(staging_n6)staging_n6.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: insert into orc_ppd_staging_n0 select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging_n6 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
-PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1
+PREHOOK: Input: default@staging_n6
+PREHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: query: insert into orc_ppd_staging_n0 select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging_n6 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@staging
-POSTHOOK: Output: default@orc_ppd_staging
-POSTHOOK: Lineage: orc_ppd_staging.b EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.bin EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.bo SIMPLE []
-POSTHOOK: Lineage: orc_ppd_staging.c EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.d EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.da EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.dec EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.f EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.i EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.s SIMPLE []
-POSTHOOK: Lineage: orc_ppd_staging.si EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.t EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.v EXPRESSION []
-PREHOOK: query: insert into orc_ppd_staging select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging limit 1
+POSTHOOK: Input: default@staging_n6
+POSTHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: Lineage: orc_ppd_staging_n0.b EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.bin EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.bo SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.c EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.d EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.da EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.dec EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.f EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.i EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.s SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.si EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.t EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.v EXPRESSION []
+PREHOOK: query: insert into orc_ppd_staging_n0 select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging_n6 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
-PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: insert into orc_ppd_staging select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging limit 1
+PREHOOK: Input: default@staging_n6
+PREHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: query: insert into orc_ppd_staging_n0 select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging_n6 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@staging
-POSTHOOK: Output: default@orc_ppd_staging
-POSTHOOK: Lineage: orc_ppd_staging.b SIMPLE []
-POSTHOOK: Lineage: orc_ppd_staging.bin EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.bo SIMPLE []
-POSTHOOK: Lineage: orc_ppd_staging.c EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.d EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.da EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.dec SIMPLE []
-POSTHOOK: Lineage: orc_ppd_staging.f EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.i SIMPLE []
-POSTHOOK: Lineage: orc_ppd_staging.s SIMPLE []
-POSTHOOK: Lineage: orc_ppd_staging.si EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.t EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.v EXPRESSION []
-PREHOOK: query: CREATE TABLE orc_ppd(t tinyint,
+POSTHOOK: Input: default@staging_n6
+POSTHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: Lineage: orc_ppd_staging_n0.b SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.bin EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.bo SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.c EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.d EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.da EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.dec SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.f EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.i SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.s SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.si EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.t EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.v EXPRESSION []
+PREHOOK: query: CREATE TABLE orc_ppd_n1(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -159,8 +159,8 @@ PREHOOK: query: CREATE TABLE orc_ppd(t tinyint,
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_ppd
-POSTHOOK: query: CREATE TABLE orc_ppd(t tinyint,
+PREHOOK: Output: default@orc_ppd_n1
+POSTHOOK: query: CREATE TABLE orc_ppd_n1(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -176,34 +176,34 @@ POSTHOOK: query: CREATE TABLE orc_ppd(t tinyint,
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_ppd
-PREHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging order by t, s
+POSTHOOK: Output: default@orc_ppd_n1
+PREHOOK: query: insert overwrite table orc_ppd_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging_n0 order by t, s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd_staging
-PREHOOK: Output: default@orc_ppd
-POSTHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging order by t, s
+PREHOOK: Input: default@orc_ppd_staging_n0
+PREHOOK: Output: default@orc_ppd_n1
+POSTHOOK: query: insert overwrite table orc_ppd_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging_n0 order by t, s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_ppd_staging
-POSTHOOK: Output: default@orc_ppd
-POSTHOOK: Lineage: orc_ppd.b SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.bin SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.bo SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.c EXPRESSION [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.d SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.da SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:da, type:date, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.dec SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_ppd.f SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.i SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.s SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.si SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.t SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.v EXPRESSION [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:s, type:string, comment:null), ]
-PREHOOK: query: describe formatted orc_ppd
+POSTHOOK: Input: default@orc_ppd_staging_n0
+POSTHOOK: Output: default@orc_ppd_n1
+POSTHOOK: Lineage: orc_ppd_n1.b SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.bin SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.bo SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.c EXPRESSION [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.d SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.da SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:da, type:date, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.dec SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.f SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.i SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.s SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.si SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.t SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.v EXPRESSION [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: describe formatted orc_ppd_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_ppd
-POSTHOOK: query: describe formatted orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
+POSTHOOK: query: describe formatted orc_ppd_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_ppd
+POSTHOOK: Input: default@orc_ppd_n1
 # col_name            	data_type           	comment             
 t                   	tinyint             	                    
 si                  	smallint            	                    
@@ -246,9 +246,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select count(*) from orc_ppd
+PREHOOK: query: select count(*) from orc_ppd_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 16673
@@ -284,9 +284,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2100
-PREHOOK: query: select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd_n1 where t > 127
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -306,9 +306,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 0
    RAW_INPUT_SPLITS_Map_1: 0
 0
-PREHOOK: query: select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = 55
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 1055
@@ -346,9 +346,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 8
-PREHOOK: query: select count(*) from orc_ppd where t <=> 50
+PREHOOK: query: select count(*) from orc_ppd_n1 where t <=> 50
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -384,9 +384,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 22
-PREHOOK: query: select count(*) from orc_ppd where t <=> 100
+PREHOOK: query: select count(*) from orc_ppd_n1 where t <=> 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -422,9 +422,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 16
-PREHOOK: query: select count(*) from orc_ppd where t = "54"
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = "54"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -460,9 +460,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 18
-PREHOOK: query: select count(*) from orc_ppd where t = -10.0
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = -10.0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -498,9 +498,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 1
-PREHOOK: query: select count(*) from orc_ppd where t = cast(53 as float)
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = cast(53 as float)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -536,9 +536,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 32
-PREHOOK: query: select count(*) from orc_ppd where t = cast(53 as double)
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = cast(53 as double)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -574,9 +574,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 32
-PREHOOK: query: select count(*) from orc_ppd where t < 100
+PREHOOK: query: select count(*) from orc_ppd_n1 where t < 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -612,9 +612,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 1697
-PREHOOK: query: select count(*) from orc_ppd where t < 100 and t > 98
+PREHOOK: query: select count(*) from orc_ppd_n1 where t < 100 and t > 98
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -650,9 +650,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 12
-PREHOOK: query: select count(*) from orc_ppd where t <= 100
+PREHOOK: query: select count(*) from orc_ppd_n1 where t <= 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -688,9 +688,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 1713
-PREHOOK: query: select count(*) from orc_ppd where t is null
+PREHOOK: query: select count(*) from orc_ppd_n1 where t is null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -726,9 +726,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 6
-PREHOOK: query: select count(*) from orc_ppd where t in (5, 120)
+PREHOOK: query: select count(*) from orc_ppd_n1 where t in (5, 120)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -764,9 +764,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 50
-PREHOOK: query: select count(*) from orc_ppd where t between 60 and 80
+PREHOOK: query: select count(*) from orc_ppd_n1 where t between 60 and 80
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -802,9 +802,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 318
-PREHOOK: query: select count(*) from orc_ppd where t = -100
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = -100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -824,9 +824,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 0
    RAW_INPUT_SPLITS_Map_1: 0
 0
-PREHOOK: query: select count(*) from orc_ppd where t <=> -100
+PREHOOK: query: select count(*) from orc_ppd_n1 where t <=> -100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -846,9 +846,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 0
    RAW_INPUT_SPLITS_Map_1: 0
 0
-PREHOOK: query: select count(*) from orc_ppd where t = 125
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = 125
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -881,9 +881,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 0
-PREHOOK: query: select count(*) from orc_ppd where t IN (-100, 125, 200)
+PREHOOK: query: select count(*) from orc_ppd_n1 where t IN (-100, 125, 200)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -916,9 +916,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 0
-PREHOOK: query: select count(*) from orc_ppd where s > "zzz"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s > "zzz"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -938,9 +938,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 0
    RAW_INPUT_SPLITS_Map_1: 0
 0
-PREHOOK: query: select count(*) from orc_ppd where s = "zach young"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "zach young"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 5691
@@ -978,9 +978,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2
-PREHOOK: query: select count(*) from orc_ppd where s <=> "zach zipper"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s <=> "zach zipper"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1016,9 +1016,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 6
-PREHOOK: query: select count(*) from orc_ppd where s <=> ""
+PREHOOK: query: select count(*) from orc_ppd_n1 where s <=> ""
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1054,9 +1054,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 6
-PREHOOK: query: select count(*) from orc_ppd where s is null
+PREHOOK: query: select count(*) from orc_ppd_n1 where s is null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1076,9 +1076,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 0
    RAW_INPUT_SPLITS_Map_1: 0
 0
-PREHOOK: query: select count(*) from orc_ppd where s is not null
+PREHOOK: query: select count(*) from orc_ppd_n1 where s is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1114,9 +1114,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2100
-PREHOOK: query: select count(*) from orc_ppd where s = cast("zach young" as char(50))
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = cast("zach young" as char(50))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1149,9 +1149,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 0
-PREHOOK: query: select count(*) from orc_ppd where s = cast("zach young" as char(10))
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = cast("zach young" as char(10))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1187,9 +1187,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2
-PREHOOK: query: select count(*) from orc_ppd where s = cast("zach young" as varchar(10))
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = cast("zach young" as varchar(10))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1225,9 +1225,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2
-PREHOOK: query: select count(*) from orc_ppd where s = cast("zach young" as varchar(50))
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = cast("zach young" as varchar(50))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1263,9 +1263,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2
-PREHOOK: query: select count(*) from orc_ppd where s < "b"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s < "b"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1301,9 +1301,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 81
-PREHOOK: query: select count(*) from orc_ppd where s > "alice" and s < "bob"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s > "alice" and s < "bob"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1339,9 +1339,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 74
-PREHOOK: query: select count(*) from orc_ppd where s in ("alice allen", "")
+PREHOOK: query: select count(*) from orc_ppd_n1 where s in ("alice allen", "")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1377,9 +1377,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 12
-PREHOOK: query: select count(*) from orc_ppd where s between "" and "alice allen"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s between "" and "alice allen"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1415,9 +1415,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 13
-PREHOOK: query: select count(*) from orc_ppd where s between "zz" and "zzz"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s between "zz" and "zzz"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1453,9 +1453,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 1
-PREHOOK: query: select count(*) from orc_ppd where s between "zach zipper" and "zzz"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s between "zach zipper" and "zzz"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1491,9 +1491,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 7
-PREHOOK: query: select count(*) from orc_ppd where s = "hello world"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "hello world"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1526,9 +1526,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 0
-PREHOOK: query: select count(*) from orc_ppd where s <=> "apache hive"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s <=> "apache hive"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1561,9 +1561,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 0
-PREHOOK: query: select count(*) from orc_ppd where s IN ("a", "z")
+PREHOOK: query: select count(*) from orc_ppd_n1 where s IN ("a", "z")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1596,9 +1596,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 0
-PREHOOK: query: select count(*) from orc_ppd where s = "sarah ovid"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "sarah ovid"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1634,9 +1634,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2
-PREHOOK: query: select count(*) from orc_ppd where s = "wendy king"
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "wendy king"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1672,9 +1672,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 6
-PREHOOK: query: select count(*) from orc_ppd where s = "wendy king" and t < 0
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "wendy king" and t < 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
@@ -1710,9 +1710,9 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 2
-PREHOOK: query: select count(*) from orc_ppd where s = "wendy king" and t > 100
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "wendy king" and t > 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0

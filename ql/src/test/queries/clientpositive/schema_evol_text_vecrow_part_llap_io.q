@@ -20,9 +20,9 @@ set hive.llap.io.enabled=true;set hive.llap.io.encode.enabled=true;
 --  vectorized reading of TEXTFILE format files using the row SERDE methods.
 --
 
-CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+CREATE TABLE schema_evolution_data_n0(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile;
-load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data;
+load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n0;
 
 ------------------------------------------------------------------------------------------
 -- SECTION: ALTER TABLE ADD COLUMNS
@@ -98,7 +98,7 @@ drop table part_add_int_string_permute_select;
 --
 CREATE TABLE part_change_string_group_double(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING) PARTITIONED BY(part INT);
 
-insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double_str, double_str, double_str, 'original' FROM schema_evolution_data;
+insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double_str, double_str, double_str, 'original' FROM schema_evolution_data_n0;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
@@ -108,7 +108,7 @@ select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING);
 
-insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data WHERE insert_num = 111;
+insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data_n0 WHERE insert_num = 111;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
@@ -126,7 +126,7 @@ drop table part_change_string_group_double;
 --
 CREATE TABLE part_change_date_group_string_group_date_timestamp(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, b STRING) PARTITIONED BY(part INT);
 
-insert into table part_change_date_group_string_group_date_timestamp partition(part=1) SELECT insert_num, date1, date1, date1, date1, date1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'original' FROM schema_evolution_data;
+insert into table part_change_date_group_string_group_date_timestamp partition(part=1) SELECT insert_num, date1, date1, date1, date1, date1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'original' FROM schema_evolution_data_n0;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp;
@@ -169,7 +169,7 @@ insert into table part_change_numeric_group_string_group_multi_ints_string_group
              tinyint1, smallint1, int1, bigint1,
              tinyint1, smallint1, int1, bigint1, tinyint1, smallint1, int1, bigint1,
              tinyint1, smallint1, int1, bigint1, tinyint1, smallint1, int1, bigint1,
-             'original' FROM schema_evolution_data;
+             'original' FROM schema_evolution_data_n0;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group;
@@ -215,7 +215,7 @@ insert into table part_change_numeric_group_string_group_floating_string_group p
               decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
-             'original' FROM schema_evolution_data;
+             'original' FROM schema_evolution_data_n0;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group;
@@ -261,7 +261,7 @@ insert into table part_change_string_group_string_group_string partition(part=1)
            string2, string2, string2, string2,
            string2, string2, string2,
            string2, string2, string2,
-          'original' FROM schema_evolution_data;
+          'original' FROM schema_evolution_data_n0;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,b from part_change_string_group_string_group_string;
@@ -311,7 +311,7 @@ insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint pa
                                 smallint1, smallint1, smallint1, smallint1, smallint1,
                                 int1, int1, int1, int1,
                                 bigint1, bigint1, bigint1, 
-                                'original' FROM schema_evolution_data;
+                                'original' FROM schema_evolution_data_n0;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint;
@@ -355,7 +355,7 @@ CREATE TABLE part_change_lower_to_higher_numeric_group_decimal_to_float(insert_n
 insert into table part_change_lower_to_higher_numeric_group_decimal_to_float partition(part=1) SELECT insert_num,
            decimal1, decimal1,
            float1,
-          'original' FROM schema_evolution_data;
+          'original' FROM schema_evolution_data_n0;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float;

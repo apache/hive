@@ -1,156 +1,156 @@
-PREHOOK: query: create table alltypesorc_int ( cint int, cstring string ) stored as ORC
+PREHOOK: query: create table alltypesorc_int_n2 ( cint int, cstring string ) stored as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypesorc_int
-POSTHOOK: query: create table alltypesorc_int ( cint int, cstring string ) stored as ORC
+PREHOOK: Output: default@alltypesorc_int_n2
+POSTHOOK: query: create table alltypesorc_int_n2 ( cint int, cstring string ) stored as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypesorc_int
-PREHOOK: query: create table srcpart_date (key string, value string) partitioned by (ds string ) stored as ORC
+POSTHOOK: Output: default@alltypesorc_int_n2
+PREHOOK: query: create table srcpart_date_n9 (key string, value string) partitioned by (ds string ) stored as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: create table srcpart_date (key string, value string) partitioned by (ds string ) stored as ORC
+PREHOOK: Output: default@srcpart_date_n9
+POSTHOOK: query: create table srcpart_date_n9 (key string, value string) partitioned by (ds string ) stored as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_date
-PREHOOK: query: CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
+POSTHOOK: Output: default@srcpart_date_n9
+PREHOOK: query: CREATE TABLE srcpart_small_n4(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
+PREHOOK: Output: default@srcpart_small_n4
+POSTHOOK: query: CREATE TABLE srcpart_small_n4(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_small
-PREHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
+POSTHOOK: Output: default@srcpart_small_n4
+PREHOOK: query: alter table srcpart_date_n9 add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
+PREHOOK: Output: default@srcpart_date_n9
+POSTHOOK: query: alter table srcpart_date_n9 add partition (ds = "2008-04-08")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-PREHOOK: query: alter table srcpart_date add partition (ds = "2008-04-09")
+POSTHOOK: Output: default@srcpart_date_n9
+POSTHOOK: Output: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: query: alter table srcpart_date_n9 add partition (ds = "2008-04-09")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: alter table srcpart_date add partition (ds = "2008-04-09")
+PREHOOK: Output: default@srcpart_date_n9
+POSTHOOK: query: alter table srcpart_date_n9 add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-PREHOOK: query: alter table srcpart_small add partition (ds = "2008-04-08")
+POSTHOOK: Output: default@srcpart_date_n9
+POSTHOOK: Output: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: query: alter table srcpart_small_n4 add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: alter table srcpart_small add partition (ds = "2008-04-08")
+PREHOOK: Output: default@srcpart_small_n4
+POSTHOOK: query: alter table srcpart_small_n4 add partition (ds = "2008-04-08")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-08
-PREHOOK: query: alter table srcpart_small add partition (ds = "2008-04-09")
+POSTHOOK: Output: default@srcpart_small_n4
+POSTHOOK: Output: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: query: alter table srcpart_small_n4 add partition (ds = "2008-04-09")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: alter table srcpart_small add partition (ds = "2008-04-09")
+PREHOOK: Output: default@srcpart_small_n4
+POSTHOOK: query: alter table srcpart_small_n4 add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-PREHOOK: query: insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc
+POSTHOOK: Output: default@srcpart_small_n4
+POSTHOOK: Output: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: query: insert overwrite table alltypesorc_int_n2 select cint, cstring1 from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@alltypesorc_int
-POSTHOOK: query: insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc
+PREHOOK: Output: default@alltypesorc_int_n2
+POSTHOOK: query: insert overwrite table alltypesorc_int_n2 select cint, cstring1 from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@alltypesorc_int
-POSTHOOK: Lineage: alltypesorc_int.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_int.cstring SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
+POSTHOOK: Output: default@alltypesorc_int_n2
+POSTHOOK: Lineage: alltypesorc_int_n2.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_int_n2.cstring SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table srcpart_date_n9 partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
+PREHOOK: Output: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: query: insert overwrite table srcpart_date_n9 partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
+POSTHOOK: Output: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Lineage: srcpart_date_n9 PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_date_n9 PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table srcpart_date_n9 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_date@ds=2008-04-09
-POSTHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
+PREHOOK: Output: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: query: insert overwrite table srcpart_date_n9 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
+POSTHOOK: Output: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Lineage: srcpart_date_n9 PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_date_n9 PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table srcpart_small_n4 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_small@ds=2008-04-09
-POSTHOOK: query: insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
+PREHOOK: Output: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: query: insert overwrite table srcpart_small_n4 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: analyze table alltypesorc_int compute statistics for columns
+POSTHOOK: Output: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Lineage: srcpart_small_n4 PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_small_n4 PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table alltypesorc_int_n2 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Output: default@alltypesorc_int
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Output: default@alltypesorc_int_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: analyze table alltypesorc_int compute statistics for columns
+POSTHOOK: query: analyze table alltypesorc_int_n2 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Output: default@alltypesorc_int
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Output: default@alltypesorc_int_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: analyze table srcpart_date compute statistics for columns
+PREHOOK: query: analyze table srcpart_date_n9 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Output: default@srcpart_date
-PREHOOK: Output: default@srcpart_date@ds=2008-04-08
-PREHOOK: Output: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Output: default@srcpart_date_n9
+PREHOOK: Output: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Output: default@srcpart_date_n9@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: analyze table srcpart_date compute statistics for columns
+POSTHOOK: query: analyze table srcpart_date_n9 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Output: default@srcpart_date_n9
+POSTHOOK: Output: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Output: default@srcpart_date_n9@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: analyze table srcpart_small compute statistics for columns
+PREHOOK: query: analyze table srcpart_small_n4 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-PREHOOK: Output: default@srcpart_small
-PREHOOK: Output: default@srcpart_small@ds=2008-04-08
-PREHOOK: Output: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+PREHOOK: Output: default@srcpart_small_n4
+PREHOOK: Output: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Output: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: analyze table srcpart_small compute statistics for columns
+POSTHOOK: query: analyze table srcpart_small_n4 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
+POSTHOOK: Output: default@srcpart_small_n4
+POSTHOOK: Output: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Output: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -182,16 +182,16 @@ Stage-0
                     Filter Operator [FIL_18] (rows=20 width=87)
                       predicate:key1 is not null
                       TableScan [TS_3] (rows=20 width=87)
-                        default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
+                        default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
               <-Map 1 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_6]
                   PartitionCols:_col0
                   Select Operator [SEL_2] (rows=2000 width=87)
                     Output:["_col0"]
                     Filter Operator [FIL_17] (rows=2000 width=87)
-                      predicate:((key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and key is not null)
+                      predicate:((key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) and key is not null)
                       TableScan [TS_0] (rows=2000 width=87)
-                        default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                        default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
                         BROADCAST [RS_23]
                           Group By Operator [GBY_22] (rows=1 width=639)
@@ -204,28 +204,28 @@ Stage-0
                                   Output:["_col0"]
                                    Please refer to the previous Select Operator [SEL_5]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.ds)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.ds)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -255,7 +255,7 @@ Stage-0
                     Filter Operator [FIL_17] (rows=2000 width=87)
                       predicate:key is not null
                       TableScan [TS_0] (rows=2000 width=87)
-                        default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                        default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                 Dynamic Partitioning Event Operator [EVENT_21] (rows=309 width=87)
                   Group By Operator [GBY_20] (rows=309 width=87)
                     Output:["_col0"],keys:_col0
@@ -268,30 +268,30 @@ Stage-0
                   Select Operator [SEL_5] (rows=20 width=360)
                     Output:["_col0"]
                     TableScan [TS_3] (rows=20 width=360)
-                      default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:COMPLETE
+                      default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:COMPLETE
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.ds)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.ds)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -321,7 +321,7 @@ Stage-0
                     Filter Operator [FIL_25] (rows=2000 width=87)
                       predicate:key is not null
                       TableScan [TS_0] (rows=2000 width=87)
-                        default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                        default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
               <-Map 4 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_10]
                   PartitionCols:_col0
@@ -330,7 +330,7 @@ Stage-0
                     Filter Operator [FIL_26] (rows=20 width=87)
                       predicate:key1 is not null
                       TableScan [TS_3] (rows=20 width=87)
-                        default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
+                        default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
               <-Map 5 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_11]
                   PartitionCols:_col0
@@ -339,32 +339,32 @@ Stage-0
                     Filter Operator [FIL_27] (rows=9174 width=70)
                       predicate:cstring is not null
                       TableScan [TS_6] (rows=12288 width=70)
-                        default@alltypesorc_int,alltypesorc_int,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
+                        default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -396,9 +396,9 @@ Stage-0
                   Select Operator [SEL_2] (rows=2000 width=87)
                     Output:["_col0"]
                     Filter Operator [FIL_25] (rows=2000 width=87)
-                      predicate:((key BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_key1_bloom_filter))) and key is not null)
+                      predicate:((key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))) and key is not null)
                       TableScan [TS_0] (rows=2000 width=87)
-                        default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                        default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                       <-Reducer 6 [BROADCAST_EDGE] llap
                         BROADCAST [RS_32]
                           Group By Operator [GBY_31] (rows=1 width=639)
@@ -414,7 +414,7 @@ Stage-0
                                     Filter Operator [FIL_26] (rows=20 width=87)
                                       predicate:key1 is not null
                                       TableScan [TS_3] (rows=20 width=87)
-                                        default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
+                                        default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
               <-Map 5 [SIMPLE_EDGE] llap
                 PARTITION_ONLY_SHUFFLE [RS_10]
                   PartitionCols:_col0
@@ -425,9 +425,9 @@ Stage-0
                   Select Operator [SEL_8] (rows=9174 width=70)
                     Output:["_col0"]
                     Filter Operator [FIL_27] (rows=9174 width=70)
-                      predicate:((cstring BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_key1_bloom_filter))) and (cstring BETWEEN DynamicValue(RS_9_srcpart_date_key_min) AND DynamicValue(RS_9_srcpart_date_key_max) and in_bloom_filter(cstring, DynamicValue(RS_9_srcpart_date_key_bloom_filter))) and cstring is not null)
+                      predicate:((cstring BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))) and (cstring BETWEEN DynamicValue(RS_9_srcpart_date_n9_key_min) AND DynamicValue(RS_9_srcpart_date_n9_key_max) and in_bloom_filter(cstring, DynamicValue(RS_9_srcpart_date_n9_key_bloom_filter))) and cstring is not null)
                       TableScan [TS_6] (rows=12288 width=70)
-                        default@alltypesorc_int,alltypesorc_int,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
+                        default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
                       <-Reducer 6 [BROADCAST_EDGE] llap
                         BROADCAST [RS_45]
                            Please refer to the previous Group By Operator [GBY_31]
@@ -443,30 +443,30 @@ Stage-0
                                   Output:["_col0"]
                                    Please refer to the previous Select Operator [SEL_2]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_small_n4.key1 = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -496,7 +496,7 @@ Stage-0
                     Filter Operator [FIL_17] (rows=2000 width=178)
                       predicate:(key is not null and value is not null)
                       TableScan [TS_0] (rows=2000 width=178)
-                        default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                        default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
               <-Map 4 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_7]
                   PartitionCols:_col0, _col1
@@ -505,30 +505,30 @@ Stage-0
                     Filter Operator [FIL_18] (rows=20 width=178)
                       predicate:(key1 is not null and value1 is not null)
                       TableScan [TS_3] (rows=20 width=178)
-                        default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1","value1"]
+                        default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1","value1"]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -561,16 +561,16 @@ Stage-0
                     Filter Operator [FIL_18] (rows=20 width=178)
                       predicate:(key1 is not null and value1 is not null)
                       TableScan [TS_3] (rows=20 width=178)
-                        default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1","value1"]
+                        default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1","value1"]
               <-Map 1 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_6]
                   PartitionCols:_col0, _col1
                   Select Operator [SEL_2] (rows=2000 width=178)
                     Output:["_col0","_col1"]
                     Filter Operator [FIL_17] (rows=2000 width=178)
-                      predicate:((key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and (value BETWEEN DynamicValue(RS_7_srcpart_small_value1_min) AND DynamicValue(RS_7_srcpart_small_value1_max) and in_bloom_filter(value, DynamicValue(RS_7_srcpart_small_value1_bloom_filter))) and key is not null and value is not null)
+                      predicate:((key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) and (value BETWEEN DynamicValue(RS_7_srcpart_small_n4_value1_min) AND DynamicValue(RS_7_srcpart_small_n4_value1_max) and in_bloom_filter(value, DynamicValue(RS_7_srcpart_small_n4_value1_bloom_filter))) and key is not null and value is not null)
                       TableScan [TS_0] (rows=2000 width=178)
-                        default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                        default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
                         BROADCAST [RS_23]
                           Group By Operator [GBY_22] (rows=1 width=730)
@@ -594,28 +594,28 @@ Stage-0
                                   Output:["_col0"]
                                    Please refer to the previous Select Operator [SEL_5]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1 and srcpart_date_n9.value = srcpart_small_n4.value1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -646,7 +646,7 @@ Stage-0
                     Filter Operator [FIL_28] (rows=9174 width=70)
                       predicate:cstring is not null
                       TableScan [TS_6] (rows=12288 width=70)
-                        default@alltypesorc_int,alltypesorc_int,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
+                        default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
               <-Reducer 2 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_12]
                   PartitionCols:_col1
@@ -660,7 +660,7 @@ Stage-0
                         Filter Operator [FIL_26] (rows=2000 width=178)
                           predicate:(key is not null and value is not null)
                           TableScan [TS_0] (rows=2000 width=178)
-                            default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                            default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                   <-Map 5 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_10]
                       PartitionCols:_col0
@@ -669,32 +669,32 @@ Stage-0
                         Filter Operator [FIL_27] (rows=20 width=87)
                           predicate:key1 is not null
                           TableScan [TS_3] (rows=20 width=87)
-                            default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
+                            default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -734,16 +734,16 @@ Stage-0
                         Filter Operator [FIL_27] (rows=20 width=87)
                           predicate:key1 is not null
                           TableScan [TS_3] (rows=20 width=87)
-                            default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
+                            default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
                   <-Map 1 [SIMPLE_EDGE] llap
                     SHUFFLE [RS_9]
                       PartitionCols:_col0
                       Select Operator [SEL_2] (rows=2000 width=178)
                         Output:["_col0","_col1"]
                         Filter Operator [FIL_26] (rows=2000 width=178)
-                          predicate:((key BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_key1_bloom_filter))) and key is not null and value is not null)
+                          predicate:((key BETWEEN DynamicValue(RS_10_srcpart_small_n4_key1_min) AND DynamicValue(RS_10_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n4_key1_bloom_filter))) and key is not null and value is not null)
                           TableScan [TS_0] (rows=2000 width=178)
-                            default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                            default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                           <-Reducer 7 [BROADCAST_EDGE] llap
                             BROADCAST [RS_33]
                               Group By Operator [GBY_32] (rows=1 width=639)
@@ -761,9 +761,9 @@ Stage-0
                   Select Operator [SEL_8] (rows=9174 width=70)
                     Output:["_col0"]
                     Filter Operator [FIL_28] (rows=9174 width=70)
-                      predicate:((cstring BETWEEN DynamicValue(RS_12_srcpart_date_value_min) AND DynamicValue(RS_12_srcpart_date_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_value_bloom_filter))) and cstring is not null)
+                      predicate:((cstring BETWEEN DynamicValue(RS_12_srcpart_date_n9_value_min) AND DynamicValue(RS_12_srcpart_date_n9_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n9_value_bloom_filter))) and cstring is not null)
                       TableScan [TS_6] (rows=12288 width=70)
-                        default@alltypesorc_int,alltypesorc_int,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
+                        default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
                       <-Reducer 5 [BROADCAST_EDGE] llap
                         BROADCAST [RS_48]
                           Group By Operator [GBY_47] (rows=1 width=552)
@@ -776,30 +776,30 @@ Stage-0
                                   Output:["_col0"]
                                    Please refer to the previous Merge Join Operator [MERGEJOIN_49]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: EXPLAIN extended select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN extended select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN extended select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN extended select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -819,13 +819,13 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n9
+                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n4_key1_min) AND DynamicValue(RS_7_srcpart_small_n4_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n4_key1_bloom_filter))) and key is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -842,8 +842,8 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: all inputs
             Path -> Alias:
-              hdfs://### HDFS PATH ### [srcpart_date]
-              hdfs://### HDFS PATH ### [srcpart_date]
+              hdfs://### HDFS PATH ### [srcpart_date_n9]
+              hdfs://### HDFS PATH ### [srcpart_date_n9]
             Path -> Partition:
               hdfs://### HDFS PATH ### 
                 Partition
@@ -857,13 +857,13 @@ STAGE PLANS:
                     bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
-                    name default.srcpart_date
+                    name default.srcpart_date_n9
                     numFiles 1
                     numRows 1000
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 176000
-                    serialization.ddl struct srcpart_date { string key, string value}
+                    serialization.ddl struct srcpart_date_n9 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     totalSize 3038
@@ -881,16 +881,16 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
-                      name default.srcpart_date
+                      name default.srcpart_date_n9
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_date { string key, string value}
+                      serialization.ddl struct srcpart_date_n9 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.srcpart_date
-                  name: default.srcpart_date
+                    name: default.srcpart_date_n9
+                  name: default.srcpart_date_n9
               hdfs://### HDFS PATH ### 
                 Partition
                   base file name: ds=2008-04-09
@@ -903,13 +903,13 @@ STAGE PLANS:
                     bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
-                    name default.srcpart_date
+                    name default.srcpart_date_n9
                     numFiles 1
                     numRows 1000
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 176000
-                    serialization.ddl struct srcpart_date { string key, string value}
+                    serialization.ddl struct srcpart_date_n9 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     totalSize 3038
@@ -927,23 +927,23 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
-                      name default.srcpart_date
+                      name default.srcpart_date_n9
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_date { string key, string value}
+                      serialization.ddl struct srcpart_date_n9 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.srcpart_date
-                  name: default.srcpart_date
+                    name: default.srcpart_date_n9
+                  name: default.srcpart_date_n9
             Truncated Path -> Alias:
-              /srcpart_date/ds=2008-04-08 [srcpart_date]
-              /srcpart_date/ds=2008-04-09 [srcpart_date]
+              /srcpart_date_n9/ds=2008-04-08 [srcpart_date_n9]
+              /srcpart_date_n9/ds=2008-04-09 [srcpart_date_n9]
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n4
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   GatherStats: false
@@ -983,8 +983,8 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: all inputs
             Path -> Alias:
-              hdfs://### HDFS PATH ### [srcpart_small]
-              hdfs://### HDFS PATH ### [srcpart_small]
+              hdfs://### HDFS PATH ### [srcpart_small_n4]
+              hdfs://### HDFS PATH ### [srcpart_small_n4]
             Path -> Partition:
               hdfs://### HDFS PATH ### 
                 Partition
@@ -998,13 +998,13 @@ STAGE PLANS:
                     bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
-                    name default.srcpart_small
+                    name default.srcpart_small_n4
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct srcpart_small { string key1, string value1}
+                    serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     totalSize 0
@@ -1022,16 +1022,16 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
-                      name default.srcpart_small
+                      name default.srcpart_small_n4
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_small { string key1, string value1}
+                      serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.srcpart_small
-                  name: default.srcpart_small
+                    name: default.srcpart_small_n4
+                  name: default.srcpart_small_n4
               hdfs://### HDFS PATH ### 
                 Partition
                   base file name: ds=2008-04-09
@@ -1044,13 +1044,13 @@ STAGE PLANS:
                     bucket_count -1
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
-                    name default.srcpart_small
+                    name default.srcpart_small_n4
                     numFiles 1
                     numRows 20
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 3520
-                    serialization.ddl struct srcpart_small { string key1, string value1}
+                    serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     totalSize 459
@@ -1068,19 +1068,19 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
-                      name default.srcpart_small
+                      name default.srcpart_small_n4
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_small { string key1, string value1}
+                      serialization.ddl struct srcpart_small_n4 { string key1, string value1}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.srcpart_small
-                  name: default.srcpart_small
+                    name: default.srcpart_small_n4
+                  name: default.srcpart_small_n4
             Truncated Path -> Alias:
-              /srcpart_small/ds=2008-04-08 [srcpart_small]
-              /srcpart_small/ds=2008-04-09 [srcpart_small]
+              /srcpart_small_n4/ds=2008-04-08 [srcpart_small_n4]
+              /srcpart_small_n4/ds=2008-04-09 [srcpart_small_n4]
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
@@ -1159,9 +1159,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1191,36 +1191,36 @@ Stage-0
                     Filter Operator [FIL_18] (rows=20 width=87)
                       predicate:key1 is not null
                       TableScan [TS_3] (rows=20 width=87)
-                        default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
+                        default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
               <-Select Operator [SEL_2] (rows=2000 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_17] (rows=2000 width=87)
                     predicate:key is not null
                     TableScan [TS_0] (rows=2000 width=87)
-                      default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                      default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1250,36 +1250,36 @@ Stage-0
                     Filter Operator [FIL_18] (rows=20 width=87)
                       predicate:key1 is not null
                       TableScan [TS_3] (rows=20 width=87)
-                        default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
+                        default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
               <-Select Operator [SEL_2] (rows=2000 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_17] (rows=2000 width=87)
                     predicate:key is not null
                     TableScan [TS_0] (rows=2000 width=87)
-                      default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                      default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1315,44 +1315,44 @@ Stage-0
                         Filter Operator [FIL_27] (rows=20 width=87)
                           predicate:key1 is not null
                           TableScan [TS_3] (rows=20 width=87)
-                            default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
+                            default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
                   <-Select Operator [SEL_2] (rows=2000 width=178)
                       Output:["_col0","_col1"]
                       Filter Operator [FIL_26] (rows=2000 width=178)
                         predicate:(key is not null and value is not null)
                         TableScan [TS_0] (rows=2000 width=178)
-                          default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                          default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
               <-Select Operator [SEL_8] (rows=9174 width=70)
                   Output:["_col0"]
                   Filter Operator [FIL_28] (rows=9174 width=70)
                     predicate:cstring is not null
                     TableScan [TS_6] (rows=12288 width=70)
-                      default@alltypesorc_int,alltypesorc_int,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
+                      default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1388,50 +1388,50 @@ Stage-0
                         Filter Operator [FIL_27] (rows=20 width=87)
                           predicate:key1 is not null
                           TableScan [TS_3] (rows=20 width=87)
-                            default@srcpart_small,srcpart_small,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
+                            default@srcpart_small_n4,srcpart_small_n4,Tbl:PARTIAL,Col:PARTIAL,Output:["key1"]
                   <-Select Operator [SEL_2] (rows=2000 width=178)
                       Output:["_col0","_col1"]
                       Filter Operator [FIL_26] (rows=2000 width=178)
                         predicate:(key is not null and value is not null)
                         TableScan [TS_0] (rows=2000 width=178)
-                          default@srcpart_date,srcpart_date,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                          default@srcpart_date_n9,srcpart_date_n9,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
               <-Select Operator [SEL_8] (rows=9174 width=70)
                   Output:["_col0"]
                   Filter Operator [FIL_28] (rows=9174 width=70)
                     predicate:cstring is not null
                     TableScan [TS_6] (rows=12288 width=70)
-                      default@alltypesorc_int,alltypesorc_int,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
+                      default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cstring"]
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n9 join srcpart_small_n4 on (srcpart_date_n9.key = srcpart_small_n4.key1) join alltypesorc_int_n2 on (srcpart_date_n9.value = alltypesorc_int_n2.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n9@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n4@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: explain select * from alltypesorc_int join
-                                      (select srcpart_date.key as key from srcpart_date
+PREHOOK: query: explain select * from alltypesorc_int_n2 join
+                                      (select srcpart_date_n9.key as key from srcpart_date_n9
                                        union all
-                                       select srcpart_small.key1 as key from srcpart_small) unionsrc on (alltypesorc_int.cstring = unionsrc.key)
+                                       select srcpart_small_n4.key1 as key from srcpart_small_n4) unionsrc on (alltypesorc_int_n2.cstring = unionsrc.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from alltypesorc_int join
-                                      (select srcpart_date.key as key from srcpart_date
+POSTHOOK: query: explain select * from alltypesorc_int_n2 join
+                                      (select srcpart_date_n9.key as key from srcpart_date_n9
                                        union all
-                                       select srcpart_small.key1 as key from srcpart_small) unionsrc on (alltypesorc_int.cstring = unionsrc.key)
+                                       select srcpart_small_n4.key1 as key from srcpart_small_n4) unionsrc on (alltypesorc_int_n2.cstring = unionsrc.key)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1472,29 +1472,29 @@ Stage-0
             Filter Operator [FIL_19] (rows=9174 width=73)
               predicate:cstring is not null
               TableScan [TS_0] (rows=12288 width=73)
-                default@alltypesorc_int,alltypesorc_int,Tbl:COMPLETE,Col:COMPLETE,Output:["cint","cstring"]
+                default@alltypesorc_int_n2,alltypesorc_int_n2,Tbl:COMPLETE,Col:COMPLETE,Output:["cint","cstring"]
 
-PREHOOK: query: drop table srcpart_date
+PREHOOK: query: drop table srcpart_date_n9
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: drop table srcpart_date
+PREHOOK: Input: default@srcpart_date_n9
+PREHOOK: Output: default@srcpart_date_n9
+POSTHOOK: query: drop table srcpart_date_n9
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date
-PREHOOK: query: drop table srcpart_small
+POSTHOOK: Input: default@srcpart_date_n9
+POSTHOOK: Output: default@srcpart_date_n9
+PREHOOK: query: drop table srcpart_small_n4
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: drop table srcpart_small
+PREHOOK: Input: default@srcpart_small_n4
+PREHOOK: Output: default@srcpart_small_n4
+POSTHOOK: query: drop table srcpart_small_n4
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small
-PREHOOK: query: drop table alltypesorc_int
+POSTHOOK: Input: default@srcpart_small_n4
+POSTHOOK: Output: default@srcpart_small_n4
+PREHOOK: query: drop table alltypesorc_int_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Output: default@alltypesorc_int
-POSTHOOK: query: drop table alltypesorc_int
+PREHOOK: Input: default@alltypesorc_int_n2
+PREHOOK: Output: default@alltypesorc_int_n2
+POSTHOOK: query: drop table alltypesorc_int_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Output: default@alltypesorc_int
+POSTHOOK: Input: default@alltypesorc_int_n2
+POSTHOOK: Output: default@alltypesorc_int_n2

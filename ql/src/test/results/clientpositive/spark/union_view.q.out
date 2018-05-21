@@ -1,27 +1,27 @@
-PREHOOK: query: CREATE TABLE src_union_1 (key int, value string) PARTITIONED BY (ds string)
+PREHOOK: query: CREATE TABLE src_union_1_n0 (key int, value string) PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_union_1
-POSTHOOK: query: CREATE TABLE src_union_1 (key int, value string) PARTITIONED BY (ds string)
+PREHOOK: Output: default@src_union_1_n0
+POSTHOOK: query: CREATE TABLE src_union_1_n0 (key int, value string) PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_union_1
-PREHOOK: query: CREATE TABLE src_union_2 (key int, value string) PARTITIONED BY (ds string, part_1 string)
+POSTHOOK: Output: default@src_union_1_n0
+PREHOOK: query: CREATE TABLE src_union_2_n0 (key int, value string) PARTITIONED BY (ds string, part_1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_union_2
-POSTHOOK: query: CREATE TABLE src_union_2 (key int, value string) PARTITIONED BY (ds string, part_1 string)
+PREHOOK: Output: default@src_union_2_n0
+POSTHOOK: query: CREATE TABLE src_union_2_n0 (key int, value string) PARTITIONED BY (ds string, part_1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_union_2
-PREHOOK: query: CREATE TABLE src_union_3(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
+POSTHOOK: Output: default@src_union_2_n0
+PREHOOK: query: CREATE TABLE src_union_3_n0(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_union_3
-POSTHOOK: query: CREATE TABLE src_union_3(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
+PREHOOK: Output: default@src_union_3_n0
+POSTHOOK: query: CREATE TABLE src_union_3_n0(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_union_3
+POSTHOOK: Output: default@src_union_3_n0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -31,7 +31,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_union_1
+          alias: src_union_1_n0
           filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
           Filter Operator
             predicate: (key = 86) (type: boolean)
@@ -49,7 +49,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_union_2
+          alias: src_union_2_n0
           filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
           Filter Operator
             predicate: (key = 86) (type: boolean)
@@ -67,7 +67,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_union_3
+          alias: src_union_3_n0
           filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
           Filter Operator
             predicate: (key = 86) (type: boolean)
@@ -126,7 +126,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_1
+                  alias: src_union_1_n0
                   filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -151,7 +151,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_2
+                  alias: src_union_2_n0
                   filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -176,7 +176,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_3
+                  alias: src_union_3_n0
                   filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -217,7 +217,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_1
+                  alias: src_union_1_n0
                   filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -242,7 +242,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_2
+                  alias: src_union_2_n0
                   filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -267,7 +267,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_3
+                  alias: src_union_3_n0
                   filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -308,7 +308,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_1
+                  alias: src_union_1_n0
                   filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -333,7 +333,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_2
+                  alias: src_union_2_n0
                   filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -358,7 +358,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_3
+                  alias: src_union_3_n0
                   filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -399,7 +399,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_1
+                  alias: src_union_1_n0
                   filterExpr: ((key = 86) and ds is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -424,7 +424,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_2
+                  alias: src_union_2_n0
                   filterExpr: ((key = 86) and ds is not null) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -449,7 +449,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_3
+                  alias: src_union_3_n0
                   filterExpr: ((key = 86) and ds is not null) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -483,10 +483,10 @@ STAGE PLANS:
 86	val_86	2
 86	val_86	3
 86	val_86	3
-86	val_86	3
-86	val_86	3
 86	val_86	2
 86	val_86	2
+86	val_86	3
+86	val_86	3
 86	val_86	1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -502,7 +502,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_1
+                  alias: src_union_1_n0
                   filterExpr: (ds = '1') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -522,7 +522,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_2
+                  alias: src_union_2_n0
                   filterExpr: (ds = '1') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -545,7 +545,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_3
+                  alias: src_union_3_n0
                   filterExpr: (ds = '1') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -601,7 +601,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_1
+                  alias: src_union_1_n0
                   filterExpr: (ds = '2') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -624,7 +624,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_2
+                  alias: src_union_2_n0
                   filterExpr: (ds = '2') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -644,7 +644,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_3
+                  alias: src_union_3_n0
                   filterExpr: (ds = '2') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -700,7 +700,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_1
+                  alias: src_union_1_n0
                   filterExpr: (ds = '3') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -723,7 +723,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_2
+                  alias: src_union_2_n0
                   filterExpr: (ds = '3') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -746,7 +746,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_3
+                  alias: src_union_3_n0
                   filterExpr: (ds = '3') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -800,7 +800,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_1
+                  alias: src_union_1_n0
                   filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -825,7 +825,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_2
+                  alias: src_union_2_n0
                   filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -850,7 +850,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_3
+                  alias: src_union_3_n0
                   filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -894,7 +894,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_1
+                  alias: src_union_1_n0
                   filterExpr: (ds = '4') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -917,7 +917,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_2
+                  alias: src_union_2_n0
                   filterExpr: (ds = '4') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
@@ -940,7 +940,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src_union_3
+                  alias: src_union_3_n0
                   filterExpr: (ds = '4') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator

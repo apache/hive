@@ -1,17 +1,17 @@
 --! qt:dataset:srcbucket2
 --! qt:dataset:srcbucket
 set hive.mapred.mode=nonstrict;
-CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
+CREATE TABLE dest1_n27(key INT, value STRING) STORED AS TEXTFILE;
 
 -- both input pruning and sample filter
 EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1 SELECT s.*
+INSERT OVERWRITE TABLE dest1_n27 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s;
 
-INSERT OVERWRITE TABLE dest1 SELECT s.*
+INSERT OVERWRITE TABLE dest1_n27 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s;
 
-SELECT dest1.* FROM dest1
+SELECT dest1_n27.* FROM dest1_n27
 order by key, value;
 
 EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s

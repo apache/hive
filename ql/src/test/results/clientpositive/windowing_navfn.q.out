@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n19
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n19
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n19(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n19
+POSTHOOK: query: create table over10k_n19(
            t tinyint,
            si smallint,
            i int,
@@ -35,15 +35,15 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n19
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n19
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n19
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n19
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n19
 PREHOOK: query: explain select row_number() over()  from src where key = '238'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select row_number() over()  from src where key = '238'
@@ -117,13 +117,13 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1
 2
-PREHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+PREHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k_n19 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
-POSTHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+POSTHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k_n19 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
 calvin miller	1
 yuri laertes	1
@@ -225,13 +225,13 @@ david garcia	1
 holly hernandez	2
 tom white	3
 rachel ellison	1
-PREHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+PREHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k_n19 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
-POSTHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+POSTHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k_n19 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
 65773	gabriella van buren
 65727	quinn steinbeck
@@ -333,13 +333,13 @@ POSTHOOK: Input: default@over10k
 65536	alice hernandez
 65545	tom zipper
 65789	ulysses hernandez
-PREHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+PREHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n19 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
-POSTHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+POSTHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n19 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
 65536	NULL
 65536	31.09
@@ -441,13 +441,13 @@ POSTHOOK: Input: default@over10k
 65538	9.53
 65538	48.61
 65538	2.03
-PREHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k limit 100
+PREHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k_n19 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
-POSTHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k limit 100
+POSTHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k_n19 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
 calvin miller	99
 holly polk	83
@@ -549,13 +549,13 @@ tom white	43
 holly hernandez	4
 david garcia	101
 rachel ellison	51
-PREHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+PREHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k_n19 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
-POSTHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+POSTHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k_n19 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
 alice allen	alice allen
 alice allen	alice allen
@@ -658,22 +658,22 @@ alice nixon	alice allen
 alice nixon	alice allen
 alice nixon	alice allen
 PREHOOK: query: select t, s, i, last_value(i) over (partition by t order by s) 
-from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+from over10k_n19 where (s = 'oscar allen' or s = 'oscar carson') and t = 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
 POSTHOOK: query: select t, s, i, last_value(i) over (partition by t order by s) 
-from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+from over10k_n19 where (s = 'oscar allen' or s = 'oscar carson') and t = 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n19
 #### A masked pattern was here ####
 10	oscar allen	65662	65662
 10	oscar carson	65549	65549
-PREHOOK: query: drop table if exists wtest
+PREHOOK: query: drop table if exists wtest_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists wtest
+POSTHOOK: query: drop table if exists wtest_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table wtest as
+PREHOOK: query: create table wtest_n0 as
 select a, b
 from
 (
@@ -688,8 +688,8 @@ SELECT explode(
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@wtest
-POSTHOOK: query: create table wtest as
+PREHOOK: Output: default@wtest_n0
+POSTHOOK: query: create table wtest_n0 as
 select a, b
 from
 (
@@ -704,26 +704,26 @@ SELECT explode(
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@wtest
-POSTHOOK: Lineage: wtest.a SCRIPT []
-POSTHOOK: Lineage: wtest.b SCRIPT []
+POSTHOOK: Output: default@wtest_n0
+POSTHOOK: Lineage: wtest_n0.a SCRIPT []
+POSTHOOK: Lineage: wtest_n0.b SCRIPT []
 PREHOOK: query: select a, b,
 first_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 first_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
-from wtest
+from wtest_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@wtest
+PREHOOK: Input: default@wtest_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select a, b,
 first_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 first_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
-from wtest
+from wtest_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@wtest
+POSTHOOK: Input: default@wtest_n0
 #### A masked pattern was here ####
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
@@ -745,18 +745,18 @@ first_value(b) over (partition by a order by b desc  rows between 1 preceding an
 first_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
 first_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
-from wtest
+from wtest_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@wtest
+PREHOOK: Input: default@wtest_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select a, b,
 first_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
 first_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
 first_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
-from wtest
+from wtest_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@wtest
+POSTHOOK: Input: default@wtest_n0
 #### A masked pattern was here ####
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
@@ -778,18 +778,18 @@ last_value(b) over (partition by a order by b rows between 1 preceding and 1 fol
 last_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 last_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
 last_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
-from wtest
+from wtest_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@wtest
+PREHOOK: Input: default@wtest_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select a, b,
 last_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 last_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
 last_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
 last_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ) 
-from wtest
+from wtest_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@wtest
+POSTHOOK: Input: default@wtest_n0
 #### A masked pattern was here ####
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL
@@ -811,18 +811,18 @@ last_value(b) over (partition by a order by b desc  rows between 1 preceding and
 last_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
 last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
 last_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
-from wtest
+from wtest_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@wtest
+PREHOOK: Input: default@wtest_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select a, b,
 last_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
 last_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
 last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
 last_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ) 
-from wtest
+from wtest_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@wtest
+POSTHOOK: Input: default@wtest_n0
 #### A masked pattern was here ####
 1	NULL	NULL	NULL	NULL	NULL
 1	NULL	NULL	NULL	NULL	NULL

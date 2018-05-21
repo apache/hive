@@ -1,16 +1,16 @@
-PREHOOK: query: CREATE TABLE dest1(c1 INT, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 INT, c6 STRING, c7 INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n151(c1 INT, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 INT, c6 STRING, c7 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(c1 INT, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 INT, c6 STRING, c7 INT) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n151
+POSTHOOK: query: CREATE TABLE dest1_n151(c1 INT, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 INT, c6 STRING, c7 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n151
 PREHOOK: query: EXPLAIN
-FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
+FROM src INSERT OVERWRITE TABLE dest1_n151 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
+FROM src INSERT OVERWRITE TABLE dest1_n151 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -43,7 +43,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n151
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: int), _col5 (type: string), _col6 (type: int)
                   outputColumnNames: c1, c2, c3, c4, c5, c6, c7
@@ -88,7 +88,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n151
 
   Stage: Stage-2
     Stats Work
@@ -96,7 +96,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: c1, c2, c3, c4, c5, c6, c7
           Column Types: int, double, double, double, int, string, int
-          Table: default.dest1
+          Table: default.dest1_n151
 
   Stage: Stage-3
     Map Reduce
@@ -108,7 +108,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n151
 
   Stage: Stage-5
     Map Reduce
@@ -120,7 +120,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n151
 
   Stage: Stage-6
     Move Operator
@@ -128,27 +128,27 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n151 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
+PREHOOK: Output: default@dest1_n151
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n151 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c2 EXPRESSION []
-POSTHOOK: Lineage: dest1.c3 EXPRESSION []
-POSTHOOK: Lineage: dest1.c4 EXPRESSION []
-POSTHOOK: Lineage: dest1.c5 SIMPLE []
-POSTHOOK: Lineage: dest1.c6 EXPRESSION []
-POSTHOOK: Lineage: dest1.c7 SIMPLE []
-PREHOOK: query: select dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n151
+POSTHOOK: Lineage: dest1_n151.c1 SIMPLE []
+POSTHOOK: Lineage: dest1_n151.c2 EXPRESSION []
+POSTHOOK: Lineage: dest1_n151.c3 EXPRESSION []
+POSTHOOK: Lineage: dest1_n151.c4 EXPRESSION []
+POSTHOOK: Lineage: dest1_n151.c5 SIMPLE []
+POSTHOOK: Lineage: dest1_n151.c6 EXPRESSION []
+POSTHOOK: Lineage: dest1_n151.c7 SIMPLE []
+PREHOOK: query: select dest1_n151.* FROM dest1_n151
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n151
 #### A masked pattern was here ####
-POSTHOOK: query: select dest1.* FROM dest1
+POSTHOOK: query: select dest1_n151.* FROM dest1_n151
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n151
 #### A masked pattern was here ####
 5	5.0	5.0	5.0	5	TRUE	1

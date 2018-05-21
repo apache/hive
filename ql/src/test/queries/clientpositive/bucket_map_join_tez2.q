@@ -8,94 +8,94 @@ set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000;
 
-CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
-CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
-CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE srcbucket_mapjoin_n18(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE tab_part_n11 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE srcbucket_mapjoin_part_n20 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
 
-load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n18 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n18 partition(ds='2008-04-08');
 
-load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08');
 
 
 
 set hive.optimize.bucketingsorting=false;
-insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part;
+insert overwrite table tab_part_n11 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n20;
 
-CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
-insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin;
+CREATE TABLE tab_n10(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
+insert overwrite table tab_n10 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n18;
 
-analyze table srcbucket_mapjoin compute statistics for columns;
-analyze table srcbucket_mapjoin_part compute statistics for columns;
-analyze table tab compute statistics for columns;
-analyze table tab_part compute statistics for columns;
+analyze table srcbucket_mapjoin_n18 compute statistics for columns;
+analyze table srcbucket_mapjoin_part_n20 compute statistics for columns;
+analyze table tab_n10 compute statistics for columns;
+analyze table tab_part_n11 compute statistics for columns;
 
 set hive.auto.convert.join.noconditionaltask.size=1500;
 set hive.convert.join.bucket.mapjoin.tez = false;
-explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value;
+explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value;
 set hive.convert.join.bucket.mapjoin.tez = true;
-explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value;
+explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value;
 
-CREATE TABLE tab1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
-insert overwrite table tab1
-select key,value from srcbucket_mapjoin;
-analyze table tab1 compute statistics for columns;
+CREATE TABLE tab1_n5(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
+insert overwrite table tab1_n5
+select key,value from srcbucket_mapjoin_n18;
+analyze table tab1_n5 compute statistics for columns;
 
 -- A negative test as src is not bucketed.
 set hive.auto.convert.join.noconditionaltask.size=20000;
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select a.key, a.value, b.value
-from tab1 a join src b on a.key = b.key;
+from tab1_n5 a join src b on a.key = b.key;
 set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, a.value, b.value
-from tab1 a join src b on a.key = b.key;
+from tab1_n5 a join src b on a.key = b.key;
 
 set hive.auto.convert.join.noconditionaltask.size=500;
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain
-select a.key, b.key from (select key from tab_part where key > 1) a join (select key from tab_part where key > 2) b on a.key = b.key;
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
 set hive.convert.join.bucket.mapjoin.tez = true;
 explain
-select a.key, b.key from (select key from tab_part where key > 1) a join (select key from tab_part where key > 2) b on a.key = b.key;
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
 
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain
-select a.key, b.key from (select key from tab_part where key > 1) a left outer join (select key from tab_part where key > 2) b on a.key = b.key;
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
 set hive.convert.join.bucket.mapjoin.tez = true;
 explain
-select a.key, b.key from (select key from tab_part where key > 1) a left outer join (select key from tab_part where key > 2) b on a.key = b.key;
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
 
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain
-select a.key, b.key from (select key from tab_part where key > 1) a right outer join (select key from tab_part where key > 2) b on a.key = b.key;
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
 set hive.convert.join.bucket.mapjoin.tez = true;
 explain
-select a.key, b.key from (select key from tab_part where key > 1) a right outer join (select key from tab_part where key > 2) b on a.key = b.key;
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
 
 set hive.auto.convert.join.noconditionaltask.size=300;
 set hive.convert.join.bucket.mapjoin.tez = false;
-explain select a.key, b.key from (select distinct key from tab) a join tab b on b.key = a.key;
+explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key;
 set hive.convert.join.bucket.mapjoin.tez = true;
-explain select a.key, b.key from (select distinct key from tab) a join tab b on b.key = a.key;
+explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key;
 
 set hive.convert.join.bucket.mapjoin.tez = false;
-explain select a.value, b.value from (select distinct value from tab) a join tab b on b.key = a.value;
+explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value;
 set hive.convert.join.bucket.mapjoin.tez = true;
-explain select a.value, b.value from (select distinct value from tab) a join tab b on b.key = a.value;
+explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value;
 
 
 
 --multi key
 CREATE TABLE tab_part1 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key, value) INTO 4 BUCKETS STORED AS TEXTFILE;
 insert overwrite table tab_part1 partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part;
+select key,value from srcbucket_mapjoin_part_n20;
 analyze table tab_part1 compute statistics for columns;
 
 set hive.auto.convert.join.noconditionaltask.size=20000;
@@ -103,12 +103,12 @@ set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select count(*)
 from
-(select distinct key,value from tab_part) a join tab b on a.key = b.key and a.value = b.value;
+(select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value;
 set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select count(*)
 from
-(select distinct key,value from tab_part) a join tab b on a.key = b.key and a.value = b.value;
+(select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value;
 
 
 --HIVE-17939
@@ -122,10 +122,10 @@ explain select small.i, big.i from small,big where small.i=big.i;
 select small.i, big.i from small,big where small.i=big.i order by small.i, big.i;
 
 -- Bucket map join disabled for external tables
--- Create external table equivalent of tab_part
+-- Create external table equivalent of tab_part_n11
 CREATE EXTERNAL TABLE tab_part_ext (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
 insert overwrite table tab_part_ext partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part;
+select key,value from srcbucket_mapjoin_part_n20;
 analyze table tab_part_ext compute statistics for columns;
 
 set hive.auto.convert.join.noconditionaltask.size=1500;
@@ -133,7 +133,7 @@ set hive.convert.join.bucket.mapjoin.tez = true;
 set hive.disable.unsafe.external.table.operations=true;
 set test.comment=Bucket map join should work here;
 set test.comment;
-explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value;
+explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value;
 
 set test.comment=External tables, bucket map join should be disabled;
 set test.comment;

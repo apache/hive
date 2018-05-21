@@ -14,35 +14,35 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 --
 -- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... STATIC INSERT
 ---
-CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE;
+CREATE TABLE partitioned1_n1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE;
 
-explain insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original');
+explain insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original');
 
-insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original');
+insert into table partitioned1_n1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original');
 
-desc formatted partitioned1 partition(part=1);
+desc formatted partitioned1_n1 partition(part=1);
 
-desc formatted partitioned1 partition(part=1) a;
+desc formatted partitioned1_n1 partition(part=1) a;
 
 -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string);
+alter table partitioned1_n1 add columns(c int, d string);
 
-desc formatted partitioned1 partition(part=1);
+desc formatted partitioned1_n1 partition(part=1);
 
-explain insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty');
+explain insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty');
 
-insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty');
+insert into table partitioned1_n1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', 20, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty');
 
-desc formatted partitioned1 partition(part=2);
+desc formatted partitioned1_n1 partition(part=2);
 
-desc formatted partitioned1 partition(part=2) c;
+desc formatted partitioned1_n1 partition(part=2) c;
 
-explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred');
+explain insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred');
 
-insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred');
+insert into table partitioned1_n1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred');
 
-desc formatted partitioned1 partition(part=1);
+desc formatted partitioned1_n1 partition(part=1);
 
-desc formatted partitioned1 partition(part=1) a;
+desc formatted partitioned1_n1 partition(part=1) a;
 
-desc formatted partitioned1 partition(part=1) c;
+desc formatted partitioned1_n1 partition(part=1) c;

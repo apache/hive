@@ -34,9 +34,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 11
 12
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL create table srcpart_date as select ds as ds, ds as `date` from srcpart group by ds
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL create table srcpart_date_n0 as select ds as ds, ds as `date` from srcpart group by ds
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL create table srcpart_date as select ds as ds, ds as `date` from srcpart group by ds
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL create table srcpart_date_n0 as select ds as ds, ds as `date` from srcpart group by ds
 POSTHOOK: type: CREATETABLE_AS_SELECT
 PLAN VECTORIZATION:
   enabled: true
@@ -157,7 +157,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.srcpart_date
+                        name: default.srcpart_date_n0
 
   Stage: Stage-0
     Move Operator
@@ -172,13 +172,13 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.srcpart_date
+          name: default.srcpart_date_n0
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: create table srcpart_date stored as orc as select ds as ds, ds as `date` from srcpart group by ds
+PREHOOK: query: create table srcpart_date_n0 stored as orc as select ds as ds, ds as `date` from srcpart group by ds
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -186,8 +186,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: create table srcpart_date stored as orc as select ds as ds, ds as `date` from srcpart group by ds
+PREHOOK: Output: default@srcpart_date_n0
+POSTHOOK: query: create table srcpart_date_n0 stored as orc as select ds as ds, ds as `date` from srcpart group by ds
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -195,9 +195,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Lineage: srcpart_date.date SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_date.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Output: default@srcpart_date_n0
+POSTHOOK: Lineage: srcpart_date_n0.date SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_n0.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 PREHOOK: query: create table srcpart_hour stored as orc as select hr as hr, hr as hour from srcpart group by hr
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
@@ -260,9 +260,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_double_hour
 POSTHOOK: Lineage: srcpart_double_hour.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpart_double_hour.hr EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -281,7 +281,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -397,7 +397,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -513,28 +513,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -600,7 +600,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -716,23 +716,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08'
@@ -744,9 +744,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -765,7 +765,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -883,7 +883,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1000,28 +1000,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1088,7 +1088,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1205,28 +1205,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date_n0.ds) as string), "0") as bigint)) + 10) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date_n0.ds) as string), "0") as bigint)) + 10) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1245,7 +1245,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1370,7 +1370,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1487,28 +1487,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date_n0.ds) as string), "0") as bigint)) + 10) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date_n0.ds) as string), "0") as bigint)) + 10) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date_n0.ds) as decimal) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date_n0.ds) as decimal) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1527,7 +1527,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1645,7 +1645,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1762,30 +1762,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date_n0.ds) as decimal) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date_n0.ds) as decimal) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1804,7 +1804,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1984,7 +1984,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -2171,34 +2171,34 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Input: default@srcpart_hour
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Input: default@srcpart_hour
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2266,7 +2266,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -2453,26 +2453,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Input: default@srcpart_hour
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Input: default@srcpart_hour
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
@@ -2991,9 +2991,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3012,7 +3012,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -3128,7 +3128,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -3244,28 +3244,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3331,7 +3331,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -3447,23 +3447,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: select count(*) from srcpart where ds = 'I DONT EXIST'
@@ -5479,9 +5479,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_date_hour
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart left join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart left join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -5500,7 +5500,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -5616,7 +5616,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -5732,9 +5732,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart_date left join srcpart on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart_date_n0 left join srcpart on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart_date left join srcpart on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart_date_n0 left join srcpart on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -5753,7 +5753,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -5824,7 +5824,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -5984,9 +5984,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart full outer join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart full outer join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -6005,7 +6005,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -6120,7 +6120,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -6236,11 +6236,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -6259,7 +6259,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -6439,7 +6439,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -6626,30 +6626,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Input: default@srcpart_hour
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Input: default@srcpart_hour
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -6772,7 +6772,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -6908,18 +6908,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Input: default@srcpart_hour
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Input: default@srcpart_hour
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
@@ -8844,9 +8844,9 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2008-04-08
 2008-04-09
 2008-04-09
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -8865,7 +8865,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -9058,23 +9058,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08'
@@ -9086,9 +9086,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -9107,7 +9107,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -9302,30 +9302,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (day(srcpart.ds) = day(srcpart_date_n0.ds)) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -9344,7 +9344,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -9626,26 +9626,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Input: default@srcpart_hour
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Input: default@srcpart_hour
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
@@ -9922,9 +9922,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -9943,7 +9943,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -10136,23 +10136,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
@@ -10896,9 +10896,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart left join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart left join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -10917,7 +10917,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -11110,9 +11110,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart_date left join srcpart on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart_date_n0 left join srcpart on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart_date left join srcpart on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart_date_n0 left join srcpart on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -11180,7 +11180,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -11300,9 +11300,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart full outer join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart full outer join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) where srcpart_date_n0.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -11370,7 +11370,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -11490,11 +11490,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -11513,7 +11513,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -11795,30 +11795,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Input: default@srcpart_hour
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Input: default@srcpart_hour
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -11884,7 +11884,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n0
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -12077,18 +12077,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
 PREHOOK: Input: default@srcpart_hour
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n0 on (srcpart.ds = srcpart_date_n0.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date_n0.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
 POSTHOOK: Input: default@srcpart_hour
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
@@ -12732,14 +12732,14 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2008-04-08
 2008-04-09
-PREHOOK: query: drop table srcpart_date
+PREHOOK: query: drop table srcpart_date_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: drop table srcpart_date
+PREHOOK: Input: default@srcpart_date_n0
+PREHOOK: Output: default@srcpart_date_n0
+POSTHOOK: query: drop table srcpart_date_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n0
+POSTHOOK: Output: default@srcpart_date_n0
 PREHOOK: query: drop table srcpart_hour
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_hour

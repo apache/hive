@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE druid_alltypesorc
+PREHOOK: query: CREATE TABLE druid_alltypesorc_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -15,8 +15,8 @@ FROM alltypesorc where ctimestamp2 IS NOT NULL
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@druid_alltypesorc
-POSTHOOK: query: CREATE TABLE druid_alltypesorc
+PREHOOK: Output: default@druid_alltypesorc_n0
+POSTHOOK: query: CREATE TABLE druid_alltypesorc_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -33,22 +33,22 @@ FROM alltypesorc where ctimestamp2 IS NOT NULL
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@druid_alltypesorc
-POSTHOOK: Lineage: druid_alltypesorc.__time EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: druid_alltypesorc.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: druid_alltypesorc.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: druid_alltypesorc.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: druid_alltypesorc.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: druid_alltypesorc.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: druid_alltypesorc.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: druid_alltypesorc.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: druid_alltypesorc.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: DESCRIBE druid_alltypesorc
+POSTHOOK: Output: default@druid_alltypesorc_n0
+POSTHOOK: Lineage: druid_alltypesorc_n0.__time EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc_n0.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc_n0.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc_n0.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc_n0.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc_n0.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc_n0.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: druid_alltypesorc_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: DESCRIBE druid_alltypesorc_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@druid_alltypesorc
-POSTHOOK: query: DESCRIBE druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
+POSTHOOK: query: DESCRIBE druid_alltypesorc_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
 __time              	timestamp with local time zone	from deserializer   
 cstring1            	string              	from deserializer   
 cdouble             	double              	from deserializer   
@@ -58,12 +58,12 @@ csmallint           	smallint            	from deserializer
 cint                	int                 	from deserializer   
 cbigint             	bigint              	from deserializer   
 cboolean1           	boolean             	from deserializer   
-PREHOOK: query: DESCRIBE extended druid_alltypesorc
+PREHOOK: query: DESCRIBE extended druid_alltypesorc_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@druid_alltypesorc
-POSTHOOK: query: DESCRIBE extended druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
+POSTHOOK: query: DESCRIBE extended druid_alltypesorc_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
 __time              	timestamp with local time zone	from deserializer   
 cstring1            	string              	from deserializer   
 cdouble             	double              	from deserializer   
@@ -75,29 +75,29 @@ cbigint             	bigint              	from deserializer
 cboolean1           	boolean             	from deserializer   
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3033
-PREHOOK: query: ALTER TABLE druid_alltypesorc ADD COLUMNS (cstring2 string, cboolean2 boolean, cint2 int)
+PREHOOK: query: ALTER TABLE druid_alltypesorc_n0 ADD COLUMNS (cstring2 string, cboolean2 boolean, cint2 int)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@druid_alltypesorc
-PREHOOK: Output: default@druid_alltypesorc
-POSTHOOK: query: ALTER TABLE druid_alltypesorc ADD COLUMNS (cstring2 string, cboolean2 boolean, cint2 int)
+PREHOOK: Input: default@druid_alltypesorc_n0
+PREHOOK: Output: default@druid_alltypesorc_n0
+POSTHOOK: query: ALTER TABLE druid_alltypesorc_n0 ADD COLUMNS (cstring2 string, cboolean2 boolean, cint2 int)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@druid_alltypesorc
-POSTHOOK: Output: default@druid_alltypesorc
-PREHOOK: query: DESCRIBE druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
+POSTHOOK: Output: default@druid_alltypesorc_n0
+PREHOOK: query: DESCRIBE druid_alltypesorc_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@druid_alltypesorc
-POSTHOOK: query: DESCRIBE druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
+POSTHOOK: query: DESCRIBE druid_alltypesorc_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
 __time              	timestamp with local time zone	from deserializer   
 cstring1            	string              	from deserializer   
 cdouble             	double              	from deserializer   
@@ -110,12 +110,12 @@ cboolean1           	boolean             	from deserializer
 cstring2            	string              	from deserializer   
 cboolean2           	boolean             	from deserializer   
 cint2               	int                 	from deserializer   
-PREHOOK: query: DESCRIBE extended druid_alltypesorc
+PREHOOK: query: DESCRIBE extended druid_alltypesorc_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@druid_alltypesorc
-POSTHOOK: query: DESCRIBE extended druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
+POSTHOOK: query: DESCRIBE extended druid_alltypesorc_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
 __time              	timestamp with local time zone	from deserializer   
 cstring1            	string              	from deserializer   
 cdouble             	double              	from deserializer   
@@ -130,16 +130,16 @@ cboolean2           	boolean             	from deserializer
 cint2               	int                 	from deserializer   
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc WHERE cstring2 IS NOT NULL
+PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0 WHERE cstring2 IS NOT NULL
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc WHERE cstring2 IS NOT NULL
+POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0 WHERE cstring2 IS NOT NULL
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: INSERT INTO TABLE druid_alltypesorc
+PREHOOK: query: INSERT INTO TABLE druid_alltypesorc_n0
   SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
 cstring1,
 cdouble,
@@ -155,8 +155,8 @@ cint
 FROM alltypesorc where ctimestamp1 IS NOT NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@druid_alltypesorc
-POSTHOOK: query: INSERT INTO TABLE druid_alltypesorc
+PREHOOK: Output: default@druid_alltypesorc_n0
+POSTHOOK: query: INSERT INTO TABLE druid_alltypesorc_n0
   SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
 cstring1,
 cdouble,
@@ -172,39 +172,39 @@ cint
 FROM alltypesorc where ctimestamp1 IS NOT NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@druid_alltypesorc
-PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+POSTHOOK: Output: default@druid_alltypesorc_n0
+PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
+POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 9138
-PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc WHERE cstring2 IS NULL
+PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0 WHERE cstring2 IS NULL
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc WHERE cstring2 IS NULL
+POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0 WHERE cstring2 IS NULL
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3041
-PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc WHERE cstring2 IS NOT NULL
+PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0 WHERE cstring2 IS NOT NULL
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc WHERE cstring2 IS NOT NULL
+POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc_n0 WHERE cstring2 IS NOT NULL
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 6097
-PREHOOK: query: DROP TABLE druid_alltypesorc
+PREHOOK: query: DROP TABLE druid_alltypesorc_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@druid_alltypesorc
-PREHOOK: Output: default@druid_alltypesorc
-POSTHOOK: query: DROP TABLE druid_alltypesorc
+PREHOOK: Input: default@druid_alltypesorc_n0
+PREHOOK: Output: default@druid_alltypesorc_n0
+POSTHOOK: query: DROP TABLE druid_alltypesorc_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@druid_alltypesorc
-POSTHOOK: Output: default@druid_alltypesorc
+POSTHOOK: Input: default@druid_alltypesorc_n0
+POSTHOOK: Output: default@druid_alltypesorc_n0

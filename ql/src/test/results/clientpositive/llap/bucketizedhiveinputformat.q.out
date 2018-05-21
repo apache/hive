@@ -1,104 +1,104 @@
-PREHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n125(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n125
+POSTHOOK: query: CREATE TABLE T1_n125(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n125
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1_n125
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n125
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1_n125
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
+POSTHOOK: Output: default@t1_n125
+PREHOOK: query: CREATE TABLE T2_n74(name STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
+PREHOOK: Output: default@T2_n74
+POSTHOOK: query: CREATE TABLE T2_n74(name STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
+POSTHOOK: Output: default@T2_n74
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (
+PREHOOK: query: INSERT OVERWRITE TABLE T2_n74 SELECT * FROM (
 SELECT tmp1.name as name FROM (
-  SELECT name, 'MMM' AS n FROM T1) tmp1 
-  JOIN (SELECT 'MMM' AS n FROM T1) tmp2
-  JOIN (SELECT 'MMM' AS n FROM T1) tmp3
+  SELECT name, 'MMM' AS n FROM T1_n125) tmp1 
+  JOIN (SELECT 'MMM' AS n FROM T1_n125) tmp2
+  JOIN (SELECT 'MMM' AS n FROM T1_n125) tmp3
   ON tmp1.n = tmp2.n AND tmp1.n = tmp3.n) ttt LIMIT 5000000
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t2
-POSTHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (
+PREHOOK: Input: default@t1_n125
+PREHOOK: Output: default@t2_n74
+POSTHOOK: query: INSERT OVERWRITE TABLE T2_n74 SELECT * FROM (
 SELECT tmp1.name as name FROM (
-  SELECT name, 'MMM' AS n FROM T1) tmp1 
-  JOIN (SELECT 'MMM' AS n FROM T1) tmp2
-  JOIN (SELECT 'MMM' AS n FROM T1) tmp3
+  SELECT name, 'MMM' AS n FROM T1_n125) tmp1 
+  JOIN (SELECT 'MMM' AS n FROM T1_n125) tmp2
+  JOIN (SELECT 'MMM' AS n FROM T1_n125) tmp3
   ON tmp1.n = tmp2.n AND tmp1.n = tmp3.n) ttt LIMIT 5000000
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE T3(name STRING) STORED AS TEXTFILE
+POSTHOOK: Input: default@t1_n125
+POSTHOOK: Output: default@t2_n74
+POSTHOOK: Lineage: t2_n74.name SIMPLE [(t1_n125)t1_n125.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE T3_n28(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-POSTHOOK: query: CREATE TABLE T3(name STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T3_n28
+POSTHOOK: query: CREATE TABLE T3_n28(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T3
+POSTHOOK: Output: default@T3_n28
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T3_n28
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T3
+PREHOOK: Output: default@t3_n28
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T3_n28
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T3
+POSTHOOK: Output: default@t3_n28
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T3_n28
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T3
+PREHOOK: Output: default@t3_n28
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T3_n28
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t3
-PREHOOK: query: SELECT COUNT(1) FROM T2
+POSTHOOK: Output: default@t3_n28
+PREHOOK: query: SELECT COUNT(1) FROM T2_n74
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2_n74
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(1) FROM T2
+POSTHOOK: query: SELECT COUNT(1) FROM T2_n74
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2_n74
 #### A masked pattern was here ####
 5000000
-PREHOOK: query: SELECT COUNT(1) FROM T3
+PREHOOK: query: SELECT COUNT(1) FROM T3_n28
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t3_n28
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(1) FROM T3
+POSTHOOK: query: SELECT COUNT(1) FROM T3_n28
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t3_n28
 #### A masked pattern was here ####
 1000
-PREHOOK: query: SELECT COUNT(1) FROM T2
+PREHOOK: query: SELECT COUNT(1) FROM T2_n74
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2_n74
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(1) FROM T2
+POSTHOOK: query: SELECT COUNT(1) FROM T2_n74
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2_n74
 #### A masked pattern was here ####
 5000000
-PREHOOK: query: SELECT COUNT(1) FROM T3
+PREHOOK: query: SELECT COUNT(1) FROM T3_n28
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t3_n28
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(1) FROM T3
+POSTHOOK: query: SELECT COUNT(1) FROM T3_n28
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t3_n28
 #### A masked pattern was here ####
 1000

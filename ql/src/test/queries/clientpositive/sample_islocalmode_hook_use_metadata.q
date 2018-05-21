@@ -14,12 +14,12 @@ set hive.compute.query.using.stats=true;
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 -- create file inputs
-create table sih_i_part (key int, value string) partitioned by (p string);
-insert overwrite table sih_i_part partition (p='1') select key, value from src;
-insert overwrite table sih_i_part partition (p='2') select key+10000, value from src;
-insert overwrite table sih_i_part partition (p='3') select key+20000, value from src;
-create table sih_src as select key, value from sih_i_part order by key, value;
-create table sih_src2 as select key, value from sih_src order by key, value;
+create table sih_i_part_n1 (key int, value string) partitioned by (p string);
+insert overwrite table sih_i_part_n1 partition (p='1') select key, value from src;
+insert overwrite table sih_i_part_n1 partition (p='2') select key+10000, value from src;
+insert overwrite table sih_i_part_n1 partition (p='3') select key+20000, value from src;
+create table sih_src_n1 as select key, value from sih_i_part_n1 order by key, value;
+create table sih_src2_n1 as select key, value from sih_src_n1 order by key, value;
 
 set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.VerifyIsLocalModeHook;
 set mapreduce.framework.name=yarn;
@@ -34,16 +34,16 @@ set hive.sample.seednumber=7;
 
 -- sample split, running locally limited by num tasks
 
-desc formatted sih_src;
+desc formatted sih_src_n1;
 
-explain select count(1) from sih_src;
+explain select count(1) from sih_src_n1;
 
-select count(1) from sih_src;
+select count(1) from sih_src_n1;
 
-explain select count(1) from sih_src tablesample(1 percent);
+explain select count(1) from sih_src_n1 tablesample(1 percent);
 
-select count(1) from sih_src tablesample(1 percent);
+select count(1) from sih_src_n1 tablesample(1 percent);
 
-explain select count(1) from sih_src tablesample(10 rows);
+explain select count(1) from sih_src_n1 tablesample(10 rows);
 
-select count(1) from sih_src tablesample(10 rows);
+select count(1) from sih_src_n1 tablesample(10 rows);

@@ -1,50 +1,50 @@
-PREHOOK: query: drop table ba_test
+PREHOOK: query: drop table ba_test_n3
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ba_test
+POSTHOOK: query: drop table ba_test_n3
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table ba_test (ba_key binary, ba_val binary)
+PREHOOK: query: create table ba_test_n3 (ba_key binary, ba_val binary)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@ba_test
-POSTHOOK: query: create table ba_test (ba_key binary, ba_val binary)
+PREHOOK: Output: default@ba_test_n3
+POSTHOOK: query: create table ba_test_n3 (ba_key binary, ba_val binary)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ba_test
-PREHOOK: query: alter table ba_test set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
+POSTHOOK: Output: default@ba_test_n3
+PREHOOK: query: alter table ba_test_n3 set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
-PREHOOK: Input: default@ba_test
-PREHOOK: Output: default@ba_test
-POSTHOOK: query: alter table ba_test set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
+PREHOOK: Input: default@ba_test_n3
+PREHOOK: Output: default@ba_test_n3
+POSTHOOK: query: alter table ba_test_n3 set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
 POSTHOOK: type: ALTERTABLE_SERIALIZER
-POSTHOOK: Input: default@ba_test
-POSTHOOK: Output: default@ba_test
-PREHOOK: query: describe extended ba_test
+POSTHOOK: Input: default@ba_test_n3
+POSTHOOK: Output: default@ba_test_n3
+PREHOOK: query: describe extended ba_test_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@ba_test
-POSTHOOK: query: describe extended ba_test
+PREHOOK: Input: default@ba_test_n3
+POSTHOOK: query: describe extended ba_test_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@ba_test
+POSTHOOK: Input: default@ba_test_n3
 ba_key              	binary              	                    
 ba_val              	binary              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: from src insert overwrite table ba_test select cast (src.key as binary), cast (src.value as binary)
+PREHOOK: query: from src insert overwrite table ba_test_n3 select cast (src.key as binary), cast (src.value as binary)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@ba_test
-POSTHOOK: query: from src insert overwrite table ba_test select cast (src.key as binary), cast (src.value as binary)
+PREHOOK: Output: default@ba_test_n3
+POSTHOOK: query: from src insert overwrite table ba_test_n3 select cast (src.key as binary), cast (src.value as binary)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@ba_test
-POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from ba_test tablesample (10 rows)
+POSTHOOK: Output: default@ba_test_n3
+POSTHOOK: Lineage: ba_test_n3.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ba_test_n3.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from ba_test_n3 tablesample (10 rows)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ba_test
+PREHOOK: Input: default@ba_test_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from ba_test tablesample (10 rows)
+POSTHOOK: query: select * from ba_test_n3 tablesample (10 rows)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ba_test
+POSTHOOK: Input: default@ba_test_n3
 #### A masked pattern was here ####
 165	val_165
 238	val_238
@@ -56,11 +56,11 @@ POSTHOOK: Input: default@ba_test
 484	val_484
 86	val_86
 98	val_98
-PREHOOK: query: drop table ba_test
+PREHOOK: query: drop table ba_test_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@ba_test
-PREHOOK: Output: default@ba_test
-POSTHOOK: query: drop table ba_test
+PREHOOK: Input: default@ba_test_n3
+PREHOOK: Output: default@ba_test_n3
+POSTHOOK: query: drop table ba_test_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@ba_test
-POSTHOOK: Output: default@ba_test
+POSTHOOK: Input: default@ba_test_n3
+POSTHOOK: Output: default@ba_test_n3

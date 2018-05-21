@@ -36,7 +36,7 @@ POSTHOOK: query: ALTER TABLE orc_pred SET SERDEPROPERTIES ('orc.row.index.stride
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@orc_pred
 POSTHOOK: Output: default@orc_pred
-PREHOOK: query: CREATE TABLE staging(t tinyint,
+PREHOOK: query: CREATE TABLE staging_n2(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -51,8 +51,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@staging
-POSTHOOK: query: CREATE TABLE staging(t tinyint,
+PREHOOK: Output: default@staging_n2
+POSTHOOK: query: CREATE TABLE staging_n2(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -67,34 +67,34 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@staging
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
+POSTHOOK: Output: default@staging_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
+PREHOOK: Output: default@staging_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@staging
-PREHOOK: query: INSERT INTO TABLE orc_pred select * from staging
+POSTHOOK: Output: default@staging_n2
+PREHOOK: query: INSERT INTO TABLE orc_pred select * from staging_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n2
 PREHOOK: Output: default@orc_pred
-POSTHOOK: query: INSERT INTO TABLE orc_pred select * from staging
+POSTHOOK: query: INSERT INTO TABLE orc_pred select * from staging_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n2
 POSTHOOK: Output: default@orc_pred
-POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging_n2)staging_n2.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging_n2)staging_n2.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging_n2)staging_n2.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging_n2)staging_n2.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging_n2)staging_n2.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging_n2)staging_n2.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging_n2)staging_n2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging_n2)staging_n2.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging_n2)staging_n2.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging_n2)staging_n2.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging_n2)staging_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
 PREHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_pred

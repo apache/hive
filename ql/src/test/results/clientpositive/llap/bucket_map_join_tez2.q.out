@@ -1,172 +1,172 @@
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n18(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n18
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n18(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@srcbucket_mapjoin_n18
+PREHOOK: query: CREATE TABLE tab_part_n11 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_part_n11
+POSTHOOK: query: CREATE TABLE tab_part_n11 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@tab_part_n11
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n20 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n20
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n20 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n20
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n18 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n18
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n18 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n18
+POSTHOOK: Output: default@srcbucket_mapjoin_n18@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n18 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n18@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n18 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n18@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n20
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n20
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n20 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part_n11 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n11@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part_n11 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n11@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n11 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n20)srcbucket_mapjoin_part_n20.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n11 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n20)srcbucket_mapjoin_part_n20.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab_n10(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_n10
+POSTHOOK: query: CREATE TABLE tab_n10(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n10
+PREHOOK: query: insert overwrite table tab_n10 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n18
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n18
+PREHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+PREHOOK: Output: default@tab_n10@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n10 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n18
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: analyze table srcbucket_mapjoin compute statistics for columns
+POSTHOOK: Input: default@srcbucket_mapjoin_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+POSTHOOK: Output: default@tab_n10@ds=2008-04-08
+POSTHOOK: Lineage: tab_n10 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n18)srcbucket_mapjoin_n18.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n10 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n18)srcbucket_mapjoin_n18.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: analyze table srcbucket_mapjoin_n18 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_n18
+PREHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+PREHOOK: Output: default@srcbucket_mapjoin_n18
+PREHOOK: Output: default@srcbucket_mapjoin_n18@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table srcbucket_mapjoin compute statistics for columns
+POSTHOOK: query: analyze table srcbucket_mapjoin_n18 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+POSTHOOK: Output: default@srcbucket_mapjoin_n18
+POSTHOOK: Output: default@srcbucket_mapjoin_n18@ds=2008-04-08
 #### A masked pattern was here ####
-PREHOOK: query: analyze table srcbucket_mapjoin_part compute statistics for columns
+PREHOOK: query: analyze table srcbucket_mapjoin_part_n20 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+PREHOOK: Output: default@srcbucket_mapjoin_part_n20
+PREHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table srcbucket_mapjoin_part compute statistics for columns
+POSTHOOK: query: analyze table srcbucket_mapjoin_part_n20 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n20
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
 #### A masked pattern was here ####
-PREHOOK: query: analyze table tab compute statistics for columns
+PREHOOK: query: analyze table tab_n10 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Output: default@tab
-PREHOOK: Output: default@tab@ds=2008-04-08
+PREHOOK: Input: default@tab_n10
+PREHOOK: Input: default@tab_n10@ds=2008-04-08
+PREHOOK: Output: default@tab_n10
+PREHOOK: Output: default@tab_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table tab compute statistics for columns
+POSTHOOK: query: analyze table tab_n10 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Output: default@tab
-POSTHOOK: Output: default@tab@ds=2008-04-08
+POSTHOOK: Input: default@tab_n10
+POSTHOOK: Input: default@tab_n10@ds=2008-04-08
+POSTHOOK: Output: default@tab_n10
+POSTHOOK: Output: default@tab_n10@ds=2008-04-08
 #### A masked pattern was here ####
-PREHOOK: query: analyze table tab_part compute statistics for columns
+PREHOOK: query: analyze table tab_part_n11 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part
-PREHOOK: Output: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n11
+PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n11
+PREHOOK: Output: default@tab_part_n11@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table tab_part compute statistics for columns
+POSTHOOK: query: analyze table tab_part_n11 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n11
+POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n11
+POSTHOOK: Output: default@tab_part_n11@ds=2008-04-08
 #### A masked pattern was here ####
-PREHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+PREHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+POSTHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -279,9 +279,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+PREHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+POSTHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -394,45 +394,45 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: CREATE TABLE tab1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tab1_n5(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab1
-POSTHOOK: query: CREATE TABLE tab1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab1_n5
+POSTHOOK: query: CREATE TABLE tab1_n5(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab1
-PREHOOK: query: insert overwrite table tab1
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab1_n5
+PREHOOK: query: insert overwrite table tab1_n5
+select key,value from srcbucket_mapjoin_n18
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab1
-POSTHOOK: query: insert overwrite table tab1
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n18
+PREHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+PREHOOK: Output: default@tab1_n5
+POSTHOOK: query: insert overwrite table tab1_n5
+select key,value from srcbucket_mapjoin_n18
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab1
-POSTHOOK: Lineage: tab1.key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab1.value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: analyze table tab1 compute statistics for columns
+POSTHOOK: Input: default@srcbucket_mapjoin_n18
+POSTHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
+POSTHOOK: Output: default@tab1_n5
+POSTHOOK: Lineage: tab1_n5.key SIMPLE [(srcbucket_mapjoin_n18)srcbucket_mapjoin_n18.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab1_n5.value SIMPLE [(srcbucket_mapjoin_n18)srcbucket_mapjoin_n18.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: analyze table tab1_n5 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@tab1
-PREHOOK: Output: default@tab1
+PREHOOK: Input: default@tab1_n5
+PREHOOK: Output: default@tab1_n5
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table tab1 compute statistics for columns
+POSTHOOK: query: analyze table tab1_n5 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@tab1
-POSTHOOK: Output: default@tab1
+POSTHOOK: Input: default@tab1_n5
+POSTHOOK: Output: default@tab1_n5
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab1 a join src b on a.key = b.key
+from tab1_n5 a join src b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab1 a join src b on a.key = b.key
+from tab1_n5 a join src b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -517,11 +517,11 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 select a.key, a.value, b.value
-from tab1 a join src b on a.key = b.key
+from tab1_n5 a join src b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select a.key, a.value, b.value
-from tab1 a join src b on a.key = b.key
+from tab1_n5 a join src b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -605,10 +605,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -625,7 +625,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -644,7 +644,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -686,10 +686,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -706,7 +706,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -737,7 +737,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -761,10 +761,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a left outer join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a left outer join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -781,7 +781,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 1) (type: boolean)
@@ -800,7 +800,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -842,10 +842,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a left outer join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a left outer join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a left outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -862,7 +862,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 1) (type: boolean)
@@ -893,7 +893,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -917,10 +917,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a right outer join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a right outer join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -937,7 +937,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -956,7 +956,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -998,10 +998,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a right outer join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select a.key, b.key from (select key from tab_part where key > 1) a right outer join (select key from tab_part where key > 2) b on a.key = b.key
+select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1018,7 +1018,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -1037,7 +1037,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > 2) (type: boolean)
@@ -1072,9 +1072,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select a.key, b.key from (select distinct key from tab) a join tab b on b.key = a.key
+PREHOOK: query: explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.key, b.key from (select distinct key from tab) a join tab b on b.key = a.key
+POSTHOOK: query: explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1092,7 +1092,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab
+                  alias: tab_n10
                   Statistics: Num rows: 242 Data size: 968 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1156,9 +1156,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select a.key, b.key from (select distinct key from tab) a join tab b on b.key = a.key
+PREHOOK: query: explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.key, b.key from (select distinct key from tab) a join tab b on b.key = a.key
+POSTHOOK: query: explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1176,7 +1176,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab
+                  alias: tab_n10
                   Statistics: Num rows: 242 Data size: 968 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1244,9 +1244,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select a.value, b.value from (select distinct value from tab) a join tab b on b.key = a.value
+PREHOOK: query: explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.value, b.value from (select distinct value from tab) a join tab b on b.key = a.value
+POSTHOOK: query: explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1264,7 +1264,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab
+                  alias: tab_n10
                   Statistics: Num rows: 242 Data size: 22022 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -1344,9 +1344,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select a.value, b.value from (select distinct value from tab) a join tab b on b.key = a.value
+PREHOOK: query: explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.value, b.value from (select distinct value from tab) a join tab b on b.key = a.value
+POSTHOOK: query: explain select a.value, b.value from (select distinct value from tab_n10) a join tab_n10 b on b.key = a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1364,7 +1364,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab
+                  alias: tab_n10
                   Statistics: Num rows: 242 Data size: 22022 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -1453,19 +1453,19 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_part1
 PREHOOK: query: insert overwrite table tab_part1 partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+select key,value from srcbucket_mapjoin_part_n20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
 PREHOOK: Output: default@tab_part1@ds=2008-04-08
 POSTHOOK: query: insert overwrite table tab_part1 partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+select key,value from srcbucket_mapjoin_part_n20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
 POSTHOOK: Output: default@tab_part1@ds=2008-04-08
-POSTHOOK: Lineage: tab_part1 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part1 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tab_part1 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n20)srcbucket_mapjoin_part_n20.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part1 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n20)srcbucket_mapjoin_part_n20.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: analyze table tab_part1 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tab_part1
@@ -1483,12 +1483,12 @@ POSTHOOK: Output: default@tab_part1@ds=2008-04-08
 PREHOOK: query: explain
 select count(*)
 from
-(select distinct key,value from tab_part) a join tab b on a.key = b.key and a.value = b.value
+(select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*)
 from
-(select distinct key,value from tab_part) a join tab b on a.key = b.key and a.value = b.value
+(select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1507,7 +1507,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -1600,12 +1600,12 @@ STAGE PLANS:
 PREHOOK: query: explain
 select count(*)
 from
-(select distinct key,value from tab_part) a join tab b on a.key = b.key and a.value = b.value
+(select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*)
 from
-(select distinct key,value from tab_part) a join tab b on a.key = b.key and a.value = b.value
+(select distinct key,value from tab_part_n11) a join tab_n10 b on a.key = b.key and a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1623,7 +1623,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab_part
+                  alias: tab_part_n11
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -1852,19 +1852,19 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_part_ext
 PREHOOK: query: insert overwrite table tab_part_ext partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+select key,value from srcbucket_mapjoin_part_n20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20
+PREHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
 PREHOOK: Output: default@tab_part_ext@ds=2008-04-08
 POSTHOOK: query: insert overwrite table tab_part_ext partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+select key,value from srcbucket_mapjoin_part_n20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
 POSTHOOK: Output: default@tab_part_ext@ds=2008-04-08
-POSTHOOK: Lineage: tab_part_ext PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part_ext PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tab_part_ext PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n20)srcbucket_mapjoin_part_n20.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_ext PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n20)srcbucket_mapjoin_part_n20.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: analyze table tab_part_ext compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tab_part_ext
@@ -1880,9 +1880,9 @@ POSTHOOK: Output: default@tab_part_ext
 POSTHOOK: Output: default@tab_part_ext@ds=2008-04-08
 #### A masked pattern was here ####
 test.comment=Bucket map join should work here
-PREHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+PREHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value
+POSTHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

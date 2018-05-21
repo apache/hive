@@ -1,370 +1,370 @@
-PREHOOK: query: drop table t
+PREHOOK: query: drop table t_n6
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table t
+POSTHOOK: query: drop table t_n6
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table t (id int,px int,y decimal,x decimal)
+PREHOOK: query: create table t_n6 (id int,px int,y decimal,x decimal)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (id int,px int,y decimal,x decimal)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: create table t_n6 (id int,px int,y decimal,x decimal)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values (101,1,1,1)
+POSTHOOK: Output: default@t_n6
+PREHOOK: query: insert into t_n6 values (101,1,1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (101,1,1,1)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (101,1,1,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (201,2,1,1)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (201,2,1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (201,2,1,1)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (201,2,1,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (301,3,1,1)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (301,3,1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (301,3,1,1)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (301,3,1,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (401,4,1,11)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (401,4,1,11)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (401,4,1,11)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (401,4,1,11)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (501,5,1,null)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (501,5,1,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (501,5,1,null)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (501,5,1,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (601,6,null,1)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (601,6,null,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (601,6,null,1)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (601,6,null,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (701,6,null,null)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (701,6,null,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (701,6,null,null)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (701,6,null,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (102,1,2,2)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (102,1,2,2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (102,1,2,2)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (102,1,2,2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (202,2,1,2)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (202,2,1,2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (202,2,1,2)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (202,2,1,2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (302,3,2,1)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (302,3,2,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (302,3,2,1)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (302,3,2,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (402,4,2,12)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (402,4,2,12)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (402,4,2,12)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (402,4,2,12)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (502,5,2,null)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (502,5,2,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (502,5,2,null)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (502,5,2,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (602,6,null,2)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (602,6,null,2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (602,6,null,2)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (602,6,null,2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (702,6,null,null)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (702,6,null,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (702,6,null,null)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (702,6,null,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (103,1,3,3)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (103,1,3,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (103,1,3,3)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (103,1,3,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (203,2,1,3)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (203,2,1,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (203,2,1,3)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (203,2,1,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (303,3,3,1)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (303,3,3,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (303,3,3,1)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (303,3,3,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (403,4,3,13)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (403,4,3,13)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (403,4,3,13)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (403,4,3,13)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (503,5,3,null)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (503,5,3,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (503,5,3,null)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (503,5,3,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (603,6,null,3)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (603,6,null,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (603,6,null,3)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (603,6,null,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (703,6,null,null)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (703,6,null,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (703,6,null,null)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (703,6,null,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (104,1,4,4)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (104,1,4,4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (104,1,4,4)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (104,1,4,4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (204,2,1,4)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (204,2,1,4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (204,2,1,4)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (204,2,1,4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (304,3,4,1)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (304,3,4,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (304,3,4,1)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (304,3,4,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (404,4,4,14)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (404,4,4,14)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (404,4,4,14)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (404,4,4,14)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (504,5,4,null)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (504,5,4,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (504,5,4,null)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (504,5,4,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (604,6,null,4)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (604,6,null,4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (604,6,null,4)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (604,6,null,4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (704,6,null,null)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (704,6,null,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (704,6,null,null)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (704,6,null,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
-PREHOOK: query: insert into t values (800,7,1,1)
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
+PREHOOK: query: insert into t_n6 values (800,7,1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (800,7,1,1)
+PREHOOK: Output: default@t_n6
+POSTHOOK: query: insert into t_n6 values (800,7,1,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.id SCRIPT []
-POSTHOOK: Lineage: t.px SCRIPT []
-POSTHOOK: Lineage: t.x SCRIPT []
-POSTHOOK: Lineage: t.y SCRIPT []
+POSTHOOK: Output: default@t_n6
+POSTHOOK: Lineage: t_n6.id SCRIPT []
+POSTHOOK: Lineage: t_n6.px SCRIPT []
+POSTHOOK: Lineage: t_n6.x SCRIPT []
+POSTHOOK: Lineage: t_n6.y SCRIPT []
 PREHOOK: query: explain select px,var_pop(x),var_pop(y),corr(y,x),covar_samp(y,x),covar_pop(y,x),regr_count(y,x),regr_slope(y,x),
 regr_intercept(y,x), regr_r2(y,x), regr_sxx(y,x), regr_syy(y,x), regr_sxy(y,x), regr_avgx(y,x), regr_avgy(y,x), regr_count(y,x)
- from t group by px order by px
+ from t_n6 group by px order by px
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select px,var_pop(x),var_pop(y),corr(y,x),covar_samp(y,x),covar_pop(y,x),regr_count(y,x),regr_slope(y,x),
 regr_intercept(y,x), regr_r2(y,x), regr_sxx(y,x), regr_syy(y,x), regr_sxy(y,x), regr_avgx(y,x), regr_avgy(y,x), regr_count(y,x)
- from t group by px order by px
+ from t_n6 group by px order by px
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -376,7 +376,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t
+            alias: t_n6
             Statistics: Num rows: 29 Data size: 281 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: px (type: int), y (type: decimal(10,0)), x (type: decimal(10,0))
@@ -453,9 +453,9 @@ PREHOOK: query: select	px,
 	round(	regr_avgx(y,x),5),
 	round(	regr_avgy(y,x),5),
 	round(	regr_count(y,x),5)
- from t group by px order by px
+ from t_n6 group by px order by px
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n6
 #### A masked pattern was here ####
 POSTHOOK: query: select	px,
 	round(	var_pop(x),5),
@@ -473,9 +473,9 @@ POSTHOOK: query: select	px,
 	round(	regr_avgx(y,x),5),
 	round(	regr_avgy(y,x),5),
 	round(	regr_count(y,x),5)
- from t group by px order by px
+ from t_n6 group by px order by px
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n6
 #### A masked pattern was here ####
 1	1.25	1.25	1.0	1.66667	1.25	4	1.0	0.0	1.0	5.0	5.0	5.0	2.50000	2.50000	4
 2	1.25	0.0	NULL	0.0	0.0	4	0.0	1.0	1.0	5.0	0.0	0.0	2.50000	1.00000	4
@@ -484,13 +484,13 @@ POSTHOOK: Input: default@t
 5	NULL	1.25	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0
 6	1.25	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0
 7	0.0	0.0	NULL	NULL	0.0	1	NULL	NULL	NULL	0.0	0.0	0.0	1.00000	1.00000	1
-PREHOOK: query: select id,regr_count(y,x) over (partition by px) from t order by id
+PREHOOK: query: select id,regr_count(y,x) over (partition by px) from t_n6 order by id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select id,regr_count(y,x) over (partition by px) from t order by id
+POSTHOOK: query: select id,regr_count(y,x) over (partition by px) from t_n6 order by id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n6
 #### A masked pattern was here ####
 101	4
 102	4

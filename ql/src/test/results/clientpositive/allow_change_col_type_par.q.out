@@ -1,20 +1,20 @@
-PREHOOK: query: create table t1 (c1 int)
+PREHOOK: query: create table t1_n14 (c1 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 (c1 int)
+PREHOOK: Output: default@t1_n14
+POSTHOOK: query: create table t1_n14 (c1 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n14
 hive.metastore.disallow.incompatible.col.type.changes=true
 metaconf:hive.metastore.disallow.incompatible.col.type.changes=true
 hive.metastore.disallow.incompatible.col.type.changes=true
 metaconf:hive.metastore.disallow.incompatible.col.type.changes=false
-PREHOOK: query: alter table t1 change column c1 c1 smallint
+PREHOOK: query: alter table t1_n14 change column c1 c1 smallint
 PREHOOK: type: ALTERTABLE_RENAMECOL
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: alter table t1 change column c1 c1 smallint
+PREHOOK: Input: default@t1_n14
+PREHOOK: Output: default@t1_n14
+POSTHOOK: query: alter table t1_n14 change column c1 c1 smallint
 POSTHOOK: type: ALTERTABLE_RENAMECOL
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n14
+POSTHOOK: Output: default@t1_n14

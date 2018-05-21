@@ -443,48 +443,48 @@ POSTHOOK: query: DROP VIEW vp3
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@vp3
 POSTHOOK: Output: default@vp3
-PREHOOK: query: CREATE TABLE table1 (id int) PARTITIONED BY (year int)
+PREHOOK: query: CREATE TABLE table1_n12 (id int) PARTITIONED BY (year int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (id int) PARTITIONED BY (year int)
+PREHOOK: Output: default@table1_n12
+POSTHOOK: query: CREATE TABLE table1_n12 (id int) PARTITIONED BY (year int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE VIEW view1 partitioned on (year) as select id, year from table1
+POSTHOOK: Output: default@table1_n12
+PREHOOK: query: CREATE VIEW view1_n0 partitioned on (year) as select id, year from table1_n12
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@view1
-POSTHOOK: query: CREATE VIEW view1 partitioned on (year) as select id, year from table1
+PREHOOK: Output: default@view1_n0
+POSTHOOK: query: CREATE VIEW view1_n0 partitioned on (year) as select id, year from table1_n12
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@view1
-POSTHOOK: Lineage: view1.id SIMPLE [(table1)table1.FieldSchema(name:id, type:int, comment:null), ]
-PREHOOK: query: select year from view1
+POSTHOOK: Output: default@view1_n0
+POSTHOOK: Lineage: view1_n0.id SIMPLE [(table1_n12)table1_n12.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: select year from view1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@view1
+PREHOOK: Input: default@table1_n12
+PREHOOK: Input: default@view1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select year from view1
+POSTHOOK: query: select year from view1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@view1
+POSTHOOK: Input: default@table1_n12
+POSTHOOK: Input: default@view1_n0
 #### A masked pattern was here ####
-PREHOOK: query: Drop view view1
+PREHOOK: query: Drop view view1_n0
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@view1
-PREHOOK: Output: default@view1
-POSTHOOK: query: Drop view view1
+PREHOOK: Input: default@view1_n0
+PREHOOK: Output: default@view1_n0
+POSTHOOK: query: Drop view view1_n0
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@view1
-POSTHOOK: Output: default@view1
-PREHOOK: query: drop table table1
+POSTHOOK: Input: default@view1_n0
+POSTHOOK: Output: default@view1_n0
+PREHOOK: query: drop table table1_n12
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: drop table table1
+PREHOOK: Input: default@table1_n12
+PREHOOK: Output: default@table1_n12
+POSTHOOK: query: drop table table1_n12
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
+POSTHOOK: Input: default@table1_n12
+POSTHOOK: Output: default@table1_n12

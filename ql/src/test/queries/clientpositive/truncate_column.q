@@ -3,67 +3,67 @@
 set hive.mapred.mode=nonstrict;
 -- Tests truncating column(s) from a table, also tests that stats are updated
 
-CREATE TABLE test_tab (key STRING, value STRING) 
+CREATE TABLE test_tab_n1 (key STRING, value STRING) 
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' STORED AS RCFILE;
 
 set hive.stats.autogather=true;
 
-INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (10 rows);
+INSERT OVERWRITE TABLE test_tab_n1 SELECT * FROM src tablesample (10 rows);
 
-DESC FORMATTED test_tab;
+DESC FORMATTED test_tab_n1;
 
-SELECT * FROM test_tab ORDER BY value;
+SELECT * FROM test_tab_n1 ORDER BY value;
 
 -- Truncate 1 column
-TRUNCATE TABLE test_tab COLUMNS (key);
+TRUNCATE TABLE test_tab_n1 COLUMNS (key);
 
-DESC FORMATTED test_tab;
+DESC FORMATTED test_tab_n1;
 
 -- First column should be null
-SELECT * FROM test_tab ORDER BY value;
+SELECT * FROM test_tab_n1 ORDER BY value;
 
 -- Truncate multiple columns
-INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (10 rows);
+INSERT OVERWRITE TABLE test_tab_n1 SELECT * FROM src tablesample (10 rows);
 
-TRUNCATE TABLE test_tab COLUMNS (key, value);
+TRUNCATE TABLE test_tab_n1 COLUMNS (key, value);
 
-DESC FORMATTED test_tab;
+DESC FORMATTED test_tab_n1;
 
 -- Both columns should be null
-SELECT * FROM test_tab ORDER BY value;
+SELECT * FROM test_tab_n1 ORDER BY value;
 
 -- Truncate columns again
-TRUNCATE TABLE test_tab COLUMNS (key, value);
+TRUNCATE TABLE test_tab_n1 COLUMNS (key, value);
 
-DESC FORMATTED test_tab;
+DESC FORMATTED test_tab_n1;
 
 -- Both columns should be null
-SELECT * FROM test_tab ORDER BY value;
+SELECT * FROM test_tab_n1 ORDER BY value;
 
 -- Test truncating with a binary serde
-ALTER TABLE test_tab SET SERDE 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe';
+ALTER TABLE test_tab_n1 SET SERDE 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe';
 
-INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (10 rows);
+INSERT OVERWRITE TABLE test_tab_n1 SELECT * FROM src tablesample (10 rows);
 
-DESC FORMATTED test_tab;
+DESC FORMATTED test_tab_n1;
 
-SELECT * FROM test_tab ORDER BY value;
+SELECT * FROM test_tab_n1 ORDER BY value;
 
 -- Truncate 1 column
-TRUNCATE TABLE test_tab COLUMNS (key);
+TRUNCATE TABLE test_tab_n1 COLUMNS (key);
 
-DESC FORMATTED test_tab;
+DESC FORMATTED test_tab_n1;
 
 -- First column should be null
-SELECT * FROM test_tab ORDER BY value;
+SELECT * FROM test_tab_n1 ORDER BY value;
 
 -- Truncate 2 columns
-TRUNCATE TABLE test_tab COLUMNS (key, value);
+TRUNCATE TABLE test_tab_n1 COLUMNS (key, value);
 
-DESC FORMATTED test_tab;
+DESC FORMATTED test_tab_n1;
 
 -- Both columns should be null
-SELECT * FROM test_tab ORDER BY value;
+SELECT * FROM test_tab_n1 ORDER BY value;
 
 -- Test truncating a partition
 CREATE TABLE test_tab_part (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE;

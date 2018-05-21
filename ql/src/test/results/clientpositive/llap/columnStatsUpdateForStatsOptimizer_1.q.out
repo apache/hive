@@ -1,31 +1,31 @@
-PREHOOK: query: drop table calendar
+PREHOOK: query: drop table calendar_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table calendar
+POSTHOOK: query: drop table calendar_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE calendar (year int, month int)
+PREHOOK: query: CREATE TABLE calendar_n0 (year int, month int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@calendar
-POSTHOOK: query: CREATE TABLE calendar (year int, month int)
+PREHOOK: Output: default@calendar_n0
+POSTHOOK: query: CREATE TABLE calendar_n0 (year int, month int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@calendar
-PREHOOK: query: insert into calendar values (2010, 10), (2011, 11), (2012, 12)
+POSTHOOK: Output: default@calendar_n0
+PREHOOK: query: insert into calendar_n0 values (2010, 10), (2011, 11), (2012, 12)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@calendar
-POSTHOOK: query: insert into calendar values (2010, 10), (2011, 11), (2012, 12)
+PREHOOK: Output: default@calendar_n0
+POSTHOOK: query: insert into calendar_n0 values (2010, 10), (2011, 11), (2012, 12)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@calendar
-POSTHOOK: Lineage: calendar.month SCRIPT []
-POSTHOOK: Lineage: calendar.year SCRIPT []
-PREHOOK: query: desc formatted calendar
+POSTHOOK: Output: default@calendar_n0
+POSTHOOK: Lineage: calendar_n0.month SCRIPT []
+POSTHOOK: Lineage: calendar_n0.year SCRIPT []
+PREHOOK: query: desc formatted calendar_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@calendar
-POSTHOOK: query: desc formatted calendar
+PREHOOK: Input: default@calendar_n0
+POSTHOOK: query: desc formatted calendar_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 # col_name            	data_type           	comment             
 year                	int                 	                    
 month               	int                 	                    
@@ -55,20 +55,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table calendar compute statistics
+PREHOOK: query: analyze table calendar_n0 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@calendar
-PREHOOK: Output: default@calendar
-POSTHOOK: query: analyze table calendar compute statistics
+PREHOOK: Input: default@calendar_n0
+PREHOOK: Output: default@calendar_n0
+POSTHOOK: query: analyze table calendar_n0 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@calendar
-POSTHOOK: Output: default@calendar
-PREHOOK: query: desc formatted calendar
+POSTHOOK: Input: default@calendar_n0
+POSTHOOK: Output: default@calendar_n0
+PREHOOK: query: desc formatted calendar_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@calendar
-POSTHOOK: query: desc formatted calendar
+PREHOOK: Input: default@calendar_n0
+POSTHOOK: query: desc formatted calendar_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 # col_name            	data_type           	comment             
 year                	int                 	                    
 month               	int                 	                    
@@ -98,9 +98,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain select count(1) from calendar
+PREHOOK: query: explain select count(1) from calendar_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1) from calendar
+POSTHOOK: query: explain select count(1) from calendar_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -112,9 +112,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select max(year) from calendar
+PREHOOK: query: explain select max(year) from calendar_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select max(year) from calendar
+POSTHOOK: query: explain select max(year) from calendar_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -131,7 +131,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: calendar
+                  alias: calendar_n0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: year (type: int)
@@ -170,40 +170,40 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(year) from calendar
+PREHOOK: query: select max(year) from calendar_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@calendar
+PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select max(year) from calendar
+POSTHOOK: query: select max(year) from calendar_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 2012
-PREHOOK: query: select max(month) from calendar
+PREHOOK: query: select max(month) from calendar_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@calendar
+PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select max(month) from calendar
+POSTHOOK: query: select max(month) from calendar_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 12
-PREHOOK: query: analyze table calendar compute statistics for columns
+PREHOOK: query: analyze table calendar_n0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@calendar
-PREHOOK: Output: default@calendar
+PREHOOK: Input: default@calendar_n0
+PREHOOK: Output: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table calendar compute statistics for columns
+POSTHOOK: query: analyze table calendar_n0 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@calendar
-POSTHOOK: Output: default@calendar
+POSTHOOK: Input: default@calendar_n0
+POSTHOOK: Output: default@calendar_n0
 #### A masked pattern was here ####
-PREHOOK: query: desc formatted calendar
+PREHOOK: query: desc formatted calendar_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@calendar
-POSTHOOK: query: desc formatted calendar
+PREHOOK: Input: default@calendar_n0
+POSTHOOK: query: desc formatted calendar_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 # col_name            	data_type           	comment             
 year                	int                 	                    
 month               	int                 	                    
@@ -233,9 +233,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain select max(year) from calendar
+PREHOOK: query: explain select max(year) from calendar_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select max(year) from calendar
+POSTHOOK: query: explain select max(year) from calendar_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -247,31 +247,31 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(year) from calendar
+PREHOOK: query: select max(year) from calendar_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@calendar
+PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select max(year) from calendar
+POSTHOOK: query: select max(year) from calendar_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 2012
-PREHOOK: query: insert into calendar values (2015, 15)
+PREHOOK: query: insert into calendar_n0 values (2015, 15)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@calendar
-POSTHOOK: query: insert into calendar values (2015, 15)
+PREHOOK: Output: default@calendar_n0
+POSTHOOK: query: insert into calendar_n0 values (2015, 15)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@calendar
-POSTHOOK: Lineage: calendar.month SCRIPT []
-POSTHOOK: Lineage: calendar.year SCRIPT []
-PREHOOK: query: desc formatted calendar
+POSTHOOK: Output: default@calendar_n0
+POSTHOOK: Lineage: calendar_n0.month SCRIPT []
+POSTHOOK: Lineage: calendar_n0.year SCRIPT []
+PREHOOK: query: desc formatted calendar_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@calendar
-POSTHOOK: query: desc formatted calendar
+PREHOOK: Input: default@calendar_n0
+POSTHOOK: query: desc formatted calendar_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 # col_name            	data_type           	comment             
 year                	int                 	                    
 month               	int                 	                    
@@ -301,9 +301,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain select max(year) from calendar
+PREHOOK: query: explain select max(year) from calendar_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select max(year) from calendar
+POSTHOOK: query: explain select max(year) from calendar_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -320,7 +320,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: calendar
+                  alias: calendar_n0
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: year (type: int)
@@ -359,18 +359,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(year) from calendar
+PREHOOK: query: select max(year) from calendar_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@calendar
+PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select max(year) from calendar
+POSTHOOK: query: select max(year) from calendar_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 2015
-PREHOOK: query: explain select max(month) from calendar
+PREHOOK: query: explain select max(month) from calendar_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select max(month) from calendar
+POSTHOOK: query: explain select max(month) from calendar_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -387,7 +387,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: calendar
+                  alias: calendar_n0
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: month (type: int)
@@ -426,31 +426,31 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(month) from calendar
+PREHOOK: query: select max(month) from calendar_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@calendar
+PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select max(month) from calendar
+POSTHOOK: query: select max(month) from calendar_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 15
-PREHOOK: query: analyze table calendar compute statistics for columns year
+PREHOOK: query: analyze table calendar_n0 compute statistics for columns year
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@calendar
-PREHOOK: Output: default@calendar
+PREHOOK: Input: default@calendar_n0
+PREHOOK: Output: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table calendar compute statistics for columns year
+POSTHOOK: query: analyze table calendar_n0 compute statistics for columns year
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@calendar
-POSTHOOK: Output: default@calendar
+POSTHOOK: Input: default@calendar_n0
+POSTHOOK: Output: default@calendar_n0
 #### A masked pattern was here ####
-PREHOOK: query: desc formatted calendar
+PREHOOK: query: desc formatted calendar_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@calendar
-POSTHOOK: query: desc formatted calendar
+PREHOOK: Input: default@calendar_n0
+POSTHOOK: query: desc formatted calendar_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 # col_name            	data_type           	comment             
 year                	int                 	                    
 month               	int                 	                    
@@ -480,9 +480,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain select max(year) from calendar
+PREHOOK: query: explain select max(year) from calendar_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select max(year) from calendar
+POSTHOOK: query: explain select max(year) from calendar_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -494,18 +494,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(year) from calendar
+PREHOOK: query: select max(year) from calendar_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@calendar
+PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select max(year) from calendar
+POSTHOOK: query: select max(year) from calendar_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 2015
-PREHOOK: query: explain select max(month) from calendar
+PREHOOK: query: explain select max(month) from calendar_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select max(month) from calendar
+POSTHOOK: query: explain select max(month) from calendar_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -522,7 +522,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: calendar
+                  alias: calendar_n0
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: month (type: int)
@@ -561,31 +561,31 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(month) from calendar
+PREHOOK: query: select max(month) from calendar_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@calendar
+PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select max(month) from calendar
+POSTHOOK: query: select max(month) from calendar_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 15
-PREHOOK: query: analyze table calendar compute statistics for columns month
+PREHOOK: query: analyze table calendar_n0 compute statistics for columns month
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@calendar
-PREHOOK: Output: default@calendar
+PREHOOK: Input: default@calendar_n0
+PREHOOK: Output: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table calendar compute statistics for columns month
+POSTHOOK: query: analyze table calendar_n0 compute statistics for columns month
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@calendar
-POSTHOOK: Output: default@calendar
+POSTHOOK: Input: default@calendar_n0
+POSTHOOK: Output: default@calendar_n0
 #### A masked pattern was here ####
-PREHOOK: query: desc formatted calendar
+PREHOOK: query: desc formatted calendar_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@calendar
-POSTHOOK: query: desc formatted calendar
+PREHOOK: Input: default@calendar_n0
+POSTHOOK: query: desc formatted calendar_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 # col_name            	data_type           	comment             
 year                	int                 	                    
 month               	int                 	                    
@@ -615,9 +615,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain select max(month) from calendar
+PREHOOK: query: explain select max(month) from calendar_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select max(month) from calendar
+POSTHOOK: query: explain select max(month) from calendar_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -629,13 +629,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(month) from calendar
+PREHOOK: query: select max(month) from calendar_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@calendar
+PREHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select max(month) from calendar
+POSTHOOK: query: select max(month) from calendar_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@calendar
+POSTHOOK: Input: default@calendar_n0
 #### A masked pattern was here ####
 15
 PREHOOK: query: CREATE TABLE calendarp (`year` int)  partitioned by (p int)
@@ -938,28 +938,28 @@ POSTHOOK: Input: default@calendarp
 POSTHOOK: Input: default@calendarp@p=1
 #### A masked pattern was here ####
 2015
-PREHOOK: query: create table t (key string, value string)
+PREHOOK: query: create table t_n31 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (key string, value string)
+PREHOOK: Output: default@t_n31
+POSTHOOK: query: create table t_n31 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table t
+POSTHOOK: Output: default@t_n31
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table t_n31
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t
-POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table t
+PREHOOK: Output: default@t_n31
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table t_n31
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t
-PREHOOK: query: desc formatted t
+POSTHOOK: Output: default@t_n31
+PREHOOK: query: desc formatted t_n31
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t
-POSTHOOK: query: desc formatted t
+PREHOOK: Input: default@t_n31
+POSTHOOK: query: desc formatted t_n31
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n31
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -988,20 +988,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table t compute statistics
+PREHOOK: query: analyze table t_n31 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-PREHOOK: Output: default@t
-POSTHOOK: query: analyze table t compute statistics
+PREHOOK: Input: default@t_n31
+PREHOOK: Output: default@t_n31
+POSTHOOK: query: analyze table t_n31 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-POSTHOOK: Output: default@t
-PREHOOK: query: desc formatted t
+POSTHOOK: Input: default@t_n31
+POSTHOOK: Output: default@t_n31
+PREHOOK: query: desc formatted t_n31
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t
-POSTHOOK: query: desc formatted t
+PREHOOK: Input: default@t_n31
+POSTHOOK: query: desc formatted t_n31
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n31
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    

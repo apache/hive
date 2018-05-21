@@ -1,20 +1,20 @@
-PREHOOK: query: create table masking_test as select cast(key as int) as key, value from src
+PREHOOK: query: create table masking_test_n7 as select cast(key as int) as key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create table masking_test as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_n7
+POSTHOOK: query: create table masking_test_n7 as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@masking_test_n7
+POSTHOOK: Lineage: masking_test_n7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-select key, count(*) from masking_test group by key
+select key, count(*) from masking_test_n7 group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select key, count(*) from masking_test group by key
+select key, count(*) from masking_test_n7 group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -31,22 +31,23 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: masking_test
+                  alias: masking_test_n7
                   Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
-                    Statistics: Num rows: 250 Data size: 952 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: key
+                    Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       keys: key (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 250 Data size: 952 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 250 Data size: 952 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 500 Data size: 1904 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -58,10 +59,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 125 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 952 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 125 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 952 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -73,23 +74,328 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(*) from masking_test group by key
+PREHOOK: query: select key, count(*) from masking_test_n7 group by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(*) from masking_test group by key
+POSTHOOK: query: select key, count(*) from masking_test_n7 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n7
 #### A masked pattern was here ####
 8	1
+12	2
+19	1
+28	1
+33	1
+42	2
+58	2
+69	1
+70	3
+82	1
+85	1
+95	2
+113	2
+114	1
+128	3
+138	4
+160	1
+167	3
+176	2
+177	1
+178	1
+192	1
+194	1
+202	1
+213	2
+216	2
+217	2
+219	2
+229	2
+256	2
+258	1
+260	1
+263	1
+273	3
+277	4
+283	1
+285	1
+305	1
+308	1
+322	2
+339	1
+341	1
+365	1
+366	1
+373	1
+374	1
+375	1
+377	1
+389	1
+395	2
+400	1
+406	4
+414	2
+418	1
+421	1
+431	3
+435	1
+438	3
+443	1
+444	1
+449	1
+453	1
+455	1
+458	2
+463	2
+477	1
+483	1
+492	2
+493	1
+495	1
+496	1
 0	3
 4	1
+18	2
+20	1
+24	2
+26	2
+27	1
+43	1
+51	2
+65	1
+66	1
+77	1
+80	1
+92	1
+97	2
+98	2
+103	2
+111	1
+133	1
+134	2
+143	1
+145	1
+146	2
+155	1
+156	1
+158	1
+163	1
+174	2
+189	1
+190	1
+195	2
+196	1
+197	2
+207	2
+209	2
+222	1
+228	1
+239	2
+244	1
+248	1
+252	1
+262	1
+278	2
+280	2
+281	2
+287	1
+292	1
+309	2
+315	1
+317	2
+318	3
+321	2
+336	1
+342	2
+351	1
+356	1
+360	1
+378	1
+379	1
+386	1
+392	1
+393	1
+401	5
+407	1
+411	1
+413	2
+417	3
+424	2
+430	3
+457	1
+467	1
+468	4
+470	1
+475	1
+479	1
+481	1
+484	1
+489	4
+490	1
+10	1
+11	1
+30	1
+34	1
+57	1
+67	2
+78	1
+83	2
+86	1
+90	3
+96	1
+104	2
+116	1
+125	2
+126	1
+131	1
+136	1
+137	2
+149	2
+150	1
+157	1
+162	1
+168	1
+170	1
+172	2
+175	2
+179	2
+180	1
+199	3
+200	2
+203	2
+208	3
+214	1
+218	1
+223	2
+224	2
+235	1
+237	2
+241	1
+247	1
+255	2
+274	1
+282	2
+284	1
+288	2
+291	1
+298	3
+302	1
+311	3
+316	3
+325	2
+331	2
+332	1
+335	1
+344	2
+345	1
+348	5
+353	2
+364	1
+382	2
+384	3
+397	2
+402	1
+403	3
+409	3
+419	1
+427	1
+436	1
+437	1
+439	2
+466	3
+469	5
+472	1
+485	1
+487	1
+491	1
+494	1
+498	3
 2	1
+5	3
+9	1
+15	2
+17	1
+35	3
+37	2
+41	1
+44	1
+47	1
+53	1
+54	1
+64	1
+72	2
+74	1
+76	2
+84	2
+87	1
+100	2
+105	1
+118	2
+119	3
+120	2
+129	2
+152	2
+153	1
+164	2
+165	2
+166	1
+169	4
+181	1
+183	1
+186	1
+187	3
+191	2
+193	3
+201	1
+205	2
+221	2
+226	1
+230	5
+233	2
+238	2
+242	2
+249	1
+257	1
+265	2
+266	1
+272	2
+275	1
+286	1
+289	1
+296	1
+306	1
+307	2
+310	1
+323	1
+327	3
+333	2
+338	1
+362	1
+367	2
+368	1
+369	3
+394	1
+396	3
+399	2
+404	2
+429	2
+432	1
+446	1
+448	1
+452	1
+454	3
+459	2
+460	1
+462	2
+478	2
+480	3
+482	1
+497	1
 PREHOOK: query: explain
-select key, count(*) from masking_test group by key
+select key, count(*) from masking_test_n7 group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select key, count(*) from masking_test group by key
+select key, count(*) from masking_test_n7 group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -102,15 +408,320 @@ STAGE PLANS:
         ListSink
       Cached Query Result: true
 
-PREHOOK: query: select key, count(*) from masking_test group by key
+PREHOOK: query: select key, count(*) from masking_test_n7 group by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(*) from masking_test group by key
+POSTHOOK: query: select key, count(*) from masking_test_n7 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n7
 #### A masked pattern was here ####
 8	1
+12	2
+19	1
+28	1
+33	1
+42	2
+58	2
+69	1
+70	3
+82	1
+85	1
+95	2
+113	2
+114	1
+128	3
+138	4
+160	1
+167	3
+176	2
+177	1
+178	1
+192	1
+194	1
+202	1
+213	2
+216	2
+217	2
+219	2
+229	2
+256	2
+258	1
+260	1
+263	1
+273	3
+277	4
+283	1
+285	1
+305	1
+308	1
+322	2
+339	1
+341	1
+365	1
+366	1
+373	1
+374	1
+375	1
+377	1
+389	1
+395	2
+400	1
+406	4
+414	2
+418	1
+421	1
+431	3
+435	1
+438	3
+443	1
+444	1
+449	1
+453	1
+455	1
+458	2
+463	2
+477	1
+483	1
+492	2
+493	1
+495	1
+496	1
 0	3
 4	1
+18	2
+20	1
+24	2
+26	2
+27	1
+43	1
+51	2
+65	1
+66	1
+77	1
+80	1
+92	1
+97	2
+98	2
+103	2
+111	1
+133	1
+134	2
+143	1
+145	1
+146	2
+155	1
+156	1
+158	1
+163	1
+174	2
+189	1
+190	1
+195	2
+196	1
+197	2
+207	2
+209	2
+222	1
+228	1
+239	2
+244	1
+248	1
+252	1
+262	1
+278	2
+280	2
+281	2
+287	1
+292	1
+309	2
+315	1
+317	2
+318	3
+321	2
+336	1
+342	2
+351	1
+356	1
+360	1
+378	1
+379	1
+386	1
+392	1
+393	1
+401	5
+407	1
+411	1
+413	2
+417	3
+424	2
+430	3
+457	1
+467	1
+468	4
+470	1
+475	1
+479	1
+481	1
+484	1
+489	4
+490	1
+10	1
+11	1
+30	1
+34	1
+57	1
+67	2
+78	1
+83	2
+86	1
+90	3
+96	1
+104	2
+116	1
+125	2
+126	1
+131	1
+136	1
+137	2
+149	2
+150	1
+157	1
+162	1
+168	1
+170	1
+172	2
+175	2
+179	2
+180	1
+199	3
+200	2
+203	2
+208	3
+214	1
+218	1
+223	2
+224	2
+235	1
+237	2
+241	1
+247	1
+255	2
+274	1
+282	2
+284	1
+288	2
+291	1
+298	3
+302	1
+311	3
+316	3
+325	2
+331	2
+332	1
+335	1
+344	2
+345	1
+348	5
+353	2
+364	1
+382	2
+384	3
+397	2
+402	1
+403	3
+409	3
+419	1
+427	1
+436	1
+437	1
+439	2
+466	3
+469	5
+472	1
+485	1
+487	1
+491	1
+494	1
+498	3
 2	1
+5	3
+9	1
+15	2
+17	1
+35	3
+37	2
+41	1
+44	1
+47	1
+53	1
+54	1
+64	1
+72	2
+74	1
+76	2
+84	2
+87	1
+100	2
+105	1
+118	2
+119	3
+120	2
+129	2
+152	2
+153	1
+164	2
+165	2
+166	1
+169	4
+181	1
+183	1
+186	1
+187	3
+191	2
+193	3
+201	1
+205	2
+221	2
+226	1
+230	5
+233	2
+238	2
+242	2
+249	1
+257	1
+265	2
+266	1
+272	2
+275	1
+286	1
+289	1
+296	1
+306	1
+307	2
+310	1
+323	1
+327	3
+333	2
+338	1
+362	1
+367	2
+368	1
+369	3
+394	1
+396	3
+399	2
+404	2
+429	2
+432	1
+446	1
+448	1
+452	1
+454	3
+459	2
+460	1
+462	2
+478	2
+480	3
+482	1
+497	1

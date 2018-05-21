@@ -2,58 +2,58 @@
 set hive.mapred.mode=nonstrict;
 set hive.stats.ndv.algo=fm;
 
-create table n(key int);
+create table n_n0(key int);
 
-insert overwrite table n select null from src;
+insert overwrite table n_n0 select null from src;
 
-explain analyze table n compute statistics for columns;
+explain analyze table n_n0 compute statistics for columns;
 
-analyze table n compute statistics for columns;
+analyze table n_n0 compute statistics for columns;
 
-desc formatted n key;
+desc formatted n_n0 key;
 
 
-create table i(key int);
+create table i_n1(key int);
 
-insert overwrite table i select key from src;
+insert overwrite table i_n1 select key from src;
 
-explain analyze table i compute statistics for columns;
+explain analyze table i_n1 compute statistics for columns;
 
-analyze table i compute statistics for columns;
+analyze table i_n1 compute statistics for columns;
 
-desc formatted i key;
+desc formatted i_n1 key;
 
-drop table i;
+drop table i_n1;
 
-create table i(key double);
+create table i_n1(key double);
 
-insert overwrite table i select key from src;
+insert overwrite table i_n1 select key from src;
 
-analyze table i compute statistics for columns;
+analyze table i_n1 compute statistics for columns;
 
-desc formatted i key;
+desc formatted i_n1 key;
 
-drop table i;
+drop table i_n1;
 
-create table i(key decimal);
+create table i_n1(key decimal);
 
-insert overwrite table i select key from src;
+insert overwrite table i_n1 select key from src;
 
-analyze table i compute statistics for columns;
+analyze table i_n1 compute statistics for columns;
 
-desc formatted i key;
+desc formatted i_n1 key;
 
-drop table i;
+drop table i_n1;
 
-create table i(key date);
+create table i_n1(key date);
 
-insert into i values ('2012-08-17');
-insert into i values ('2012-08-17');
-insert into i values ('2013-08-17');
-insert into i values ('2012-03-17');
-insert into i values ('2012-05-17');
+insert into i_n1 values ('2012-08-17');
+insert into i_n1 values ('2012-08-17');
+insert into i_n1 values ('2013-08-17');
+insert into i_n1 values ('2012-03-17');
+insert into i_n1 values ('2012-05-17');
 
-analyze table i compute statistics for columns;
+analyze table i_n1 compute statistics for columns;
 
-desc formatted i key;
+desc formatted i_n1 key;
 

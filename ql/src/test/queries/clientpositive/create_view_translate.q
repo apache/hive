@@ -1,16 +1,16 @@
 --! qt:dataset:src
-drop view if exists v;
+drop view if exists v_n7;
 drop view if exists w;
 
-create view v as select cast(key as string) from src;
-describe formatted v;
+create view v_n7 as select cast(key as string) from src;
+describe formatted v_n7;
 
 create view w as select key, value from (
   select key, value from src
 ) a;
 describe formatted w;
 
-drop view v;
+drop view v_n7;
 drop view w;
 
 

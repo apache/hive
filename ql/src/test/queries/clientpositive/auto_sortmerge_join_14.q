@@ -5,11 +5,11 @@ set hive.explain.user=false;
 
 set hive.exec.reducers.max = 1;
 
-CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
-CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+CREATE TABLE tbl1_n7(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+CREATE TABLE tbl2_n6(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
-insert overwrite table tbl1 select * from src where key < 20;
-insert overwrite table tbl2 select * from src where key < 10;
+insert overwrite table tbl1_n7 select * from src where key < 20;
+insert overwrite table tbl2_n6 select * from src where key < 10;
 
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
@@ -21,14 +21,14 @@ set hive.auto.convert.join=true;
 -- disable hash joins
 set hive.auto.convert.join.noconditionaltask.size=10;
 
--- Since tbl1 is the bigger table, tbl1 Left Outer Join tbl2 can be performed
+-- Since tbl1_n7 is the bigger table, tbl1_n7 Left Outer Join tbl2_n6 can be performed
 explain
-select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key;
-select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key;
+select count(*) FROM tbl1_n7 a LEFT OUTER JOIN tbl2_n6 b ON a.key = b.key;
+select count(*) FROM tbl1_n7 a LEFT OUTER JOIN tbl2_n6 b ON a.key = b.key;
 
-insert overwrite table tbl2 select * from src where key < 200;
+insert overwrite table tbl2_n6 select * from src where key < 200;
 
--- Since tbl2 is the bigger table, tbl1 Right Outer Join tbl2 can be performed
+-- Since tbl2_n6 is the bigger table, tbl1_n7 Right Outer Join tbl2_n6 can be performed
 explain
-select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key;
-select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key;
+select count(*) FROM tbl1_n7 a RIGHT OUTER JOIN tbl2_n6 b ON a.key = b.key;
+select count(*) FROM tbl1_n7 a RIGHT OUTER JOIN tbl2_n6 b ON a.key = b.key;

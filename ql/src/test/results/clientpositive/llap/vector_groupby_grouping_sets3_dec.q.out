@@ -1,46 +1,46 @@
-PREHOOK: query: CREATE TABLE T1_text(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_text_n10(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text
-POSTHOOK: query: CREATE TABLE T1_text(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: Output: default@T1_text_n10
+POSTHOOK: query: CREATE TABLE T1_text_n10(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets1.txt' INTO TABLE T1_text
+POSTHOOK: Output: default@T1_text_n10
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets1.txt' INTO TABLE T1_text_n10
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1_text
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets1.txt' INTO TABLE T1_text
+PREHOOK: Output: default@t1_text_n10
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets1.txt' INTO TABLE T1_text_n10
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1_text
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets2.txt' INTO TABLE T1_text
+POSTHOOK: Output: default@t1_text_n10
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets2.txt' INTO TABLE T1_text_n10
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1_text
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets2.txt' INTO TABLE T1_text
+PREHOOK: Output: default@t1_text_n10
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets2.txt' INTO TABLE T1_text_n10
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1_text
-PREHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT a, b, cast(c as decimal(10,2)) as c_dec FROM T1_text
+POSTHOOK: Output: default@t1_text_n10
+PREHOOK: query: CREATE TABLE T1_n115 STORED AS ORC AS SELECT a, b, cast(c as decimal(10,2)) as c_dec FROM T1_text_n10
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@t1_text
+PREHOOK: Input: default@t1_text_n10
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT a, b, cast(c as decimal(10,2)) as c_dec FROM T1_text
+PREHOOK: Output: default@T1_n115
+POSTHOOK: query: CREATE TABLE T1_n115 STORED AS ORC AS SELECT a, b, cast(c as decimal(10,2)) as c_dec FROM T1_text_n10
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@t1_text
+POSTHOOK: Input: default@t1_text_n10
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: t1.a SIMPLE [(t1_text)t1_text.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.b SIMPLE [(t1_text)t1_text.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.c_dec EXPRESSION [(t1_text)t1_text.FieldSchema(name:c, type:string, comment:null), ]
+POSTHOOK: Output: default@T1_n115
+POSTHOOK: Lineage: t1_n115.a SIMPLE [(t1_text_n10)t1_text_n10.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n115.b SIMPLE [(t1_text_n10)t1_text_n10.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n115.c_dec EXPRESSION [(t1_text_n10)t1_text_n10.FieldSchema(name:c, type:string, comment:null), ]
 a	b	c_dec
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, avg(c_dec), count(*) from T1 group by a, b with cube
+SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, avg(c_dec), count(*) from T1 group by a, b with cube
+SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -62,7 +62,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n115
                   Statistics: Num rows: 12 Data size: 5760 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -176,10 +176,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, avg(c_dec), count(*) from T1 group by cube(a, b)
+SELECT a, b, avg(c_dec), count(*) from T1_n115 group by cube(a, b)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, avg(c_dec), count(*) from T1 group by cube(a, b)
+SELECT a, b, avg(c_dec), count(*) from T1_n115 group by cube(a, b)
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -201,7 +201,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n115
                   Statistics: Num rows: 12 Data size: 5760 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -314,13 +314,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, avg(c_dec), count(*) from T1 group by a, b with cube
+PREHOOK: query: SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, avg(c_dec), count(*) from T1 group by a, b with cube
+POSTHOOK: query: SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
 a	b	_c2	_c3
 1	1	3.00000000000000000000	2
@@ -340,10 +340,10 @@ NULL	2	5.20000000000000000000	5
 NULL	3	5.00000000000000000000	2
 NULL	NULL	3.83333333333333333333	12
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, avg(c_dec), count(*) from T1 group by a, b with cube
+SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT a, b, avg(c_dec), count(*) from T1 group by a, b with cube
+SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -366,7 +366,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n115
                   Statistics: Num rows: 12 Data size: 5760 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -521,13 +521,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, avg(c_dec), count(*) from T1 group by a, b with cube
+PREHOOK: query: SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, avg(c_dec), count(*) from T1 group by a, b with cube
+POSTHOOK: query: SELECT a, b, avg(c_dec), count(*) from T1_n115 group by a, b with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n115
 #### A masked pattern was here ####
 a	b	_c2	_c3
 1	1	3.00000000000000000000	2

@@ -1,38 +1,38 @@
-PREHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: query: CREATE TABLE myinput1_n8(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@myinput1
-POSTHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: Output: default@myinput1_n8
+POSTHOOK: query: CREATE TABLE myinput1_n8(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@myinput1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in3.txt' INTO TABLE myinput1
+POSTHOOK: Output: default@myinput1_n8
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in3.txt' INTO TABLE myinput1_n8
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@myinput1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in3.txt' INTO TABLE myinput1
+PREHOOK: Output: default@myinput1_n8
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in3.txt' INTO TABLE myinput1_n8
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@myinput1
+POSTHOOK: Output: default@myinput1_n8
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -40,13 +40,13 @@ POSTHOOK: Input: default@myinput1
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
@@ -54,13 +54,13 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -70,157 +70,157 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -230,13 +230,13 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -246,13 +246,13 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -262,13 +262,13 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -278,78 +278,78 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: query: SELECT * from myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n8 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: query: SELECT * from myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n8 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	NULL	NULL	12	35
 NULL	NULL	NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL	NULL	40
 AzUxen/yR7DlsL00zfSITA==
-PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: query: SELECT * from myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n8 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: query: SELECT * from myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n8 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	12	35	NULL	NULL
 NULL	NULL	48	NULL	NULL	NULL
 NULL	NULL	NULL	40	NULL	NULL
 BYad/CYbc/RASCgl63S7Ww==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b RIGHT OUTER JOIN myinput1_n8 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b RIGHT OUTER JOIN myinput1_n8 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	NULL	NULL	12	35
 NULL	NULL	NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL	NULL	40
 AzUxen/yR7DlsL00zfSITA==
-PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: query: SELECT * from myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n8 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: query: SELECT * from myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n8 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	NULL	NULL	12	35
 NULL	NULL	NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL	NULL	40
 AzUxen/yR7DlsL00zfSITA==
-PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: query: SELECT * from myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n8 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: query: SELECT * from myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n8 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	12	35	NULL	NULL
 NULL	NULL	48	NULL	NULL	NULL
 NULL	NULL	NULL	40	NULL	NULL
 BYad/CYbc/RASCgl63S7Ww==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b RIGHT OUTER JOIN myinput1_n8 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b RIGHT OUTER JOIN myinput1_n8 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	NULL	NULL	12	35
@@ -357,332 +357,332 @@ NULL	NULL	NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL	NULL	40
 AzUxen/yR7DlsL00zfSITA==
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE smb_input1_n3(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_input1
-POSTHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@smb_input1_n3
+POSTHOOK: query: CREATE TABLE smb_input1_n3(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_input1
-PREHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+POSTHOOK: Output: default@smb_input1_n3
+PREHOOK: query: CREATE TABLE smb_input2_n3(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_input2
-POSTHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: Output: default@smb_input2_n3
+POSTHOOK: query: CREATE TABLE smb_input2_n3(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_input2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input1
+POSTHOOK: Output: default@smb_input2_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input1_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_input1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input1
+PREHOOK: Output: default@smb_input1_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input1_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_input1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input1
+POSTHOOK: Output: default@smb_input1_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input1_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_input1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input1
+PREHOOK: Output: default@smb_input1_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input1_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_input1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input2
+POSTHOOK: Output: default@smb_input1_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input2_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_input2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input2
+PREHOOK: Output: default@smb_input2_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000000_0' into table smb_input2_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_input2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input2
+POSTHOOK: Output: default@smb_input2_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input2_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_input2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input2
+PREHOOK: Output: default@smb_input2_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in/000001_0' into table smb_input2_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_input2
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: Output: default@smb_input2_n3
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n3
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n3
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n3
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n3
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a LEFT OUTER JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a LEFT OUTER JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 148	NULL	NULL	NULL
@@ -691,15 +691,15 @@ POSTHOOK: Input: default@smb_input1
 NULL	135	NULL	NULL
 NULL	35	NULL	NULL
 t2boI39B33IANcqlsXXA3g==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a LEFT OUTER JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n3
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a LEFT OUTER JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n3
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 148	NULL	NULL	NULL
@@ -708,13 +708,13 @@ POSTHOOK: Input: default@smb_input2
 NULL	135	NULL	NULL
 NULL	35	NULL	NULL
 t2boI39B33IANcqlsXXA3g==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a LEFT OUTER JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a LEFT OUTER JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 148	NULL	NULL	NULL
@@ -723,13 +723,13 @@ POSTHOOK: Input: default@smb_input2
 NULL	135	NULL	NULL
 NULL	35	NULL	NULL
 t2boI39B33IANcqlsXXA3g==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a RIGHT OUTER JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a RIGHT OUTER JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
@@ -738,15 +738,15 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	135
 NULL	NULL	NULL	35
 UBr9lyqgsjDFvooMgQlZ9w==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a RIGHT OUTER JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n3
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a RIGHT OUTER JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n3
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
@@ -755,13 +755,13 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	135
 NULL	NULL	NULL	35
 UBr9lyqgsjDFvooMgQlZ9w==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n3 a RIGHT OUTER JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n3 a RIGHT OUTER JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
@@ -771,24 +771,24 @@ NULL	NULL	NULL	135
 NULL	NULL	NULL	35
 UBr9lyqgsjDFvooMgQlZ9w==
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -796,13 +796,13 @@ POSTHOOK: Input: default@myinput1
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
@@ -810,13 +810,13 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -826,157 +826,157 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key and a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key=b.key and a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -986,13 +986,13 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -1002,13 +1002,13 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -1018,13 +1018,13 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a FULL OUTER JOIN myinput1_n8 b ON a.value = b.value and a.key=b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
@@ -1034,78 +1034,78 @@ NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 JIHZKZaNhNR9LYBcRFyxng==
-PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: query: SELECT * from myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n8 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: query: SELECT * from myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n8 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	NULL	NULL	12	35
 NULL	NULL	NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL	NULL	40
 AzUxen/yR7DlsL00zfSITA==
-PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: query: SELECT * from myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n8 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: query: SELECT * from myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n8 c ON (b.value=c.value AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	12	35	NULL	NULL
 NULL	NULL	48	NULL	NULL	NULL
 NULL	NULL	NULL	40	NULL	NULL
 BYad/CYbc/RASCgl63S7Ww==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b RIGHT OUTER JOIN myinput1_n8 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b RIGHT OUTER JOIN myinput1_n8 c ON a.value = b.value and b.value = c.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	NULL	NULL	12	35
 NULL	NULL	NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL	NULL	40
 AzUxen/yR7DlsL00zfSITA==
-PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: query: SELECT * from myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n8 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: query: SELECT * from myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) RIGHT OUTER JOIN myinput1_n8 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	NULL	NULL	12	35
 NULL	NULL	NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL	NULL	40
 AzUxen/yR7DlsL00zfSITA==
-PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+PREHOOK: query: SELECT * from myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n8 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
+POSTHOOK: query: SELECT * from myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON (a.value=b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value) LEFT OUTER JOIN myinput1_n8 c ON (b.key=c.key AND c.key > 40 AND c.value > 50 AND c.key = c.value AND b.key > 40 AND b.value > 50 AND b.key = b.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	12	35	NULL	NULL
 NULL	NULL	48	NULL	NULL	NULL
 NULL	NULL	NULL	40	NULL	NULL
 BYad/CYbc/RASCgl63S7Ww==
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+PREHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b RIGHT OUTER JOIN myinput1_n8 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
+POSTHOOK: query: SELECT * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b RIGHT OUTER JOIN myinput1_n8 c ON a.value = b.value and b.key = c.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value AND c.key > 40 AND c.value > 50 AND c.key = c.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	NULL	NULL	NULL	12	35
@@ -1113,284 +1113,284 @@ NULL	NULL	NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL	NULL	40
 AzUxen/yR7DlsL00zfSITA==
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b on a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a JOIN myinput1_n8 b ON a.value = b.value and a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 YaI1msgLVpfEx943Tfea/Q==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n8 a LEFT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 12	35	NULL	NULL
 48	NULL	NULL	NULL
 NULL	40	NULL	NULL
 M3MWtBJdRXSWIJY5Qr/otw==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n8 a RIGHT OUTER JOIN myinput1_n8 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n8
 #### A masked pattern was here ####
 100	100	100	100
 NULL	NULL	12	35
 NULL	NULL	48	NULL
 NULL	NULL	NULL	40
 LNZKrcVNAvaeDALnsg72bw==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n3
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n3
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n3
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n3
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a JOIN smb_input2_n3 b ON a.key = b.key AND a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 fRHAbs52npY0rAF1I1Npfg==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a LEFT OUTER JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a LEFT OUTER JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 148	NULL	NULL	NULL
@@ -1399,15 +1399,15 @@ POSTHOOK: Input: default@smb_input1
 NULL	135	NULL	NULL
 NULL	35	NULL	NULL
 t2boI39B33IANcqlsXXA3g==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a LEFT OUTER JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n3
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n3 a LEFT OUTER JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n3
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 148	NULL	NULL	NULL
@@ -1416,13 +1416,13 @@ POSTHOOK: Input: default@smb_input2
 NULL	135	NULL	NULL
 NULL	35	NULL	NULL
 t2boI39B33IANcqlsXXA3g==
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a LEFT OUTER JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n3 a LEFT OUTER JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 148	NULL	NULL	NULL
@@ -1431,13 +1431,13 @@ POSTHOOK: Input: default@smb_input2
 NULL	135	NULL	NULL
 NULL	35	NULL	NULL
 t2boI39B33IANcqlsXXA3g==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a RIGHT OUTER JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a RIGHT OUTER JOIN smb_input1_n3 b ON a.key = b.key AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
@@ -1446,15 +1446,15 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	135
 NULL	NULL	NULL	35
 UBr9lyqgsjDFvooMgQlZ9w==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a RIGHT OUTER JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n3
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n3 a RIGHT OUTER JOIN smb_input2_n3 b ON a.key = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n3
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
@@ -1463,13 +1463,13 @@ NULL	NULL	48	NULL
 NULL	NULL	NULL	135
 NULL	NULL	NULL	35
 UBr9lyqgsjDFvooMgQlZ9w==
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n3 a RIGHT OUTER JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n3 a RIGHT OUTER JOIN smb_input2_n3 b ON a.value = b.value AND a.key > 40 AND a.value > 50 AND a.key = a.value AND b.key > 40 AND b.value > 50 AND b.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n3
 #### A masked pattern was here ####
 100	100	100	100
 200	200	200	200

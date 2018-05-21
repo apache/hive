@@ -5,12 +5,12 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
-create table tnull(i int, c char(2));
-insert into tnull values(NULL, NULL), (NULL, NULL);
+create table tnull_n0(i int, c char(2));
+insert into tnull_n0 values(NULL, NULL), (NULL, NULL);
 
-create table tempty(c char(2));
+create table tempty_n0(c char(2));
 
-CREATE TABLE part_null(
+CREATE TABLE part_null_n0(
     p_partkey INT,
     p_name STRING,
     p_mfgr STRING,
@@ -19,35 +19,35 @@ CREATE TABLE part_null(
     p_size INT,
     p_container STRING,
     p_retailprice DOUBLE,
-    p_comment STRING
+    p_comment_n11 STRING
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
 ;
 
-LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null;
+LOAD DATA LOCAL INPATH '../../data/files/part_tiny_nulls.txt' overwrite into table part_null_n0;
 
-insert into part_null values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith');
+insert into part_null_n0 values(78487,NULL,'Manufacturer#6','Brand#52','LARGE BRUSHED BRASS', 23, 'MED BAG',1464.48,'hely blith');
 
 
 -- non corr, simple less than  
-explain select * from part where p_size > (select avg(p_size) from part_null);
-select * from part where p_size > (select avg(p_size) from part_null);
+explain select * from part where p_size > (select avg(p_size) from part_null_n0);
+select * from part where p_size > (select avg(p_size) from part_null_n0);
 
 -- non corr, empty
-select * from part where p_size > (select * from tempty);
-explain select * from part where p_size > (select * from tempty);
+select * from part where p_size > (select * from tempty_n0);
+explain select * from part where p_size > (select * from tempty_n0);
 
 -- non corr, null comparison
-explain select * from part where p_name = (select p_name from part_null where p_name is null);
-select * from part where p_name = (select p_name from part_null where p_name is null);
+explain select * from part where p_name = (select p_name from part_null_n0 where p_name is null);
+select * from part where p_name = (select p_name from part_null_n0 where p_name is null);
 
 -- non corr, is null 
-explain select * from part where (select i from tnull limit 1) is null;
-select * from part where (select i from tnull limit 1) is null;
+explain select * from part where (select i from tnull_n0 limit 1) is null;
+select * from part where (select i from tnull_n0 limit 1) is null;
 
 -- non corr, is not null
-explain select * from part where (select max(p_name) from part_null) is not null;
-select * from part where (select max(p_name) from part_null) is not null;
+explain select * from part where (select max(p_name) from part_null_n0) is not null;
+select * from part where (select max(p_name) from part_null_n0) is not null;
 
 -- non corr, between
 explain select * from part where p_size between (select min(p_size) from part) and (select avg(p_size) from part);
@@ -76,16 +76,16 @@ select count(*) as c from part as e where 100 < (select max(p_partkey) from part
 
 
 -- corr, equi-join predicate
-explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type);
-select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type);
+explain select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type);
+select * from part where p_size > (select avg(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type);
 
 -- mix of corr and uncorr
-explain select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null);
-select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null);
+explain select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0);
+select * from part where p_size BETWEEN (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND (select max(p_size) from part_null_n0);
 
 -- mix of corr and uncorr
-explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null);
-select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null);
+explain select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0);
+select * from part where p_size >= (select min(p_size) from part_null_n0 where part_null_n0.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null_n0);
 
 -- mix of scalar and IN corr 
 explain select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340;
@@ -111,12 +111,12 @@ explain select p_partkey from part where p_name like (select max(p.p_name) from 
 select p_partkey from part where p_name like (select max(p.p_name) from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size);
 
 -- mix of NOT IN and scalar
-explain select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part);
-select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part);
+explain select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part);
+select * from part_null_n0 where p_name NOT LIKE (select min(p_name) from part_null_n0) AND p_brand NOT IN (select p_name from part);
 
 -- mix of NOT IN and corr scalar
-explain select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type);
-select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type);
+explain select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type);
+select * from part_null_n0 where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null_n0 pp where part_null_n0.p_type = pp.p_type);
 
 -- non corr, with join in parent query
 explain select p.p_partkey, li.l_suppkey 
@@ -145,44 +145,44 @@ explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_part
 select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity > (select avg(l_quantity) from lineitem where l_partkey = p_partkey);
 
 -- nested with scalar
-explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type));
-select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type));
+explain select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type));
+select * from part_null_n0 where p_name IN (select p_name from part where part.p_type = part_null_n0.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type));
 
-drop table tnull;
-drop table part_null;
-drop table tempty;
+drop table tnull_n0;
+drop table part_null_n0;
+drop table tempty_n0;
 
 
-create table EMPS(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date);
+create table EMPS_n4(EMPNO int,NAME string,DEPTNO int,GENDER string,CITY string,EMPID int,AGE int,SLACKER boolean,MANAGER boolean,JOINEDAT date);
 
-insert into EMPS values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03');
-insert into EMPS values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01') ;
-insert into EMPS values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03');
-insert into EMPS values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07');
-insert into EMPS values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01');
+insert into EMPS_n4 values (100,'Fred',10,NULL,NULL,30,25,true,false,'1996-08-03');
+insert into EMPS_n4 values (110,'Eric',20,'M','San Francisco',3,80,NULL,false,'2001-01-01') ;
+insert into EMPS_n4 values (110,'John',40,'M','Vancouver',2,NULL,false,true,'2002-05-03');
+insert into EMPS_n4 values (120,'Wilma',20,'F',NULL,1,5,NULL,true,'2005-09-07');
+insert into EMPS_n4 values (130,'Alice',40,'F','Vancouver',2,NULL,false,true,'2007-01-01');
 
-create table DEPTS(deptno int, name string);
-insert into DEPTS values( 10,'Sales');
-insert into DEPTS values( 20,'Marketing');
-insert into DEPTS values( 30,'Accounts');
+create table DEPTS_n3(deptno int, name string);
+insert into DEPTS_n3 values( 10,'Sales');
+insert into DEPTS_n3 values( 20,'Marketing');
+insert into DEPTS_n3 values( 30,'Accounts');
 
 -- corr, scalar, with count aggregate
-explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name);
-select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name);
+explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name);
+select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name);
 
-explain select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno);
-select * from emps where name > (select min(name) from depts where depts.deptno=emps.deptno);
+explain select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno);
+select * from emps_n4 where name > (select min(name) from depts_n3 where depts_n3.deptno=emps_n4.deptno);
 
 -- corr, scalar multiple subq with count aggregate
-explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno);
-select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno);
+explain select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno);
+select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3 where depts_n3.deptno = emps_n4.deptno);
 
 -- mix of corr, uncorr with aggregate
-explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts);
-select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts);
+explain select * from emps_n4 where deptno <> (select sum(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3);
+select * from emps_n4 where deptno <> (select count(deptno) from depts_n3 where depts_n3.name = emps_n4.name) and empno > (select count(name) from depts_n3);
 
-drop table DEPTS;
-drop table EMPS;
+drop table DEPTS_n3;
+drop table EMPS_n4;
 
 -- having
 explain
@@ -223,33 +223,33 @@ explain select * from part where p_size <>
 select * from part where p_size <>
     (select count(p_size) from part pp where part.p_type <> pp.p_type);
 
-create table t(i int, j int);
-insert into t values(3,1), (1,1);
+create table t_n11(i int, j int);
+insert into t_n11 values(3,1), (1,1);
 
--- for t.i=1 inner query will result empty result, making count(*) = 0
+-- for t_n11.i=1 inner query will result empty result, making count(*) = 0
 --   therefore where predicate will be true
-explain select * from t where 0 = (select count(*) from t tt where tt.j <> t.i);
-select * from t where 0 = (select count(*) from t tt where tt.j <> t.i);
+explain select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i);
+select * from t_n11 where 0 = (select count(*) from t_n11 tt_n11 where tt_n11.j <> t_n11.i);
 
--- same as above but with avg aggregate, avg(tt.i) will be null therefore
+-- same as above but with avg aggregate, avg(tt_n11.i) will be null therefore
 -- empty result set
-explain select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i);
-select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i);
+explain select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i);
+select * from t_n11 where 0 = (select avg(tt_n11.i) from t_n11 tt_n11 where tt_n11.j <> t_n11.i);
 
-create table tempty(i int, j int);
+create table tempty_n0(i int, j int);
 
 -- following query has subquery on empty making count(*) to zero and where predicate
 -- to true for all rows in outer query
-explain select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i);
-select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i);
+explain select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i);
+select * from t_n11 where 0 = (select count(*) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i);
 
 -- same as above but with min aggregate, since min on empty will return null
 -- making where predicate false for all
-explain select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i);
-select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i);
+explain select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i);
+select * from t_n11 where 0 = (select min(tt_n11.j) from tempty_n0 tt_n11 where t_n11.i=tt_n11.i);
 
-drop table t;
-drop table tempty;
+drop table t_n11;
+drop table tempty_n0;
 
 -- following queries shouldn't have a join with sq_count_check
 set hive.optimize.remove.sq_count_check = true;

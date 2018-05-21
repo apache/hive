@@ -7,7 +7,7 @@ set hive.vectorized.execution.reduce.enabled=true;
 
 -- SORT_QUERY_RESULTS
 
-create table if not exists alltypes_parquet (
+create table if not exists alltypes_parquet_n0 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -15,7 +15,7 @@ create table if not exists alltypes_parquet (
   cdouble double,
   cstring1 string) stored as parquet;
 
-insert overwrite table alltypes_parquet
+insert overwrite table alltypes_parquet_n0
   select cint,
     ctinyint,
     csmallint,
@@ -27,12 +27,12 @@ insert overwrite table alltypes_parquet
 -- test native fileinputformat vectorization
 
 explain vectorization select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10;
 
 select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10;
 
@@ -42,7 +42,7 @@ explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint;
 
 select ctinyint,
@@ -51,19 +51,19 @@ select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint;
 
 -- exclude MapredParquetInputFormat from vectorization, this should cause mapwork vectorization to be disabled
 set hive.vectorized.input.format.excludes=org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 
 explain vectorization select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10;
 
 select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10;
 
@@ -73,7 +73,7 @@ explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint;
 
 select ctinyint,
@@ -82,7 +82,7 @@ select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint;
 
 
@@ -90,12 +90,12 @@ select ctinyint,
 set hive.vectorized.input.format.excludes=;
 
 explain vectorization select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10;
 
 select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10;
 
@@ -105,7 +105,7 @@ explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint;
 
 select ctinyint,
@@ -114,7 +114,7 @@ select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint;
 
 
@@ -124,7 +124,7 @@ set hive.vectorized.use.row.serde.deserialize=false;
 set hive.vectorized.use.vector.serde.deserialize=false;
 
 
-create table if not exists alltypes_orc (
+create table if not exists alltypes_orc_n2 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -132,7 +132,7 @@ create table if not exists alltypes_orc (
   cdouble double,
   cstring1 string) stored as orc;
 
-insert overwrite table alltypes_orc
+insert overwrite table alltypes_orc_n2
   select cint,
     ctinyint,
     csmallint,
@@ -142,12 +142,12 @@ insert overwrite table alltypes_orc
   from alltypesorc;
 
 explain vectorization select *
-  from alltypes_orc
+  from alltypes_orc_n2
   where cint = 528534767
   limit 10;
 
 select *
-  from alltypes_orc
+  from alltypes_orc_n2
   where cint = 528534767
   limit 10;
 
@@ -157,7 +157,7 @@ explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_orc
+  from alltypes_orc_n2
   group by ctinyint;
 
 select ctinyint,
@@ -166,7 +166,7 @@ select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_orc
+  from alltypes_orc_n2
   group by ctinyint;
 
 -- test when input format is excluded row serde is used for vectorization

@@ -1,9 +1,9 @@
 set hive.vectorized.execution.enabled=false;
 set hive.explain.user=false;
 
-DROP TABLE flights_tiny;
+DROP TABLE flights_tiny_n0;
 
-create table flights_tiny ( 
+create table flights_tiny_n0 ( 
 ORIGIN_CITY_NAME string, 
 DEST_CITY_NAME string, 
 YEAR int, 
@@ -13,7 +13,7 @@ ARR_DELAY float,
 FL_NUM string 
 );
 
-LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny;
+LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny_n0;
 
 -- SORT_QUERY_RESULTS
 
@@ -21,7 +21,7 @@ LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE 
 explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         distribute by fl_num 
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
@@ -31,7 +31,7 @@ from matchpath(on
 
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         distribute by fl_num 
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
@@ -43,7 +43,7 @@ from matchpath(on
 explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         sort by fl_num, year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
@@ -53,7 +53,7 @@ where fl_num = 1142;
 
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         sort by fl_num, year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
@@ -65,7 +65,7 @@ where fl_num = 1142;
 explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
-        (select * from flights_tiny where fl_num = -1142) flights_tiny
+        (select * from flights_tiny_n0 where fl_num = -1142) flights_tiny_n0
         sort by fl_num, year, month, day_of_month
       arg1('LATE.LATE+'),
       arg2('LATE'), arg3(arr_delay > 15),
@@ -75,7 +75,7 @@ from matchpath(on
 
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
-        (select * from flights_tiny where fl_num = -1142) flights_tiny
+        (select * from flights_tiny_n0 where fl_num = -1142) flights_tiny_n0
         sort by fl_num, year, month, day_of_month
       arg1('LATE.LATE+'),
       arg2('LATE'), arg3(arr_delay > 15),

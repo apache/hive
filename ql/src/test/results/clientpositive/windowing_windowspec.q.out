@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n18
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n18
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n18(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n18
+POSTHOOK: query: create table over10k_n18(
            t tinyint,
            si smallint,
            i int,
@@ -35,22 +35,22 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n18
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n18
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n18
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n18
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
-PREHOOK: query: select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k limit 100
+POSTHOOK: Output: default@over10k_n18
+PREHOOK: query: select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k_n18 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k limit 100
+POSTHOOK: query: select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k_n18 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 alice ichabod	4294967441
 alice robinson	8589934917
@@ -152,13 +152,13 @@ priscilla xylophone	73014446004
 quinn garcia	77309413317
 quinn laertes	81604380656
 rachel young	85899348171
-PREHOOK: query: select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k limit 100
+PREHOOK: query: select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k_n18 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k limit 100
+POSTHOOK: query: select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k_n18 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 calvin miller	8.390000343322754
 holly polk	5.289999961853027
@@ -260,13 +260,13 @@ david garcia	67.27999877929688
 holly hernandez	116.36999893188477
 tom white	154.0
 rachel ellison	10.600000381469727
-PREHOOK: query: select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k limit 100
+PREHOOK: query: select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k_n18 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k limit 100
+POSTHOOK: query: select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k_n18 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 gabriella xylophone	1276.850001335144
 calvin brown	1273.68000125885
@@ -368,13 +368,13 @@ calvin white	1025.1800079345703
 jessica ovid	956.9800109863281
 jessica johnson	885.3000106811523
 priscilla garcia	805.8400115966797
-PREHOOK: query: select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k limit 100
+PREHOOK: query: select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k_n18 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k limit 100
+POSTHOOK: query: select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k_n18 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 bob ovid	28.053333441416424
 calvin brown	38.73666652043661
@@ -476,13 +476,13 @@ rachel ichabod	41.75999959309896
 rachel polk	49.56333351135254
 sarah falkner	59.53333377838135
 tom hernandez	63.331667264302574
-PREHOOK: query: select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k limit 100
+PREHOOK: query: select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k_n18 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k limit 100
+POSTHOOK: query: select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k_n18 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 alice allen	33.20166666666666
 alice davidson	30.741428571428568
@@ -584,13 +584,13 @@ calvin xylophone	26.91272727272727
 david falkner	27.31
 david laertes	28.00454545454545
 david miller	28.40090909090909
-PREHOOK: query: select s, sum(i) over(partition by ts order by s) from over10k limit 100
+PREHOOK: query: select s, sum(i) over(partition by ts order by s) from over10k_n18 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(i) over(partition by ts order by s) from over10k limit 100
+POSTHOOK: query: select s, sum(i) over(partition by ts order by s) from over10k_n18 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 bob ovid	65748
 calvin brown	131440
@@ -692,13 +692,13 @@ rachel ichabod	1379923
 rachel polk	1445518
 sarah falkner	1511234
 tom hernandez	1576947
-PREHOOK: query: select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k limit 100
+PREHOOK: query: select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k_n18 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k limit 100
+POSTHOOK: query: select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k_n18 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 3.17	3.1700000762939453
 10.89	14.0600004196167
@@ -800,13 +800,13 @@ POSTHOOK: Input: default@over10k
 71.68	722.6499947607517
 79.46	802.1099938452244
 80.02	882.1299904882908
-PREHOOK: query: select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n18 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n18 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 3.17	NULL
 10.89	3.1700000762939453
@@ -908,13 +908,13 @@ POSTHOOK: Input: default@over10k
 71.68	130.28999710083008
 79.46	139.87999725341797
 80.02	151.13999938964844
-PREHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7
+PREHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k_n18 limit 7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7
+POSTHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k_n18 limit 7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 alice allen	65545	2.22
 alice allen	65557	2.58
@@ -923,13 +923,13 @@ alice allen	65609	2.99
 alice allen	65662	2.7
 alice allen	65670	2.88
 alice allen	65720	2.76
-PREHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i) limit 7
+PREHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n18 window w1 as (partition by s order by i) limit 7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i) limit 7
+POSTHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n18 window w1 as (partition by s order by i) limit 7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 alice allen	65545	20.0
 alice allen	65557	20.0
@@ -938,13 +938,13 @@ alice allen	65609	20.0
 alice allen	65662	20.0
 alice allen	65670	20.0
 alice allen	65720	20.0
-PREHOOK: query: select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7
+PREHOOK: query: select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n18 window w1 as (partition by s order by i)) X limit 7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
-POSTHOOK: query: select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7
+POSTHOOK: query: select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n18 window w1 as (partition by s order by i)) X limit 7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 #### A masked pattern was here ####
 alice allen	65545
 alice allen	65557
@@ -956,31 +956,31 @@ alice allen	65720
 PREHOOK: query: create table over10k_2
 as
 select t, si, i, b, f, d, bo, s, ts, cast(ts as timestamp with local time zone) as tstz, `dec`, bin
-from over10k
+from over10k_n18
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n18
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over10k_2
 POSTHOOK: query: create table over10k_2
 as
 select t, si, i, b, f, d, bo, s, ts, cast(ts as timestamp with local time zone) as tstz, `dec`, bin
-from over10k
+from over10k_n18
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n18
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over10k_2
-POSTHOOK: Lineage: over10k_2.b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over10k_2.bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: over10k_2.bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: over10k_2.d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: over10k_2.dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: over10k_2.f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over10k_2.i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over10k_2.s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: over10k_2.si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over10k_2.t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: over10k_2.ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: over10k_2.tstz EXPRESSION [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: over10k_2.b SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over10k_2.bin SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over10k_2.bo SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over10k_2.d SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over10k_2.dec SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: over10k_2.f SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over10k_2.i SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over10k_2.s SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over10k_2.si SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over10k_2.t SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over10k_2.ts SIMPLE [(over10k_n18)over10k_n18.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: over10k_2.tstz EXPRESSION [(over10k_n18)over10k_n18.FieldSchema(name:ts, type:timestamp, comment:null), ]
 PREHOOK: query: select ts, i, sum(f) over (partition by i order by ts)
 from over10k_2
 where i = 65536

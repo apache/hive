@@ -20,28 +20,28 @@ set hive.merge.sparkfiles=false;
 
 -- SORT_QUERY_RESULTS
 
-DROP TABLE orcfile_merge1;
-DROP TABLE orcfile_merge1b;
-DROP TABLE orcfile_merge1c;
+DROP TABLE orcfile_merge1_n1;
+DROP TABLE orcfile_merge1b_n1;
+DROP TABLE orcfile_merge1c_n1;
 
-CREATE TABLE orcfile_merge1 (key INT, value STRING) 
+CREATE TABLE orcfile_merge1_n1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC;
-CREATE TABLE orcfile_merge1b (key INT, value STRING) 
+CREATE TABLE orcfile_merge1b_n1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC;
-CREATE TABLE orcfile_merge1c (key INT, value STRING) 
+CREATE TABLE orcfile_merge1c_n1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC;
 
 -- merge disabled
 EXPLAIN
-    INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+    INSERT OVERWRITE TABLE orcfile_merge1_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src;
 
-INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
+INSERT OVERWRITE TABLE orcfile_merge1_n1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src;
 
-dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1/ds=1/part=0/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1_n1/ds=1/part=0/;
 
 set hive.merge.tezfiles=true;
 set hive.merge.mapfiles=true;
@@ -49,50 +49,50 @@ set hive.merge.mapredfiles=true;
 set hive.merge.sparkfiles=true;
 -- auto-merge slow way
 EXPLAIN
-    INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+    INSERT OVERWRITE TABLE orcfile_merge1b_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src;
 
-INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
+INSERT OVERWRITE TABLE orcfile_merge1b_n1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src;
 
-dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1b/ds=1/part=0/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1b_n1/ds=1/part=0/;
 
 set hive.merge.orcfile.stripe.level=true;
 -- auto-merge fast way
 EXPLAIN
-    INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+    INSERT OVERWRITE TABLE orcfile_merge1c_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src;
 
-INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
+INSERT OVERWRITE TABLE orcfile_merge1c_n1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
     FROM src;
 
-dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1c/ds=1/part=0/;
+dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1c_n1/ds=1/part=0/;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 -- Verify
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
-    FROM orcfile_merge1 WHERE ds='1'
+    FROM orcfile_merge1_n1 WHERE ds='1'
 ) t;
 
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
-    FROM orcfile_merge1b WHERE ds='1'
+    FROM orcfile_merge1b_n1 WHERE ds='1'
 ) t;
 
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
-    FROM orcfile_merge1c WHERE ds='1'
+    FROM orcfile_merge1c_n1 WHERE ds='1'
 ) t;
 
-select count(*) from orcfile_merge1;
-select count(*) from orcfile_merge1b;
-select count(*) from orcfile_merge1c;
+select count(*) from orcfile_merge1_n1;
+select count(*) from orcfile_merge1b_n1;
+select count(*) from orcfile_merge1c_n1;
 
-DROP TABLE orcfile_merge1;
-DROP TABLE orcfile_merge1b;
-DROP TABLE orcfile_merge1c;
+DROP TABLE orcfile_merge1_n1;
+DROP TABLE orcfile_merge1b_n1;
+DROP TABLE orcfile_merge1c_n1;

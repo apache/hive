@@ -1,42 +1,42 @@
-PREHOOK: query: create table a(s string) stored as orc
+PREHOOK: query: create table a_n6(s string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a(s string) stored as orc
+PREHOOK: Output: default@a_n6
+POSTHOOK: query: create table a_n6(s string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: create table b(s string) stored as orc
+POSTHOOK: Output: default@a_n6
+PREHOOK: query: create table b_n4(s string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b(s string) stored as orc
+PREHOOK: Output: default@b_n4
+POSTHOOK: query: create table b_n4(s string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: insert into table a values('aaa')
+POSTHOOK: Output: default@b_n4
+PREHOOK: query: insert into table a_n6 values('aaa_n6')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@a
-POSTHOOK: query: insert into table a values('aaa')
+PREHOOK: Output: default@a_n6
+POSTHOOK: query: insert into table a_n6 values('aaa_n6')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.s SCRIPT []
-PREHOOK: query: insert into table b values('aaa')
+POSTHOOK: Output: default@a_n6
+POSTHOOK: Lineage: a_n6.s SCRIPT []
+PREHOOK: query: insert into table b_n4 values('aaa_n6')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@b
-POSTHOOK: query: insert into table b values('aaa')
+PREHOOK: Output: default@b_n4
+POSTHOOK: query: insert into table b_n4 values('aaa_n6')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.s SCRIPT []
+POSTHOOK: Output: default@b_n4
+POSTHOOK: Lineage: b_n4.s SCRIPT []
 PREHOOK: query: explain vectorization detail
-select NULL from a
+select NULL from a_n6
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select NULL from a
+select NULL from a_n6
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -54,8 +54,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
-                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: a_n6
+                  Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:s:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -102,20 +102,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select NULL from a
+PREHOOK: query: select NULL from a_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select NULL from a
+POSTHOOK: query: select NULL from a_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n6
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: explain vectorization expression
-select NULL as x from a union distinct select NULL as x from b
+select NULL as x from a_n6 union distinct select NULL as x from b_n4
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select NULL as x from a union distinct select NULL as x from b
+select NULL as x from a_n6 union distinct select NULL as x from b_n4
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -138,8 +138,8 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
-                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: a_n6
+                  Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -165,8 +165,8 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: b
-                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: b_n4
+                  Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -222,14 +222,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select NULL as x from a union distinct select NULL as x from b
+PREHOOK: query: select NULL as x from a_n6 union distinct select NULL as x from b_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n6
+PREHOOK: Input: default@b_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select NULL as x from a union distinct select NULL as x from b
+POSTHOOK: query: select NULL as x from a_n6 union distinct select NULL as x from b_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n6
+POSTHOOK: Input: default@b_n4
 #### A masked pattern was here ####
 NULL
