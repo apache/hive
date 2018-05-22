@@ -18,21 +18,16 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.curator.shaded.com.google.common.collect.Lists;
-
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -42,6 +37,10 @@ import org.apache.hadoop.mapred.InvalidInputException;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * BucketizedHiveInputFormat serves the similar function as hiveInputFormat but
@@ -139,21 +138,39 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
         mmIds = getMmValidWriteIds(newjob, part.getTableDesc(), null);
       }
       // TODO: should this also handle ACID operation, etc.? seems to miss a lot of stuff from HIF.
-      Path[] finalDirs = (mmIds == null) ? new Path[] { dir }
-        : processPathsForMmRead(Lists.newArrayList(dir), newjob, mmIds);
-      if (finalDirs == null) {
+      List<Path> finalDirs = null, dirsWithMmOriginals = null;
+      if (mmIds == null) {
+        finalDirs = Lists.newArrayList(dir);
+      } else {
+        finalDirs = new ArrayList<>();
+        dirsWithMmOriginals = new ArrayList<>();
+        processPathsForMmRead(
+            Lists.newArrayList(dir), newjob, mmIds, finalDirs, dirsWithMmOriginals);
+      }
+      if (finalDirs.isEmpty() && (dirsWithMmOriginals == null || dirsWithMmOriginals.isEmpty())) {
         continue; // No valid inputs - possible in MM case.
       }
 
       for (Path finalDir : finalDirs) {
         FileStatus[] listStatus = listStatus(newjob, finalDir);
-
         for (FileStatus status : listStatus) {
           numOrigSplits = addBHISplit(
               status, inputFormat, inputFormatClass, numOrigSplits, newjob, result);
         }
       }
+      if (dirsWithMmOriginals != null) {
+        for (Path originalsDir : dirsWithMmOriginals) {
+          FileSystem fs = originalsDir.getFileSystem(job);
+          FileStatus[] listStatus = fs.listStatus(dir, FileUtils.HIDDEN_FILES_PATH_FILTER);
+          for (FileStatus status : listStatus) {
+            if (status.isDirectory()) continue;
+            numOrigSplits = addBHISplit(
+                status, inputFormat, inputFormatClass, numOrigSplits, newjob, result);
+          }
+        }
+      }
     }
+
     LOG.info(result.size() + " bucketized splits generated from "
         + numOrigSplits + " original splits.");
     return result.toArray(new BucketizedHiveInputSplit[result.size()]);
