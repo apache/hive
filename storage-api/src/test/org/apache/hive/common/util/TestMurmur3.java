@@ -18,7 +18,7 @@
 
 package org.apache.hive.common.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import org.apache.hive.common.util.Murmur3.IncrementalHash32;
 
 import com.google.common.hash.HashFunction;
@@ -222,7 +222,32 @@ public class TestMurmur3 {
       assertEquals(gl2, m2);
     }
   }
-  
+
+  @Test
+  public void test64() {
+    final int seed = 123, iters = 1000000;
+    ByteBuffer SHORT_BUFFER = ByteBuffer.allocate(Short.BYTES);
+    ByteBuffer INT_BUFFER = ByteBuffer.allocate(Integer.BYTES);
+    ByteBuffer LONG_BUFFER = ByteBuffer.allocate(Long.BYTES);
+    Random rdm = new Random(seed);
+    for (int i = 0; i < iters; ++i) {
+      long ln = rdm.nextLong();
+      int in = rdm.nextInt();
+      short sn = (short) (rdm.nextInt(2* Short.MAX_VALUE - 1) - Short.MAX_VALUE);
+      float fn = rdm.nextFloat();
+      double dn = rdm.nextDouble();
+      SHORT_BUFFER.putShort(0, sn);
+      assertEquals(Murmur3.hash64(SHORT_BUFFER.array()), Murmur3.hash64(sn));
+      INT_BUFFER.putInt(0, in);
+      assertEquals(Murmur3.hash64(INT_BUFFER.array()), Murmur3.hash64(in));
+      LONG_BUFFER.putLong(0, ln);
+      assertEquals(Murmur3.hash64(LONG_BUFFER.array()), Murmur3.hash64(ln));
+      INT_BUFFER.putFloat(0, fn);
+      assertEquals(Murmur3.hash64(INT_BUFFER.array()), Murmur3.hash64(Float.floatToIntBits(fn)));
+      LONG_BUFFER.putDouble(0, dn);
+      assertEquals(Murmur3.hash64(LONG_BUFFER.array()), Murmur3.hash64(Double.doubleToLongBits(dn)));
+    }
+  }
 
   @Test
   public void testIncremental() {
