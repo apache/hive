@@ -95,4 +95,12 @@ import table import7_mm from 'ql/test/data/exports/intermmediate_part';
 select * from import7_mm order by key, p;
 drop table import7_mm;
 
+-- import MM as external
+
+drop table import8_mm;
+import external table import8_mm from 'ql/test/data/exports/intermmediate_nonpart';
+desc formatted import8_mm;
+select * from import8_mm order by key, p;
+drop table import8_mm;
+
 set hive.exim.test.mode=false;

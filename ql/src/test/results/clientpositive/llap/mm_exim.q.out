@@ -610,3 +610,73 @@ POSTHOOK: query: drop table import7_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import7_mm
 POSTHOOK: Output: default@import7_mm
+PREHOOK: query: drop table import8_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table import8_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: import external table import8_mm from 'ql/test/data/exports/intermmediate_nonpart'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+POSTHOOK: query: import external table import8_mm from 'ql/test/data/exports/intermmediate_nonpart'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import8_mm
+PREHOOK: query: desc formatted import8_mm
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@import8_mm
+POSTHOOK: query: desc formatted import8_mm
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@import8_mm
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	3                   
+	numRows             	6                   
+	rawDataSize         	37                  
+	totalSize           	43                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from import8_mm order by key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@import8_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from import8_mm order by key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@import8_mm
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: drop table import8_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import8_mm
+PREHOOK: Output: default@import8_mm
+POSTHOOK: query: drop table import8_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import8_mm
+POSTHOOK: Output: default@import8_mm
