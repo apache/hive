@@ -156,7 +156,7 @@ public class BloomKFilter {
 
   public void addLong(long val) {
     // puts long in little endian order
-    addBytes(longToByteArrayLE(val));
+    addHash(Murmur3.hash64(val));
   }
 
   public void addFloat(float val) {
@@ -239,7 +239,7 @@ public class BloomKFilter {
   }
 
   public boolean testLong(long val) {
-    return testBytes(longToByteArrayLE(val));
+    return testHash(Murmur3.hash64(val));
   }
 
   public boolean testFloat(float val) {

@@ -62,9 +62,6 @@ public class HyperLogLog implements NumDistinctValueEstimator {
   private final static int DEFAULT_HASH_BITS = 64;
   private final static long HASH64_ZERO = Murmur3.hash64(new byte[] {0});
   private final static long HASH64_ONE = Murmur3.hash64(new byte[] {1});
-  private final static ByteBuffer SHORT_BUFFER = ByteBuffer.allocate(Short.BYTES);
-  private final static ByteBuffer INT_BUFFER = ByteBuffer.allocate(Integer.BYTES);
-  private final static ByteBuffer LONG_BUFFER = ByteBuffer.allocate(Long.BYTES);
 
   public enum EncodingType {
     SPARSE, DENSE
@@ -212,33 +209,27 @@ public class HyperLogLog implements NumDistinctValueEstimator {
   }
 
   public void addShort(short val) {
-    SHORT_BUFFER.putShort(0, val);
-    add(Murmur3.hash64(SHORT_BUFFER.array()));
+    add(Murmur3.hash64(val));
   }
 
   public void addInt(int val) {
-    INT_BUFFER.putInt(0, val);
-    add(Murmur3.hash64(INT_BUFFER.array()));
+    add(Murmur3.hash64(val));
   }
 
   public void addLong(long val) {
-    LONG_BUFFER.putLong(0, val);
-    add(Murmur3.hash64(LONG_BUFFER.array()));
+    add(Murmur3.hash64(val));
   }
 
   public void addFloat(float val) {
-    INT_BUFFER.putFloat(0, val);
-    add(Murmur3.hash64(INT_BUFFER.array()));
+    add(Murmur3.hash64(Float.floatToIntBits(val)));
   }
 
   public void addDouble(double val) {
-    LONG_BUFFER.putDouble(0, val);
-    add(Murmur3.hash64(LONG_BUFFER.array()));
+    add(Murmur3.hash64(Double.doubleToLongBits(val)));
   }
 
   public void addChar(char val) {
-    SHORT_BUFFER.putChar(0, val);
-    add(Murmur3.hash64(SHORT_BUFFER.array()));
+    add(Murmur3.hash64((short)val));
   }
 
   /**
