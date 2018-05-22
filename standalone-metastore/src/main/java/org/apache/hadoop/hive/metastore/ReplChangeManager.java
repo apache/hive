@@ -473,12 +473,9 @@ public class ReplChangeManager {
 
   public static boolean isSourceOfReplication(Database db) {
     // Can not judge, so assuming replication is not enabled.
-    if (db == null) {
-      LOG.warn("db object passed is null. isSourceOfReplication is returning false");
-      return false;
-    }
+    assert (db != null);
     String replPolicyIds = getReplPolicyIdString(db);
-    return replPolicyIds != null && !replPolicyIds.isEmpty();
+    return  !StringUtils.isEmpty(replPolicyIds);
   }
 
   public static String getReplPolicyIdString(Database db) {
@@ -489,7 +486,7 @@ public class ReplChangeManager {
         LOG.debug("repl policy for database {} is {}", db.getName(), replPolicyId);
         return replPolicyId;
       }
-      LOG.info("Repl policy is not set for database ", db.getName());
+      LOG.debug("Repl policy is not set for database ", db.getName());
     }
     return null;
   }

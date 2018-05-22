@@ -1768,10 +1768,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.openTransaction();
 
         db = ms.getDatabase(tbl.getCatName(), tbl.getDbName());
-        if (db == null) {
-          throw new NoSuchObjectException("The database " +
-                  Warehouse.getCatalogQualifiedDbName(tbl.getCatName(), tbl.getDbName()) + " does not exist");
-        }
 
         // get_table checks whether database exists, it should be moved here
         if (is_table_exists(ms, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())) {
@@ -3176,13 +3172,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       try {
         ms.openTransaction();
-        db = ms.getDatabase(catName, dbName);
         tbl = ms.getTable(catName, dbName, tblName);
         if (tbl == null) {
           throw new InvalidObjectException("Unable to add partitions because "
               + getCatalogQualifiedTableName(catName, dbName, tblName) +
               " does not exist");
         }
+
+        db = ms.getDatabase(catName, dbName);
 
         if (!parts.isEmpty()) {
           firePreEvent(new PreAddPartitionEvent(tbl, parts, this));
@@ -3803,18 +3800,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       RawStore ms = getMS();
       if (!srcDBName.equalsIgnoreCase(destDBName)) {
         Database destDB = ms.getDatabase(catalogName, destDBName);
-        if (destDB == null) {
-          throw new NoSuchObjectException("The destination db " + destDBName + " is not found");
-        }
-
         Database srcDB = ms.getDatabase(catalogName, srcDBName);
-        if (srcDB == null) {
-          throw new NoSuchObjectException("The source db " + srcDBName + " is not found");
-        }
-
         if (ReplChangeManager.isSourceOfReplication(srcDB) || ReplChangeManager.isSourceOfReplication(destDB)) {
-          LOG.info("Cannot rename as either " + srcDBName + " or " + destDBName +
-                  " is a source of replication");
           return false;
         }
       }
@@ -3910,8 +3897,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       if (!isRenameAllowed(parsedDestDbName[CAT_NAME], parsedSourceDbName[DB_NAME], parsedDestDbName[DB_NAME])) {
-        throw new MetaException("rename not allowed for " + getCatalogQualifiedTableName(parsedSourceDbName[CAT_NAME],
-                parsedSourceDbName[DB_NAME], sourceTableName));
+        throw new MetaException("Exchange partition not allowed for " +
+                getCatalogQualifiedTableName(parsedSourceDbName[CAT_NAME],
+                parsedSourceDbName[DB_NAME], sourceTableName) + " Dest db : " + destDbName);
       }
       try {
         for (Partition partition: partitionsToExchange) {
@@ -4918,7 +4906,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         Table oldt = get_table_core(catName, dbname, name);
         if (!isRenameAllowed(catName, dbname, newTable.getDbName())) {
-          throw new MetaException("alter table not allowed");
+          throw new MetaException("Alter table not allowed for table " +
+                  getCatalogQualifiedTableName(catName, dbname, name) +
+                  " new table = " + getCatalogQualifiedTableName(newTable));
         }
         firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
         alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,

@@ -133,21 +133,19 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void initReplDump(ASTNode ast) throws  HiveException {
+  private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
     dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
 
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
-      if (dbName.equalsIgnoreCase(Warehouse.DEFAULT_DATABASE_NAME)) {
-        continue;
-      }
       Database database = db.getDatabase(dbName);
       if (database != null) {
         if (!ReplChangeManager.isSourceOfReplication(database)) {
-          throw new HiveException("Cannot dump database " + dbNameOrPattern + " as it is not a source of replication");
+          throw new SemanticException("Cannot dump database " + dbNameOrPattern +
+                  " as it is not a source of replication");
         }
       } else {
-        throw new HiveException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
+        throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
       }
     }
 

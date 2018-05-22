@@ -560,6 +560,7 @@ public class HiveAlterHandler implements AlterHandler {
     FileSystem srcFs;
     FileSystem destFs = null;
     boolean dataWasMoved = false;
+    Database db;
     try {
       msdb.openTransaction();
       Table tbl = msdb.getTable(DEFAULT_CATALOG_NAME, dbname, name);
@@ -594,9 +595,11 @@ public class HiveAlterHandler implements AlterHandler {
       // 3) rename the partition directory if it is not an external table
       if (!tbl.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
         try {
+          db = msdb.getDatabase(catName, dbname);
+
           // if tbl location is available use it
           // else derive the tbl location from database location
-          destPath = wh.getPartitionPath(msdb.getDatabase(catName, dbname), tbl, new_part.getValues());
+          destPath = wh.getPartitionPath(db, tbl, new_part.getValues());
           destPath = constructRenamedPath(destPath, new Path(new_part.getSd().getLocation()));
         } catch (NoSuchObjectException e) {
           LOG.debug("Didn't find object in metastore ", e);
@@ -634,8 +637,7 @@ public class HiveAlterHandler implements AlterHandler {
               }
 
               //rename the data directory
-              wh.renameDir(srcPath, destPath,
-                      ReplChangeManager.isSourceOfReplication(msdb.getDatabase(catName, dbname)));
+              wh.renameDir(srcPath, destPath, ReplChangeManager.isSourceOfReplication(db));
               LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
               dataWasMoved = true;
             }
@@ -646,11 +648,7 @@ public class HiveAlterHandler implements AlterHandler {
           } catch (MetaException me) {
             LOG.error("Cannot rename partition directory from " + srcPath + " to " + destPath, me);
             throw me;
-          } catch (NoSuchObjectException e) {
-            LOG.error("Cannot rename partition directory from " + srcPath + " to " + destPath, e);
-            throw new MetaException(e.getMessage());
           }
-
           new_part.getSd().setLocation(newPartLoc);
         }
       } else {

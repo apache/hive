@@ -404,6 +404,7 @@ public class TestReplicationScenariosAcrossInstances {
     String randomTwo = RandomStringUtils.random(10, true, false);
     String dbOne = primaryDbName + randomOne;
     String dbTwo = primaryDbName + randomTwo;
+    primary.run("alter database default set dbproperties ('repl.source.for' = '1, 2, 3')");
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create table t1 (i int, j int)")
@@ -467,6 +468,7 @@ public class TestReplicationScenariosAcrossInstances {
     String randomOne = RandomStringUtils.random(10, true, false);
     String randomTwo = RandomStringUtils.random(10, true, false);
     String dbOne = primaryDbName + randomOne;
+    primary.run("alter database default set dbproperties ('repl.source.for' = '1, 2, 3')");
     WarehouseInstance.Tuple bootstrapTuple = primary
         .run("use " + primaryDbName)
         .run("create table t1 (i int, j int)")

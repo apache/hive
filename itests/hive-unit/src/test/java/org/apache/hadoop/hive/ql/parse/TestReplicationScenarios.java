@@ -3162,6 +3162,13 @@ public class TestReplicationScenarios {
     String dbName = createDBNonRepl(testName.getMethodName(), driver);
     verifyFail("REPL DUMP " + dbName, driver);
     verifyFail("REPL DUMP " + dbName + " from 1 ", driver);
+    run("alter database " + dbName + " set dbproperties ('repl.source.for' = '1, 2, 3')", driver);
+    assertTrue(run("REPL DUMP " + dbName, true, driver));
+    assertTrue(run("REPL DUMP " + dbName + " from 1 ", true, driver));
+    dbName = createDBNonRepl(testName.getMethodName() + "_case", driver);
+    run("alter database " + dbName + " set dbproperties ('repl.SOURCE.for' = '1, 2, 3')", driver);
+    assertTrue(run("REPL DUMP " + dbName, true, driver));
+    assertTrue(run("REPL DUMP " + dbName + " from 1 ", true, driver));
   }
 
   @Test
