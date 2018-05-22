@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class TxnCommandsBaseForTests {
+  private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
   //bucket count for test tables; set it to 1 for easier debugging
   final static int BUCKET_COUNT = 2;
   @Rule
@@ -95,6 +97,7 @@ public abstract class TxnCommandsBaseForTests {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolean("mapred.input.dir.recursive", true);
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.prepDb(hiveConf);
     File f = new File(getWarehouseDir());
@@ -159,6 +162,7 @@ public abstract class TxnCommandsBaseForTests {
   }
 
   List<String> runStatementOnDriver(String stmt) throws Exception {
+    LOG.info("Running the query: " + stmt);
     CommandProcessorResponse cpr = d.run(stmt);
     if(cpr.getResponseCode() != 0) {
       throw new RuntimeException(stmt + " failed: " + cpr);

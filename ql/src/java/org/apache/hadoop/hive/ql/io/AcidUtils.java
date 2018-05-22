@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
@@ -149,6 +150,7 @@ public class AcidUtils {
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
   public static final Pattern   LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
+
   /**
    * A write into a non-aicd table produces files like 0000_0 or 0000_0_copy_1
    * (Unless via Load Data statement)
@@ -380,6 +382,57 @@ public class AcidUtils {
     }
     return result;
   }
+
+  public static final class DirectoryImpl implements Directory {
+    private final List<FileStatus> abortedDirectories;
+    private final boolean isBaseInRawFormat;
+    private final List<HdfsFileStatusWithId> original;
+    private final List<FileStatus> obsolete;
+    private final List<ParsedDelta> deltas;
+    private final Path base;
+
+    public DirectoryImpl(List<FileStatus> abortedDirectories,
+        boolean isBaseInRawFormat, List<HdfsFileStatusWithId> original,
+        List<FileStatus> obsolete, List<ParsedDelta> deltas, Path base) {
+      this.abortedDirectories = abortedDirectories;
+      this.isBaseInRawFormat = isBaseInRawFormat;
+      this.original = original;
+      this.obsolete = obsolete;
+      this.deltas = deltas;
+      this.base = base;
+    }
+
+    @Override
+    public Path getBaseDirectory() {
+      return base;
+    }
+
+    @Override
+    public boolean isBaseInRawFormat() {
+      return isBaseInRawFormat;
+    }
+
+    @Override
+    public List<HdfsFileStatusWithId> getOriginalFiles() {
+      return original;
+    }
+
+    @Override
+    public List<ParsedDelta> getCurrentDirectories() {
+      return deltas;
+    }
+
+    @Override
+    public List<FileStatus> getObsolete() {
+      return obsolete;
+    }
+
+    @Override
+    public List<FileStatus> getAbortedDirectories() {
+      return abortedDirectories;
+    }
+  }
+
   //This is used for (full) Acid tables.  InsertOnly use NOT_ACID
   public enum Operation implements Serializable {
     NOT_ACID, INSERT, UPDATE, DELETE;
@@ -974,7 +1027,7 @@ public class AcidUtils {
       // Okay, we're going to need these originals.  Recurse through them and figure out what we
       // really need.
       for (FileStatus origDir : originalDirectories) {
-        findOriginals(fs, origDir, original, useFileIds, ignoreEmptyFiles);
+        findOriginals(fs, origDir, original, useFileIds, ignoreEmptyFiles, true);
       }
     }
 
@@ -1046,7 +1099,7 @@ public class AcidUtils {
      * If this sort order is changed and there are tables that have been converted to transactional
      * and have had any update/delete/merge operations performed but not yet MAJOR compacted, it
      * may result in data loss since it may change how
-     * {@link org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.OriginalReaderPair} assigns 
+     * {@link org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.OriginalReaderPair} assigns
      * {@link RecordIdentifier#rowId} for read (that have happened) and compaction (yet to happen).
      */
     Collections.sort(original, (HdfsFileStatusWithId o1, HdfsFileStatusWithId o2) -> {
@@ -1056,37 +1109,8 @@ public class AcidUtils {
 
     // Note: isRawFormat is invalid for non-ORC tables. It will always return true, so we're good.
     final boolean isBaseInRawFormat = base != null && MetaDataFile.isRawFormat(base, fs);
-    return new Directory() {
-
-      @Override
-      public Path getBaseDirectory() {
-        return base;
-      }
-      @Override
-      public boolean isBaseInRawFormat() {
-        return isBaseInRawFormat;
-      }
-
-      @Override
-      public List<HdfsFileStatusWithId> getOriginalFiles() {
-        return original;
-      }
-
-      @Override
-      public List<ParsedDelta> getCurrentDirectories() {
-        return deltas;
-      }
-
-      @Override
-      public List<FileStatus> getObsolete() {
-        return obsolete;
-      }
-
-      @Override
-      public List<FileStatus> getAbortedDirectories() {
-        return abortedDirectories;
-      }
-    };
+    return new DirectoryImpl(abortedDirectories, isBaseInRawFormat, original,
+        obsolete, deltas, base);
   }
   /**
    * We can only use a 'base' if it doesn't have an open txn (from specific reader's point of view)
@@ -1198,8 +1222,9 @@ public class AcidUtils {
    * @param original the list of original files
    * @throws IOException
    */
-  private static void findOriginals(FileSystem fs, FileStatus stat,
-      List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
+  public static void findOriginals(FileSystem fs, FileStatus stat,
+      List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds,
+      boolean ignoreEmptyFiles, boolean recursive) throws IOException {
     assert stat.isDir();
     List<HdfsFileStatusWithId> childrenWithId = null;
     Boolean val = useFileIds.value;
@@ -1218,8 +1243,10 @@ public class AcidUtils {
     }
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
-        if (child.getFileStatus().isDir()) {
-          findOriginals(fs, child.getFileStatus(), original, useFileIds, ignoreEmptyFiles);
+        if (child.getFileStatus().isDirectory()) {
+          if (recursive) {
+            findOriginals(fs, child.getFileStatus(), original, useFileIds, ignoreEmptyFiles, true);
+          }
         } else {
           if(!ignoreEmptyFiles || child.getFileStatus().getLen() > 0) {
             original.add(child);
@@ -1230,7 +1257,9 @@ public class AcidUtils {
       List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, stat.getPath(), hiddenFileFilter);
       for (FileStatus child : children) {
         if (child.isDir()) {
-          findOriginals(fs, child, original, useFileIds, ignoreEmptyFiles);
+          if (recursive) {
+            findOriginals(fs, child, original, useFileIds, ignoreEmptyFiles, true);
+          }
         } else {
           if(!ignoreEmptyFiles || child.getLen() > 0) {
             original.add(createOriginalObj(null, child));
@@ -1239,6 +1268,7 @@ public class AcidUtils {
       }
     }
   }
+
 
   public static boolean isTablePropertyTransactional(Properties props) {
     String resultStr = props.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
@@ -1807,7 +1837,7 @@ public class AcidUtils {
       return null;
     }
     Directory acidInfo = AcidUtils.getAcidState(dir, jc, idList);
-    // Assume that for an MM table, or if there's only the base directory, we are good. 
+    // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
           "Computing stats for an ACID table; stats may be inaccurate");

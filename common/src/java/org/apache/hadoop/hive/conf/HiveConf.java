@@ -2392,6 +2392,10 @@ public class HiveConf extends Configuration {
     HIVE_LOCK_QUERY_STRING_MAX_LENGTH("hive.lock.query.string.max.length", 1000000,
         "The maximum length of the query string to store in the lock.\n" +
         "The default value is 1000000, since the data limit of a znode is 1MB"),
+    HIVE_MM_ALLOW_ORIGINALS("hive.mm.allow.originals", false,
+        "Whether to allow original files in MM tables. Conversion to MM may be expensive if\n" +
+        "this is set to false, however unless MAPREDUCE-7086 fix is present, queries that\n" +
+        "read MM tables with original files will fail. The default in Hive 3.0 is false."),
 
      // Zookeeper related configs
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
