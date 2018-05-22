@@ -198,7 +198,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
         String.format("select a,b from %s order by a,b", importName));
     Assert.assertEquals("After import: " + rs, allData, rs);
     runStatementOnDriver("drop table if exists " + importName);
-    
+
     // Do insert overwrite to create some invalid deltas, and import into a non-MM table.
     int[][] rows2 = {{5,6},{7,8}};
     runStatementOnDriver(String.format("insert overwrite table %s %s",
@@ -259,7 +259,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     return paths;
   }
 
-  
+
   /**
    * add tests for all transitions - AC=t, AC=t, AC=f, commit (for example)
    * @throws Exception
