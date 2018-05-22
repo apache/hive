@@ -84,7 +84,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private final LlapDaemonIOMetrics ioMetrics;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
-  private final LlapOomDebugDump memoryDump;
+  private final LlapOomDebugDump memoryDumpRoot;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
@@ -150,7 +150,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       // Cache uses allocator to allocate and deallocate, create allocator and then caches.
       BuddyAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
       this.allocator = allocator;
-      this.memoryDump = allocator;
+      this.memoryDumpRoot = allocator;
+      memManager.setMemoryDumpRoot(this.memoryDumpRoot); // TODO: This should be refactored...
       LowLevelCacheImpl cacheImpl = new LowLevelCacheImpl(
           cacheMetrics, cachePolicy, allocator, true);
       cache = cacheImpl;
@@ -174,7 +175,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       bufferManager = cacheImpl; // Cache also serves as buffer manager.
     } else {
       this.allocator = new SimpleAllocator(conf);
-      memoryDump = null;
+      memoryDumpRoot = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
       bufferManager = sbm;
       cache = sbm;
@@ -202,9 +203,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
   @Override
   public String getMemoryInfo() {
-    if (memoryDump == null) return "\nNot using the allocator";
+    if (memoryDumpRoot == null) return "\nNot using the allocator";
     StringBuilder sb = new StringBuilder();
-    memoryDump.debugDumpShort(sb);
+    memoryDumpRoot.debugDumpShort(sb);
     return sb.toString();
   }
 

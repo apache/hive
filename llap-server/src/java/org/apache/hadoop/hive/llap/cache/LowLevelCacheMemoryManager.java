@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Implementation of memory manager for low level cache. Note that memory is released during
@@ -36,6 +35,11 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   private final LowLevelCachePolicy evictor;
   private final LlapDaemonCacheMetrics metrics;
   private long maxSize;
+  private LlapOomDebugDump memoryDumpRoot;
+
+  private static final long LOCKING_DEBUG_DUMP_PERIOD_NS = 30 * 1000000000L; // 30 sec.
+  private static final int LOCKING_DEBUG_DUMP_THRESHOLD = 5;
+  private static final AtomicLong lastCacheDumpNs = new AtomicLong(0);
 
   public LowLevelCacheMemoryManager(
       long maxSize, LowLevelCachePolicy evictor, LlapDaemonCacheMetrics metrics) {
@@ -63,9 +67,10 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   public boolean reserveMemory(final long memoryToReserve, boolean waitForEviction) {
     // TODO: if this cannot evict enough, it will spin infinitely. Terminate at some point?
     int badCallCount = 0;
-    int nextLog = 4;
     long evictedTotalMetric = 0, reservedTotalMetric = 0, remainingToReserve = memoryToReserve;
     boolean result = true;
+    int waitTimeMs = 4;
+    boolean didDumpIoState = false;
     while (remainingToReserve > 0) {
       long usedMem = usedMemory.get(), newUsedMem = usedMem + remainingToReserve;
       if (newUsedMem <= maxSize) {
@@ -75,28 +80,29 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
         }
         continue;
       }
-      if (evictor == null) return false;
-      // TODO: for one-block case, we could move notification for the last block out of the loop.
+      if (evictor == null) {
+        result = false;
+        break;
+      }
       long evicted = evictor.evictSomeBlocks(remainingToReserve);
       if (evicted == 0) {
         if (!waitForEviction) {
           result = false;
-          break;
+          break; // Test code path where we don't do more than one attempt.
         }
-        ++badCallCount;
-        if (badCallCount == nextLog) {
-          LlapIoImpl.LOG.warn("Cannot evict blocks for " + badCallCount + " calls; cache full?");
-          nextLog <<= 1;
-          try {
-            Thread.sleep(Math.min(1000, nextLog));
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            result = false;
-            break;
-          }
+        didDumpIoState = logEvictionIssue(++badCallCount, didDumpIoState);
+        waitTimeMs = Math.min(1000, waitTimeMs << 1);
+        assert waitTimeMs > 0;
+        try {
+          Thread.sleep(waitTimeMs);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          result = false;
+          break;
         }
         continue;
       }
+
       evictedTotalMetric += evicted;
       badCallCount = 0;
       // Adjust the memory - we have to account for what we have just evicted.
@@ -110,6 +116,7 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
         }
         usedMem = usedMemory.get();
       }
+
     }
     if (!result) {
       releaseMemory(reservedTotalMetric);
@@ -117,6 +124,39 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     }
     metrics.incrCacheCapacityUsed(reservedTotalMetric - evictedTotalMetric);
     return result;
+  }
+
+
+  private boolean logEvictionIssue(int badCallCount, boolean didDumpIoState) {
+    if (badCallCount <= LOCKING_DEBUG_DUMP_THRESHOLD) return didDumpIoState;
+    String ioStateDump = maybeDumpIoState(didDumpIoState);
+    if (ioStateDump == null) {
+      LlapIoImpl.LOG.warn("Cannot evict blocks for " + badCallCount + " calls; cache full?");
+      return didDumpIoState;
+    } else {
+      LlapIoImpl.LOG.warn("Cannot evict blocks; IO state:\n " + ioStateDump);
+      return true;
+    }
+  }
+
+  private String maybeDumpIoState(boolean didDumpIoState) {
+    if (didDumpIoState) return null; // No more than once per reader.
+    long now = System.nanoTime(), last = lastCacheDumpNs.get();
+    while (true) {
+      if (last != 0 && (now - last) < LOCKING_DEBUG_DUMP_PERIOD_NS) {
+        return null; // We have recently dumped IO state into log.
+      }
+      if (lastCacheDumpNs.compareAndSet(last, now)) break;
+      now = System.nanoTime();
+      last = lastCacheDumpNs.get();
+    }
+    try {
+      StringBuilder sb = new StringBuilder();
+      memoryDumpRoot.debugDumpShort(sb);
+      return sb.toString();
+    } catch (Throwable t) {
+      return "Failed to dump cache state: " + t.getClass() + " " + t.getMessage();
+    }
   }
 
 
@@ -151,5 +191,10 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   @Override
   public void updateMaxSize(long maxSize) {
     this.maxSize = maxSize;
+  }
+
+
+  public void setMemoryDumpRoot(LlapOomDebugDump memoryDumpRoot) {
+    this.memoryDumpRoot = memoryDumpRoot;
   }
 }
