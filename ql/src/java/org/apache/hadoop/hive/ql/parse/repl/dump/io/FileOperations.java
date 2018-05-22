@@ -140,8 +140,7 @@ public class FileOperations {
   /**
    * This needs the root data directory to which the data needs to be exported to.
    * The data export here is a list of files either in table/partition that are written to the _files
-   * in the exportRootDataDir provided. In case of MM/ACID tables, we expect this pathlist to be
-   * already passed as valid paths by caller based on ValidWriteIdList. So, mmCtx is ignored here.
+   * in the exportRootDataDir provided.
    */
   private void exportFilesAsList() throws SemanticException, IOException {
     // This is only called for replication that handles MM tables; no need for mmCtx.

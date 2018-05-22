@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.curator.shaded.com.google.common.collect.Lists;
-
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
