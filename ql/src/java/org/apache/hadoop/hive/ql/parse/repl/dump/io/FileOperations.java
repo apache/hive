@@ -17,6 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.security.auth.login.LoginException;
+
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -25,7 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -34,14 +44,6 @@ import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.security.auth.login.LoginException;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 //TODO: this object is created once to call one method and then immediately destroyed.
 //So it's basically just a roundabout way to pass arguments to a static method. Simplify?
@@ -101,45 +103,48 @@ public class FileOperations {
   }
 
   private void copyMmPath() throws LoginException, IOException {
-    assert dataPathList.size() == 1;
     ValidWriteIdList ids = AcidUtils.getTableValidWriteIdList(hiveConf, mmCtx.getFqTableName());
-    Path fromPath = dataFileSystem.makeQualified(dataPathList.get(0));
-    List<Path> validPaths = getMmValidPaths(ids, fromPath);
-    String fromPathStr = fromPath.toString();
-    if (!fromPathStr.endsWith(Path.SEPARATOR)) {
-       fromPathStr += Path.SEPARATOR;
-    }
-    for (Path validPath : validPaths) {
-      // Export valid directories with a modified name so they don't look like bases/deltas.
-      // We could also dump the delta contents all together and rename the files if names collide.
-      String mmChildPath = "export_old_" + validPath.toString().substring(fromPathStr.length());
-      Path destPath = new Path(exportRootDataDir, mmChildPath);
-      exportFileSystem.mkdirs(destPath);
-      copyOneDataPath(validPath, destPath);
+    for (Path fromPath : dataPathList) {
+      fromPath = dataFileSystem.makeQualified(fromPath);
+      List<Path> validPaths = new ArrayList<>(), dirsWithOriginals = new ArrayList<>();
+      HiveInputFormat.processPathsForMmRead(dataPathList,
+          hiveConf, ids, validPaths, dirsWithOriginals);
+      String fromPathStr = fromPath.toString();
+      if (!fromPathStr.endsWith(Path.SEPARATOR)) {
+         fromPathStr += Path.SEPARATOR;
+      }
+      for (Path validPath : validPaths) {
+        // Export valid directories with a modified name so they don't look like bases/deltas.
+        // We could also dump the delta contents all together and rename the files if names collide.
+        String mmChildPath = "export_old_" + validPath.toString().substring(fromPathStr.length());
+        Path destPath = new Path(exportRootDataDir, mmChildPath);
+        Utilities.FILE_OP_LOGGER.debug("Exporting {} to {}", validPath, destPath);
+        exportFileSystem.mkdirs(destPath);
+        copyOneDataPath(validPath, destPath);
+      }
+      for (Path dirWithOriginals : dirsWithOriginals) {
+        FileStatus[] files = dataFileSystem.listStatus(dirWithOriginals, AcidUtils.hiddenFileFilter);
+        List<Path> srcPaths = new ArrayList<>();
+        for (FileStatus fileStatus : files) {
+          if (fileStatus.isDirectory()) continue;
+          srcPaths.add(fileStatus.getPath());
+        }
+        Utilities.FILE_OP_LOGGER.debug("Exporting originals from {} to {}",
+            dirWithOriginals, exportRootDataDir);
+        new CopyUtils(distCpDoAsUser, hiveConf).doCopy(exportRootDataDir, srcPaths);
+      }
     }
   }
 
-  private List<Path> getMmValidPaths(ValidWriteIdList ids, Path fromPath) throws IOException {
-    Utilities.FILE_OP_LOGGER.trace("Looking for valid MM paths under {}", fromPath);
-    AcidUtils.Directory acidState = AcidUtils.getAcidState(fromPath, hiveConf, ids);
-    List<Path> validPaths = new ArrayList<>();
-    Path base = acidState.getBaseDirectory();
-    if (base != null) {
-      validPaths.add(base);
-    }
-    for (ParsedDelta pd : acidState.getCurrentDirectories()) {
-      validPaths.add(pd.getPath());
-    }
-    return validPaths;
-  }
+
 
   /**
    * This needs the root data directory to which the data needs to be exported to.
    * The data export here is a list of files either in table/partition that are written to the _files
-   * in the exportRootDataDir provided. In case of MM/ACID tables, we expect this pathlist to be
-   * already passed as valid paths by caller based on ValidWriteIdList. So, mmCtx is ignored here.
+   * in the exportRootDataDir provided.
    */
   private void exportFilesAsList() throws SemanticException, IOException {
+    // This is only called for replication that handles MM tables; no need for mmCtx.
     try (BufferedWriter writer = writer()) {
       for (Path dataPath : dataPathList) {
         writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));

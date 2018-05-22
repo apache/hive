@@ -4474,7 +4474,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Boolean isToMmTable = AcidUtils.isToInsertOnlyTable(tbl, alterTbl.getProps());
       if (isToMmTable != null) {
         if (!isFromMmTable && isToMmTable) {
-          result = generateAddMmTasks(tbl, alterTbl.getWriteId());
+          if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS)) {
+            result = generateAddMmTasks(tbl, alterTbl.getWriteId());
+          } else {
+            if (tbl.getPartitionKeys().size() > 0) {
+              Hive db = getHive();
+              PartitionIterable parts = new PartitionIterable(db, tbl, null,
+                  HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+              Iterator<Partition> partIter = parts.iterator();
+              while (partIter.hasNext()) {
+                Partition part0 = partIter.next();
+                checkMmLb(part0);
+              }
+            } else {
+              checkMmLb(tbl);
+            }
+          }
         } else if (isFromMmTable && !isToMmTable) {
           throw new HiveException("Cannot convert an ACID table to non-ACID");
         }
