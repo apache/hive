@@ -255,16 +255,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (isExternalSet) {
-      if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps())) {
-        throw new SemanticException("Cannot import an MM table as external");
-      }
       tblDesc.setExternal(isExternalSet);
       // This condition-check could have been avoided, but to honour the old
       // default of not calling if it wasn't set, we retain that behaviour.
       // TODO:cleanup after verification that the outer if isn't really needed here
     }
 
-    if (isLocationSet){
+    if (isLocationSet) {
       tblDesc.setLocation(parsedLocation);
       x.getInputs().add(toReadEntity(new Path(parsedLocation), x.getConf()));
     }
@@ -320,9 +317,14 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean tableExists = false;
 
     if (table != null) {
-      checkTable(table, tblDesc,replicationSpec, x.getConf());
+      checkTable(table, tblDesc, replicationSpec, x.getConf());
       x.getLOG().debug("table " + tblDesc.getTableName() + " exists: metadata checked");
       tableExists = true;
+    }
+
+    if (!tableExists && isExternalSet) {
+      // If the user is explicitly importing a new external table, clear txn flags from the spec.
+      AcidUtils.setNonTransactional(tblDesc.getTblProps());
     }
 
     Long writeId = 0L; // Initialize with 0 for non-ACID and non-MM tables.
@@ -855,7 +857,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       x.getLOG().debug("table " + tblDesc.getTableName() + " does not exist");
 
       Task<?> t = createTableTask(tblDesc, x);
-      table = createNewTableMetadataObject(tblDesc);
+      table = createNewTableMetadataObject(tblDesc, false);
 
       Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
 
@@ -891,14 +893,19 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private static Table createNewTableMetadataObject(ImportTableDesc tblDesc)
+  private static Table createNewTableMetadataObject(ImportTableDesc tblDesc, boolean isRepl)
       throws SemanticException {
     Table newTable = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
     //so that we know the type of table we are creating: acid/MM to match what was exported
     newTable.setParameters(tblDesc.getTblProps());
     if(tblDesc.isExternal() && AcidUtils.isTransactionalTable(newTable)) {
-      throw new SemanticException("External tables may not be transactional: " +
-          Warehouse.getQualifiedName(tblDesc.getDatabaseName(), tblDesc.getTableName()));
+      if (isRepl) {
+        throw new SemanticException("External tables may not be transactional: " +
+            Warehouse.getQualifiedName(tblDesc.getDatabaseName(), tblDesc.getTableName()));
+      } else {
+        throw new AssertionError("Internal error: transactional properties not set properly"
+            + tblDesc.getTblProps());
+      }
     }
     return newTable;
   }
@@ -992,7 +999,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       Task t = createTableTask(tblDesc, x);
-      table = createNewTableMetadataObject(tblDesc);
+      table = createNewTableMetadataObject(tblDesc, true);
 
       if (!replicationSpec.isMetadataOnly()) {
         if (isPartitioned(tblDesc)) {
@@ -1025,7 +1032,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       // create the dummy table object for adding repl tasks.
       boolean isOldTableValid = true;
       if (table.isPartitioned() != isPartitioned(tblDesc)) {
-        table = createNewTableMetadataObject(tblDesc);
+        table = createNewTableMetadataObject(tblDesc, true);
         isOldTableValid = false;
       }
 
@@ -1043,7 +1050,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
               ptn = x.getHive().getPartition(table, partSpec, false);
             } catch (HiveException ex) {
               ptn = null;
-              table = createNewTableMetadataObject(tblDesc);
+              table = createNewTableMetadataObject(tblDesc, true);
               isOldTableValid = false;
             }
           }
