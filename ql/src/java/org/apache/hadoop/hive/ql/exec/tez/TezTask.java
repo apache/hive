@@ -160,7 +160,11 @@ public class TezTask extends Task<TezWork> {
       if (userName == null) {
         userName = "anonymous";
       } else {
-        groups = UserGroupInformation.createRemoteUser(userName).getGroups();
+        try {
+          groups = UserGroupInformation.createRemoteUser(userName).getGroups();
+        } catch (Exception ex) {
+          LOG.warn("Cannot obtain groups for " + userName, ex);
+        }
       }
       MappingInput mi = new MappingInput(userName, groups,
           ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
