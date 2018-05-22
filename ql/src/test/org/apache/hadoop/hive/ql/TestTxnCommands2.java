@@ -495,8 +495,9 @@ public class TestTxnCommands2 {
       if (status[i].getPath().getName().matches("base_.*")) {
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
+        Arrays.sort(buckets);
         Assert.assertEquals(2, buckets.length);
-        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00001"));
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00000"));
       }
     }
     Assert.assertTrue(sawNewBase);
@@ -528,8 +529,9 @@ public class TestTxnCommands2 {
     Assert.assertEquals(1, status.length);
     Assert.assertTrue(status[0].getPath().getName().matches("base_.*"));
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
+    Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
-    Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00001"));
+    Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00000"));
     rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
     resultData = new int[][] {{3, 4}, {1, 2}};
     Assert.assertEquals(stringifyValuesNoSort(resultData), rs);
