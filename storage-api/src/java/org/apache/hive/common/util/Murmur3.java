@@ -155,6 +155,52 @@ public class Murmur3 {
     return hash64(data, 0, data.length, DEFAULT_SEED);
   }
 
+  public static long hash64(long data) {
+    long hash = DEFAULT_SEED;
+    long k = Long.reverseBytes(data);
+    int length = Long.BYTES;
+    // mix functions
+    k *= C1;
+    k = Long.rotateLeft(k, R1);
+    k *= C2;
+    hash ^= k;
+    hash = Long.rotateLeft(hash, R2) * M + N1;
+    // finalization
+    hash ^= length;
+    hash = fmix64(hash);
+    return hash;
+  }
+
+  public static long hash64(int data) {
+    long k1 = Integer.reverseBytes(data) & (-1L >>> 32);
+    int length = Integer.BYTES;
+    long hash = DEFAULT_SEED;
+    k1 *= C1;
+    k1 = Long.rotateLeft(k1, R1);
+    k1 *= C2;
+    hash ^= k1;
+    // finalization
+    hash ^= length;
+    hash = fmix64(hash);
+    return hash;
+  }
+
+  public static long hash64(short data) {
+    long hash = DEFAULT_SEED;
+    long k1 = 0;
+    k1 ^= ((long) data & 0xff) << 8;
+    k1 ^= ((long)((data & 0xFF00) >> 8) & 0xff);
+    k1 *= C1;
+    k1 = Long.rotateLeft(k1, R1);
+    k1 *= C2;
+    hash ^= k1;
+
+    // finalization
+    hash ^= Short.BYTES;
+    hash = fmix64(hash);
+    return hash;
+  }
+
   public static long hash64(byte[] data, int offset, int length) {
     return hash64(data, offset, length, DEFAULT_SEED);
   }
