@@ -85,14 +85,34 @@ public final class ExprWalkerProcFactory {
         // replace the output expression with the input expression so that
         // parent op can understand this expression
         ExprNodeDesc exp = op.getColumnExprMap().get(colref.getColumn());
-        // if the operator is a groupby and we are referencing the grouping
-        // id column, we cannot push the predicate
+
         if (op instanceof GroupByOperator) {
           GroupByOperator groupBy = (GroupByOperator) op;
           if (groupBy.getConf().isGroupingSetsPresent()) {
             int groupingSetPlaceholderPos = groupBy.getConf().getKeys().size() - 1;
+            int groupKeyIndex = groupBy.getConf().getKeys().indexOf(exp);
+
+            // if the operator is a groupby and we are referencing the grouping
+            // id column, we cannot push the predicate
             if (colref.getColumn().equals(groupBy.getSchema().getColumnNames().get(groupingSetPlaceholderPos))) {
               exp = null;
+            }
+
+            // if grouping set is given (.i.e group with cube) and column is
+            // missed in some grouping set, we cannot push the predicate
+            // since the column value can be null
+            if (groupKeyIndex >= 0 && groupKeyIndex != groupingSetPlaceholderPos) {
+              List<Long> groupingIds = groupBy.getConf().getListGroupingSets();
+              boolean hasMissedGroup = false;
+              for (long groupingId: groupingIds) {
+                if ((groupingId & (1 << groupKeyIndex)) == 0) {
+                  hasMissedGroup = true;
+                  break;
+                }
+              }
+              if (hasMissedGroup) {
+                exp = null;
+              }
             }
           }
         }

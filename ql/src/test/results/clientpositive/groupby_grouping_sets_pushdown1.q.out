@@ -1,0 +1,57 @@
+PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, s BIGINT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
+POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, s BIGINT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1
+PREHOOK: query: INSERT OVERWRITE TABLE T1 VALUES ('aaa', 'bbb', 123456)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1 VALUES ('aaa', 'bbb', 123456)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+POSTHOOK: Lineage: t1.b SCRIPT []
+POSTHOOK: Lineage: t1.s SCRIPT []
+PREHOOK: query: SELECT * FROM (
+    SELECT a, b, sum(s)
+    FROM T1
+    GROUP BY a, b GROUPING SETS ((), (a), (b), (a, b))
+) t WHERE a IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+    SELECT a, b, sum(s)
+    FROM T1
+    GROUP BY a, b GROUPING SETS ((), (a), (b), (a, b))
+) t WHERE a IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+NULL	NULL	123456
+NULL	bbb	123456
+aaa	NULL	123456
+aaa	bbb	123456
+PREHOOK: query: SELECT * FROM (
+    SELECT a, b, sum(s)
+    FROM T1
+    GROUP BY a, b GROUPING SETS ((a), (a, b))
+) t WHERE a IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+    SELECT a, b, sum(s)
+    FROM T1
+    GROUP BY a, b GROUPING SETS ((a), (a, b))
+) t WHERE a IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+aaa	NULL	123456
+aaa	bbb	123456
