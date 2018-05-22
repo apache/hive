@@ -1932,4 +1932,9 @@ public class AcidUtils {
     }
     return writeId;
   }
+
+  public static void setNonTransactional(Map<String, String> tblProps) {
+    tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false");
+    tblProps.remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+  }
 }
