@@ -337,9 +337,11 @@ public class CompactorMR {
     }
 
     int deltaCount = dir.getCurrentDirectories().size();
-    if ((deltaCount + (dir.getBaseDirectory() == null ? 0 : 1)) <= 1) {
+    int origCount = dir.getOriginalFiles().size();
+    if ((deltaCount + (dir.getBaseDirectory() == null ? 0 : 1)) + origCount <= 1) {
       LOG.debug("Not compacting " + sd.getLocation() + "; current base is "
-        + dir.getBaseDirectory() + " and there are " + deltaCount + " deltas");
+        + dir.getBaseDirectory() + " and there are " + deltaCount + " deltas and "
+        + origCount + " originals");
       return;
     }
     try {
@@ -355,7 +357,8 @@ public class CompactorMR {
 
       // Note: we could skip creating the table and just add table type stuff directly to the
       //       "insert overwrite directory" command if there were no bucketing or list bucketing.
-      String tmpPrefix = t.getDbName() + ".tmp_compactor_" + t.getTableName() + "_", tmpTableName;
+      String tmpPrefix = t.getDbName() + ".tmp_compactor_" + t.getTableName() + "_";
+      String tmpTableName = null;
       while (true) {
         tmpTableName = tmpPrefix + System.currentTimeMillis();
         String query = buildMmCompactionCtQuery(tmpTableName, t,

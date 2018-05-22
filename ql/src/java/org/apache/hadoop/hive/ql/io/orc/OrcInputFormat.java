@@ -106,6 +106,7 @@ import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -117,6 +118,7 @@ import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.Footer;
+import org.apache.orc.OrcProto.Type;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.StripeStatistics;
@@ -342,7 +344,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return false;
   }
 
-  
+
   public static boolean[] genIncludedColumns(TypeDescription readerSchema,
                                              List<Integer> included) {
     return genIncludedColumns(readerSchema, included, null);
@@ -701,15 +703,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       // & therefore we should be able to retrieve them here and determine appropriate behavior.
       // Note that this will be meaningless for non-acid tables & will be set to null.
       //this is set by Utilities.copyTablePropertiesToConf()
-      boolean isTableTransactional = conf.getBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, false);
-      String transactionalProperties = conf.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-      this.acidOperationalProperties = isTableTransactional ?
-          AcidOperationalProperties.parseString(transactionalProperties) : null;
+      boolean isTxnTable = conf.getBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, false);
+      String txnProperties = conf.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+      this.acidOperationalProperties = isTxnTable
+          ? AcidOperationalProperties.parseString(txnProperties) : null;
 
       String value = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       writeIdList = value == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(value);
       LOG.debug("Context:: Read ValidWriteIdList: " + writeIdList.toString()
-              + " isTransactionalTable: " + isTableTransactional);
+              + " isTransactionalTable: " + isTxnTable + " properties: " + txnProperties);
     }
 
     @VisibleForTesting
@@ -1144,6 +1146,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final Ref<Boolean> useFileIds;
     private final UserGroupInformation ugi;
 
+    @VisibleForTesting
     FileGenerator(Context context, FileSystem fs, Path dir, boolean useFileIds,
         UserGroupInformation ugi) {
       this(context, fs, dir, Ref.from(useFileIds), ugi);
@@ -1176,13 +1179,31 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private AcidDirInfo callInternal() throws IOException {
+      if (context.acidOperationalProperties != null
+          && context.acidOperationalProperties.isInsertOnly()) {
+        // See the class comment - HIF handles MM for all input formats, so if we try to handle it
+        // again, in particular for the non-recursive originals-only getSplits call, we will just
+        // get confused. This bypass was not necessary when MM tables didn't support originals. Now
+        // that they do, we use this path for anything MM table related, although everything except
+        // the originals could still be handled by AcidUtils like a regular non-txn table.
+        boolean isRecursive = context.conf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE,
+            context.conf.getBoolean("mapred.input.dir.recursive", false));
+        List<HdfsFileStatusWithId> originals = new ArrayList<>();
+        List<AcidBaseFileInfo> baseFiles = new ArrayList<>();
+        AcidUtils.findOriginals(fs, fs.getFileStatus(dir), originals, useFileIds, true, isRecursive);
+        for (HdfsFileStatusWithId fileId : originals) {
+          baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.ORIGINAL_BASE));
+        }
+        return new AcidDirInfo(fs, dir, new AcidUtils.DirectoryImpl(Lists.newArrayList(), true, originals,
+            Lists.newArrayList(), Lists.newArrayList(), null), baseFiles, new ArrayList<>());
+      }
       //todo: shouldn't ignoreEmptyFiles be set based on ExecutionEngine?
-      AcidUtils.Directory dirInfo = AcidUtils.getAcidState(dir, context.conf,
-          context.writeIdList, useFileIds, true, null);
+      AcidUtils.Directory dirInfo = AcidUtils.getAcidState(
+          dir, context.conf, context.writeIdList, useFileIds, true, null);
       // find the base files (original or new style)
       List<AcidBaseFileInfo> baseFiles = new ArrayList<>();
       if (dirInfo.getBaseDirectory() == null) {
-        //for non-acid tables, all data files are in getOriginalFiles() list
+        // For non-acid tables (or paths), all data files are in getOriginalFiles() list
         for (HdfsFileStatusWithId fileId : dirInfo.getOriginalFiles()) {
           baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.ORIGINAL_BASE));
         }
@@ -1197,7 +1218,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       // Find the parsed deltas- some of them containing only the insert delta events
       // may get treated as base if split-update is enabled for ACID. (See HIVE-14035 for details)
       List<ParsedDelta> parsedDeltas = new ArrayList<>();
-
       if (context.acidOperationalProperties != null &&
           context.acidOperationalProperties.isSplitUpdate()) {
         // If we have split-update turned on for this table, then the delta events have already been
@@ -1258,7 +1278,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         We already handled all delete deltas above and there should not be any other deltas for
         any table type.  (this was acid 1.0 code path).
          */
-        assert dirInfo.getCurrentDirectories().isEmpty() : "Non empty curDir list?!: " + dir;
+        assert dirInfo.getCurrentDirectories().isEmpty() :
+            "Non empty curDir list?!: " + dirInfo.getCurrentDirectories();
         // When split-update is not enabled, then all the deltas in the current directories
         // should be considered as usual.
         parsedDeltas.addAll(dirInfo.getCurrentDirectories());

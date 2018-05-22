@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
@@ -42,21 +43,27 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.spark.SparkDynamicPartitionPruner;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -64,6 +71,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorMapOperatorReadType;
@@ -83,7 +91,10 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.Ref;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name
@@ -489,34 +500,35 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushFilters(conf, tableScan, this.mrwork);
     }
 
-    Path[] finalDirs = processPathsForMmRead(dirs, conf, validMmWriteIdList);
-    if (finalDirs == null) {
+    List<Path> dirsWithFileOriginals = new ArrayList<>(), finalDirs = new ArrayList<>();
+    processPathsForMmRead(dirs, conf, validMmWriteIdList, finalDirs, dirsWithFileOriginals);
+    if (finalDirs.isEmpty() && dirsWithFileOriginals.isEmpty()) {
       // This is for transactional tables.
       if (!conf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
         LOG.warn("No valid inputs found in " + dirs);
-        return; // No valid inputs.
       } else if (validMmWriteIdList != null) {
         // AcidUtils.getAcidState() is already called to verify there is no input split.
         // Thus for a GroupByOperator summary row, set finalDirs and add a Dummy split here.
-        finalDirs = dirs.toArray(new Path[dirs.size()]);
-        result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(finalDirs[0].toString()),
-            ZeroRowsInputFormat.class.getName()));
+        result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(
+            dirs.get(0).toString()), ZeroRowsInputFormat.class.getName()));
       }
-    } else {
-      FileInputFormat.setInputPaths(conf, finalDirs);
-      conf.setInputFormat(inputFormat.getClass());
+      return; // No valid inputs.
+    }
 
-      int headerCount = 0;
-      int footerCount = 0;
-      if (table != null) {
-        headerCount = Utilities.getHeaderCount(table);
-        footerCount = Utilities.getFooterCount(table, conf);
-        if (headerCount != 0 || footerCount != 0) {
-          // Input file has header or footer, cannot be splitted.
-          HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
-        }
+    conf.setInputFormat(inputFormat.getClass());
+    int headerCount = 0;
+    int footerCount = 0;
+    if (table != null) {
+      headerCount = Utilities.getHeaderCount(table);
+      footerCount = Utilities.getFooterCount(table, conf);
+      if (headerCount != 0 || footerCount != 0) {
+        // Input file has header or footer, cannot be splitted.
+        HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
       }
+    }
 
+    if (!finalDirs.isEmpty()) {
+      FileInputFormat.setInputPaths(conf, finalDirs.toArray(new Path[finalDirs.size()]));
       InputSplit[] iss = null;
       try {
         iss = inputFormat.getSplits(conf, splits);
@@ -532,13 +544,39 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       for (InputSplit is : iss) {
         result.add(new HiveInputSplit(is, inputFormatClass.getName()));
       }
-      if (iss.length == 0 && finalDirs.length > 0 && conf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
-        // If there are no inputs; the Execution engine skips the operator tree.
-        // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
-        result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(finalDirs[0].toString()),
-                ZeroRowsInputFormat.class.getName()));
+    }
+
+    if (!dirsWithFileOriginals.isEmpty()) {
+      // We are going to add splits for these directories with recursive = false, so we ignore
+      // any subdirectories (deltas or original directories) and only read the original files.
+      // The fact that there's a loop calling addSplitsForGroup already implies it's ok to
+      // the real input format multiple times... however some split concurrency/etc configs
+      // that are applied separately in each call will effectively be ignored for such splits.
+      JobConf nonRecConf = createConfForMmOriginalsSplit(conf, dirsWithFileOriginals);
+      InputSplit[] iss = inputFormat.getSplits(nonRecConf, splits);
+      for (InputSplit is : iss) {
+        result.add(new HiveInputSplit(is, inputFormatClass.getName()));
       }
     }
+
+    if (result.isEmpty() && conf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
+      // If there are no inputs; the Execution engine skips the operator tree.
+      // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
+      result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(
+          finalDirs.get(0).toString()), ZeroRowsInputFormat.class.getName()));
+    }
+  }
+
+  public static JobConf createConfForMmOriginalsSplit(
+      JobConf conf, List<Path> dirsWithFileOriginals) {
+    JobConf nonRecConf = new JobConf(conf);
+    FileInputFormat.setInputPaths(nonRecConf,
+        dirsWithFileOriginals.toArray(new Path[dirsWithFileOriginals.size()]));
+    nonRecConf.setBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false);
+    nonRecConf.setBoolean("mapred.input.dir.recursive", false);
+    // TODO: change to FileInputFormat.... field after MAPREDUCE-7086.
+    nonRecConf.setBoolean("mapreduce.input.fileinputformat.input.dir.nonrecursive.ignore.subdirs", true);
+    return nonRecConf;
   }
 
   protected ValidWriteIdList getMmValidWriteIds(
@@ -555,71 +593,84 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return validWriteIdList;
   }
 
-  public static Path[] processPathsForMmRead(List<Path> dirs, JobConf conf,
-      ValidWriteIdList validWriteIdList) throws IOException {
-     if (validWriteIdList == null) {
-      return dirs.toArray(new Path[dirs.size()]);
-    } else {
-      List<Path> finalPaths = new ArrayList<>(dirs.size());
-      for (Path dir : dirs) {
-        processForWriteIds(dir, conf, validWriteIdList, finalPaths);
-      }
-      if (finalPaths.isEmpty()) {
-        return null;
-      }
-      return finalPaths.toArray(new Path[finalPaths.size()]);
+  public static void processPathsForMmRead(List<Path> dirs, Configuration conf,
+      ValidWriteIdList validWriteIdList, List<Path> finalPaths,
+      List<Path> pathsWithFileOriginals) throws IOException {
+    if (validWriteIdList == null) {
+      finalPaths.addAll(dirs);
+      return;
+    }
+    boolean allowOriginals = HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS);
+    for (Path dir : dirs) {
+      processForWriteIds(
+          dir, conf, validWriteIdList, allowOriginals, finalPaths, pathsWithFileOriginals);
     }
   }
 
-  private static void processForWriteIds(Path dir, JobConf conf,
-      ValidWriteIdList validWriteIdList, List<Path> finalPaths) throws IOException {
+  private static void processForWriteIds(Path dir, Configuration conf,
+      ValidWriteIdList validWriteIdList, boolean allowOriginals, List<Path> finalPaths,
+      List<Path> pathsWithFileOriginals) throws IOException {
     FileSystem fs = dir.getFileSystem(conf);
-    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace("Checking " + dir + " (root) for inputs");
-    }
+    Utilities.FILE_OP_LOGGER.trace("Checking {} for inputs", dir);
+
     // Ignore nullscan-optimized paths.
     if (fs instanceof NullScanFileSystem) {
       finalPaths.add(dir);
       return;
     }
 
-    // Tez require the use of recursive input dirs for union processing, so we have to look into the
-    // directory to find out
-    LinkedList<Path> subdirs = new LinkedList<>();
-    subdirs.add(dir); // add itself as a starting point
-    while (!subdirs.isEmpty()) {
-      Path currDir = subdirs.poll();
-      FileStatus[] files = fs.listStatus(currDir);
-      boolean hadAcidState = false;   // whether getAcidState has been called for currDir
-      for (FileStatus file : files) {
-        Path path = file.getPath();
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace("Checking " + path + " for inputs");
+    // We need to iterate to detect original directories, that are supported in MM but not ACID.
+    boolean hasOriginalFiles = false, hasAcidDirs = false;
+    List<Path> originalDirectories = new ArrayList<>();
+    for (FileStatus file : fs.listStatus(dir, AcidUtils.hiddenFileFilter)) {
+      Path currDir = file.getPath();
+      Utilities.FILE_OP_LOGGER.trace("Checking {} for being an input", currDir);
+      if (!file.isDirectory()) {
+        hasOriginalFiles = true;
+      } else if (AcidUtils.extractWriteId(currDir) == null) {
+        if (allowOriginals) {
+          originalDirectories.add(currDir); // Add as is; it would become a recursive split.
+        } else {
+          Utilities.FILE_OP_LOGGER.debug("Ignoring unknown (original?) directory {}", currDir);
         }
-        if (!file.isDirectory()) {
-          Utilities.FILE_OP_LOGGER.warn("Ignoring a file not in MM directory " + path);
-        } else if (AcidUtils.extractWriteId(path) == null) {
-          subdirs.add(path);
-        } else if (!hadAcidState) {
-          AcidUtils.Directory dirInfo
-                  = AcidUtils.getAcidState(currDir, conf, validWriteIdList, Ref.from(false), true, null);
-          hadAcidState = true;
+      } else {
+        hasAcidDirs = true;
+      }
+    }
+    if (hasAcidDirs) {
+      AcidUtils.Directory dirInfo = AcidUtils.getAcidState(
+          dir, conf, validWriteIdList, Ref.from(false), true, null);
 
-          // Find the base, created for IOW.
-          Path base = dirInfo.getBaseDirectory();
-          if (base != null) {
-            finalPaths.add(base);
-          }
+      // Find the base, created for IOW.
+      Path base = dirInfo.getBaseDirectory();
+      if (base != null) {
+        Utilities.FILE_OP_LOGGER.debug("Adding input {}", base);
+        finalPaths.add(base);
+        // Base means originals no longer matter.
+        originalDirectories.clear();
+        hasOriginalFiles = false;
+      }
 
-          // Find the parsed delta files.
-          for (AcidUtils.ParsedDelta delta : dirInfo.getCurrentDirectories()) {
-            Utilities.FILE_OP_LOGGER.debug("Adding input " + delta.getPath());
-            finalPaths.add(delta.getPath());
-          }
-        }
+      // Find the parsed delta files.
+      for (AcidUtils.ParsedDelta delta : dirInfo.getCurrentDirectories()) {
+        Utilities.FILE_OP_LOGGER.debug("Adding input {}", delta.getPath());
+        finalPaths.add(delta.getPath());
+      }
+    }
+    if (!originalDirectories.isEmpty()) {
+      Utilities.FILE_OP_LOGGER.debug("Adding original directories {}", originalDirectories);
+      finalPaths.addAll(originalDirectories);
+    }
+    if (hasOriginalFiles) {
+      if (allowOriginals) {
+        Utilities.FILE_OP_LOGGER.debug("Directory has original files {}", dir);
+        pathsWithFileOriginals.add(dir);
+      } else {
+        Utilities.FILE_OP_LOGGER.debug("Ignoring unknown (original?) files in {}", dir);
       }
     }
   }
+ 
 
   Path[] getInputPaths(JobConf job) throws IOException {
     Path[] dirs;
@@ -731,7 +782,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer);
     }
 
-    if (dirs.length != 0) {
+    if (dirs.length != 0) { // TODO: should this be currentDirs?
       if (LOG.isInfoEnabled()) {
         LOG.info("Generating splits for dirs: {}", dirs);
       }
