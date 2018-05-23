@@ -1,4 +1,0 @@
-ECHO listOfPolicies output is:
-No EC Policies present
-ECHO original policy on /
-EC policy is 'REPLICATED'

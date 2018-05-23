@@ -241,11 +241,6 @@ public class SessionState {
    */
   private Map<URI, HadoopShims.HdfsEncryptionShim> hdfsEncryptionShims = Maps.newHashMap();
 
-  /**
-   * Cache for Erasure Coding shims.
-   */
-  private Map<URI, HadoopShims.HdfsErasureCodingShim> erasureCodingShims;
-
   private final String userName;
 
   /**
