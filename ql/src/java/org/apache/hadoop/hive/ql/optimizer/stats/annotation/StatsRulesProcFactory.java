@@ -100,8 +100,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -753,14 +751,8 @@ public class StatsRulesProcFactory {
             }
           } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME) ||
                   colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
-            int value;
-            if (colTypeLowerCase == serdeConstants.DATE_TYPE_NAME) {
-              DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(boundValue));
-              value = writableVal.getDays();
-            } else {
-              value = new Integer(boundValue);
-            }
             // Date is an integer internally
+            int value = new Integer(boundValue);
             int maxValue = cs.getRange().maxValue.intValue();
             int minValue = cs.getRange().minValue.intValue();
             if (upperBound) {
