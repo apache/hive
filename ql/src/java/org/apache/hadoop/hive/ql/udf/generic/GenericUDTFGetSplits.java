@@ -241,6 +241,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     conf.setBoolean(TezSplitGrouper.TEZ_GROUPING_NODE_LOCAL_ONLY, true);
     // Tez/LLAP requires RPC query plan
     HiveConf.setBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN, true);
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED, false);
 
     try {
       jc = DagUtils.getInstance().createConfiguration(conf);
@@ -270,14 +271,20 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       }
       List<Task<?>> roots = plan.getRootTasks();
       Schema schema = convertSchema(plan.getResultSchema());
-
+      boolean fetchTask = plan.getFetchTask() != null;
+      TezWork tezWork;
       if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
-        throw new HiveException("Was expecting a single TezTask.");
+        // fetch task query
+        if (fetchTask) {
+          tezWork = null;
+        } else {
+          throw new HiveException("Was expecting a single TezTask or FetchTask.");
+        }
+      } else {
+        tezWork = ((TezTask) roots.get(0)).getWork();
       }
 
-      TezWork tezWork = ((TezTask)roots.get(0)).getWork();
-
-      if (tezWork.getAllWork().size() != 1) {
+      if (tezWork == null || tezWork.getAllWork().size() != 1) {
 
         String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
 
