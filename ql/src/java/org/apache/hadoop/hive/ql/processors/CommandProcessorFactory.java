@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.processors;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
@@ -72,35 +73,41 @@ public final class CommandProcessorFactory {
       return null;
     }
     switch (hiveCommand) {
-      case SET:
-        return new SetProcessor();
-      case RESET:
-        return new ResetProcessor();
-      case DFS:
-        SessionState ss = SessionState.get();
-        return new DfsProcessor(ss.getConf());
-      case ADD:
-        return new AddResourceProcessor();
-      case LIST:
-        return new ListResourceProcessor();
-      case LLAP_CLUSTER:
-        return new LlapClusterResourceProcessor();
-      case LLAP_CACHE:
-        return new LlapCacheResourceProcessor();
-      case DELETE:
-        return new DeleteResourceProcessor();
-      case COMPILE:
-        return new CompileProcessor();
-      case RELOAD:
-        return new ReloadProcessor();
-      case CRYPTO:
-        try {
-          return new CryptoProcessor(SessionState.get().getHdfsEncryptionShim(), conf);
-        } catch (HiveException e) {
-          throw new SQLException("Fail to start the command processor due to the exception: ", e);
-        }
-      default:
-        throw new AssertionError("Unknown HiveCommand " + hiveCommand);
+    case SET:
+      return new SetProcessor();
+    case RESET:
+      return new ResetProcessor();
+    case DFS:
+      SessionState ss = SessionState.get();
+      return new DfsProcessor(ss.getConf());
+    case ADD:
+      return new AddResourceProcessor();
+    case LIST:
+      return new ListResourceProcessor();
+    case LLAP_CLUSTER:
+      return new LlapClusterResourceProcessor();
+    case LLAP_CACHE:
+      return new LlapCacheResourceProcessor();
+    case DELETE:
+      return new DeleteResourceProcessor();
+    case COMPILE:
+      return new CompileProcessor();
+    case RELOAD:
+      return new ReloadProcessor();
+    case CRYPTO:
+      try {
+        return new CryptoProcessor(SessionState.get().getHdfsEncryptionShim(), conf);
+      } catch (HiveException e) {
+        throw new SQLException("Fail to start the command processor due to the exception: ", e);
+      }
+    case ERASURE:
+      try {
+        return new ErasureProcessor(conf);
+      } catch (IOException e) {
+        throw new SQLException("Fail to start the erasure command processor due to the exception: ", e);
+      }
+    default:
+      throw new AssertionError("Unknown HiveCommand " + hiveCommand);
     }
   }
 
