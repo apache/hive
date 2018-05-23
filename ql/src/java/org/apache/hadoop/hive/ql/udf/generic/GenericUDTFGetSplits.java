@@ -128,6 +128,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   protected transient StringObjectInspector stringOI;
   protected transient IntObjectInspector intOI;
   protected transient JobConf jc;
+  private boolean orderByQuery;
   private ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
   private DataOutput dos = new DataOutputStream(bos);
 
@@ -202,8 +203,17 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     TezWork tezWork = fragment.work;
     Schema schema = fragment.schema;
 
+    if (orderByQuery) {
+      jc.setBoolean(TezSplitGrouper.TEZ_GROUPING_SPLIT_BY_LENGTH, false);
+      jc.setBoolean(TezSplitGrouper.TEZ_GROUPING_SPLIT_BY_COUNT, true);
+      jc.setInt(TezSplitGrouper.TEZ_GROUPING_SPLIT_COUNT, 1);
+    }
     try {
-      for (InputSplit s : getSplits(jc, num, tezWork, schema, applicationId)) {
+      InputSplit[] splits = getSplits(jc, num, tezWork, schema, applicationId);
+      if (orderByQuery && splits.length > 1) {
+        throw new HiveException("Got more than one split (Got: " + splits.length + ") for order by query: " + query);
+      }
+      for (InputSplit s : splits) {
         Object[] os = new Object[1];
         bos.reset();
         s.write(dos);
@@ -255,6 +265,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       }
 
       QueryPlan plan = driver.getPlan();
+      if (plan.getQueryProperties().hasOuterOrderBy()) {
+        orderByQuery = true;
+      }
       List<Task<?>> roots = plan.getRootTasks();
       Schema schema = convertSchema(plan.getResultSchema());
 
