@@ -766,7 +766,7 @@ public class TestReplicationScenariosAcrossInstances {
 
   private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
     assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
-    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equalsIgnoreCase(dumpDir));
+    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(dumpDir));
   }
 
   @Test
@@ -796,11 +796,11 @@ public class TestReplicationScenariosAcrossInstances {
     verifyIfCkptSet(t1.getParameters(), tuple.dumpLocation);
     Table t2 = replica.getTable(replicatedDbName, "t2");
     verifyIfCkptSet(t2.getParameters(), tuple.dumpLocation);
-    Partition india = replica.getPartition(replicatedDbName, "t2", new ArrayList<>(Arrays.asList("india")));
+    Partition india = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("india"));
     verifyIfCkptSet(india.getParameters(), tuple.dumpLocation);
-    Partition us = replica.getPartition(replicatedDbName, "t2", new ArrayList<>(Arrays.asList("us")));
+    Partition us = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("us"));
     verifyIfCkptSet(us.getParameters(), tuple.dumpLocation);
-    Partition uk = replica.getPartition(replicatedDbName, "t2", new ArrayList<>(Arrays.asList("uk")));
+    Partition uk = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("uk"));
     verifyIfCkptSet(uk.getParameters(), tuple.dumpLocation);
   }
 }
