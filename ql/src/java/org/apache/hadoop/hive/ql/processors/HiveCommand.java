@@ -30,7 +30,6 @@ public enum HiveCommand {
   RESET(),
   DFS(),
   CRYPTO(true),
-  ERASURE(true),
   ADD(),
   LIST(),
   LLAP_CLUSTER(),
