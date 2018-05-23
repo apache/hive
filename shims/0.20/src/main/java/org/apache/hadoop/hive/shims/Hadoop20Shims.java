@@ -65,6 +65,8 @@ import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
+import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
+import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.io.LongWritable;
@@ -113,7 +115,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     boolean storage = false;
     try {
       Class.forName("org.apache.hadoop.hdfs.protocol.BlockStoragePolicy",
-            false, ShimLoader.class.getClassLoader());
+          false, ShimLoader.class.getClassLoader());
       storage = true;
     } catch (ClassNotFoundException ce) {
     }
@@ -125,7 +127,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     return new CombineFileInputFormatShim() {
       @Override
       public RecordReader getRecordReader(InputSplit split,
-          JobConf job, Reporter reporter) throws IOException {
+                                          JobConf job, Reporter reporter) throws IOException {
         throw new IOException("CombineFileInputFormat.getRecordReader not needed.");
       }
 
@@ -146,10 +148,10 @@ public class Hadoop20Shims extends HadoopShimsSecure {
 
   @Override
   public String getTaskAttemptLogUrl(JobConf conf,
-    String taskTrackerHttpAddress, String taskAttemptId)
-    throws MalformedURLException {
+                                     String taskTrackerHttpAddress, String taskAttemptId)
+      throws MalformedURLException {
     if (conf.get("mapreduce.framework.name") != null
-      && conf.get("mapreduce.framework.name").equals("yarn")) {
+            && conf.get("mapreduce.framework.name").equals("yarn")) {
       // if the cluster is running in MR2 mode, return null
       LOG.warn("Can't fetch tasklog: TaskLogServlet is not supported in MR2 mode.");
       return null;
@@ -163,13 +165,13 @@ public class Hadoop20Shims extends HadoopShimsSecure {
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
     switch (clusterStatus.getJobTrackerStatus()) {
-    case INITIALIZING:
-      return JobTrackerState.INITIALIZING;
-    case RUNNING:
-      return JobTrackerState.RUNNING;
-    default:
-      String errorMsg = "Unrecognized JobTracker state: " + clusterStatus.getJobTrackerStatus();
-      throw new Exception(errorMsg);
+      case INITIALIZING:
+        return JobTrackerState.INITIALIZING;
+      case RUNNING:
+        return JobTrackerState.RUNNING;
+      default:
+        String errorMsg = "Unrecognized JobTracker state: " + clusterStatus.getJobTrackerStatus();
+        throw new Exception(errorMsg);
     }
   }
 
@@ -191,7 +193,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
 
   @Override
   public TaskAttemptID newTaskAttemptID(JobID jobId, boolean isMap, int taskId, int id) {
-    return new TaskAttemptID(jobId.getJtIdentifier(), jobId.getId(), isMap ?  TaskType.MAP : TaskType.REDUCE, taskId, id);
+    return new TaskAttemptID(jobId.getJtIdentifier(), jobId.getId(), isMap ? TaskType.MAP : TaskType.REDUCE, taskId, id);
   }
 
   @Override
@@ -215,8 +217,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
       // LocalClientProtocolProvider expects both parameters to be 'local'.
       conf.set("mapreduce.framework.name", val);
       conf.set("mapreduce.jobtracker.address", val);
-    }
-    else {
+    } else {
       conf.set("mapreduce.framework.name", "yarn");
       conf.set("yarn.resourcemanager.address", val);
     }
@@ -238,7 +239,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
+  public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile) {
     TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
   }
 
@@ -262,9 +263,9 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     }
   }
 
-  private boolean isFairScheduler (Configuration conf) {
+  private boolean isFairScheduler(Configuration conf) {
     return "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler".
-        equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
+                                                                                           equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
   }
 
   /**
@@ -326,7 +327,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     @Override
     public void setupConfiguration(Configuration conf) {
       JobConf jConf = mr.createJobConf();
-      for (Map.Entry<String, String> pair: jConf) {
+      for (Map.Entry<String, String> pair : jConf) {
         conf.set(pair.getKey(), pair.getValue());
       }
       conf.setInt(MRJobConfig.MAP_MEMORY_MB, 512);
@@ -385,7 +386,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
    */
   @Override
   public MiniMrShim getMiniTezCluster(Configuration conf, int numberOfTaskTrackers,
-      String nameNode, boolean usingLlap) throws IOException {
+                                      String nameNode, boolean usingLlap) throws IOException {
     return new MiniTezShim(conf, numberOfTaskTrackers, nameNode, usingLlap);
   }
 
@@ -440,7 +441,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     @Override
     public void setupConfiguration(Configuration conf) {
       Configuration config = mr.getConfig();
-      for (Map.Entry<String, String> pair: config) {
+      for (Map.Entry<String, String> pair : config) {
         conf.set(pair.getKey(), pair.getValue());
       }
       // Overrides values from the hive/tez-site.
@@ -473,7 +474,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
    */
   @Override
   public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
-    String nameNode, int numDir) throws IOException {
+                                        String nameNode, int numDir) throws IOException {
     return new MiniSparkShim(conf, numberOfTaskTrackers, nameNode, numDir);
   }
 
@@ -486,7 +487,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     private final Configuration conf;
 
     public MiniSparkShim(Configuration conf, int numberOfTaskTrackers,
-      String nameNode, int numDir) throws IOException {
+                         String nameNode, int numDir) throws IOException {
       mr = new MiniSparkOnYARNCluster20("sparkOnYarn");
       conf.set("fs.defaultFS", nameNode);
       conf.set("yarn.resourcemanager.scheduler.class", "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler");
@@ -530,42 +531,43 @@ public class Hadoop20Shims extends HadoopShimsSecure {
 
   @Override
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
-      int numDataNodes,
-      boolean format,
-      String[] racks) throws IOException{
+                                            int numDataNodes,
+                                            boolean format,
+                                            String[] racks) throws IOException {
     return getMiniDfs(conf, numDataNodes, format, racks, false);
   }
+
   // Don't move this code to the parent class. There's a binary
   // incompatibility between hadoop 1 and 2 wrt MiniDFSCluster and we
   // need to have two different shim classes even though they are
   // exactly the same.
   @Override
   public HadoopShims.MiniDFSShim getMiniDfs(Configuration conf,
-      int numDataNodes,
-      boolean format,
-      String[] racks,
-      boolean isHA) throws IOException {
+                                            int numDataNodes,
+                                            boolean format,
+                                            String[] racks,
+                                            boolean isHA) throws IOException {
     configureImpersonation(conf);
     MiniDFSCluster miniDFSCluster;
     if (isHA) {
       MiniDFSNNTopology topo = new MiniDFSNNTopology()
-        .addNameservice(new MiniDFSNNTopology.NSConf("minidfs").addNN(
-          new MiniDFSNNTopology.NNConf("nn1")).addNN(
-          new MiniDFSNNTopology.NNConf("nn2")));
+                                   .addNameservice(new MiniDFSNNTopology.NSConf("minidfs").addNN(
+                                       new MiniDFSNNTopology.NNConf("nn1")).addNN(
+                                       new MiniDFSNNTopology.NNConf("nn2")));
       miniDFSCluster = new MiniDFSCluster.Builder(conf)
-        .numDataNodes(numDataNodes).format(format)
-        .racks(racks).nnTopology(topo).build();
+                           .numDataNodes(numDataNodes).format(format)
+                           .racks(racks).nnTopology(topo).build();
       miniDFSCluster.waitActive();
       miniDFSCluster.transitionToActive(0);
     } else {
       miniDFSCluster = new MiniDFSCluster.Builder(conf)
-        .numDataNodes(numDataNodes).format(format)
-        .racks(racks).build();
+                           .numDataNodes(numDataNodes).format(format)
+                           .racks(racks).build();
     }
 
     // Need to set the client's KeyProvider to the NN's for JKS,
     // else the updates do not get flushed properly
-    KeyProviderCryptoExtension keyProvider =  miniDFSCluster.getNameNode(0).getNamesystem().getProvider();
+    KeyProviderCryptoExtension keyProvider = miniDFSCluster.getNameNode(0).getNamesystem().getProvider();
     if (keyProvider != null) {
       try {
         setKeyProvider(miniDFSCluster.getFileSystem(0).getClient(), keyProvider);
@@ -597,7 +599,6 @@ public class Hadoop20Shims extends HadoopShimsSecure {
 
   /**
    * MiniDFSShim.
-   *
    */
   public class MiniDFSShim implements HadoopShims.MiniDFSShim {
     private final MiniDFSCluster cluster;
@@ -616,14 +617,17 @@ public class Hadoop20Shims extends HadoopShimsSecure {
       cluster.shutdown();
     }
   }
+
   private volatile HCatHadoopShims hcatShimInstance;
+
   @Override
   public HCatHadoopShims getHCatShim() {
-    if(hcatShimInstance == null) {
+    if (hcatShimInstance == null) {
       hcatShimInstance = new HCatHadoopShims23();
     }
     return hcatShimInstance;
   }
+
   private final class HCatHadoopShims23 implements HCatHadoopShims {
     @Override
     public TaskID createTaskID() {
@@ -639,8 +643,8 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     public org.apache.hadoop.mapreduce.TaskAttemptContext createTaskAttemptContext(Configuration conf,
                                                                                    org.apache.hadoop.mapreduce.TaskAttemptID taskId) {
       return new org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl(
-              conf instanceof JobConf? new JobConf(conf) : conf,
-              taskId);
+          conf instanceof JobConf ? new JobConf(conf) : conf,
+          taskId);
     }
 
     @Override
@@ -649,11 +653,11 @@ public class Hadoop20Shims extends HadoopShimsSecure {
       org.apache.hadoop.mapred.TaskAttemptContext newContext = null;
       try {
         java.lang.reflect.Constructor<org.apache.hadoop.mapred.TaskAttemptContextImpl> construct = org.apache.hadoop.mapred.TaskAttemptContextImpl.class.getDeclaredConstructor(
-                org.apache.hadoop.mapred.JobConf.class, org.apache.hadoop.mapred.TaskAttemptID.class,
-                Reporter.class);
+            org.apache.hadoop.mapred.JobConf.class, org.apache.hadoop.mapred.TaskAttemptID.class,
+            Reporter.class);
         construct.setAccessible(true);
         newContext = construct.newInstance(
-                new JobConf(conf), taskId, progressable);
+            new JobConf(conf), taskId, progressable);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -663,15 +667,15 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     @Override
     public JobContext createJobContext(Configuration conf,
                                        JobID jobId) {
-      return new JobContextImpl(conf instanceof JobConf? new JobConf(conf) : conf,
-              jobId);
+      return new JobContextImpl(conf instanceof JobConf ? new JobConf(conf) : conf,
+          jobId);
     }
 
     @Override
     public org.apache.hadoop.mapred.JobContext createJobContext(org.apache.hadoop.mapred.JobConf conf,
                                                                 org.apache.hadoop.mapreduce.JobID jobId, Progressable progressable) {
       return new org.apache.hadoop.mapred.JobContextImpl(
-              new JobConf(conf), jobId, progressable);
+          new JobConf(conf), jobId, progressable);
     }
 
     @Override
@@ -716,6 +720,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
       return "hdfs".equals(fs.resolvePath(path).toUri().getScheme());
     }
   }
+
   @Override
   public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
     return new WebHCatJTShim20(conf, ugi);//this has state, so can't be cached
@@ -758,7 +763,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     while (current != null) {
       org.apache.hadoop.hdfs.protocol.HdfsFileStatus[] hfss = current.getPartialListing();
       for (int i = 0; i < hfss.length; ++i) {
-        HdfsLocatedFileStatus next = (HdfsLocatedFileStatus)(hfss[i]);
+        HdfsLocatedFileStatus next = (HdfsLocatedFileStatus) (hfss[i]);
         if (filter != null) {
           Path filterPath = next.getFullPath(p).makeQualified(fsUri, null);
           if (!filter.accept(filterPath)) continue;
@@ -775,7 +780,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     if (!(fs instanceof DistributedFileSystem)) {
       throw new UnsupportedOperationException("Only supported for DFS; got " + fs.getClass());
     }
-    DistributedFileSystem dfs = (DistributedFileSystem)fs;
+    DistributedFileSystem dfs = (DistributedFileSystem) fs;
     return dfs;
   }
 
@@ -809,13 +814,14 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     public ProxyFileSystem23(FileSystem fs) {
       super(fs);
     }
+
     public ProxyFileSystem23(FileSystem fs, URI uri) {
       super(fs, uri);
     }
 
     @Override
     public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f)
-      throws FileNotFoundException, IOException {
+        throws FileNotFoundException, IOException {
       return new RemoteIterator<LocatedFileStatus>() {
         private final RemoteIterator<LocatedFileStatus> stats =
             ProxyFileSystem23.super.listLocatedStatus(
@@ -843,12 +849,12 @@ public class Hadoop20Shims extends HadoopShimsSecure {
      */
     @Override
     public void access(Path path, FsAction action) throws AccessControlException,
-        FileNotFoundException, IOException {
+                                                              FileNotFoundException, IOException {
       Path underlyingFsPath = swizzleParamPath(path);
       FileStatus underlyingFsStatus = fs.getFileStatus(underlyingFsPath);
       try {
         if (accessMethod != null) {
-            accessMethod.invoke(fs, underlyingFsPath, action);
+          accessMethod.invoke(fs, underlyingFsPath, action);
         } else {
           // If the FS has no access() method, we can try DefaultFileAccess ..
           DefaultFileAccess.checkFileAccess(fs, underlyingFsStatus, action);
@@ -942,7 +948,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
       // fs.permission.AccessControlException removed by HADOOP-11356, but Hive users on older
       // Hadoop versions may still see this exception .. have to reference by name.
       if (curErr instanceof org.apache.hadoop.security.AccessControlException
-          || curErr.getClass().getName().equals("org.apache.hadoop.fs.permission.AccessControlException")) {
+              || curErr.getClass().getName().equals("org.apache.hadoop.fs.permission.AccessControlException")) {
         Exception newErr = new AccessControlException(curErr.getMessage());
         newErr.initCause(err);
         return newErr;
@@ -1054,20 +1060,20 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     public void setStoragePolicy(Path path, StoragePolicyValue policy)
         throws IOException {
       switch (policy) {
-      case MEMORY: {
-        dfs.setStoragePolicy(path, HdfsConstants.MEMORY_STORAGE_POLICY_NAME);
-        break;
-      }
-      case SSD: {
-        dfs.setStoragePolicy(path, HdfsConstants.ALLSSD_STORAGE_POLICY_NAME);
-        break;
-      }
-      case DEFAULT: {
-        /* do nothing */
-        break;
-      }
-      default:
-        throw new IllegalArgumentException("Unknown storage policy " + policy);
+        case MEMORY: {
+          dfs.setStoragePolicy(path, HdfsConstants.MEMORY_STORAGE_POLICY_NAME);
+          break;
+        }
+        case SSD: {
+          dfs.setStoragePolicy(path, HdfsConstants.ALLSSD_STORAGE_POLICY_NAME);
+          break;
+        }
+        case DEFAULT: {
+          /* do nothing */
+          break;
+        }
+        default:
+          throw new IllegalArgumentException("Unknown storage policy " + policy);
       }
     }
   }
@@ -1092,14 +1098,14 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     // -pbx is default preserve options if user doesn't pass any.
     List<String> params = new ArrayList<String>();
     boolean needToAddPreserveOption = true;
-    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
+    for (Map.Entry<String, String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()) {
       String distCpOption = entry.getKey();
       String distCpVal = entry.getValue();
       if (distCpOption.startsWith("p")) {
         needToAddPreserveOption = false;
       }
       params.add("-" + distCpOption);
-      if ((distCpVal != null) && (!distCpVal.isEmpty())){
+      if ((distCpVal != null) && (!distCpVal.isEmpty())) {
         params.add(distCpVal);
       }
     }
@@ -1142,7 +1148,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     options.preserve(FileAttribute.BLOCKSIZE);
     options.setDeleteMissing(true);
     options.preserve(FileAttribute.XATTR);
- 
+
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
 
@@ -1204,7 +1210,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     private final Configuration conf;
 
     public HdfsEncryptionShim(URI uri, Configuration conf) throws IOException {
-      DistributedFileSystem dfs = (DistributedFileSystem)FileSystem.get(uri, conf);
+      DistributedFileSystem dfs = (DistributedFileSystem) FileSystem.get(uri, conf);
 
       this.conf = conf;
       this.keyProvider = dfs.getClient().getKeyProvider();
@@ -1219,7 +1225,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
       } else {
         fullPath = path.getFileSystem(conf).makeQualified(path);
       }
-      if(!"hdfs".equalsIgnoreCase(path.toUri().getScheme())) {
+      if (!"hdfs".equalsIgnoreCase(path.toUri().getScheme())) {
         return false;
       }
 
@@ -1233,13 +1239,13 @@ public class Hadoop20Shims extends HadoopShimsSecure {
         return getEncryptionZoneForPath(path.getParent());
       } else {
         return null;
-       }
+      }
     }
 
     @Override
     public boolean arePathsOnSameEncryptionZone(Path path1, Path path2) throws IOException {
       return equivalentEncryptionZones(getEncryptionZoneForPath(path1),
-                                       getEncryptionZoneForPath(path2));
+          getEncryptionZoneForPath(path2));
     }
 
     private boolean equivalentEncryptionZones(EncryptionZone zone1, EncryptionZone zone2) {
@@ -1257,12 +1263,12 @@ public class Hadoop20Shims extends HadoopShimsSecure {
                                                 HadoopShims.HdfsEncryptionShim encryptionShim2) throws IOException {
       if (!(encryptionShim2 instanceof Hadoop20Shims.HdfsEncryptionShim)) {
         LOG.warn("EncryptionShim for path2 (" + path2 + ") is of unexpected type: " + encryptionShim2.getClass()
-            + ". Assuming path2 is on the same EncryptionZone as path1(" + path1 + ").");
+                     + ". Assuming path2 is on the same EncryptionZone as path1(" + path1 + ").");
         return true;
       }
 
       return equivalentEncryptionZones(hdfsAdmin.getEncryptionZoneForPath(path1),
-          ((HdfsEncryptionShim)encryptionShim2).hdfsAdmin.getEncryptionZoneForPath(path2));
+          ((HdfsEncryptionShim) encryptionShim2).hdfsAdmin.getEncryptionZoneForPath(path2));
     }
 
     /**
@@ -1298,7 +1304,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
 
     @Override
     public void createKey(String keyName, int bitLength)
-      throws IOException, NoSuchAlgorithmException {
+        throws IOException, NoSuchAlgorithmException {
 
       checkKeyProvider();
 
@@ -1392,6 +1398,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     }
     return result;
   }
+
   @Override
   public void addDelegationTokens(FileSystem fs, Credentials cred, String uname) throws IOException {
     // Use method addDelegationTokens instead of getDelegationToken to get all the tokens including KMS.
@@ -1407,6 +1414,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
   private final static java.lang.reflect.Method getSubjectMethod;
   private final static java.lang.reflect.Constructor<UserGroupInformation> ugiCtor;
   private final static String ugiCloneError;
+
   static {
     Class<UserGroupInformation> clazz = UserGroupInformation.class;
     java.lang.reflect.Method method = null;
@@ -1437,7 +1445,7 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     }
     try {
       Subject origSubject = (Subject) getSubjectMethod.invoke(baseUgi);
-      
+
       Subject subject = new Subject(false, origSubject.getPrincipals(),
           cloneCredentials(origSubject.getPublicCredentials()),
           cloneCredentials(origSubject.getPrivateCredentials()));
@@ -1451,9 +1459,22 @@ public class Hadoop20Shims extends HadoopShimsSecure {
     Set<Object> set = new HashSet<>();
     // Make sure Hadoop credentials objects do not reuse the maps.
     for (Object o : old) {
-      set.add(o instanceof Credentials ? new Credentials((Credentials)o) : o);
+      set.add(o instanceof Credentials ? new Credentials((Credentials) o) : o);
     }
     return set;
   }
-  
+
+  /**
+   * Returns a new instance of the HdfsErasureCoding shim.
+   *
+   * @param fs   a FileSystem object
+   * @param conf a Configuration object
+   * @return a new instance of the HdfsErasureCoding shim.
+   * @throws IOException If an error occurred while creating the instance.
+   */
+  @Override
+  public HadoopShims.HdfsErasureCodingShim createHdfsErasureCodingShim(FileSystem fs,
+      Configuration conf) throws IOException {
+    throw new UnsupportedOperationException("Hadoop20Shims does not support Erausre Encoding");
+  }
 }

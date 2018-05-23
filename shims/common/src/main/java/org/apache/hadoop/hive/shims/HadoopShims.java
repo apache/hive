@@ -24,6 +24,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -640,6 +641,112 @@ public interface HadoopShims {
    * @throws IOException If an error occurred while creating the instance.
    */
   public HdfsEncryptionShim createHdfsEncryptionShim(FileSystem fs, Configuration conf) throws IOException;
+
+  /**
+   * Information about an Erasure Coding Policy.
+   */
+  interface HdfsFileErasureCodingPolicy {
+    String getName();
+    String getStatus();
+  }
+
+  /**
+   * This interface encapsulates methods used to get Erasure Coding information from
+   * HDFS paths in order to to provide commands similar to those provided by the hdfs ec command.
+   * https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HDFSErasureCoding.html
+   */
+  interface HdfsErasureCodingShim {
+    /**
+     * Lists all (enabled, disabled and removed) erasure coding policies registered in HDFS.
+     * @return a list of erasure coding policies
+     */
+    List<HdfsFileErasureCodingPolicy> getAllErasureCodingPolicies() throws IOException;
+
+    /**
+     * Enable an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    void enableErasureCodingPolicy(String ecPolicyName)  throws IOException;
+
+    /**
+     * Sets an erasure coding policy on a directory at the specified path.
+     * @param path a directory in HDFS
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    void setErasureCodingPolicy(Path path, String ecPolicyName) throws IOException;
+
+    /**
+     * Get details of the erasure coding policy of a file or directory at the specified path.
+     * @param path an hdfs file or directory
+     * @return an erasure coding policy
+     */
+    HdfsFileErasureCodingPolicy getErasureCodingPolicy(Path path) throws IOException;
+
+    /**
+     * Unset an erasure coding policy set by a previous call to setPolicy on a directory.
+     * @param path a directory in HDFS
+     */
+    void unsetErasureCodingPolicy(Path path) throws IOException;
+
+    /**
+     * Remove an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    void removeErasureCodingPolicy(String ecPolicyName) throws IOException;
+
+    /**
+     * Disable an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    void disableErasureCodingPolicy(String ecPolicyName) throws IOException;
+  }
+
+  /**
+   * This is a dummy class used when the hadoop version does not support hdfs Erasure Coding.
+   */
+  class NoopHdfsErasureCodingShim implements HadoopShims.HdfsErasureCodingShim {
+
+    @Override
+    public List<HadoopShims.HdfsFileErasureCodingPolicy> getAllErasureCodingPolicies() {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public void enableErasureCodingPolicy(String ecPolicyName) throws IOException {
+    }
+
+    @Override
+    public void setErasureCodingPolicy(Path path, String ecPolicyName) throws IOException {
+    }
+
+    @Override
+    public HdfsFileErasureCodingPolicy getErasureCodingPolicy(Path path) throws IOException {
+      return null;
+    }
+
+    @Override
+    public void unsetErasureCodingPolicy(Path path) throws IOException {
+    }
+
+    @Override
+    public void removeErasureCodingPolicy(String ecPolicyName) throws IOException {
+    }
+
+    @Override
+    public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
+    }
+
+  }
+
+  /**
+   * Returns a new instance of the HdfsErasureCoding shim.
+   *
+   * @param fs a FileSystem object
+   * @param conf a Configuration object
+   * @return a new instance of the HdfsErasureCoding shim.
+   * @throws IOException If an error occurred while creating the instance.
+   */
+  HadoopShims.HdfsErasureCodingShim createHdfsErasureCodingShim(FileSystem fs, Configuration conf) throws IOException;
 
   public Path getPathWithoutSchemeAndAuthority(Path path);
 

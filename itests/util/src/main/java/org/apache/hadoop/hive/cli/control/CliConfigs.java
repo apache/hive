@@ -331,6 +331,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "minimr.query.files");
         excludesFrom(testConfigProps, "minitez.query.files");
         excludesFrom(testConfigProps, "encrypted.query.files");
+        excludesFrom(testConfigProps, "erasurecoding.only.query.files");
 
         excludeQuery("cbo_query44.q"); // TODO: Enable when we move to Calcite 1.18
         excludeQuery("cbo_query45.q"); // TODO: Enable when we move to Calcite 1.18
@@ -698,4 +699,52 @@ public class CliConfigs {
       }
     }
   }
+
+  /**
+   * Configuration for TestErasureCodingHDFSCliDriver.
+   */
+  public static class ErasureCodingHDFSCliConfig extends AbstractCliConfig {
+    public ErasureCodingHDFSCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "erasurecoding.shared.query.files");
+        includesFrom(testConfigProps, "erasurecoding.only.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/erasurecoding");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive");
+
+        setInitScript("q_test_init_src.sql");
+        setCleanupScript("q_test_cleanup_src.sql");
+
+        setClusterType(MiniClusterType.mr);
+        setFsType(QTestUtil.FsType.erasure_coded_hdfs);
+        setHiveConfDir(getClusterType());
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+
+    /**
+     * Set the appropriate conf dir based on the cluster type.
+     */
+    private void setHiveConfDir(MiniClusterType clusterType) {
+      switch (clusterType) {
+      case tez:
+        setHiveConfDir("data/conf/tez");
+        break;
+      case spark:
+        setHiveConfDir("data/conf/spark/standalone");
+        break;
+      case miniSparkOnYarn:
+        setHiveConfDir("data/conf/spark/yarn-cluster");
+        break;
+      default:
+        setHiveConfDir("data/conf");
+        break;
+      }
+    }
+  }
+
 }

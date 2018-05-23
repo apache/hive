@@ -119,6 +119,7 @@ import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
 import org.apache.hadoop.hive.ql.dataset.DatasetParser;
 import org.apache.hadoop.hive.ql.dataset.Dataset;
 import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsErasureCodingShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.StreamPrinter;
 import org.apache.hive.druid.MiniDruidCluster;
@@ -153,13 +154,18 @@ public class QTestUtil {
   static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
   private final static String defaultInitScript = "q_test_init.sql";
   private final static String defaultCleanupScript = "q_test_cleanup.sql";
-  private final String[] testOnlyCommands = new String[]{"crypto"};
+  private final String[] testOnlyCommands = new String[]{"crypto", "erasure"};
   private static SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
   public static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
 
   public static final String TEST_SRC_TABLES_PROPERTY = "test.src.tables";
+
+  /**
+   * The Erasure Coding Policy to use in TestErasureCodingHDFSCliDriver.
+   */
+  private static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
 
   private String testWarehouse;
   @Deprecated
@@ -417,6 +423,7 @@ public class QTestUtil {
     local,
     hdfs,
     encrypted_hdfs,
+    erasure_coded_hdfs,
   }
 
   public enum MiniClusterType {
@@ -593,25 +600,47 @@ public class QTestUtil {
 
     if (fsType == FsType.local) {
       fs = FileSystem.getLocal(conf);
-    } else if (fsType == FsType.hdfs || fsType == FsType.encrypted_hdfs) {
+    } else if (fsType == FsType.hdfs || fsType == FsType.encrypted_hdfs|| fsType == FsType.erasure_coded_hdfs) {
       int numDataNodes = 4;
 
-      if (fsType == FsType.encrypted_hdfs) {
+      // Setup before getting dfs
+      switch (fsType) {
+      case encrypted_hdfs:
         // Set the security key provider so that the MiniDFS cluster is initialized
         // with encryption
         conf.set(SECURITY_KEY_PROVIDER_URI_NAME, getKeyProviderURI());
         conf.setInt("fs.trash.interval", 50);
+        break;
+      case erasure_coded_hdfs:
+        // We need more NameNodes for EC.
+        // To fully exercise hdfs code paths we need 5 NameNodes for the RS-3-2-1024k policy.
+        // With 6 NameNodes we can also run the RS-6-3-1024k policy.
+        numDataNodes = 6;
+        break;
+      default:
+        break;
+      }
 
-        dfs = shims.getMiniDfs(conf, numDataNodes, true, null);
-        fs = dfs.getFileSystem();
+      dfs = shims.getMiniDfs(conf, numDataNodes, true, null);
+      fs = dfs.getFileSystem();
 
+      // Setup after getting dfs
+      switch (fsType) {
+      case encrypted_hdfs:
         // set up the java key provider for encrypted hdfs cluster
         hes = shims.createHdfsEncryptionShim(fs, conf);
-
         LOG.info("key provider is initialized");
-      } else {
-        dfs = shims.getMiniDfs(conf, numDataNodes, true, null);
-        fs = dfs.getFileSystem();
+        break;
+      case erasure_coded_hdfs:
+        // The Erasure policy can't be set in a q_test_init script as QTestUtil runs that code in
+        // a mode that disallows test-only CommandProcessors.
+        // Set the default policy on the root of the file system here.
+        HdfsErasureCodingShim erasureCodingShim = shims.createHdfsErasureCodingShim(fs, conf);
+        erasureCodingShim.enableErasureCodingPolicy(DEFAULT_TEST_EC_POLICY);
+        erasureCodingShim.setErasureCodingPolicy(new Path("hdfs:///"), DEFAULT_TEST_EC_POLICY);
+        break;
+      default:
+        break;
       }
     } else {
       throw new IllegalArgumentException("Unknown or unhandled fsType [" + fsType + "]");
@@ -1014,7 +1043,7 @@ public class QTestUtil {
             LOG.warn("Trying to drop table " + e.getTableName() + ". But it does not exist.");
             continue;
           }
-          db.dropTable(dbName, tblName, true, true, fsType == FsType.encrypted_hdfs);
+          db.dropTable(dbName, tblName, true, true, fsNeedsPurge(fsType));
         }
       }
       if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
@@ -2240,5 +2269,16 @@ public class QTestUtil {
 
   public static void initEventNotificationPoll() throws Exception {
     NotificationEventPoll.initialize(SessionState.get().getConf());
+  }
+
+  /**
+   * Should deleted test tables have their data purged.
+   * @return true if data should be purged
+   */
+  private static boolean fsNeedsPurge(FsType type) {
+    if (type == FsType.encrypted_hdfs || type == FsType.erasure_coded_hdfs) {
+      return true;
+    }
+    return false;
   }
 }

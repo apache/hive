@@ -28,7 +28,7 @@ import org.junit.Test;
 
 public class TestCommandProcessorFactory {
 
-  private final String[] testOnlyCommands = new String[]{"crypto"};
+  private final String[] testOnlyCommands = new String[]{"crypto", "erasure"};
 
   private HiveConf conf;
 

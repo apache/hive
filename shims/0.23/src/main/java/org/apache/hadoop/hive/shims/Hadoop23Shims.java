@@ -67,6 +67,8 @@ import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.hdfs.protocol.DirectoryListing;
 import org.apache.hadoop.hdfs.protocol.EncryptionZone;
+import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
+import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.io.LongWritable;
@@ -1474,4 +1476,166 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return set;
   }
   
+  private static Boolean hdfsErasureCodingSupport;
+
+  /**
+   * @return true if the runtime version of hdfs supports erasure coding
+   */
+  private static synchronized boolean isHdfsErasureCodingSupported() {
+    if (hdfsErasureCodingSupport == null) {
+      Method m = null;
+
+      try {
+        m = HdfsAdmin.class.getMethod("getErasureCodingPolicies");
+      } catch (NoSuchMethodException e) {
+        // This version of Hadoop does not support HdfsAdmin.getErasureCodingPolicies().
+        // Hadoop 3.0.0 introduces this new method.
+      }
+      hdfsErasureCodingSupport = (m != null);
+    }
+
+    return hdfsErasureCodingSupport;
+  }
+
+  /**
+   * Returns a new instance of the HdfsErasureCoding shim.
+   *
+   * @param fs a FileSystem object
+   * @param conf a Configuration object
+   * @return a new instance of the HdfsErasureCoding shim.
+   * @throws IOException If an error occurred while creating the instance.
+   */
+  @Override
+  public HadoopShims.HdfsErasureCodingShim createHdfsErasureCodingShim(FileSystem fs,
+      Configuration conf) throws IOException {
+    if (isHdfsErasureCodingSupported()) {
+      URI uri = fs.getUri();
+      if ("hdfs".equals(uri.getScheme())) {
+        return new HdfsErasureCodingShim(uri, conf);
+      }
+    }
+    return new HadoopShims.NoopHdfsErasureCodingShim();
+  }
+
+  /**
+   * Information about an Erasure Coding Policy.
+   */
+  private static class HdfsFileErasureCodingPolicyImpl implements HdfsFileErasureCodingPolicy {
+    private final String name;
+    private final String status;
+
+    HdfsFileErasureCodingPolicyImpl(String name, String status) {
+      this.name = name;
+      this.status = status;
+    }
+
+    HdfsFileErasureCodingPolicyImpl(String name) {
+     this(name, null);
+    }
+
+    @Override
+    public String getName() {
+      return name;
+    }
+
+    @Override
+    public String getStatus() {
+      return status;
+    }
+  }
+
+  /**
+   * This class encapsulates methods used to get Erasure Coding information from
+   * HDFS paths in order to to provide commands similar to those provided by the hdfs ec command.
+   * https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HDFSErasureCoding.html
+   */
+  public static class HdfsErasureCodingShim implements HadoopShims.HdfsErasureCodingShim {
+    /**
+     * Gets information about HDFS encryption zones.
+     */
+    private HdfsAdmin hdfsAdmin = null;
+
+    private final Configuration conf;
+
+    HdfsErasureCodingShim(URI uri, Configuration conf) throws IOException {
+      this.conf = conf;
+      this.hdfsAdmin = new HdfsAdmin(uri, conf);
+    }
+
+    /**
+     * Lists all (enabled, disabled and removed) erasure coding policies registered in HDFS.
+     * @return a list of erasure coding policies
+     */
+    @Override
+    public List<HdfsFileErasureCodingPolicy> getAllErasureCodingPolicies() throws IOException {
+      ErasureCodingPolicyInfo[] erasureCodingPolicies = hdfsAdmin.getErasureCodingPolicies();
+      List<HdfsFileErasureCodingPolicy> policies = new ArrayList<>(erasureCodingPolicies.length);
+      for (ErasureCodingPolicyInfo erasureCodingPolicy : erasureCodingPolicies) {
+        policies.add(new HdfsFileErasureCodingPolicyImpl(erasureCodingPolicy.getPolicy().getName(),
+            erasureCodingPolicy.getState().toString()));
+      }
+      return policies;
+    }
+
+
+    /**
+     * Enable an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    @Override
+    public void enableErasureCodingPolicy(String ecPolicyName)  throws IOException {
+      hdfsAdmin.enableErasureCodingPolicy(ecPolicyName);
+    }
+
+    /**
+     * Sets an erasure coding policy on a directory at the specified path.
+     * @param path a directory in HDFS
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    @Override
+    public void setErasureCodingPolicy(Path path, String ecPolicyName) throws IOException {
+      hdfsAdmin.setErasureCodingPolicy(path, ecPolicyName);
+    }
+
+    /**
+     * Get details of the erasure coding policy of a file or directory at the specified path.
+     * @param path an hdfs file or directory
+     * @return an erasure coding policy
+     */
+    @Override
+    public HdfsFileErasureCodingPolicy getErasureCodingPolicy(Path path) throws IOException {
+      ErasureCodingPolicy erasureCodingPolicy = hdfsAdmin.getErasureCodingPolicy(path);
+      if (erasureCodingPolicy == null) {
+        return null;
+      }
+      return new HdfsFileErasureCodingPolicyImpl(erasureCodingPolicy.getName());
+    }
+
+    /**
+     * Unset an erasure coding policy set by a previous call to setPolicy on a directory.
+     * @param path a directory in HDFS
+     */
+    @Override
+    public void unsetErasureCodingPolicy(Path path) throws IOException {
+      hdfsAdmin.unsetErasureCodingPolicy(path);
+    }
+
+    /**
+     * Remove an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    @Override
+    public void removeErasureCodingPolicy(String ecPolicyName) throws IOException {
+      hdfsAdmin.removeErasureCodingPolicy(ecPolicyName);
+    }
+
+    /**
+     * Disable an erasure coding policy.
+     * @param ecPolicyName the name of the erasure coding policy
+     */
+    @Override
+    public void disableErasureCodingPolicy(String ecPolicyName) throws IOException {
+      hdfsAdmin.disableErasureCodingPolicy(ecPolicyName);
+    }
+  }
 }
