@@ -347,12 +347,12 @@ public class StatsRulesProcFactory {
           for (ExprNodeDesc child : genFunc.getChildren()) {
             evaluatedRowCount = evaluateChildExpr(aspCtx.getAndExprStats(), child,
                 aspCtx, neededCols, op, evaluatedRowCount);
-          }
-          newNumRows = evaluatedRowCount;
-          if (satisfyPrecondition(aspCtx.getAndExprStats())) {
-            updateStats(aspCtx.getAndExprStats(), newNumRows, true, op);
-          } else {
-            updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
+            newNumRows = evaluatedRowCount;
+            if (satisfyPrecondition(aspCtx.getAndExprStats())) {
+              updateStats(aspCtx.getAndExprStats(), newNumRows, true, op);
+            } else {
+              updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
+            }
           }
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats.
