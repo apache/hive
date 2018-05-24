@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -492,6 +493,27 @@ public class TestArrowColumnarBatchSerDe {
     };
 
     initAndSerializeAndDeserialize(schema, STRING_ROWS);
+  }
+
+  @Test
+  public void testPrimitiveEncodeString() throws SerDeException {
+    String[][] schema = {
+        {"string1", "string"},
+    };
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ARROW_ENCODE, true);
+
+    final Object[][] rows = {
+        {text("")},
+        {text("Hello")},
+        {text("Hello")},
+        {text("world!")},
+        {text("Hello")},
+        {text("world!")},
+        {text("world")},
+        {null},
+    };
+    initAndSerializeAndDeserialize(schema, rows);
   }
 
   @Test

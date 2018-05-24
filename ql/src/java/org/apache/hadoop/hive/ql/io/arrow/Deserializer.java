@@ -34,9 +34,13 @@ import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.dictionary.Dictionary;
+import org.apache.arrow.vector.dictionary.DictionaryEncoder;
+import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.holders.NullableIntervalDayHolder;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -73,13 +77,17 @@ import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStruc
 import static org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe.toStructListVector;
 
 class Deserializer {
-  private final ArrowColumnarBatchSerDe serDe;
   private final VectorExtractRow vectorExtractRow;
   private final VectorizedRowBatch vectorizedRowBatch;
+  private final StructTypeInfo rowTypeInfo;
+  private final boolean encode;
+  private DictionaryProvider dictionaryProvider;
   private Object[][] rows;
 
   Deserializer(ArrowColumnarBatchSerDe serDe) throws SerDeException {
-    this.serDe = serDe;
+    rowTypeInfo = serDe.rowTypeInfo;
+    encode = HiveConf.getBoolVar(serDe.conf, HiveConf.ConfVars.HIVE_ARROW_ENCODE);
+
     vectorExtractRow = new VectorExtractRow();
     final List<TypeInfo> fieldTypeInfoList = serDe.rowTypeInfo.getAllStructFieldTypeInfos();
     final int fieldCount = fieldTypeInfoList.size();
@@ -104,6 +112,7 @@ class Deserializer {
     final List<FieldVector> fieldVectors = vectorSchemaRoot.getFieldVectors();
     final int fieldCount = fieldVectors.size();
     final int rowCount = vectorSchemaRoot.getRowCount();
+    dictionaryProvider = arrowWrapperWritable.getDictionaryProvider();
     vectorizedRowBatch.ensureSize(rowCount);
 
     if (rows == null || rows.length < rowCount ) {
@@ -117,8 +126,8 @@ class Deserializer {
       final FieldVector fieldVector = fieldVectors.get(fieldIndex);
       final int projectedCol = vectorizedRowBatch.projectedColumns[fieldIndex];
       final ColumnVector columnVector = vectorizedRowBatch.cols[projectedCol];
-      final TypeInfo typeInfo = serDe.rowTypeInfo.getAllStructFieldTypeInfos().get(fieldIndex);
-      read(fieldVector, columnVector, typeInfo);
+      final TypeInfo typeInfo = rowTypeInfo.getAllStructFieldTypeInfos().get(fieldIndex);
+      read(fieldVector, columnVector, typeInfo, encode);
     }
     for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
       vectorExtractRow.extractRow(vectorizedRowBatch, rowIndex, rows[rowIndex]);
@@ -127,10 +136,10 @@ class Deserializer {
     return rows;
   }
 
-  private void read(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo) {
+  private void read(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo, boolean encodable) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
-        readPrimitive(arrowVector, hiveVector, typeInfo);
+        readPrimitive(arrowVector, hiveVector, typeInfo, encodable);
         break;
       case LIST:
         readList(arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo);
@@ -149,7 +158,8 @@ class Deserializer {
     }
   }
 
-  private void readPrimitive(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo) {
+  private void readPrimitive(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo,
+      boolean encodable) {
     final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
         ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
 
@@ -245,12 +255,20 @@ class Deserializer {
       case VARCHAR:
       case CHAR:
         {
+          final VarCharVector varCharVector;
+          if (encodable) {
+            final long id = arrowVector.getField().getDictionary().getId();
+            final Dictionary dictionary = dictionaryProvider.lookup(id);
+            varCharVector = (VarCharVector) DictionaryEncoder.decode(arrowVector, dictionary);
+          } else {
+            varCharVector = ((VarCharVector) arrowVector);
+          }
           for (int i = 0; i < size; i++) {
-            if (arrowVector.isNull(i)) {
+            if (varCharVector.isNull(i)) {
               VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
             } else {
               hiveVector.isNull[i] = false;
-              ((BytesColumnVector) hiveVector).setVal(i, ((VarCharVector) arrowVector).get(i));
+              ((BytesColumnVector) hiveVector).setVal(i, varCharVector.get(i));
             }
           }
         }
@@ -369,7 +387,7 @@ class Deserializer {
 
     read(arrowVector.getChildrenFromFields().get(0),
         hiveVector.child,
-        typeInfo.getListElementTypeInfo());
+        typeInfo.getListElementTypeInfo(), false);
 
     for (int i = 0; i < size; i++) {
       if (arrowVector.isNull(i)) {
@@ -389,7 +407,7 @@ class Deserializer {
     final ListColumnVector mapStructListVector = toStructListVector(hiveVector);
     final StructColumnVector mapStructVector = (StructColumnVector) mapStructListVector.child;
 
-    read(arrowVector, mapStructListVector, mapStructListTypeInfo);
+    read(arrowVector, mapStructListVector, mapStructListTypeInfo, false);
 
     hiveVector.isRepeating = mapStructListVector.isRepeating;
     hiveVector.childCount = mapStructListVector.childCount;
@@ -406,7 +424,8 @@ class Deserializer {
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
     final int fieldSize = arrowVector.getChildrenFromFields().size();
     for (int i = 0; i < fieldSize; i++) {
-      read(arrowVector.getChildrenFromFields().get(i), hiveVector.fields[i], fieldTypeInfos.get(i));
+      read(arrowVector.getChildrenFromFields().get(i), hiveVector.fields[i], fieldTypeInfos.get(i),
+          false);
     }
 
     for (int i = 0; i < size; i++) {

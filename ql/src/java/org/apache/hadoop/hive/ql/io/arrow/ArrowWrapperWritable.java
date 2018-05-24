@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io.arrow;
 
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
@@ -27,10 +28,18 @@ import java.io.IOException;
 
 public class ArrowWrapperWritable implements WritableComparable {
   private VectorSchemaRoot vectorSchemaRoot;
+  private DictionaryProvider dictionaryProvider;
 
   public ArrowWrapperWritable(VectorSchemaRoot vectorSchemaRoot) {
-    this.vectorSchemaRoot = vectorSchemaRoot;
+    this(vectorSchemaRoot, null);
   }
+
+  public ArrowWrapperWritable(VectorSchemaRoot vectorSchemaRoot,
+      DictionaryProvider dictionaryProvider) {
+    this.vectorSchemaRoot = vectorSchemaRoot;
+    this.dictionaryProvider = dictionaryProvider;
+  }
+
   public ArrowWrapperWritable() {}
 
   public VectorSchemaRoot getVectorSchemaRoot() {
@@ -39,6 +48,14 @@ public class ArrowWrapperWritable implements WritableComparable {
 
   public void setVectorSchemaRoot(VectorSchemaRoot vectorSchemaRoot) {
     this.vectorSchemaRoot = vectorSchemaRoot;
+  }
+
+  public DictionaryProvider getDictionaryProvider() {
+    return dictionaryProvider;
+  }
+
+  public void setDictionaryProvider(DictionaryProvider dictionaryProvider) {
+    this.dictionaryProvider = dictionaryProvider;
   }
 
   @Override
