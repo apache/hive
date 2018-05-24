@@ -1037,7 +1037,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
           kw.getByteLength(columnTypeSpecificIndex));
       break;
     case DECIMAL:
-      ((DecimalColumnVector) colVector).set(batchIndex,
+      ((DecimalColumnVector) colVector).vector[batchIndex].set(
           kw.getDecimal(columnTypeSpecificIndex));
       break;
     case TIMESTAMP:

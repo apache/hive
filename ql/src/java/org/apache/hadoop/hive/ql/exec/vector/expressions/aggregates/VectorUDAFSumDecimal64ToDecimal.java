@@ -516,6 +516,6 @@ public class VectorUDAFSumDecimal64ToDecimal extends VectorAggregateExpression {
     }
     outputColVector.isNull[batchIndex] = false;
 
-    outputColVector.set(batchIndex, myagg.regularDecimalSum);
+    outputColVector.vector[batchIndex].set(myagg.regularDecimalSum);
   }
 }
