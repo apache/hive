@@ -471,6 +471,6 @@ public class <ClassName> extends VectorAggregateExpression {
       return;
     }
     outputColVector.isNull[batchIndex] = false;
-    outputColVector.vector[batchIndex].set(myagg.value);
+    outputColVector.set(batchIndex, myagg.value);
   }
 }

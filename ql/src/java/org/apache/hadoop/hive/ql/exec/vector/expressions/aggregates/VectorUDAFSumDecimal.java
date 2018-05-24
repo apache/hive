@@ -460,6 +460,6 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
     }
     outputColVector.isNull[batchIndex] = false;
 
-    outputColVector.vector[batchIndex].set(myagg.sum);
+    outputColVector.set(batchIndex, myagg.sum);
   }
 }

@@ -18,45 +18,44 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
-/**
- * Cast input double to a decimal. Get target value scale from output column vector.
+/*
+ * Comment from BooleanWritable evaluate(DateWritable d)
+ *     // date value to boolean doesn't make any sense.
+ * So, we always set the output to NULL.
  */
-public class CastDoubleToDecimal extends FuncDoubleToDecimal {
-
+public class CastDateToBoolean extends NullVectorExpression {
   private static final long serialVersionUID = 1L;
 
-  public CastDoubleToDecimal() {
-    super();
+  private final int colNum;
+
+  public CastDateToBoolean(int colNum, int outputColumnNum) {
+    super(outputColumnNum);
+    this.colNum = colNum;
   }
 
-  public CastDoubleToDecimal(int inputColumn, int outputColumnNum) {
-    super(inputColumn, outputColumnNum);
+  public CastDateToBoolean() {
+    super();
+
+    // Dummy final assignments.
+    colNum = -1;
   }
 
   @Override
-  protected void func(DecimalColumnVector outV, DoubleColumnVector inV, int i) {
-    HiveDecimalWritable decWritable = outV.vector[i];
-    decWritable.setFromDouble(inV.vector[i]);
-    if (!decWritable.mutateEnforcePrecisionScale(outV.precision, outV.scale)) {
-      outV.isNull[i] = true;
-      outV.noNulls = false;
-    }
+  public String vectorExpressionParameters() {
+    return getColumnParamString(0, colNum);
   }
 
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
-    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
-    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.FLOAT)
+            VectorExpressionDescriptor.ArgumentType.getType("date"))
         .setInputExpressionTypes(
-            VectorExpressionDescriptor.InputExpressionType.COLUMN);
-    return b.build();
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }
 }
