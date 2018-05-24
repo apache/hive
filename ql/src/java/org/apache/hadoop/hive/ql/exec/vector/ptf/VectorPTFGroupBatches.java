@@ -206,7 +206,7 @@ public class VectorPTFGroupBatches {
           ((DoubleColumnVector) outputColVector).vector[0] = evaluator.getDoubleGroupResult();
           break;
         case DECIMAL:
-          ((DecimalColumnVector) outputColVector).vector[0].set(evaluator.getDecimalGroupResult());
+          ((DecimalColumnVector) outputColVector).set(0, evaluator.getDecimalGroupResult());
           break;
         default:
           throw new RuntimeException("Unexpected column vector type " + evaluator.getResultColumnVectorType());
