@@ -21,7 +21,7 @@ insert into table source_table_001_n0
   values ('2010-10-10 00:00:00', 1, 1, 'env', 1, 1);
 analyze table source_table_001_n0 compute statistics for columns;
 
-CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
+CREATE MATERIALIZED VIEW source_table_001_mv_n0 AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
@@ -39,7 +39,7 @@ group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour);
 
 DROP MATERIALIZED VIEW source_table_001_mv_n0;
 
-CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
+CREATE MATERIALIZED VIEW source_table_001_mv_n0 AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,

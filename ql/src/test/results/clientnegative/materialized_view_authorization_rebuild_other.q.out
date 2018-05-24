@@ -17,12 +17,12 @@ POSTHOOK: Output: default@amvro_table
 POSTHOOK: Lineage: amvro_table.a SCRIPT []
 POSTHOOK: Lineage: amvro_table.b SCRIPT []
 POSTHOOK: Lineage: amvro_table.c SCRIPT []
-PREHOOK: query: create materialized view amvro_mat_view as select a, c from amvro_table
+PREHOOK: query: create materialized view amvro_mat_view disable rewrite as select a, c from amvro_table
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvro_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@amvro_mat_view
-POSTHOOK: query: create materialized view amvro_mat_view as select a, c from amvro_table
+POSTHOOK: query: create materialized view amvro_mat_view disable rewrite as select a, c from amvro_table
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvro_table
 POSTHOOK: Output: database:default

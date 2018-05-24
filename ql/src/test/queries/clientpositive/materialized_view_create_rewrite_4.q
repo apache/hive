@@ -25,13 +25,13 @@ analyze table cmv_basetable_2_n2 compute statistics for columns;
 
 -- CREATE VIEW WITH REWRITE DISABLED
 EXPLAIN
-CREATE MATERIALIZED VIEW cmv_mat_view_n5 TBLPROPERTIES ('transactional'='true') AS
+CREATE MATERIALIZED VIEW cmv_mat_view_n5 DISABLE REWRITE TBLPROPERTIES ('transactional'='true') AS
   SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)
   FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
   WHERE cmv_basetable_2_n2.c > 10.0
   GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c;
 
-CREATE MATERIALIZED VIEW cmv_mat_view_n5 TBLPROPERTIES ('transactional'='true') AS
+CREATE MATERIALIZED VIEW cmv_mat_view_n5 DISABLE REWRITE TBLPROPERTIES ('transactional'='true') AS
   SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_basetable_2_n2.d)
   FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
   WHERE cmv_basetable_2_n2.c > 10.0

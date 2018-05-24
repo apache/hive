@@ -50,7 +50,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@source_table_001_n0
 POSTHOOK: Output: default@source_table_001_n0
 #### A masked pattern was here ####
-PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
+PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
@@ -61,7 +61,7 @@ PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@source_table_001_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@source_table_001_mv_n0
-POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
@@ -166,7 +166,7 @@ POSTHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@source_table_001_mv_n0
 POSTHOOK: Output: default@source_table_001_mv_n0
-PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
+PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
@@ -177,7 +177,7 @@ PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@source_table_001_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@source_table_001_mv_n0
-POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
