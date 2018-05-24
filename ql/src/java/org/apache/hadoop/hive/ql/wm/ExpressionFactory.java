@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 /**
  * Factory to create expressions
@@ -60,7 +61,8 @@ public class ExpressionFactory {
     }
 
     final String counterName = node.getChild(0).getText();
-    final String counterValueStr = node.getChild(2).getText().toLowerCase();
+    final String counterValueStr = PlanUtils.stripQuotes(
+        node.getChild(2).getText().toLowerCase());
     if (counterName.isEmpty()) {
       throw new IllegalArgumentException("Counter name cannot be empty!");
     }

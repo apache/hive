@@ -1097,7 +1097,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < ast.getChildCount(); ++i) {
-      builder.append(ast.getChild(i).getText());
+      builder.append(stripQuotes(ast.getChild(i).getText()));
       builder.append(' ');
     }
     builder.deleteCharAt(builder.length() - 1);
