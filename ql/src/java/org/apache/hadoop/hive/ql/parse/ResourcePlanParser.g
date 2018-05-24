@@ -179,12 +179,12 @@ triggerAtomExpression
     : identifier comparisionOperator triggerLiteral
     ;
 
+
 triggerLiteral
 @init { gParent.pushMsg("triggerLiteral", state); }
 @after { gParent.popMsg(state); }
     : Number
-    | TimeFullLiteral
-    | ByteLengthFullLiteral
+    | StringLiteral
     ;
 
 comparisionOperator

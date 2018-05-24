@@ -148,40 +148,46 @@ SELECT * FROM SYS.WM_RESOURCEPLANS;
 -- Create trigger commands.
 --
 
+-- Test that WM literals do not cause conflicts.
+create table wm_test(key string);
+select key as 30min from wm_test;
+select "10kb" as str from wm_test;
+drop table wm_test;
+
 CREATE RESOURCE PLAN plan_1;
 
-CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 10kb DO KILL;
+CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '10kb' DO KILL;
 SELECT * FROM SYS.WM_TRIGGERS;
 
 -- Duplicate should fail.
 CREATE TRIGGER plan_1.trigger_1 WHEN ELAPSED_TIME > 300 DO KILL;
 
 -- Invalid triggers should fail.
-CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > 30sec AND BYTES_READ > 10 DO MOVE TO slow_pool;
-CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > 30second OR BYTES_READ > 10 DO MOVE TO slow_pool;
-CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME >= 30seconds DO MOVE TO slow_pool;
-CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME < 30hour DO MOVE TO slow_pool;
-CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME <= 30min DO MOVE TO slow_pool;
-CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME = 0day DO MOVE TO slow_pool;
+CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '30sec' AND BYTES_READ > 10 DO MOVE TO slow_pool;
+CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '30second' OR BYTES_READ > 10 DO MOVE TO slow_pool;
+CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME >= '30seconds' DO MOVE TO slow_pool;
+CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME < '30hour' DO MOVE TO slow_pool;
+CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME <= '30min' DO MOVE TO slow_pool;
+CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME = '0day' DO MOVE TO slow_pool;
 
-CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > 30hour DO MOVE TO slow_pool;
+CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '30hour' DO MOVE TO slow_pool;
 SELECT * FROM SYS.WM_TRIGGERS;
 
-ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 1min DO KILL;
+ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL;
 SELECT * FROM SYS.WM_TRIGGERS;
 
 DROP TRIGGER plan_1.trigger_1;
 SELECT * FROM SYS.WM_TRIGGERS;
 
 -- No edit on active resource plan.
-CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > 100mb DO MOVE TO null_pool;
+CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > '100mb' DO MOVE TO null_pool;
 
 -- Add trigger with reserved keywords.
-CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > 100KB DO MOVE TO `table`;
-CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > 100MB DO MOVE TO `default`;
-CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > 1GB DO MOVE TO `default`;
+CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`;
+CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > '100MB' DO MOVE TO `default`;
+CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > "1GB" DO MOVE TO `default`;
 CREATE TRIGGER `table`.`trigger1` WHEN ELAPSED_TIME > 10 DO KILL;
-CREATE TRIGGER `table`.`trigger2` WHEN ELAPSED_TIME > 1hour DO KILL;
+CREATE TRIGGER `table`.`trigger2` WHEN ELAPSED_TIME > '1hour' DO KILL;
 SELECT * FROM SYS.WM_TRIGGERS;
 DROP TRIGGER `table`.`database`;
 SELECT * FROM SYS.WM_TRIGGERS;
@@ -190,13 +196,13 @@ SELECT * FROM SYS.WM_TRIGGERS;
 ALTER RESOURCE PLAN plan_1 ENABLE;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 DROP TRIGGER plan_1.trigger_2;
-ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > 1000gb DO KILL;
+ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > "1000gb" DO KILL;
 
 -- Cannot drop/change trigger from active plan.
 ALTER RESOURCE PLAN plan_1 ACTIVATE;
 SELECT * FROM SYS.WM_RESOURCEPLANS;
 DROP TRIGGER plan_1.trigger_2;
-ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > 1000KB DO KILL;
+ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > "1000KB" DO KILL;
 
 -- Once disabled we should be able to change it.
 ALTER RESOURCE PLAN plan_2 DISABLE;
@@ -383,8 +389,8 @@ SELECT * FROM SYS.WM_MAPPINGS;
 CREATE RESOURCE PLAN plan_4a LIKE plan_4;
 CREATE POOL plan_4a.pool1 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=2, ALLOC_FRACTION=0.0;
 CREATE USER MAPPING "user1" IN plan_4a TO pool1;
-CREATE TRIGGER plan_4a.trigger_1 WHEN BYTES_READ > 10GB DO KILL;
-CREATE TRIGGER plan_4a.trigger_2 WHEN BYTES_READ > 11GB DO KILL;
+CREATE TRIGGER plan_4a.trigger_1 WHEN BYTES_READ > '10GB' DO KILL;
+CREATE TRIGGER plan_4a.trigger_2 WHEN BYTES_READ > '11GB' DO KILL;
 ALTER POOL plan_4a.pool1 ADD TRIGGER trigger_2;
 
 CREATE RESOURCE PLAN plan_4b LIKE plan_4a;

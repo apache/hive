@@ -35,31 +35,31 @@ public class TestExpressionFactory {
     assertEquals("BYTES_READ", expr.getCounterLimit().getName());
     assertEquals(5, expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("BYTES_READ > 5kb");
+    expr = ExpressionFactory.fromString("BYTES_READ > '5kb'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("BYTES_READ", expr.getCounterLimit().getName());
     assertEquals(5 * (1 << 10), expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("BYTES_READ > 2mb");
+    expr = ExpressionFactory.fromString("BYTES_READ > '2mb'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("BYTES_READ", expr.getCounterLimit().getName());
     assertEquals(2 * (1 << 20), expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("BYTES_READ > 3gb");
+    expr = ExpressionFactory.fromString("BYTES_READ > '3gb'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("BYTES_READ", expr.getCounterLimit().getName());
     assertEquals(3L * (1 << 30), expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("SHUFFLE_BYTES > 7tb");
+    expr = ExpressionFactory.fromString("SHUFFLE_BYTES > '7tb'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("SHUFFLE_BYTES", expr.getCounterLimit().getName());
     assertEquals(7L * (1L << 40), expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("SHUFFLE_BYTES > 6pb");
+    expr = ExpressionFactory.fromString("SHUFFLE_BYTES > '6pb'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("SHUFFLE_BYTES", expr.getCounterLimit().getName());
@@ -82,31 +82,31 @@ public class TestExpressionFactory {
     assertEquals("ELAPSED_TIME", expr.getCounterLimit().getName());
     assertEquals(1, expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("ELAPSED_TIME > 1ms");
+    expr = ExpressionFactory.fromString("ELAPSED_TIME > '1ms'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("ELAPSED_TIME", expr.getCounterLimit().getName());
     assertEquals(1, expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("ELAPSED_TIME > 1sec");
+    expr = ExpressionFactory.fromString("ELAPSED_TIME > '1sec'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("ELAPSED_TIME", expr.getCounterLimit().getName());
     assertEquals(1000, expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("ELAPSED_TIME > 1min");
+    expr = ExpressionFactory.fromString("ELAPSED_TIME > '1min'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("ELAPSED_TIME", expr.getCounterLimit().getName());
     assertEquals(60 * 1000, expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("ELAPSED_TIME > 1hour");
+    expr = ExpressionFactory.fromString("ELAPSED_TIME > '1hour'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("ELAPSED_TIME", expr.getCounterLimit().getName());
     assertEquals(3600 * 1000, expr.getCounterLimit().getLimit());
 
-    expr = ExpressionFactory.fromString("ELAPSED_TIME > 1day");
+    expr = ExpressionFactory.fromString("ELAPSED_TIME > '1day'");
     assertNotNull(expr);
     assertEquals(Predicate.GREATER_THAN, expr.getPredicate());
     assertEquals("ELAPSED_TIME", expr.getCounterLimit().getName());

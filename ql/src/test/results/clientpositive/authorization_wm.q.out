@@ -97,9 +97,9 @@ OPERATION:
   CREATE_POOL
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation CREATE_POOL [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
-PREHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > 10GB DO KILL
+PREHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
 PREHOOK: type: CREATE TRIGGER
-POSTHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > 10GB DO KILL
+POSTHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
 POSTHOOK: type: CREATE TRIGGER
 INPUTS: 
 OUTPUTS: 
@@ -189,9 +189,9 @@ CURRENT_USER:
   hive_admin_user
 OPERATION: 
   CREATE_POOL
-PREHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > 10GB DO KILL
+PREHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
 PREHOOK: type: CREATE TRIGGER
-POSTHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > 10GB DO KILL
+POSTHOOK: query: explain authorization create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
 POSTHOOK: type: CREATE TRIGGER
 INPUTS: 
 OUTPUTS: 
@@ -245,10 +245,10 @@ PREHOOK: type: CREATE POOL
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: create pool rp.pool0 WITH ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
 POSTHOOK: type: CREATE POOL
-PREHOOK: query: create trigger rp.trigger0 WHEN BYTES_READ > 10GB DO KILL
+PREHOOK: query: create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: create trigger rp.trigger0 WHEN BYTES_READ > 10GB DO KILL
+POSTHOOK: query: create trigger rp.trigger0 WHEN BYTES_READ > '10GB' DO KILL
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: create user mapping 'joe' IN rp UNMANAGED
 PREHOOK: type: CREATE MAPPING
@@ -268,9 +268,9 @@ OPERATION:
   ALTER_POOL
 AUTHORIZATION_FAILURES: 
   Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation ALTER_POOL [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]
-PREHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > 15GB DO KILL
+PREHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
 PREHOOK: type: ALTER TRIGGER
-POSTHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > 15GB DO KILL
+POSTHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
 POSTHOOK: type: ALTER TRIGGER
 INPUTS: 
 OUTPUTS: 
@@ -354,9 +354,9 @@ CURRENT_USER:
   hive_admin_user
 OPERATION: 
   ALTER_POOL
-PREHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > 15GB DO KILL
+PREHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
 PREHOOK: type: ALTER TRIGGER
-POSTHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > 15GB DO KILL
+POSTHOOK: query: explain authorization alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
 POSTHOOK: type: ALTER TRIGGER
 INPUTS: 
 OUTPUTS: 
@@ -414,10 +414,10 @@ PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: alter pool rp.pool0 SET QUERY_PARALLELISM=4
 POSTHOOK: type: ALTER POOL
-PREHOOK: query: alter trigger rp.trigger0 WHEN BYTES_READ > 15GB DO KILL
+PREHOOK: query: alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: alter trigger rp.trigger0 WHEN BYTES_READ > 15GB DO KILL
+POSTHOOK: query: alter trigger rp.trigger0 WHEN BYTES_READ > '15GB' DO KILL
 POSTHOOK: type: ALTER TRIGGER
 PREHOOK: query: alter user mapping 'joe' IN rp TO pool0
 PREHOOK: type: ALTER MAPPING
