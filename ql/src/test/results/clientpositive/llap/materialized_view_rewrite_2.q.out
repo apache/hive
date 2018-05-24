@@ -172,7 +172,7 @@ PREHOOK: query: alter table depts_n0 add constraint fk2 foreign key (locationid)
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table depts_n0 add constraint fk2 foreign key (locationid) references locations_n0(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: create materialized view mv1_n0 enable rewrite as
+PREHOOK: query: create materialized view mv1_n0 as
 select empid, depts_n0.deptno from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 10
 group by empid, depts_n0.deptno
@@ -181,7 +181,7 @@ PREHOOK: Input: default@depts_n0
 PREHOOK: Input: default@emps_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n0
-POSTHOOK: query: create materialized view mv1_n0 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n0 as
 select empid, depts_n0.deptno from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 10
 group by empid, depts_n0.deptno
@@ -251,7 +251,7 @@ POSTHOOK: query: drop materialized view mv1_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n0
 POSTHOOK: Output: default@mv1_n0
-PREHOOK: query: create materialized view mv1_n0 enable rewrite as
+PREHOOK: query: create materialized view mv1_n0 as
 select depts_n0.deptno, empid from depts_n0
 join emps_n0 using (deptno) where depts_n0.deptno > 10
 group by empid, depts_n0.deptno
@@ -260,7 +260,7 @@ PREHOOK: Input: default@depts_n0
 PREHOOK: Input: default@emps_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n0
-POSTHOOK: query: create materialized view mv1_n0 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n0 as
 select depts_n0.deptno, empid from depts_n0
 join emps_n0 using (deptno) where depts_n0.deptno > 10
 group by empid, depts_n0.deptno
@@ -330,7 +330,7 @@ POSTHOOK: query: drop materialized view mv1_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n0
 POSTHOOK: Output: default@mv1_n0
-PREHOOK: query: create materialized view mv1_n0 enable rewrite as
+PREHOOK: query: create materialized view mv1_n0 as
 select empid, depts_n0.deptno from emps_n0
 join depts_n0 using (deptno) where emps_n0.deptno > 10
 group by empid, depts_n0.deptno
@@ -339,7 +339,7 @@ PREHOOK: Input: default@depts_n0
 PREHOOK: Input: default@emps_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n0
-POSTHOOK: query: create materialized view mv1_n0 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n0 as
 select empid, depts_n0.deptno from emps_n0
 join depts_n0 using (deptno) where emps_n0.deptno > 10
 group by empid, depts_n0.deptno
@@ -409,7 +409,7 @@ POSTHOOK: query: drop materialized view mv1_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n0
 POSTHOOK: Output: default@mv1_n0
-PREHOOK: query: create materialized view mv1_n0 enable rewrite as
+PREHOOK: query: create materialized view mv1_n0 as
 select depts_n0.deptno, emps_n0.empid from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 10
 group by depts_n0.deptno, emps_n0.empid
@@ -418,7 +418,7 @@ PREHOOK: Input: default@depts_n0
 PREHOOK: Input: default@emps_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n0
-POSTHOOK: query: create materialized view mv1_n0 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n0 as
 select depts_n0.deptno, emps_n0.empid from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 10
 group by depts_n0.deptno, emps_n0.empid
@@ -493,7 +493,7 @@ POSTHOOK: query: drop materialized view mv1_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n0
 POSTHOOK: Output: default@mv1_n0
-PREHOOK: query: create materialized view mv1_n0 enable rewrite as
+PREHOOK: query: create materialized view mv1_n0 as
 select depts_n0.deptno, emps_n0.empid from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 10
 group by depts_n0.deptno, emps_n0.empid
@@ -502,7 +502,7 @@ PREHOOK: Input: default@depts_n0
 PREHOOK: Input: default@emps_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n0
-POSTHOOK: query: create materialized view mv1_n0 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n0 as
 select depts_n0.deptno, emps_n0.empid from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 10
 group by depts_n0.deptno, emps_n0.empid
@@ -616,7 +616,7 @@ POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n0
 POSTHOOK: Output: default@mv1_n0
 Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: create materialized view mv1_n0 enable rewrite as
+PREHOOK: query: create materialized view mv1_n0 as
 select depts_n0.name, dependents_n0.name as name2, emps_n0.deptno, depts_n0.deptno as deptno2, dependents_n0.empid
 from depts_n0, dependents_n0, emps_n0
 where depts_n0.deptno > 10
@@ -627,7 +627,7 @@ PREHOOK: Input: default@depts_n0
 PREHOOK: Input: default@emps_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n0
-POSTHOOK: query: create materialized view mv1_n0 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n0 as
 select depts_n0.name, dependents_n0.name as name2, emps_n0.deptno, depts_n0.deptno as deptno2, dependents_n0.empid
 from depts_n0, dependents_n0, emps_n0
 where depts_n0.deptno > 10

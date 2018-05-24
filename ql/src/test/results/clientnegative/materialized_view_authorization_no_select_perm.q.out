@@ -17,12 +17,12 @@ POSTHOOK: Output: default@amvnsp_table
 POSTHOOK: Lineage: amvnsp_table.a SCRIPT []
 POSTHOOK: Lineage: amvnsp_table.b SCRIPT []
 POSTHOOK: Lineage: amvnsp_table.c SCRIPT []
-PREHOOK: query: create materialized view amvnsp_mat_view as select a, c from amvnsp_table
+PREHOOK: query: create materialized view amvnsp_mat_view disable rewrite as select a, c from amvnsp_table
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvnsp_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@amvnsp_mat_view
-POSTHOOK: query: create materialized view amvnsp_mat_view as select a, c from amvnsp_table
+POSTHOOK: query: create materialized view amvnsp_mat_view disable rewrite as select a, c from amvnsp_table
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvnsp_table
 POSTHOOK: Output: database:default

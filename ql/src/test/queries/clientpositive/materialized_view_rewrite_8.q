@@ -21,7 +21,7 @@ insert into table source_table_001
   values ('2010-10-10', 1, 1, 'env', 1, 1);
 analyze table source_table_001 compute statistics for columns;
 
-CREATE MATERIALIZED VIEW source_table_001_mv ENABLE REWRITE AS
+CREATE MATERIALIZED VIEW source_table_001_mv AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,

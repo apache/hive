@@ -22,14 +22,14 @@ analyze table cmv_basetable_n7 compute statistics for columns;
 create database db2;
 use db2;
 
-create materialized view cmv_mat_view_n7 enable rewrite
+create materialized view cmv_mat_view_n7
 as select a, b, c from db1.cmv_basetable_n7 where a = 2;
 
 select * from cmv_mat_view_n7;
 
 show tblproperties cmv_mat_view_n7;
 
-create materialized view if not exists cmv_mat_view2_n2 enable rewrite
+create materialized view if not exists cmv_mat_view2_n2
 as select a, c from db1.cmv_basetable_n7 where a = 3;
 
 select * from cmv_mat_view2_n2;
