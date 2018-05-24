@@ -578,7 +578,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Output: default@lineorder
 #### A masked pattern was here ####
-PREHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv` ENABLE REWRITE
+PREHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv`
 AS
 SELECT
   cast(d_year || '-' || d_monthnuminyear || '-' || d_daynuminmonth as timestamp) as `__time`,
@@ -615,7 +615,7 @@ PREHOOK: Input: default@ssb_part
 PREHOOK: Input: default@supplier
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ssb_mv
-POSTHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv` ENABLE REWRITE
+POSTHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv`
 AS
 SELECT
   cast(d_year || '-' || d_monthnuminyear || '-' || d_daynuminmonth as timestamp) as `__time`,

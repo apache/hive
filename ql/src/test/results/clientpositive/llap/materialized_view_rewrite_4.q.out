@@ -172,14 +172,14 @@ PREHOOK: query: alter table depts_n4 add constraint fk2 foreign key (locationid)
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table depts_n4 add constraint fk2 foreign key (locationid) references locations_n3(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+PREHOOK: query: create materialized view mv1_n3 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n5 group by name, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n3
-POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n3 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n5 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -286,14 +286,14 @@ POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n3
 POSTHOOK: Output: default@mv1_n3
-PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+PREHOOK: query: create materialized view mv1_n3 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n5 group by name, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n3
-POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n3 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n5 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -357,7 +357,7 @@ POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n3
 POSTHOOK: Output: default@mv1_n3
-PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+PREHOOK: query: create materialized view mv1_n3 as
 select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 group by empid, emps_n5.deptno
@@ -366,7 +366,7 @@ PREHOOK: Input: default@depts_n4
 PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n3
-POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n3 as
 select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 group by empid, emps_n5.deptno
@@ -479,7 +479,7 @@ POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n3
 POSTHOOK: Output: default@mv1_n3
-PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+PREHOOK: query: create materialized view mv1_n3 as
 select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where emps_n5.deptno >= 10 group by empid, emps_n5.deptno
@@ -488,7 +488,7 @@ PREHOOK: Input: default@depts_n4
 PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n3
-POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n3 as
 select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where emps_n5.deptno >= 10 group by empid, emps_n5.deptno
@@ -599,7 +599,7 @@ POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n3
 POSTHOOK: Output: default@mv1_n3
-PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+PREHOOK: query: create materialized view mv1_n3 as
 select empid, depts_n4.deptno, count(*) + 1 as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where depts_n4.deptno >= 10 group by empid, depts_n4.deptno
@@ -608,7 +608,7 @@ PREHOOK: Input: default@depts_n4
 PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n3
-POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n3 as
 select empid, depts_n4.deptno, count(*) + 1 as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where depts_n4.deptno >= 10 group by empid, depts_n4.deptno
@@ -727,7 +727,7 @@ POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n3
 POSTHOOK: Output: default@mv1_n3
-PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+PREHOOK: query: create materialized view mv1_n3 as
 select depts_n4.name, sum(salary) as s
 from emps_n5
 join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
@@ -737,7 +737,7 @@ PREHOOK: Input: default@depts_n4
 PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n3
-POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n3 as
 select depts_n4.name, sum(salary) as s
 from emps_n5
 join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
@@ -900,7 +900,7 @@ POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n3
 POSTHOOK: Output: default@mv1_n3
-PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+PREHOOK: query: create materialized view mv1_n3 as
 select dependents_n3.empid, emps_n5.deptno, count(distinct salary) as s
 from emps_n5
 join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
@@ -910,7 +910,7 @@ PREHOOK: Input: default@dependents_n3
 PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n3
-POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n3 as
 select dependents_n3.empid, emps_n5.deptno, count(distinct salary) as s
 from emps_n5
 join dependents_n3 on (emps_n5.empid = dependents_n3.empid)

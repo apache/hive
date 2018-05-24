@@ -49,7 +49,7 @@ alter table emps_n0 add constraint fk1 foreign key (deptno) references depts_n0(
 alter table depts_n0 add constraint fk2 foreign key (locationid) references locations_n0(locationid) disable novalidate rely;
 
 -- EXAMPLE 16
-create materialized view mv1_n0 enable rewrite as
+create materialized view mv1_n0 as
 select empid, depts_n0.deptno from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 10
 group by empid, depts_n0.deptno;
@@ -67,7 +67,7 @@ group by empid, depts_n0.deptno;
 drop materialized view mv1_n0;
 
 -- EXAMPLE 17
-create materialized view mv1_n0 enable rewrite as
+create materialized view mv1_n0 as
 select depts_n0.deptno, empid from depts_n0
 join emps_n0 using (deptno) where depts_n0.deptno > 10
 group by empid, depts_n0.deptno;
@@ -85,7 +85,7 @@ group by empid, depts_n0.deptno;
 drop materialized view mv1_n0;
 
 -- EXAMPLE 18
-create materialized view mv1_n0 enable rewrite as
+create materialized view mv1_n0 as
 select empid, depts_n0.deptno from emps_n0
 join depts_n0 using (deptno) where emps_n0.deptno > 10
 group by empid, depts_n0.deptno;
@@ -103,7 +103,7 @@ group by empid, depts_n0.deptno;
 drop materialized view mv1_n0;
 
 -- EXAMPLE 19
-create materialized view mv1_n0 enable rewrite as
+create materialized view mv1_n0 as
 select depts_n0.deptno, emps_n0.empid from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 10
 group by depts_n0.deptno, emps_n0.empid;
@@ -121,7 +121,7 @@ group by depts_n0.deptno, emps_n0.empid;
 drop materialized view mv1_n0;
 
 -- EXAMPLE 20
-create materialized view mv1_n0 enable rewrite as
+create materialized view mv1_n0 as
 select depts_n0.deptno, emps_n0.empid from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 10
 group by depts_n0.deptno, emps_n0.empid;
@@ -139,7 +139,7 @@ group by depts_n0.deptno;
 drop materialized view mv1_n0;
 
 -- EXAMPLE 23
-create materialized view mv1_n0 enable rewrite as
+create materialized view mv1_n0 as
 select depts_n0.name, dependents_n0.name as name2, emps_n0.deptno, depts_n0.deptno as deptno2, dependents_n0.empid
 from depts_n0, dependents_n0, emps_n0
 where depts_n0.deptno > 10

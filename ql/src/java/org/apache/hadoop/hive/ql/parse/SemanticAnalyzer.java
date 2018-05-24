@@ -13253,7 +13253,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbDotTable = getDotName(qualTabName);
     List<FieldSchema> cols = null;
     boolean ifNotExists = false;
-    boolean rewriteEnabled = false;
+    boolean rewriteEnabled = true;
     boolean orReplace = false;
     boolean isAlterViewAs = false;
     String comment = null;
@@ -13278,8 +13278,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_IFNOTEXISTS:
         ifNotExists = true;
         break;
-      case HiveParser.TOK_REWRITE_ENABLED:
-        rewriteEnabled = true;
+      case HiveParser.TOK_REWRITE_DISABLED:
+        rewriteEnabled = false;
         break;
       case HiveParser.TOK_ORREPLACE:
         orReplace = true;

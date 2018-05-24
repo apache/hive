@@ -49,7 +49,7 @@ alter table emps_n9 add constraint fk1 foreign key (deptno) references depts_n7(
 alter table depts_n7 add constraint fk2 foreign key (locationid) references locations_n5(locationid) disable novalidate rely;
 
 -- EXAMPLE 34
-create materialized view mv1_n5 enable rewrite as
+create materialized view mv1_n5 as
 select empid deptno from emps_n9
 join depts_n7 using (deptno);
 analyze table mv1_n5 compute statistics for columns;
@@ -64,7 +64,7 @@ join depts_n7 using (deptno) where empid = 1;
 drop materialized view mv1_n5;
 
 -- EXAMPLE 35
-create materialized view mv1_n5 enable rewrite as
+create materialized view mv1_n5 as
 select cast(empid as BIGINT) from emps_n9
 join depts_n7 using (deptno);
 analyze table mv1_n5 compute statistics for columns;
@@ -79,7 +79,7 @@ join depts_n7 using (deptno) where empid > 1;
 drop materialized view mv1_n5;
 
 -- EXAMPLE 36
-create materialized view mv1_n5 enable rewrite as
+create materialized view mv1_n5 as
 select cast(empid as BIGINT) from emps_n9
 join depts_n7 using (deptno);
 analyze table mv1_n5 compute statistics for columns;
@@ -94,7 +94,7 @@ join depts_n7 using (deptno) where empid = 1;
 drop materialized view mv1_n5;
 
 -- EXAMPLE 38
-create materialized view mv1_n5 enable rewrite as
+create materialized view mv1_n5 as
 select depts_n7.name
 from emps_n9
 join depts_n7 on (emps_n9.deptno = depts_n7.deptno);

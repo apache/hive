@@ -188,13 +188,13 @@ POSTHOOK: query: alter table depts_n1 change column locationid locationid int co
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@depts_n1
 POSTHOOK: Output: default@depts_n1
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select name, deptno, salary from emps_n2 where deptno > 15 group by name, deptno, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select name, deptno, salary from emps_n2 where deptno > 15 group by name, deptno, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n2
@@ -293,14 +293,14 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select name, deptno, salary, count(*) as c, sum(empid) as s
 from emps_n2 where deptno >= 15 group by name, deptno, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select name, deptno, salary, count(*) as c, sum(empid) as s
 from emps_n2 where deptno >= 15 group by name, deptno, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -407,7 +407,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select depts_n1.deptno, dependents_n1.empid
 from depts_n1
 join dependents_n1 on (depts_n1.name = dependents_n1.name)
@@ -422,7 +422,7 @@ PREHOOK: Input: default@emps_n2
 PREHOOK: Input: default@locations_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select depts_n1.deptno, dependents_n1.empid
 from depts_n1
 join dependents_n1 on (depts_n1.name = dependents_n1.name)
@@ -559,7 +559,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select empid, depts_n1.deptno, count(*) as c, sum(empid) as s
 from emps_n2 join depts_n1 using (deptno)
 group by empid, depts_n1.deptno
@@ -568,7 +568,7 @@ PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select empid, depts_n1.deptno, count(*) as c, sum(empid) as s
 from emps_n2 join depts_n1 using (deptno)
 group by empid, depts_n1.deptno
@@ -668,7 +668,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select empid, depts_n1.deptno, count(*) as c, sum(empid) as s
 from emps_n2 join depts_n1 using (deptno)
 group by empid, depts_n1.deptno
@@ -677,7 +677,7 @@ PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select empid, depts_n1.deptno, count(*) as c, sum(empid) as s
 from emps_n2 join depts_n1 using (deptno)
 group by empid, depts_n1.deptno
@@ -743,7 +743,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select dependents_n1.empid, emps_n2.deptno, sum(salary) as s
 from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
@@ -753,7 +753,7 @@ PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select dependents_n1.empid, emps_n2.deptno, sum(salary) as s
 from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
@@ -909,7 +909,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select dependents_n1.empid, emps_n2.deptno, sum(salary) as s
 from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
@@ -919,7 +919,7 @@ PREHOOK: Input: default@dependents_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select dependents_n1.empid, emps_n2.deptno, sum(salary) as s
 from emps_n2
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
@@ -1077,7 +1077,7 @@ POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
 Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select a.empid deptno from
 (select * from emps_n2 where empid = 1) a
 join depts_n1 on (a.deptno = depts_n1.deptno)
@@ -1088,7 +1088,7 @@ PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select a.empid deptno from
 (select * from emps_n2 where empid = 1) a
 join depts_n1 on (a.deptno = depts_n1.deptno)
@@ -1159,7 +1159,7 @@ POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
 Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select a.empid, a.deptno from
 (select * from emps_n2 where empid = 1) a
 join depts_n1 on (a.deptno = depts_n1.deptno)
@@ -1170,7 +1170,7 @@ PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select a.empid, a.deptno from
 (select * from emps_n2 where empid = 1) a
 join depts_n1 on (a.deptno = depts_n1.deptno)
@@ -1240,7 +1240,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select empid deptno from
 (select * from emps_n2 where empid = 1) a
 join depts_n1 on (a.deptno = depts_n1.deptno)
@@ -1249,7 +1249,7 @@ PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select empid deptno from
 (select * from emps_n2 where empid = 1) a
 join depts_n1 on (a.deptno = depts_n1.deptno)
@@ -1308,7 +1308,7 @@ POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
 Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 on (emps_n2.deptno = depts_n1.deptno)
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
@@ -1319,7 +1319,7 @@ PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 on (emps_n2.deptno = depts_n1.deptno)
 join dependents_n1 on (emps_n2.empid = dependents_n1.empid)
@@ -1390,7 +1390,7 @@ POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
 Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_2, $hdt$_3, $hdt$_1, $hdt$_0]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 a on (emps_n2.deptno=a.deptno)
 join depts_n1 b on (emps_n2.deptno=b.deptno)
@@ -1402,7 +1402,7 @@ PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 a on (emps_n2.deptno=a.deptno)
 join depts_n1 b on (emps_n2.deptno=b.deptno)
@@ -1473,7 +1473,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-PREHOOK: query: create materialized view mv1_n1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 a on (emps_n2.deptno=a.deptno)
 join depts_n1 b on (emps_n2.deptno=b.deptno)
@@ -1485,7 +1485,7 @@ PREHOOK: Input: default@depts_n1
 PREHOOK: Input: default@emps_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n1
-POSTHOOK: query: create materialized view mv1_n1 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 a on (emps_n2.deptno=a.deptno)
 join depts_n1 b on (emps_n2.deptno=b.deptno)

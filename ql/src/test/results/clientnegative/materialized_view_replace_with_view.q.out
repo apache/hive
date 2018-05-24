@@ -17,12 +17,12 @@ POSTHOOK: Output: default@rmvwv_basetable
 POSTHOOK: Lineage: rmvwv_basetable.a SCRIPT []
 POSTHOOK: Lineage: rmvwv_basetable.b SCRIPT []
 POSTHOOK: Lineage: rmvwv_basetable.c SCRIPT []
-PREHOOK: query: create materialized view rmvwv_mat_view as select a, b, c from rmvwv_basetable
+PREHOOK: query: create materialized view rmvwv_mat_view disable rewrite as select a, b, c from rmvwv_basetable
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@rmvwv_basetable
 PREHOOK: Output: database:default
 PREHOOK: Output: default@rmvwv_mat_view
-POSTHOOK: query: create materialized view rmvwv_mat_view as select a, b, c from rmvwv_basetable
+POSTHOOK: query: create materialized view rmvwv_mat_view disable rewrite as select a, b, c from rmvwv_basetable
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@rmvwv_basetable
 POSTHOOK: Output: database:default

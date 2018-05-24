@@ -17,12 +17,12 @@ POSTHOOK: Output: default@amvs_table
 POSTHOOK: Lineage: amvs_table.a SCRIPT []
 POSTHOOK: Lineage: amvs_table.b SCRIPT []
 POSTHOOK: Lineage: amvs_table.c SCRIPT []
-PREHOOK: query: create materialized view amvs_mat_view as select a, c from amvs_table
+PREHOOK: query: create materialized view amvs_mat_view disable rewrite as select a, c from amvs_table
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvs_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@amvs_mat_view
-POSTHOOK: query: create materialized view amvs_mat_view as select a, c from amvs_table
+POSTHOOK: query: create materialized view amvs_mat_view disable rewrite as select a, c from amvs_table
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvs_table
 POSTHOOK: Output: database:default
@@ -148,12 +148,12 @@ PREHOOK: Output: default@amvs_table
 POSTHOOK: query: grant select on table amvs_table to user user2 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@amvs_table
-PREHOOK: query: create materialized view amvs_mat_view2 as select a, b from amvs_table
+PREHOOK: query: create materialized view amvs_mat_view2 disable rewrite as select a, b from amvs_table
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvs_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@amvs_mat_view2
-POSTHOOK: query: create materialized view amvs_mat_view2 as select a, b from amvs_table
+POSTHOOK: query: create materialized view amvs_mat_view2 disable rewrite as select a, b from amvs_table
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvs_table
 POSTHOOK: Output: database:default

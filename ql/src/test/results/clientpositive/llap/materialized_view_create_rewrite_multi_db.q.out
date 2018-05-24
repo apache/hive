@@ -62,13 +62,13 @@ PREHOOK: Input: database:db2
 POSTHOOK: query: use db2
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:db2
-PREHOOK: query: create materialized view cmv_mat_view_n7 enable rewrite
+PREHOOK: query: create materialized view cmv_mat_view_n7
 as select a, b, c from db1.cmv_basetable_n7 where a = 2
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: db1@cmv_basetable_n7
 PREHOOK: Output: database:db2
 PREHOOK: Output: db2@cmv_mat_view_n7
-POSTHOOK: query: create materialized view cmv_mat_view_n7 enable rewrite
+POSTHOOK: query: create materialized view cmv_mat_view_n7
 as select a, b, c from db1.cmv_basetable_n7 where a = 2
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: db1@cmv_basetable_n7
@@ -95,13 +95,13 @@ numRows	2
 rawDataSize	408
 totalSize	457
 #### A masked pattern was here ####
-PREHOOK: query: create materialized view if not exists cmv_mat_view2_n2 enable rewrite
+PREHOOK: query: create materialized view if not exists cmv_mat_view2_n2
 as select a, c from db1.cmv_basetable_n7 where a = 3
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: db1@cmv_basetable_n7
 PREHOOK: Output: database:db2
 PREHOOK: Output: db2@cmv_mat_view2_n2
-POSTHOOK: query: create materialized view if not exists cmv_mat_view2_n2 enable rewrite
+POSTHOOK: query: create materialized view if not exists cmv_mat_view2_n2
 as select a, c from db1.cmv_basetable_n7 where a = 3
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: db1@cmv_basetable_n7

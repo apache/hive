@@ -24,13 +24,13 @@ insert into cmv_basetable_2 values
 analyze table cmv_basetable_2 compute statistics for columns;
 
 EXPLAIN
-CREATE MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE AS
+CREATE MATERIALIZED VIEW cmv_mat_view AS
   SELECT cmv_basetable.a, cmv_basetable_2.c
   FROM cmv_basetable JOIN cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
   WHERE cmv_basetable_2.c > 10.0
   GROUP BY cmv_basetable.a, cmv_basetable_2.c;
 
-CREATE MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE AS
+CREATE MATERIALIZED VIEW cmv_mat_view AS
   SELECT cmv_basetable.a, cmv_basetable_2.c
   FROM cmv_basetable JOIN cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
   WHERE cmv_basetable_2.c > 10.0

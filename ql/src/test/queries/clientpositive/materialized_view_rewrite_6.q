@@ -53,7 +53,7 @@ alter table depts change column locationid locationid int constraint nn2 not nul
 
 
 -- EXAMPLE 13
-create materialized view mv1 enable rewrite as
+create materialized view mv1 as
 select name, deptno, salary, count(*) + 1 as c, sum(empid) as s
 from emps where deptno >= 10 group by name, deptno, salary;
 analyze table mv1 compute statistics for columns;
@@ -68,7 +68,7 @@ from emps where deptno > 10 group by salary;
 drop materialized view mv1;
 
 -- EXAMPLE 14
-create materialized view mv1 enable rewrite as
+create materialized view mv1 as
 select name, deptno, salary, count(*) + 1 as c, sum(empid) as s
 from emps where deptno >= 15 group by name, deptno, salary;
 analyze table mv1 compute statistics for columns;
@@ -83,7 +83,7 @@ from emps where deptno > 15 group by salary;
 drop materialized view mv1;
 
 -- EXAMPLE 37
-create materialized view mv1 enable rewrite as
+create materialized view mv1 as
 select depts.name
 from emps
 join depts on (emps.deptno = depts.deptno);
@@ -103,7 +103,7 @@ join dependents on (depts.name = dependents.name);
 drop materialized view mv1;
 
 -- EXAMPLE 39
-create materialized view mv1 enable rewrite as
+create materialized view mv1 as
 select depts.name
 from emps
 join depts on (emps.deptno = depts.deptno);
@@ -125,7 +125,7 @@ join emps on (emps.deptno = depts.deptno);
 drop materialized view mv1;
 
 -- EXAMPLE 46
-create materialized view mv1 enable rewrite as
+create materialized view mv1 as
 select emps.empid, emps.deptno, emps.name as name1, emps.salary, emps.commission, dependents.name as name2
 from emps join dependents on (emps.empid = dependents.empid);
 analyze table mv1 compute statistics for columns;

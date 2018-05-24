@@ -172,13 +172,13 @@ PREHOOK: query: alter table depts_n2 add constraint fk2 foreign key (locationid)
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table depts_n2 add constraint fk2 foreign key (locationid) references locations_n2(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select * from emps_n3 where empid < 150
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select * from emps_n3 where empid < 150
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
@@ -309,14 +309,14 @@ POSTHOOK: query: drop materialized view mv1_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n2
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select deptno, name, salary, commission
 from emps_n3
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select deptno, name, salary, commission
 from emps_n3
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -449,7 +449,7 @@ POSTHOOK: query: drop materialized view mv1_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n2
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select empid deptno from emps_n3
 join depts_n2 using (deptno)
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -457,7 +457,7 @@ PREHOOK: Input: default@depts_n2
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select empid deptno from emps_n3
 join depts_n2 using (deptno)
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -522,13 +522,13 @@ POSTHOOK: query: drop materialized view mv1_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n2
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select * from emps_n3 where empid < 200
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select * from emps_n3 where empid < 200
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
@@ -641,13 +641,13 @@ POSTHOOK: query: drop materialized view mv1_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n2
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select empid, deptno from emps_n3 group by empid, deptno
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select empid, deptno from emps_n3 group by empid, deptno
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
@@ -705,13 +705,13 @@ POSTHOOK: query: drop materialized view mv1_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n2
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select empid, name from emps_n3 group by empid, name
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select empid, name from emps_n3 group by empid, name
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
@@ -769,13 +769,13 @@ POSTHOOK: query: drop materialized view mv1_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n2
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select name, salary from emps_n3 group by name, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select name, salary from emps_n3 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
@@ -834,13 +834,13 @@ POSTHOOK: query: drop materialized view mv1_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n2
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select name, salary from emps_n3 group by name, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select name, salary from emps_n3 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
@@ -939,13 +939,13 @@ POSTHOOK: query: drop materialized view mv1_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n2
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select name, salary from emps_n3 where deptno = 10 group by name, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select name, salary from emps_n3 where deptno = 10 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
@@ -1043,14 +1043,14 @@ POSTHOOK: query: drop materialized view mv1_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n2
 POSTHOOK: Output: default@mv1_n2
-PREHOOK: query: create materialized view mv1_n2 enable rewrite as
+PREHOOK: query: create materialized view mv1_n2 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n3 group by name, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@emps_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n2
-POSTHOOK: query: create materialized view mv1_n2 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n2 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n3 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
