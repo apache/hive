@@ -176,4 +176,27 @@ SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table GROUP B
 
 SELECT CAST(`__time` AS DATE) AS `x_date` FROM druid_table ORDER BY `x_date` LIMIT 5;
 
+-- Test Extract from non datetime column
+
+create table test_extract_from_string_base_table(`timecolumn` timestamp, `date_c` string, `timestamp_c` string,  `metric_c` double);
+insert into test_extract_from_string_base_table values ('2015-03-08 00:00:00', '2015-03-10', '2015-03-08 05:30:20', 5.0);
+
+CREATE TABLE druid_test_extract_from_string_table
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+AS select
+cast(`timecolumn` as timestamp with local time zone) as `__time`, `date_c`, `timestamp_c`, `metric_c`
+FROM test_extract_from_string_base_table;
+
+explain select
+year(date_c), month(date_c),day(date_c),
+year(timestamp_c), month(timestamp_c),day(timestamp_c), hour(timestamp_c), minute (timestamp_c), second (timestamp_c)
+from druid_test_extract_from_string_table;
+
+select year(date_c), month(date_c), day(date_c),
+year(timestamp_c), month(timestamp_c), day(timestamp_c), hour(timestamp_c), minute (timestamp_c), second (timestamp_c)
+from druid_test_extract_from_string_table;
+
+DROP TABLE druid_test_extract_from_string_table;
+DROP TABLE test_extract_from_string_base_table;
 DROP TABLE druid_table;
