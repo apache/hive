@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableSortedMultiset;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -145,9 +144,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     if (genericUDF instanceof GenericUDFBridge) {
       GenericUDFBridge genericUDFBridge = (GenericUDFBridge) genericUDF;
       sb.append(" ==> ");
-      String udfName = genericUDFBridge.getUdfName();
-      Class<? extends UDF> udfClass = genericUDFBridge.getUdfClass();
-      sb.append(udfName != null ? udfName : (udfClass != null ? udfClass.getSimpleName() : "null"));
+      sb.append(genericUDFBridge.getUdfName());
       sb.append(" ");
     }
     sb.append("(");

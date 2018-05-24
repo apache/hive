@@ -102,7 +102,7 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
       outputColVector.isNull[0] = true;
     } else {
       outputColVector.isNull[0] = false;
-      outputColVector.set(0, firstValue);
+      outputColVector.vector[0].set(firstValue);
     }
   }
 
