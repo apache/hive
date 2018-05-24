@@ -86,8 +86,8 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
 
   @Test(timeout = 60000)
   public void testTriggerMoveAndKill() throws Exception {
-    Expression moveExpression = ExpressionFactory.fromString("EXECUTION_TIME > 1sec");
-    Expression killExpression = ExpressionFactory.fromString("EXECUTION_TIME > 5000ms");
+    Expression moveExpression = ExpressionFactory.fromString("EXECUTION_TIME > '1sec'");
+    Expression killExpression = ExpressionFactory.fromString("EXECUTION_TIME > '5000ms'");
     Trigger moveTrigger = new ExecutionTrigger("slow_query_move", moveExpression,
       new Action(Action.Type.MOVE_TO_POOL, "ETL"));
     Trigger killTrigger = new ExecutionTrigger("slow_query_kill", killExpression,
