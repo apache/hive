@@ -73,14 +73,14 @@ POSTHOOK: Input: default@cmv_basetable_2_n1
 POSTHOOK: Output: default@cmv_basetable_2_n1
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
-CREATE MATERIALIZED VIEW cmv_mat_view_n3 TBLPROPERTIES('rewriting.time.window'='300s') AS
+CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
   GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: query: EXPLAIN
-CREATE MATERIALIZED VIEW cmv_mat_view_n3 TBLPROPERTIES('rewriting.time.window'='300s') AS
+CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
@@ -212,7 +212,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 TBLPROPERTIES('rewriting.time.window'='300s') AS
+PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0
@@ -222,7 +222,7 @@ PREHOOK: Input: default@cmv_basetable_2_n1
 PREHOOK: Input: default@cmv_basetable_n3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_n3
-POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 TBLPROPERTIES('rewriting.time.window'='300s') AS
+POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n3 DISABLE REWRITE TBLPROPERTIES('rewriting.time.window'='300s') AS
   SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
   FROM cmv_basetable_n3 JOIN cmv_basetable_2_n1 ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE cmv_basetable_2_n1.c > 10.0

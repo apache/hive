@@ -23,12 +23,12 @@ PREHOOK: Output: default@amvrng_table
 POSTHOOK: query: grant select on table amvrng_table to user user2 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@amvrng_table
-PREHOOK: query: create materialized view amvrng_mat_view as select a, c from amvrng_table
+PREHOOK: query: create materialized view amvrng_mat_view disable rewrite as select a, c from amvrng_table
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@amvrng_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@amvrng_mat_view
-POSTHOOK: query: create materialized view amvrng_mat_view as select a, c from amvrng_table
+POSTHOOK: query: create materialized view amvrng_mat_view disable rewrite as select a, c from amvrng_table
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvrng_table
 POSTHOOK: Output: database:default

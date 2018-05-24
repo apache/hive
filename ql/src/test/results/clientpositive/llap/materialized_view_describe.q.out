@@ -17,14 +17,14 @@ POSTHOOK: Output: default@cmv_basetable_n8
 POSTHOOK: Lineage: cmv_basetable_n8.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n8.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n8.c SCRIPT []
-PREHOOK: query: create materialized view cmv_mat_view_n8
+PREHOOK: query: create materialized view cmv_mat_view_n8 disable rewrite
 comment 'this is the first view'
 tblproperties ('key'='foo') as select a, c from cmv_basetable_n8
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n8
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_n8
-POSTHOOK: query: create materialized view cmv_mat_view_n8
+POSTHOOK: query: create materialized view cmv_mat_view_n8 disable rewrite
 comment 'this is the first view'
 tblproperties ('key'='foo') as select a, c from cmv_basetable_n8
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -123,7 +123,7 @@ POSTHOOK: query: drop materialized view cmv_mat_view_n8
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_mat_view_n8
 POSTHOOK: Output: default@cmv_mat_view_n8
-PREHOOK: query: create materialized view cmv_mat_view2_n3
+PREHOOK: query: create materialized view cmv_mat_view2_n3 disable rewrite
 comment 'this is the second view'
 stored as textfile
 tblproperties ('key'='alice','key2'='bob') as select a from cmv_basetable_n8
@@ -131,7 +131,7 @@ PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n8
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view2_n3
-POSTHOOK: query: create materialized view cmv_mat_view2_n3
+POSTHOOK: query: create materialized view cmv_mat_view2_n3 disable rewrite
 comment 'this is the second view'
 stored as textfile
 tblproperties ('key'='alice','key2'='bob') as select a from cmv_basetable_n8
@@ -200,7 +200,7 @@ POSTHOOK: query: drop materialized view cmv_mat_view2_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_mat_view2_n3
 POSTHOOK: Output: default@cmv_mat_view2_n3
-PREHOOK: query: create materialized view cmv_mat_view3_n0
+PREHOOK: query: create materialized view cmv_mat_view3_n0 disable rewrite
 comment 'this is the third view'
 row format
   delimited fields terminated by '\t'
@@ -209,7 +209,7 @@ PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n8
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view3_n0
-POSTHOOK: query: create materialized view cmv_mat_view3_n0
+POSTHOOK: query: create materialized view cmv_mat_view3_n0 disable rewrite
 comment 'this is the third view'
 row format
   delimited fields terminated by '\t'
@@ -290,7 +290,7 @@ POSTHOOK: query: drop materialized view cmv_mat_view3_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_mat_view3_n0
 POSTHOOK: Output: default@cmv_mat_view3_n0
-PREHOOK: query: create materialized view cmv_mat_view4_n0
+PREHOOK: query: create materialized view cmv_mat_view4_n0 disable rewrite
 comment 'this is the last view'
 stored as textfile
 #### A masked pattern was here ####
@@ -300,7 +300,7 @@ PREHOOK: Input: default@cmv_basetable_n8
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view4_n0
-POSTHOOK: query: create materialized view cmv_mat_view4_n0
+POSTHOOK: query: create materialized view cmv_mat_view4_n0 disable rewrite
 comment 'this is the last view'
 stored as textfile
 #### A masked pattern was here ####

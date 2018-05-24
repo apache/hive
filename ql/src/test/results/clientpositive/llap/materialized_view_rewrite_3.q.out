@@ -172,7 +172,7 @@ PREHOOK: query: alter table depts_n7 add constraint fk2 foreign key (locationid)
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table depts_n7 add constraint fk2 foreign key (locationid) references locations_n5(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: create materialized view mv1_n5 enable rewrite as
+PREHOOK: query: create materialized view mv1_n5 as
 select empid deptno from emps_n9
 join depts_n7 using (deptno)
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -180,7 +180,7 @@ PREHOOK: Input: default@depts_n7
 PREHOOK: Input: default@emps_n9
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n5
-POSTHOOK: query: create materialized view mv1_n5 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n5 as
 select empid deptno from emps_n9
 join depts_n7 using (deptno)
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -245,7 +245,7 @@ POSTHOOK: query: drop materialized view mv1_n5
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n5
 POSTHOOK: Output: default@mv1_n5
-PREHOOK: query: create materialized view mv1_n5 enable rewrite as
+PREHOOK: query: create materialized view mv1_n5 as
 select cast(empid as BIGINT) from emps_n9
 join depts_n7 using (deptno)
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -253,7 +253,7 @@ PREHOOK: Input: default@depts_n7
 PREHOOK: Input: default@emps_n9
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n5
-POSTHOOK: query: create materialized view mv1_n5 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n5 as
 select cast(empid as BIGINT) from emps_n9
 join depts_n7 using (deptno)
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -322,7 +322,7 @@ POSTHOOK: query: drop materialized view mv1_n5
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n5
 POSTHOOK: Output: default@mv1_n5
-PREHOOK: query: create materialized view mv1_n5 enable rewrite as
+PREHOOK: query: create materialized view mv1_n5 as
 select cast(empid as BIGINT) from emps_n9
 join depts_n7 using (deptno)
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -330,7 +330,7 @@ PREHOOK: Input: default@depts_n7
 PREHOOK: Input: default@emps_n9
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n5
-POSTHOOK: query: create materialized view mv1_n5 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n5 as
 select cast(empid as BIGINT) from emps_n9
 join depts_n7 using (deptno)
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -395,7 +395,7 @@ POSTHOOK: query: drop materialized view mv1_n5
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n5
 POSTHOOK: Output: default@mv1_n5
-PREHOOK: query: create materialized view mv1_n5 enable rewrite as
+PREHOOK: query: create materialized view mv1_n5 as
 select depts_n7.name
 from emps_n9
 join depts_n7 on (emps_n9.deptno = depts_n7.deptno)
@@ -404,7 +404,7 @@ PREHOOK: Input: default@depts_n7
 PREHOOK: Input: default@emps_n9
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mv1_n5
-POSTHOOK: query: create materialized view mv1_n5 enable rewrite as
+POSTHOOK: query: create materialized view mv1_n5 as
 select depts_n7.name
 from emps_n9
 join depts_n7 on (emps_n9.deptno = depts_n7.deptno)

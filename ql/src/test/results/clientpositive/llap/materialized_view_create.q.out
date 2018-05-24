@@ -17,12 +17,12 @@ POSTHOOK: Output: default@cmv_basetable_n4
 POSTHOOK: Lineage: cmv_basetable_n4.a SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n4.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_n4.c SCRIPT []
-PREHOOK: query: create materialized view cmv_mat_view_n4 as select a, b, c from cmv_basetable_n4
+PREHOOK: query: create materialized view cmv_mat_view_n4 disable rewrite as select a, b, c from cmv_basetable_n4
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_n4
-POSTHOOK: query: create materialized view cmv_mat_view_n4 as select a, b, c from cmv_basetable_n4
+POSTHOOK: query: create materialized view cmv_mat_view_n4 disable rewrite as select a, b, c from cmv_basetable_n4
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
@@ -79,12 +79,12 @@ POSTHOOK: Input: default@cmv_mat_view_n4
 2	bonnie	172342.20
 3	calvin	978.76
 3	charlie	9.80
-PREHOOK: query: create materialized view if not exists cmv_mat_view2_n1 as select a, c from cmv_basetable_n4
+PREHOOK: query: create materialized view if not exists cmv_mat_view2_n1 disable rewrite as select a, c from cmv_basetable_n4
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view2_n1
-POSTHOOK: query: create materialized view if not exists cmv_mat_view2_n1 as select a, c from cmv_basetable_n4
+POSTHOOK: query: create materialized view if not exists cmv_mat_view2_n1 disable rewrite as select a, c from cmv_basetable_n4
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
@@ -140,12 +140,12 @@ POSTHOOK: Input: default@cmv_mat_view2_n1
 2	172342.20
 3	978.76
 3	9.80
-PREHOOK: query: create materialized view if not exists cmv_mat_view3 as select * from cmv_basetable_n4 where a > 1
+PREHOOK: query: create materialized view if not exists cmv_mat_view3 disable rewrite as select * from cmv_basetable_n4 where a > 1
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view3
-POSTHOOK: query: create materialized view if not exists cmv_mat_view3 as select * from cmv_basetable_n4 where a > 1
+POSTHOOK: query: create materialized view if not exists cmv_mat_view3 disable rewrite as select * from cmv_basetable_n4 where a > 1
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
@@ -162,12 +162,12 @@ POSTHOOK: Input: default@cmv_mat_view3
 2	bonnie	172342.20
 3	calvin	978.76
 3	charlie	9.80
-PREHOOK: query: create materialized view cmv_mat_view4 comment 'this is a comment' as select a, sum(c) from cmv_basetable_n4 group by a
+PREHOOK: query: create materialized view cmv_mat_view4 disable rewrite comment 'this is a comment' as select a, sum(c) from cmv_basetable_n4 group by a
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view4
-POSTHOOK: query: create materialized view cmv_mat_view4 comment 'this is a comment' as select a, sum(c) from cmv_basetable_n4 group by a
+POSTHOOK: query: create materialized view cmv_mat_view4 disable rewrite comment 'this is a comment' as select a, sum(c) from cmv_basetable_n4 group by a
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
@@ -212,13 +212,13 @@ POSTHOOK: Output: default@cmv_basetable2
 POSTHOOK: Lineage: cmv_basetable2.d SCRIPT []
 POSTHOOK: Lineage: cmv_basetable2.e SCRIPT []
 POSTHOOK: Lineage: cmv_basetable2.f SCRIPT []
-PREHOOK: query: create materialized view cmv_mat_view5 tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable_n4 t1 join cmv_basetable2 t2 on (t1.b = t2.e)
+PREHOOK: query: create materialized view cmv_mat_view5 disable rewrite tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable_n4 t1 join cmv_basetable2 t2 on (t1.b = t2.e)
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable2
 PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view5
-POSTHOOK: query: create materialized view cmv_mat_view5 tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable_n4 t1 join cmv_basetable2 t2 on (t1.b = t2.e)
+POSTHOOK: query: create materialized view cmv_mat_view5 disable rewrite tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable_n4 t1 join cmv_basetable2 t2 on (t1.b = t2.e)
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable2
 POSTHOOK: Input: default@cmv_basetable_n4
