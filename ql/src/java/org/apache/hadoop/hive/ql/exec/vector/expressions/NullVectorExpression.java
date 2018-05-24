@@ -18,29 +18,39 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-/**
- * To be used to cast long and boolean to decimal.
- * This works for boolean too because boolean is encoded as 0
- * for false and 1 for true.
- */
-public class CastLongToDecimal extends FuncLongToDecimal {
-
+public class NullVectorExpression extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  public CastLongToDecimal() {
+  public NullVectorExpression(int outputColumnNum) {
+    super(outputColumnNum);
+  }
+
+  public NullVectorExpression() {
     super();
   }
 
-  public CastLongToDecimal(int inputColumn, int outputColumnNum) {
-    super(inputColumn, outputColumnNum);
+
+  @Override
+  public String vectorExpressionParameters() {
+    return null;
   }
 
   @Override
-  protected void func(DecimalColumnVector outV, LongColumnVector inV, int i) {
-    outV.set(i, HiveDecimal.create(inV.vector[i]));
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+    ColumnVector colVector = batch.cols[outputColumnNum];
+    colVector.isNull[0] = true;
+    colVector.noNulls = false;
+    colVector.isRepeating = true;
+  }
+
+  @Override
+  public Descriptor getDescriptor() {
+    // Not applicable.
+    return null;
   }
 }

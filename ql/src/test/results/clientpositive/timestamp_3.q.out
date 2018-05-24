@@ -46,7 +46,7 @@ POSTHOOK: query: select cast(t as tinyint) from timestamp_3 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_3
 #### A masked pattern was here ####
-48
+NULL
 PREHOOK: query: select cast(t as smallint) from timestamp_3 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_3
@@ -55,7 +55,7 @@ POSTHOOK: query: select cast(t as smallint) from timestamp_3 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_3
 #### A masked pattern was here ####
--31184
+NULL
 PREHOOK: query: select cast(t as int) from timestamp_3 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_3
