@@ -42,10 +42,12 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+@Ignore("Flaky. Will be re-enabled by HIVE-19697")
 public class TestReOptimization {
 
   @ClassRule
