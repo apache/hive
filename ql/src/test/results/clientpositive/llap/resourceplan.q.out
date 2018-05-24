@@ -3622,15 +3622,47 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	10	default
 table	DISABLED	1	default
+PREHOOK: query: create table wm_test(key string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: INFORMATION_SCHEMA@wm_test
+PREHOOK: Output: database:information_schema
+POSTHOOK: query: create table wm_test(key string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: INFORMATION_SCHEMA@wm_test
+POSTHOOK: Output: database:information_schema
+PREHOOK: query: select key as 30min from wm_test
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@wm_test
+#### A masked pattern was here ####
+POSTHOOK: query: select key as 30min from wm_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@wm_test
+#### A masked pattern was here ####
+PREHOOK: query: select "10kb" as str from wm_test
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@wm_test
+#### A masked pattern was here ####
+POSTHOOK: query: select "10kb" as str from wm_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@wm_test
+#### A masked pattern was here ####
+PREHOOK: query: drop table wm_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: information_schema@wm_test
+PREHOOK: Output: information_schema@wm_test
+POSTHOOK: query: drop table wm_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: information_schema@wm_test
+POSTHOOK: Output: information_schema@wm_test
 PREHOOK: query: CREATE RESOURCE PLAN plan_1
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_1
 POSTHOOK: type: CREATE RESOURCEPLAN
-PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 10kb DO KILL
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '10kb' DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 10kb DO KILL
+POSTHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '10kb' DO KILL
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
@@ -3645,16 +3677,16 @@ PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN ELAPSED_TIME > 300 DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Trigger already exists, use alter: )
-FAILED: ParseException line 4:58 mismatched input 'AND' expecting DO near '30sec' in create trigger statement
-FAILED: ParseException line 2:61 mismatched input 'OR' expecting DO near '30second' in create trigger statement
+FAILED: ParseException line 4:60 mismatched input 'AND' expecting DO near ''30sec'' in create trigger statement
+FAILED: ParseException line 2:63 mismatched input 'OR' expecting DO near ''30second'' in create trigger statement
 FAILED: ParseException line 2:50 mismatched input '>=' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '<' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '<=' expecting > near 'ELAPSED_TIME' in comparisionOperator
 FAILED: ParseException line 2:50 mismatched input '=' expecting > near 'ELAPSED_TIME' in comparisionOperator
-PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > 30hour DO MOVE TO slow_pool
+PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '30hour' DO MOVE TO slow_pool
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > 30hour DO MOVE TO slow_pool
+POSTHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > '30hour' DO MOVE TO slow_pool
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
@@ -3666,10 +3698,10 @@ POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	trigger_1	BYTES_READ > 10kb	KILL
 plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
-PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 1min DO KILL
+PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 1min DO KILL
+POSTHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL
 POSTHOOK: type: ALTER TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
@@ -3695,34 +3727,34 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
 plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
-PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > 100mb DO MOVE TO null_pool
+PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > '100mb' DO MOVE TO null_pool
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
-PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > 100KB DO MOVE TO `table`
+PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > 100KB DO MOVE TO `table`
+POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > '100KB' DO MOVE TO `table`
 POSTHOOK: type: CREATE TRIGGER
-PREHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > 100MB DO MOVE TO `default`
+PREHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > '100MB' DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > 100MB DO MOVE TO `default`
+POSTHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > '100MB' DO MOVE TO `default`
 POSTHOOK: type: CREATE TRIGGER
-PREHOOK: query: CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > 1GB DO MOVE TO `default`
+PREHOOK: query: CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > "1GB" DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > 1GB DO MOVE TO `default`
+POSTHOOK: query: CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > "1GB" DO MOVE TO `default`
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER `table`.`trigger1` WHEN ELAPSED_TIME > 10 DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER `table`.`trigger1` WHEN ELAPSED_TIME > 10 DO KILL
 POSTHOOK: type: CREATE TRIGGER
-PREHOOK: query: CREATE TRIGGER `table`.`trigger2` WHEN ELAPSED_TIME > 1hour DO KILL
+PREHOOK: query: CREATE TRIGGER `table`.`trigger2` WHEN ELAPSED_TIME > '1hour' DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER `table`.`trigger2` WHEN ELAPSED_TIME > 1hour DO KILL
+POSTHOOK: query: CREATE TRIGGER `table`.`trigger2` WHEN ELAPSED_TIME > '1hour' DO KILL
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 PREHOOK: type: QUERY
@@ -3776,7 +3808,7 @@ PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
-PREHOOK: query: ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > 1000gb DO KILL
+PREHOOK: query: ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > "1000gb" DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
@@ -3800,7 +3832,7 @@ PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
-PREHOOK: query: ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > 1000KB DO KILL
+PREHOOK: query: ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > "1000KB" DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
@@ -4499,15 +4531,15 @@ PREHOOK: type: CREATE MAPPING
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE USER MAPPING "user1" IN plan_4a TO pool1
 POSTHOOK: type: CREATE MAPPING
-PREHOOK: query: CREATE TRIGGER plan_4a.trigger_1 WHEN BYTES_READ > 10GB DO KILL
+PREHOOK: query: CREATE TRIGGER plan_4a.trigger_1 WHEN BYTES_READ > '10GB' DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER plan_4a.trigger_1 WHEN BYTES_READ > 10GB DO KILL
+POSTHOOK: query: CREATE TRIGGER plan_4a.trigger_1 WHEN BYTES_READ > '10GB' DO KILL
 POSTHOOK: type: CREATE TRIGGER
-PREHOOK: query: CREATE TRIGGER plan_4a.trigger_2 WHEN BYTES_READ > 11GB DO KILL
+PREHOOK: query: CREATE TRIGGER plan_4a.trigger_2 WHEN BYTES_READ > '11GB' DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE TRIGGER plan_4a.trigger_2 WHEN BYTES_READ > 11GB DO KILL
+POSTHOOK: query: CREATE TRIGGER plan_4a.trigger_2 WHEN BYTES_READ > '11GB' DO KILL
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: ALTER POOL plan_4a.pool1 ADD TRIGGER trigger_2
 PREHOOK: type: ALTER POOL
