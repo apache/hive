@@ -773,7 +773,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Started/Reconnected tez sessions.");
 
       // resolve futures used for testing
-      if (HiveConf.getBoolVar(hiveServer2.hiveConf, ConfVars.HIVE_IN_TEST)) {
+      if (HiveConf.getBoolVar(hiveServer2.getHiveConf(), ConfVars.HIVE_IN_TEST)) {
         hiveServer2.isLeaderTestFuture.set(true);
         hiveServer2.resetNotLeaderTestFuture();
       }
@@ -788,7 +788,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Stopped/Disconnected tez sessions.");
 
       // resolve futures used for testing
-      if (HiveConf.getBoolVar(hiveServer2.hiveConf, ConfVars.HIVE_IN_TEST)) {
+      if (HiveConf.getBoolVar(hiveServer2.getHiveConf(), ConfVars.HIVE_IN_TEST)) {
         hiveServer2.notLeaderTestFuture.set(true);
         hiveServer2.resetIsLeaderTestFuture();
       }
@@ -803,14 +803,15 @@ public class HiveServer2 extends CompositeService {
       try {
         resourcePlan = sessionHive.getActiveResourcePlan();
       } catch (HiveException e) {
-        if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST_SSL)) {
+        if (!HiveConf.getBoolVar(getHiveConf(), ConfVars.HIVE_IN_TEST_SSL)) {
           throw new RuntimeException(e);
         } else {
           resourcePlan = null; // Ignore errors in SSL tests where the connection is misconfigured.
         }
       }
 
-      if (resourcePlan == null && HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST)) {
+      if (resourcePlan == null && HiveConf.getBoolVar(
+          getHiveConf(), ConfVars.HIVE_IN_TEST)) {
         LOG.info("Creating a default resource plan for test");
         resourcePlan = createTestResourcePlan();
       }
@@ -826,6 +827,7 @@ public class HiveServer2 extends CompositeService {
       // will be invoked anyway in TezTask. Doing it early to initialize triggers for non-pool tez session.
       LOG.info("Initializing tez session pool manager");
       tezSessionPoolManager = TezSessionPoolManager.getInstance();
+      HiveConf hiveConf = getHiveConf();
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
         if (recoverAms) {
           // Note: the main problem being the setups with multiple default queues.
@@ -850,7 +852,7 @@ public class HiveServer2 extends CompositeService {
     }
     LOG.info("Initializing workload management");
     try {
-      wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan, recoverAms);
+      wm = WorkloadManager.create(wmQueue, getHiveConf(), resourcePlan, recoverAms);
       wm.start();
       LOG.info("Workload manager initialized.");
     } catch (Exception e) {
