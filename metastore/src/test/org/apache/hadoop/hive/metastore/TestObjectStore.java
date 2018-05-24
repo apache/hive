@@ -234,10 +234,20 @@ public class TestObjectStore {
     Assert.assertEquals(TABLE1, tables.get(0));
 
     Table newTbl1 = new Table("new" + TABLE1, DB1, "owner", 1, 2, 3, sd, null, params, null, null, "MANAGED_TABLE");
+
+    // Change different fields and verify they were altered
+    newTbl1.setOwner("role1");
+    newTbl1.setOwnerType(PrincipalType.ROLE);
+
     objectStore.alterTable(DB1, TABLE1, newTbl1);
     tables = objectStore.getTables(DB1, "new*");
     Assert.assertEquals(1, tables.size());
     Assert.assertEquals("new" + TABLE1, tables.get(0));
+
+    // Verify fields were altered during the alterTable operation
+    Table alteredTable = objectStore.getTable(DB1, "new" + TABLE1);
+    Assert.assertEquals("Owner of table was not altered", newTbl1.getOwner(), alteredTable.getOwner());
+    Assert.assertEquals("Owner type of table was not altered", newTbl1.getOwnerType(), alteredTable.getOwnerType());
 
     objectStore.dropTable(DB1, "new" + TABLE1);
     tables = objectStore.getAllTables(DB1);

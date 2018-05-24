@@ -152,6 +152,9 @@
       <field name="owner">
         <column name="OWNER" length="767" jdbc-type="VARCHAR"/>
       </field>
+      <field name="ownerType">
+        <column name="OWNER_TYPE" length="10" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
       <field name="createTime">
         <column name="CREATE_TIME" jdbc-type="integer"/>
       </field>
