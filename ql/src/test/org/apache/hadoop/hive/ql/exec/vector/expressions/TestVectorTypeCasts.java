@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -167,6 +168,9 @@ public class TestVectorTypeCasts {
     LongColumnVector resultV = (LongColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
     VectorExpression expr = new CastTimestampToLong(0, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.longTypeInfo);
+    expr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
+    expr.transientInit();
     expr.evaluate(b);
     for (int i = 0; i < longValues.length; i++) {
       long actual = resultV.vector[i];
