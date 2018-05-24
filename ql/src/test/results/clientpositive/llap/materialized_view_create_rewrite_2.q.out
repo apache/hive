@@ -38,13 +38,13 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cmv_basetable_n9
 POSTHOOK: Output: default@cmv_basetable_n9
 #### A masked pattern was here ####
-PREHOOK: query: create materialized view cmv_mat_view_n9 enable rewrite
+PREHOOK: query: create materialized view cmv_mat_view_n9
 as select b from cmv_basetable_n9 where c > 10.0 group by a, b, c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n9
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_n9
-POSTHOOK: query: create materialized view cmv_mat_view_n9 enable rewrite
+POSTHOOK: query: create materialized view cmv_mat_view_n9
 as select b from cmv_basetable_n9 where c > 10.0 group by a, b, c
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n9
@@ -128,13 +128,13 @@ POSTHOOK: Input: default@cmv_basetable_n9
 #### A masked pattern was here ####
 calvin
 bonnie
-PREHOOK: query: create materialized view cmv_mat_view_2 enable rewrite
+PREHOOK: query: create materialized view cmv_mat_view_2
 as select b, c from cmv_basetable_n9 where c > 10.0 group by a, b, c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n9
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_2
-POSTHOOK: query: create materialized view cmv_mat_view_2 enable rewrite
+POSTHOOK: query: create materialized view cmv_mat_view_2
 as select b, c from cmv_basetable_n9 where c > 10.0 group by a, b, c
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n9
@@ -218,13 +218,13 @@ POSTHOOK: Input: default@cmv_basetable_n9
 #### A masked pattern was here ####
 calvin
 bonnie
-PREHOOK: query: create materialized view cmv_mat_view_3 enable rewrite
+PREHOOK: query: create materialized view cmv_mat_view_3
 as select a, b, c from cmv_basetable_n9 where c > 10.0 group by a, b, c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n9
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_3
-POSTHOOK: query: create materialized view cmv_mat_view_3 enable rewrite
+POSTHOOK: query: create materialized view cmv_mat_view_3
 as select a, b, c from cmv_basetable_n9 where c > 10.0 group by a, b, c
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n9
@@ -310,13 +310,13 @@ POSTHOOK: Input: default@cmv_mat_view_3
 #### A masked pattern was here ####
 calvin
 bonnie
-PREHOOK: query: create materialized view cmv_mat_view_4 enable rewrite
+PREHOOK: query: create materialized view cmv_mat_view_4
 as select a, b from cmv_basetable_n9 group by a, b
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n9
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_4
-POSTHOOK: query: create materialized view cmv_mat_view_4 enable rewrite
+POSTHOOK: query: create materialized view cmv_mat_view_4
 as select a, b from cmv_basetable_n9 group by a, b
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n9
@@ -432,7 +432,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cmv_basetable_2_n4
 POSTHOOK: Output: default@cmv_basetable_2_n4
 #### A masked pattern was here ####
-PREHOOK: query: create materialized view cmv_mat_view_5 enable rewrite
+PREHOOK: query: create materialized view cmv_mat_view_5
 as select cmv_basetable_n9.a, cmv_basetable_2_n4.c
    from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_basetable_2_n4.a)
    where cmv_basetable_2_n4.c > 10.0
@@ -442,7 +442,7 @@ PREHOOK: Input: default@cmv_basetable_2_n4
 PREHOOK: Input: default@cmv_basetable_n9
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_5
-POSTHOOK: query: create materialized view cmv_mat_view_5 enable rewrite
+POSTHOOK: query: create materialized view cmv_mat_view_5
 as select cmv_basetable_n9.a, cmv_basetable_2_n4.c
    from cmv_basetable_n9 join cmv_basetable_2_n4 on (cmv_basetable_n9.a = cmv_basetable_2_n4.a)
    where cmv_basetable_2_n4.c > 10.0

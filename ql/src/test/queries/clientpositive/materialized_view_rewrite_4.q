@@ -50,7 +50,7 @@ alter table depts_n4 add constraint fk2 foreign key (locationid) references loca
 
 
 -- EXAMPLE 10
-create materialized view mv1_n3 enable rewrite as
+create materialized view mv1_n3 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n5 group by name, salary;
 analyze table mv1_n3 compute statistics for columns;
@@ -65,7 +65,7 @@ from emps_n5 group by name;
 drop materialized view mv1_n3;
 
 -- EXAMPLE 11
-create materialized view mv1_n3 enable rewrite as
+create materialized view mv1_n3 as
 select name, salary, count(*) as c, sum(empid) as s
 from emps_n5 group by name, salary;
 analyze table mv1_n3 compute statistics for columns;
@@ -80,7 +80,7 @@ from emps_n5 group by name, salary;
 drop materialized view mv1_n3;
 
 -- EXAMPLE 25
-create materialized view mv1_n3 enable rewrite as
+create materialized view mv1_n3 as
 select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 group by empid, emps_n5.deptno;
@@ -98,7 +98,7 @@ group by depts_n4.deptno;
 drop materialized view mv1_n3;
 
 -- EXAMPLE 27
-create materialized view mv1_n3 enable rewrite as
+create materialized view mv1_n3 as
 select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where emps_n5.deptno >= 10 group by empid, emps_n5.deptno;
@@ -116,7 +116,7 @@ where emps_n5.deptno > 10 group by depts_n4.deptno;
 drop materialized view mv1_n3;
 
 -- EXAMPLE 28
-create materialized view mv1_n3 enable rewrite as
+create materialized view mv1_n3 as
 select empid, depts_n4.deptno, count(*) + 1 as c, sum(empid) as s
 from emps_n5 join depts_n4 using (deptno)
 where depts_n4.deptno >= 10 group by empid, depts_n4.deptno;
@@ -134,7 +134,7 @@ where depts_n4.deptno > 10 group by depts_n4.deptno;
 drop materialized view mv1_n3;
 
 -- EXAMPLE 29
-create materialized view mv1_n3 enable rewrite as
+create materialized view mv1_n3 as
 select depts_n4.name, sum(salary) as s
 from emps_n5
 join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
@@ -157,7 +157,7 @@ group by dependents_n3.empid;
 drop materialized view mv1_n3;
 
 -- EXAMPLE 32
-create materialized view mv1_n3 enable rewrite as
+create materialized view mv1_n3 as
 select dependents_n3.empid, emps_n5.deptno, count(distinct salary) as s
 from emps_n5
 join dependents_n3 on (emps_n5.empid = dependents_n3.empid)

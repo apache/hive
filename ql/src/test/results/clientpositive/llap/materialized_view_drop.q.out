@@ -1,9 +1,9 @@
-PREHOOK: query: create materialized view dmv_mat_view as select cint, cstring1 from alltypesorc where cint < 0
+PREHOOK: query: create materialized view dmv_mat_view disable rewrite as select cint, cstring1 from alltypesorc where cint < 0
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dmv_mat_view
-POSTHOOK: query: create materialized view dmv_mat_view as select cint, cstring1 from alltypesorc where cint < 0
+POSTHOOK: query: create materialized view dmv_mat_view disable rewrite as select cint, cstring1 from alltypesorc where cint < 0
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default

@@ -209,7 +209,7 @@ analyze table ssb_part_n0 compute statistics for columns;
 analyze table supplier_n0 compute statistics for columns;
 analyze table lineorder_n0 compute statistics for columns;
 
-CREATE MATERIALIZED VIEW `ssb_mv_n0` ENABLE REWRITE
+CREATE MATERIALIZED VIEW `ssb_mv_n0`
 AS
 SELECT
   c_city,
