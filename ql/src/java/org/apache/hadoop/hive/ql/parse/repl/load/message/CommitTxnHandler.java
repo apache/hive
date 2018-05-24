@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -63,8 +64,11 @@ public class CommitTxnHandler extends AbstractMessageHandler {
 
     for (int idx = 0; idx < numEntry; idx++) {
       String actualTblName = msg.getTables().get(idx);
-      //one import task per table
-      if (tableNamePrev == null || !actualTblName.equals(tableNamePrev)) {
+      String completeName = Table.getCompleteName(msg.getDatabases().get(idx), actualTblName);
+
+      // One import task per table. Events for same table are kept together in one dump directory during dump and are
+      // grouped together in commit txn message.
+      if (tableNamePrev == null || !(completeName.equals(tableNamePrev))) {
         // The data location is created by source, so the location should be formed based on the table name in msg.
         Path location = HiveUtils.getDumpPath(new Path(context.location), msg.getDatabases().get(idx), actualTblName);
         tblName = context.isTableNameEmpty() ? actualTblName : context.tableName;
@@ -77,7 +81,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
         readEntitySet.addAll(tableHandler.readEntities());
         writeEntitySet.addAll(tableHandler.writeEntities());
         getUpdatedMetadata().copyUpdatedMetadata(tableHandler.getUpdatedMetadata());
-        tableNamePrev = actualTblName;
+        tableNamePrev = completeName;
       }
 
       try {

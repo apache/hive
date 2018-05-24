@@ -1630,15 +1630,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         rollbackDBConn(dbConn);
         if (isDuplicateKeyError(e)) {
           // in case of key duplicate error, retry as it might be because of race condition
-          if (waitForRetry("allocateTableWriteIds(" + acidWriteEvent + ")", e.getMessage())) {
+          if (waitForRetry("addWriteNotificationLog(" + acidWriteEvent + ")", e.getMessage())) {
             throw new RetryException();
           }
           retryNum = 0;
           throw new MetaException(e.getMessage());
         }
-        checkRetryable(dbConn, e, "allocateTableWriteIds(" + acidWriteEvent + ")");
-        throw new MetaException("Unable to update transaction database "
-                + StringUtils.stringifyException(e));
+        checkRetryable(dbConn, e, "addWriteNotificationLog(" + acidWriteEvent + ")");
+        throw new MetaException("Unable to add write notification event " + StringUtils.stringifyException(e));
       } finally{
         closeDbConn(dbConn);
         unlockInternal();

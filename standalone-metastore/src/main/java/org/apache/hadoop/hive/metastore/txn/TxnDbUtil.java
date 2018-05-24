@@ -247,7 +247,7 @@ public final class TxnDbUtil {
               "\"NEXT_EVENT_ID\" FROM \"APP\".\"NOTIFICATION_SEQUENCE\")");
 
       try {
-        stmt.execute("CREATE TABLE WRITE_NOTIFICATION_LOG (" +
+        stmt.execute("CREATE TABLE TXN_WRITE_NOTIFICATION_LOG (" +
                 "WNL_ID bigint NOT NULL," +
                 "WNL_TXNID bigint NOT NULL," +
                 "WNL_WRITEID bigint NOT NULL," +
@@ -262,17 +262,17 @@ public final class TxnDbUtil {
         );
       } catch (SQLException e) {
         if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-          LOG.info("WRITE_NOTIFICATION_LOG table already exist, ignoring");
+          LOG.info("TXN_WRITE_NOTIFICATION_LOG table already exist, ignoring");
         } else {
           throw e;
         }
       }
 
       stmt.execute("INSERT INTO \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\") " +
-              "SELECT * FROM (VALUES ('org.apache.hadoop.hive.metastore.model.MWriteNotificationLog', " +
+              "SELECT * FROM (VALUES ('org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog', " +
               "1)) tmp_table WHERE NOT EXISTS ( SELECT \"NEXT_VAL\" FROM \"APP\"" +
               ".\"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\" = 'org.apache.hadoop.hive.metastore" +
-              ".model.MWriteNotificationLog')");
+              ".model.MTxnWriteNotificationLog')");
     } catch (SQLException e) {
       try {
         conn.rollback();

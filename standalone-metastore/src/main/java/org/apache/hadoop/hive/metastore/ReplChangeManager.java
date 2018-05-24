@@ -59,6 +59,7 @@ public class ReplChangeManager {
   static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
   private static final String URI_FRAGMENT_SEPARATOR = "#";
   public static final String SOURCE_OF_REPLICATION = "repl.source.for";
+  private static final String TXN_WRITE_EVENT_FILE_SEPARATOR = "]";
 
   public enum RecycleType {
     MOVE,
@@ -491,10 +492,10 @@ public class ReplChangeManager {
   }
 
   public static String joinWithSeparator(Iterable<?> strings) {
-    return org.apache.hadoop.util.StringUtils.join("]", strings);
+    return org.apache.hadoop.util.StringUtils.join(TXN_WRITE_EVENT_FILE_SEPARATOR, strings);
   }
 
   public static String[] getListFromSeparatedString(String commaSeparatedString) {
-    return commaSeparatedString.split("\\s*]\\s*");
+    return commaSeparatedString.split("\\s*" + TXN_WRITE_EVENT_FILE_SEPARATOR + "\\s*");
   }
 }

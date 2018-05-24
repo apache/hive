@@ -296,6 +296,9 @@ public interface HiveTxnManager {
    */
   int getStmtIdAndIncrement();
 
+  // Can be used by operation to set the stmt id when allocation is done somewhere else.
+  int getCurrentStmtId();
+
   /**
    * Acquire the materialization rebuild lock for a given view. We need to specify the fully
    * qualified name of the materialized view and the open transaction ID so we can identify

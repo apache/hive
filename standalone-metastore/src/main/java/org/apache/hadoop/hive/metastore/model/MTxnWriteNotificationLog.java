@@ -18,10 +18,10 @@
 package org.apache.hadoop.hive.metastore.model;
 
 /**
- * MWriteNotificationLog
+ * MTxnWriteNotificationLog
  * DN table for ACID write events.
  */
-public class MWriteNotificationLog {
+public class MTxnWriteNotificationLog {
   private long txnId;
   private long writeId;
   private int eventTime;
@@ -32,10 +32,10 @@ public class MWriteNotificationLog {
   private String partObject;
   private String files;
 
-  public MWriteNotificationLog() {
+  public MTxnWriteNotificationLog() {
   }
 
-  public MWriteNotificationLog(long txnId, long writeId, int eventTime, String database, String table,
+  public MTxnWriteNotificationLog(long txnId, long writeId, int eventTime, String database, String table,
                                String partition, String tableObject, String partObject, String files) {
     this.txnId = txnId;
     this.writeId = writeId;

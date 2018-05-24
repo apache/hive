@@ -671,7 +671,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    * Close statement instance.
    * @param stmt statement instance.
    */
-  protected static void closeStmt(Statement stmt) {
+  private static void closeStmt(Statement stmt) {
     try {
       if (stmt != null && !stmt.isClosed()) {
         stmt.close();
@@ -685,7 +685,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    * Close the ResultSet.
    * @param rs may be {@code null}
    */
-  static void close(ResultSet rs) {
+  private static void close(ResultSet rs) {
     try {
       if (rs != null && !rs.isClosed()) {
         rs.close();
@@ -721,9 +721,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   private void addWriteNotificationLog(NotificationEvent event, AcidWriteEvent acidWriteEvent, Connection dbConn,
                                  SQLGenerator sqlGenerator, AcidWriteMessage msg) throws MetaException, SQLException {
-    LOG.debug("DbNotificationListener: adding write notification log for : {}:{}", event.getEventId(),
-            event.getMessage());
-
+    LOG.debug("DbNotificationListener: adding write notification log for : {}", event.getMessage());
     assert ((dbConn != null) && (sqlGenerator != null));
 
     Statement stmt =null;
@@ -741,7 +739,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
-      String s = sqlGenerator.addForUpdateClause("select WNL_FILES, WNL_ID from WRITE_NOTIFICATION_LOG " +
+      String s = sqlGenerator.addForUpdateClause("select WNL_FILES, WNL_ID from" +
+                      " TXN_WRITE_NOTIFICATION_LOG " +
                       "where WNL_DATABASE = " + quoteString(dbName) +
                       "and WNL_TABLE = " + quoteString(tblName) +  " and WNL_PARTITION = " + quoteString(partition) +
                       " and WNL_TXNID = " + Long.toString(acidWriteEvent.getTxnId()));
@@ -750,8 +749,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       if (!rs.next()) {
         // if rs is empty then no lock is taken and thus it can not cause deadlock.
         long nextNLId = getNextNLId(stmt, sqlGenerator,
-                "org.apache.hadoop.hive.metastore.model.MWriteNotificationLog");
-        s = "insert into WRITE_NOTIFICATION_LOG (WNL_ID, WNL_TXNID, WNL_WRITEID, WNL_DATABASE, WNL_TABLE," +
+                "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog");
+        s = "insert into TXN_WRITE_NOTIFICATION_LOG (WNL_ID, WNL_TXNID, WNL_WRITEID, WNL_DATABASE, WNL_TABLE," +
                 " WNL_PARTITION, WNL_TABLE_OBJ, WNL_PARTITION_OBJ, WNL_FILES, WNL_EVENT_TIME) values (" + nextNLId
                 + "," + acidWriteEvent.getTxnId() +  "," + acidWriteEvent.getWriteId()+  "," +
                 quoteString(dbName)+  "," +  quoteString(tblName)+  "," + quoteString(partition)+  "," +
@@ -762,26 +761,20 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       } else {
         String existingFiles = rs.getString(1);
         if (existingFiles.contains(sqlGenerator.addEscapeCharacters(files))) {
-          //if list of files are already present then no need to update it again.
+          // If list of files are already present then no need to update it again. This scenario can come in case of
+          // retry done to the meta store for the same operation.
           LOG.info("file list " + files + " already present");
           return;
         }
         long nlId = rs.getLong(2);
         files = ReplChangeManager.joinWithSeparator(Lists.newArrayList(files, existingFiles));
-        s = "update WRITE_NOTIFICATION_LOG set WNL_TABLE_OBJ = " +  quoteString(tableObj) + "," +
+        s = "update TXN_WRITE_NOTIFICATION_LOG set WNL_TABLE_OBJ = " +  quoteString(tableObj) + "," +
                 " WNL_PARTITION_OBJ = " + quoteString(partitionObj) + "," +
                 " WNL_FILES = " + quoteString(files) + "," +
                 " WNL_EVENT_TIME = " + now() +
                 " where WNL_ID = " + nlId;
         LOG.info("Going to execute update <" + s + ">");
         stmt.executeUpdate(sqlGenerator.addEscapeCharacters(s));
-      }
-
-      // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
-      if (event.isSetEventId()) {
-        acidWriteEvent.putParameter(
-                MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
-                Long.toString(event.getEventId()));
       }
     } catch (SQLException e) {
       LOG.warn("failed to add write notification log" + e.getMessage());
@@ -798,8 +791,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   private void addNotificationLog(NotificationEvent event, ListenerEvent listenerEvent, Connection dbConn,
                                   SQLGenerator sqlGenerator) throws MetaException, SQLException {
-    LOG.debug("DbNotificationListener: adding notification log for : {}:{}", event.getEventId(),
-            event.getMessage());
+    LOG.debug("DbNotificationListener: adding notification log for : {}", event.getMessage());
     if ((dbConn == null) || (sqlGenerator == null)) {
       LOG.info("connection or sql generator is not set so executing sql via DN");
       process(event, listenerEvent);

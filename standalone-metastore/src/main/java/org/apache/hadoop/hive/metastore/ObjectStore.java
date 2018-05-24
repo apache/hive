@@ -207,7 +207,7 @@ import org.apache.hadoop.hive.metastore.model.MWMPool;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MWMTrigger;
-import org.apache.hadoop.hive.metastore.model.MWriteNotificationLog;
+import org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -9621,9 +9621,9 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       long tmp = System.currentTimeMillis() / 1000 - olderThan;
       int tooOld = (tmp > Integer.MAX_VALUE) ? 0 : (int) tmp;
-      query = pm.newQuery(MWriteNotificationLog.class, "eventTime < tooOld");
+      query = pm.newQuery(MTxnWriteNotificationLog.class, "eventTime < tooOld");
       query.declareParameters("java.lang.Integer tooOld");
-      Collection<MWriteNotificationLog> toBeRemoved = (Collection) query.execute(tooOld);
+      Collection<MTxnWriteNotificationLog> toBeRemoved = (Collection) query.execute(tooOld);
       if (CollectionUtils.isNotEmpty(toBeRemoved)) {
         pm.deletePersistentAll(toBeRemoved);
       }
@@ -9648,15 +9648,15 @@ public class ObjectStore implements RawStore, Configurable {
       if (tableName != null) {
         appendSimpleCondition(filterBuilder, "table", new String[]{tableName}, parameterVals);
       }
-      query = pm.newQuery(MWriteNotificationLog.class, filterBuilder.toString());
-      query.setOrdering("table ascending");
-      List<MWriteNotificationLog> mplans = (List<MWriteNotificationLog>)query.executeWithArray(
+      query = pm.newQuery(MTxnWriteNotificationLog.class, filterBuilder.toString());
+      query.setOrdering("database,table ascending");
+      List<MTxnWriteNotificationLog> mplans = (List<MTxnWriteNotificationLog>)query.executeWithArray(
               parameterVals.toArray(new String[parameterVals.size()]));
       pm.retrieveAll(mplans);
       commited = commitTransaction();
       if (mplans != null && mplans.size() > 0) {
         writeEventInfoList = Lists.newArrayList();
-        for (MWriteNotificationLog mplan : mplans) {
+        for (MTxnWriteNotificationLog mplan : mplans) {
           WriteEventInfo writeEventInfo = new WriteEventInfo(mplan.getWriteId(), mplan.getDatabase(),
                   mplan.getTable(), mplan.getFiles());
           writeEventInfo.setPartition(mplan.getPartition());

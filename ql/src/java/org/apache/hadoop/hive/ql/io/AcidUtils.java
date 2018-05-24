@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,21 +70,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import java.io.IOException;
-import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
-
 
 /**
  * Utilities that are shared by all of the ACID input and output formats. They
@@ -1908,7 +1893,7 @@ public class AcidUtils {
   }
 
   //Get the first level acid directory (if any) from a given path
-  public static String getFirstLevelAcidDir(Path dataPath, FileSystem fileSystem) throws IOException {
+  public static String getFirstLevelAcidDirPath(Path dataPath, FileSystem fileSystem) throws IOException {
     if (dataPath == null) {
       return null;
     }
@@ -1917,15 +1902,16 @@ public class AcidUtils {
       return firstLevelAcidDir;
     }
 
-    String acidDir = getFirstLevelAcidDir(dataPath.getParent(), fileSystem);
-    if (acidDir == null) {
+    String acidDirPath = getFirstLevelAcidDirPath(dataPath.getParent(), fileSystem);
+    if (acidDirPath == null) {
       return null;
     }
 
+    // We need the path for directory so no need to append file name
     if (fileSystem.isDirectory(dataPath)) {
-      return acidDir + Path.SEPARATOR + dataPath.getName();
+      return acidDirPath + Path.SEPARATOR + dataPath.getName();
     }
-    return acidDir;
+    return acidDirPath;
   }
 
   public static boolean isAcidEnabled(HiveConf hiveConf) {

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -84,6 +85,14 @@ class CommitTxnHandler extends AbstractEventHandler {
     }
   }
 
+  private void createDumpFileForTable(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
+                    List<Partition> qlPtns, List<List<String>> fileListArray) throws IOException, SemanticException {
+    Path newPath = HiveUtils.getDumpPath(withinContext.eventRoot, qlMdTable.getDbName(), qlMdTable.getTableName());
+    Context context = new Context(withinContext);
+    context.setEventRoot(newPath);
+    createDumpFile(context, qlMdTable, qlPtns, fileListArray);
+  }
+
   @Override
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} COMMIT_TXN message : {}", fromEventId(), event.getMessage());
@@ -92,8 +101,12 @@ class CommitTxnHandler extends AbstractEventHandler {
     if (!withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY)) {
       CommitTxnMessage commitTxnMessage = deserializer.getCommitTxnMessage(event.getMessage());
 
+      String contextDbName =  withinContext.dbName == null ? null :
+              StringUtils.normalizeIdentifier(withinContext.dbName);
+      String contextTableName =  withinContext.tableName == null ? null :
+              StringUtils.normalizeIdentifier(withinContext.tableName);
       List<WriteEventInfo> writeEventInfoList = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf).
-              getAllWriteEventInfo(commitTxnMessage.getTxnId(), withinContext.dbName, withinContext.tableName);
+              getAllWriteEventInfo(commitTxnMessage.getTxnId(), contextDbName, contextTableName);
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);
       if (numEntry != 0) {
         commitTxnMessage.addWriteEventInfo(writeEventInfoList);
@@ -101,7 +114,6 @@ class CommitTxnHandler extends AbstractEventHandler {
         LOG.debug("payload for commit txn event : " + payload);
       }
 
-      Context  context = null;
       org.apache.hadoop.hive.ql.metadata.Table qlMdTablePrev = null;
       org.apache.hadoop.hive.ql.metadata.Table qlMdTable = null;
       List<Partition> qlPtns = new ArrayList<>();
@@ -115,16 +127,13 @@ class CommitTxnHandler extends AbstractEventHandler {
       // used during import, so we need not dump the latest table metadata.
       for (int idx = 0; idx < numEntry; idx++) {
         qlMdTable = new org.apache.hadoop.hive.ql.metadata.Table(commitTxnMessage.getTableObj(idx));
-        Path newPath = HiveUtils.getDumpPath(withinContext.eventRoot, qlMdTable.getDbName(), qlMdTable.getTableName());
-        context = new Context(withinContext);
-        context.setEventRoot(newPath);
         if (qlMdTablePrev == null) {
           qlMdTablePrev = qlMdTable;
         }
 
         // one dump directory per table
-        if (!qlMdTablePrev.getTableName().equals(qlMdTable.getTableName())) {
-          createDumpFile(context, qlMdTablePrev, qlPtns, filesTobeAdded);
+        if (!qlMdTablePrev.getCompleteName().equals(qlMdTable.getCompleteName())) {
+          createDumpFileForTable(withinContext, qlMdTablePrev, qlPtns, filesTobeAdded);
           qlPtns = new ArrayList<>();
           filesTobeAdded = new ArrayList<>();
           qlMdTablePrev = qlMdTable;
@@ -141,7 +150,7 @@ class CommitTxnHandler extends AbstractEventHandler {
 
       //Dump last table in the list
       if (qlMdTablePrev != null) {
-        createDumpFile(context, qlMdTablePrev, qlPtns, filesTobeAdded);
+        createDumpFileForTable(withinContext, qlMdTablePrev, qlPtns, filesTobeAdded);
       }
     }
 

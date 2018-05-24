@@ -288,10 +288,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         + work.getLoadMultiFilesWork());
     }
 
-    LOG.debug("Executing MoveWork " + System.identityHashCode(work)
-            + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
-            + work.getLoadMultiFilesWork());
-
     try {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
         return 0;

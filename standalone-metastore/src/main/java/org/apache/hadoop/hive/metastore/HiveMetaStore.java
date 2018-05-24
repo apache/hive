@@ -7189,6 +7189,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
           InsertEventRequestData insertData = new InsertEventRequestData();
           insertData.setReplace(true);
+
+          // The files in the commit txn message during load will have files with path corresponding to source
+          // warehouse. Need to transform them to target warehouse using table or partition object location.
           for (String file : filesAdded) {
             String[] decodedPath = ReplChangeManager.decodeFileUri(file);
             String name = (new Path(decodedPath[0])).getName();

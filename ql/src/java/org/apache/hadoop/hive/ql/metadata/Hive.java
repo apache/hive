@@ -1725,8 +1725,6 @@ public class Hive {
       // the list of files added. For not yet existing partitions (insert overwrite to new partition
       // or dynamic partition inserts), the add partition event will capture the list of files added.
       if (areEventsForDmlNeeded(tbl, oldPart)) {
-        // For Acid IUD, add partition is a meta data only operation. So need to add the new files added
-        // information into the write_notification_log table.
         newFiles = Collections.synchronizedList(new ArrayList<Path>());
       }
 
@@ -1741,8 +1739,8 @@ public class Hive {
           Utilities.FILE_OP_LOGGER.trace("not moving " + loadPath + " to " + newPartPath + " (MM)");
         }
         assert !isAcidIUDoperation;
-        if (areEventsForDmlNeeded(tbl, oldPart)) {
-          newFiles = listFilesCreatedByQuery(loadPath, writeId, stmtId, isMmTableWrite ? isInsertOverwrite : false);
+        if (newFiles != null) {
+          listFilesCreatedByQuery(loadPath, writeId, stmtId, isMmTableWrite ? isInsertOverwrite : false, newFiles);
         }
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("maybe deleting stuff from " + oldPartPath
@@ -1792,7 +1790,7 @@ public class Hive {
       // Generate an insert event only if inserting into an existing partition
       // When inserting into a new partition, the add partition event takes care of insert event
       if ((null != oldPart) && (null != newFiles)) {
-        if (AcidUtils.isTransactionalTable(tbl)) {
+        if (isTxnTable) {
           addWriteNotificationLog(tbl, partSpec, newFiles, writeId);
         } else {
           fireInsertEvent(tbl, partSpec, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
@@ -1872,7 +1870,7 @@ public class Hive {
 
         // For acid table, add the acid_write event with file list at the time of load itself. But
         // it should be done after partition is created.
-        if (AcidUtils.isTransactionalTable(tbl) && (null != newFiles)) {
+        if (isTxnTable && (null != newFiles)) {
           addWriteNotificationLog(tbl, partSpec, newFiles, writeId);
         }
       } else {
@@ -1929,20 +1927,16 @@ public class Hive {
   }
 
   private boolean areEventsForDmlNeeded(Table tbl, Partition oldPart) {
+    // For Acid IUD, add partition is a meta data only operation. So need to add the new files added
+    // information into the TXN_WRITE_NOTIFICATION_LOG table.
     return conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() &&
             ((null != oldPart) || AcidUtils.isTransactionalTable(tbl));
   }
 
-  private void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles) throws HiveException {
+  private void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles) throws IOException {
     // list out all the files/directory in the path
     FileStatus[] acidFiles;
-    try {
-      acidFiles = srcFs.listStatus(acidDir);
-    } catch (IOException e) {
-      LOG.error("Error listing files", e);
-      throw new HiveException(e);
-    }
-
+    acidFiles = srcFs.listStatus(acidDir);
     if (acidFiles == null) {
       LOG.debug("No files added by this query in: " + acidDir);
       return;
@@ -1957,9 +1951,8 @@ public class Hive {
     }
   }
 
-  private List<Path> listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
-                                             boolean isInsertOverwrite) throws HiveException {
-    List<Path> newFiles = new ArrayList<>();
+  private void listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
+                                             boolean isInsertOverwrite, List<Path> newFiles) throws HiveException {
     Path acidDir = new Path(loadPath, AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
     try {
       FileSystem srcFs = loadPath.getFileSystem(conf);
@@ -1968,13 +1961,13 @@ public class Hive {
         listFilesInsideAcidDirectory(acidDir, srcFs, newFiles);
       } else {
         LOG.info("directory does not exist: " + acidDir);
-        return newFiles;
+        return;
       }
     } catch (IOException e) {
       LOG.error("Error listing files", e);
       throw new HiveException(e);
     }
-    return newFiles;
+    return;
   }
 
   private void setStatsPropAndAlterPartition(boolean hasFollowingStatsTask, Table tbl,
@@ -2344,7 +2337,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
         Utilities.FILE_OP_LOGGER.debug(
             "not moving " + loadPath + " to " + tbl.getPath() + " (MM)");
       }
-      newFiles = listFilesCreatedByQuery(loadPath, writeId, stmtId, isMmTable ? isInsertOverwrite : false);
+
+      //new files list is required only for event notification.
+      if (newFiles != null) {
+        listFilesCreatedByQuery(loadPath, writeId, stmtId, isMmTable ? isInsertOverwrite : false, newFiles);
+      }
     } else {
       // Either a non-MM query, or a load into MM table from an external source.
       Path tblPath = tbl.getPath();
@@ -2689,7 +2686,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return;
     }
 
-    LOG.debug("adding write notification log for operation " + writeId);
+    LOG.debug("adding write notification log for operation " + writeId + " table " + tbl.getCompleteName() +
+                        "partition " + partitionSpec + " list of files " + newFiles);
 
     try {
       FileSystem fileSystem = tbl.getDataLocation().getFileSystem(conf);
@@ -2789,7 +2787,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       InsertEventRequestData insertData) throws IOException {
     insertData.addToFilesAdded(p.toString());
     FileChecksum cksum = fileSystem.getFileChecksum(p);
-    String acidDir = AcidUtils.getFirstLevelAcidDir(p.getParent(), fileSystem);
+    String acidDirPath = AcidUtils.getFirstLevelAcidDirPath(p.getParent(), fileSystem);
     // File checksum is not implemented for local filesystem (RawLocalFileSystem)
     if (cksum != null) {
       String checksumString =
@@ -2799,8 +2797,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // Add an empty checksum string for filesystems that don't generate one
       insertData.addToFilesAddedChecksum("");
     }
-    if (acidDir != null) {
-      insertData.addToSubDirectoryList(acidDir);
+
+    // acid dir will be present only for acid write operations.
+    if (acidDirPath != null) {
+      insertData.addToSubDirectoryList(acidDirPath);
     }
   }
 

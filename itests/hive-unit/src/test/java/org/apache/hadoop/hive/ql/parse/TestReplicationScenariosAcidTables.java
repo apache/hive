@@ -93,6 +93,7 @@ public class TestReplicationScenariosAcidTables {
         put("hive.exec.dynamic.partition.mode", "nonstrict");
         put("hive.strict.checks.bucketing", "false");
         put("hive.mapred.mode", "nonstrict");
+        put("mapred.input.dir.recursive", "true");
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
@@ -539,8 +540,9 @@ public class TestReplicationScenariosAcidTables {
 
     insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
     updateRecords(tableName);
-    incrementalDump = verifyIncrementalLoad(Collections.singletonList("select value from " + tableName),
-            Collections.singletonList(new String[] {"1", "100", "100"}),
+    incrementalDump = verifyIncrementalLoad(Collections.singletonList("select value from " +
+                    tableName + " order by value"),
+            Collections.singletonList(new String[] {"1", "100", "100", "100", "100"}),
             bootStrapDump.lastReplicationId);
   }
 
@@ -591,9 +593,7 @@ public class TestReplicationScenariosAcidTables {
   @Test
   public void testMerge() throws Throwable {
     String tableName = testName.getMethodName();
-    String tableNameMM = testName.getMethodName() + "_MM";
     String tableNameMerge = testName.getMethodName() + "_Merge";
-    String tableNameMergeMM = testName.getMethodName() + "_MergeMM";
     WarehouseInstance.Tuple incrementalDump;
 
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
@@ -602,12 +602,12 @@ public class TestReplicationScenariosAcidTables {
             .verifyResult(bootStrapDump.lastReplicationId);
 
     insertForMerge(tableName, tableNameMerge, false);
-    incrementalDump = verifyIncrementalLoad(Lists.newArrayList("select last_update_user from " + tableName,
-                                             "select key from " + tableNameMerge,
-                                             "select ID from " + tableNameMerge),
+    incrementalDump = verifyIncrementalLoad(Lists.newArrayList("select last_update_user from " +
+                                          tableName + " order by last_update_user",
+                                             "select ID from " + tableNameMerge + " order by ID"),
                           Lists.newArrayList(new String[] {"creation", "creation", "creation", "creation", "creation",
                                           "creation", "creation", "merge_update", "merge_insert", "merge_insert"},
-                            new String[] {"1", "2", "3", "4", "5", "6"}, new String[] {"1", "4", "7", "8", "8", "11"}),
+                             new String[] {"1", "4", "7", "8", "8", "11"}),
                           bootStrapDump.lastReplicationId);
   }
 
@@ -650,9 +650,9 @@ public class TestReplicationScenariosAcidTables {
     insertRecords(tableName, tableNameImport, false, OperationType.REPL_TEST_ACID_INSERT_IMPORT);
     incrementalDump = verifyLoad(tableName, tableNameImport, bootStrapDump.lastReplicationId);
 
-    /*insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
     insertRecords(tableNameMM, tableNameImportMM, true, OperationType.REPL_TEST_ACID_INSERT_IMPORT);
-    incrementalDump = verifyLoad(tableNameMM, tableNameImportMM, incrementalDump.lastReplicationId);*/
+    incrementalDump = verifyLoad(tableNameMM, tableNameImportMM, incrementalDump.lastReplicationId);
   }
 
   @Test
@@ -704,6 +704,8 @@ public class TestReplicationScenariosAcidTables {
     String tableNameUnion = testName.getMethodName() +"_UNION";
     String tableNameMM = testName.getMethodName() + "_MM";
     String tableNameUnionMM = testName.getMethodName() +"_UNIONMM";
+    String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
+    String[] resultArrayUnion = new String[]{"1", "1", "2", "2", "3", "3", "4", "4", "5", "5"};
 
     WarehouseInstance.Tuple incrementalDump;
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
@@ -713,11 +715,21 @@ public class TestReplicationScenariosAcidTables {
 
     insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
     insertRecords(tableName, tableNameUnion, false, OperationType.REPL_TEST_ACID_INSERT_UNION);
-    incrementalDump = verifyLoad(tableName, tableNameUnion, bootStrapDump.lastReplicationId);
+    incrementalDump = verifyIncrementalLoad(Lists.newArrayList("select key from " + tableName + " order by key",
+            "select key from " + tableNameUnion + " order by key",
+            "select key from " + tableName + "_nopart" + " order by key",
+            "select key from " + tableNameUnion + "_nopart" + " order by key"),
+            Lists.newArrayList(resultArray, resultArrayUnion, resultArray, resultArrayUnion),
+            bootStrapDump.lastReplicationId);
 
     insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
     insertRecords(tableNameMM, tableNameUnionMM, true, OperationType.REPL_TEST_ACID_INSERT_UNION);
-    incrementalDump = verifyLoad(tableNameMM, tableNameUnionMM, incrementalDump.lastReplicationId);
+    incrementalDump = verifyIncrementalLoad(Lists.newArrayList("select key from " + tableNameMM + " order by key",
+            "select key from " + tableNameUnionMM + " order by key",
+            "select key from " + tableNameMM + "_nopart" + " order by key",
+            "select key from " + tableNameUnionMM + "_nopart" + " order by key"),
+            Lists.newArrayList(resultArray, resultArrayUnion, resultArray, resultArrayUnion),
+            incrementalDump.lastReplicationId);
   }
 
   @Test
@@ -764,15 +776,38 @@ public class TestReplicationScenariosAcidTables {
             .verifyResult(bootStrapDump.lastReplicationId);
 
     insertIntoDB(primaryDbName, tableName, tableProperty, resultArray, true);
-    incrementalDump = verifyLoad(tableName, tableName, bootStrapDump.lastReplicationId);
+    incrementalDump = verifyLoad(tableName, null, bootStrapDump.lastReplicationId);
 
     tableProperty = setMMtableProperty(tableProperty);
     insertIntoDB(primaryDbName, tableNameMM, tableProperty, resultArray, true);
-    incrementalDump = verifyLoad(tableNameMM, tableNameMM, incrementalDump.lastReplicationId);
+    incrementalDump = verifyLoad(tableNameMM, null, incrementalDump.lastReplicationId);
+  }
+
+  @Test
+  public void testMultiStatementTxnUpdateDelete() throws Throwable {
+    String tableName = testName.getMethodName();
+    String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
+    String tableProperty = "'transactional'='true'";
+    WarehouseInstance.Tuple incrementalDump;
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertIntoDB(primaryDbName, tableName, tableProperty, resultArray, true);
+    updateRecords(tableName);
+    incrementalDump = verifyIncrementalLoad(Collections.singletonList("select value from " +
+                    tableName + " order by value"),
+            Collections.singletonList(new String[] {"1", "100", "100", "100", "100"}),
+            bootStrapDump.lastReplicationId);
+
+    deleteRecords(tableName);
+    incrementalDump = verifyIncrementalLoad(Collections.singletonList("select count(*) from " + tableName),
+            Collections.singletonList(new String[] {"0"}), incrementalDump.lastReplicationId);
   }
 
   private void verifyResultsInReplica(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable  {
-    for (int idx = 0; idx > selectStmtList.size(); idx++) {
+    for (int idx = 0; idx < selectStmtList.size(); idx++) {
       replica.run("use " + replicatedDbName)
               .run(selectStmtList.get(idx))
               .verifyResults(expectedValues.get(idx));
@@ -802,7 +837,7 @@ public class TestReplicationScenariosAcidTables {
   private void updateRecords(String tableName) throws Throwable {
     primary.run("use " + primaryDbName)
             .run("update " + tableName + " set value = 100 where key >= 2")
-            .run("select value from " + tableName)
+            .run("select value from " + tableName + " order by value")
             .verifyResults(new String[] {"1", "100", "100", "100", "100"});
   }
 
@@ -819,13 +854,14 @@ public class TestReplicationScenariosAcidTables {
   private WarehouseInstance.Tuple verifyLoad(String tableName, String tableNameOp, String lastReplId) throws Throwable {
     String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
     if (tableNameOp == null) {
-      return verifyIncrementalLoad(Lists.newArrayList("select key from " + tableName, "select key from " + tableNameOp),
+      return verifyIncrementalLoad(Lists.newArrayList("select key from " + tableName + " order by key",
+              "select key from " + tableName + "_nopart order by key"),
               Lists.newArrayList(resultArray, resultArray), lastReplId);
     }
-    return verifyIncrementalLoad(Lists.newArrayList("select key from " + tableName,
-                                                    "select key from " + tableNameOp,
-                                                    "select key from " + tableName + "_nopart",
-                                                    "select key from " + tableNameOp + "_nopart"),
+    return verifyIncrementalLoad(Lists.newArrayList("select key from " + tableName + " order by key",
+                                                    "select key from " + tableNameOp + " order by key",
+                                                    "select key from " + tableName + "_nopart" + " order by key",
+                                                    "select key from " + tableNameOp + "_nopart" + " order by key"),
                     Lists.newArrayList(resultArray, resultArray, resultArray, resultArray), lastReplId);
   }
 
@@ -852,10 +888,10 @@ public class TestReplicationScenariosAcidTables {
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-02') VALUES (3, 3)")
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-03') VALUES (4, 4)")
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-02') VALUES (5, 5)")
-            .run("select key from " + tableName)
+            .run("select key from " + tableName + " order by key")
             .verifyResults(resultArray)
             .run("INSERT INTO " + tableName + "_nopart (key, value) select key, value from " + tableName)
-            .run("select key from " + tableName + "_nopart")
+            .run("select key from " + tableName + "_nopart" + " order by key")
             .verifyResults(resultArray)
             .run(txnStrCommit);
   }
@@ -885,7 +921,7 @@ public class TestReplicationScenariosAcidTables {
         .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-01') VALUES (2, 2)")
         .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-01') VALUES (10, 12)")
         .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-02') VALUES (11, 1)")
-        .run("select key from " + tableNameOp)
+        .run("select key from " + tableNameOp + " order by key")
         .verifyResults(new String[]{"2", "10", "11"})
         .run("insert overwrite table " + tableNameOp + " select * from " + tableName)
         .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
@@ -893,10 +929,10 @@ public class TestReplicationScenariosAcidTables {
         .run("INSERT INTO " + tableNameOp + "_nopart VALUES (2, 2)")
         .run("INSERT INTO " + tableNameOp + "_nopart VALUES (10, 12)")
         .run("INSERT INTO " + tableNameOp + "_nopart VALUES (11, 1)")
-        .run("select key from " + tableNameOp + "_nopart")
+        .run("select key from " + tableNameOp + "_nopart" + " order by key")
         .verifyResults(new String[]{"2", "10", "11"})
         .run("insert overwrite table " + tableNameOp + "_nopart select * from " + tableName + "_nopart")
-        .run("select key from " + tableNameOp + "_nopart");
+        .run("select key from " + tableNameOp + "_nopart" + " order by key");
         break;
       case REPL_TEST_ACID_INSERT_SELECT:
         primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
@@ -949,8 +985,8 @@ public class TestReplicationScenariosAcidTables {
       default:
         return;
     }
-    primary.run("select key from " + tableNameOp).verifyResults(resultArray);
-    primary.run("select key from " + tableNameOp + "_nopart").verifyResults(resultArray);
+    primary.run("select key from " + tableNameOp + " order by key").verifyResults(resultArray);
+    primary.run("select key from " + tableNameOp + "_nopart" + " order by key").verifyResults(resultArray);
   }
 
   private String setMMtableProperty(String tableProperty) throws Throwable  {
@@ -977,20 +1013,20 @@ public class TestReplicationScenariosAcidTables {
                 " (6, 'value_06', 'creation', '20170413'), (7, 'value_07', 'creation', '20170413'),  " +
                 " (8, 'value_08', 'creation', '20170413'), (9, 'value_09', 'creation', '20170413'), " +
                 " (10, 'value_10','creation', '20170413')")
-        .run("select ID from " + tableName)
+        .run("select ID from " + tableName + " order by ID")
         .verifyResults(new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"})
         .run("INSERT INTO " + tableNameMerge + " VALUES (1, 'value_01', '20170410'), " +
                 " (4, NULL, '20170410'), (7, 'value_77777', '20170413'), " +
                 " (8, NULL, '20170413'), (8, 'value_08', '20170415'), " +
                 "(11, 'value_11', '20170415')")
-        .run("select ID from " + tableNameMerge)
+        .run("select ID from " + tableNameMerge + " order by ID")
         .verifyResults(new String[] {"1", "4", "7", "8", "8", "11"})
         .run("MERGE INTO " + tableName + " AS T USING " + tableNameMerge + " AS S ON T.ID = S.ID and" +
                 " T.tran_date = S.tran_date WHEN MATCHED AND (T.TranValue != S.TranValue AND S.TranValue " +
                 " IS NOT NULL) THEN UPDATE SET TranValue = S.TranValue, last_update_user = " +
                 " 'merge_update' WHEN MATCHED AND S.TranValue IS NULL THEN DELETE WHEN NOT MATCHED " +
                 " THEN INSERT VALUES (S.ID, S.TranValue,'merge_insert', S.tran_date)")
-        .run("select last_update_user from " + tableName)
+        .run("select last_update_user from " + tableName + " order by last_update_user")
         .verifyResults(new String[] {"creation", "creation", "creation", "creation", "creation",
                 "creation", "creation", "merge_update", "merge_insert", "merge_insert"});
   }

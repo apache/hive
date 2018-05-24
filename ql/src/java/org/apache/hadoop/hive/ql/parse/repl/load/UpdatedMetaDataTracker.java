@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load;
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.HiveStringUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,23 +79,40 @@ public class UpdatedMetaDataTracker {
 
   public void copyUpdatedMetadata(UpdatedMetaDataTracker other) {
     int size = updateMetaDataList.size();
-    for (UpdateMetaData updateMetaData : other.updateMetaDataList) {
-      updateMetaDataList.add(updateMetaData);
-      String key = getKey(normalizeIdentifier(updateMetaData.getDbName()),
-                            normalizeIdentifier(updateMetaData.getTableName()));
-      updateMetaDataMap.put(key, size++);
+    for (UpdateMetaData updateMetaDataOther : other.updateMetaDataList) {
+      String key = getKey(normalizeIdentifier(updateMetaDataOther.getDbName()),
+              normalizeIdentifier(updateMetaDataOther.getTableName()));
+      Integer idx = updateMetaDataMap.get(key);
+      if (idx == null) {
+        updateMetaDataList.add(updateMetaDataOther);
+        updateMetaDataMap.put(key, size++);
+      } else if (updateMetaDataOther.partitionsList != null && updateMetaDataOther.partitionsList.size() != 0) {
+        UpdateMetaData updateMetaData = updateMetaDataList.get(idx);
+        for (Map<String, String> partSpec : updateMetaDataOther.partitionsList) {
+          updateMetaData.addPartition(partSpec);
+        }
+      }
     }
   }
 
   public void set(String replState, String dbName, String tableName, Map <String, String> partSpec) {
-    updateMetaDataList.add(new UpdateMetaData(replState, dbName, tableName, partSpec));
     String key = getKey(normalizeIdentifier(dbName), normalizeIdentifier(tableName));
-    updateMetaDataMap.put(key, updateMetaDataList.size() - 1);
+    Integer idx = updateMetaDataMap.get(key);
+    if (idx == null) {
+      updateMetaDataList.add(new UpdateMetaData(replState, dbName, tableName, partSpec));
+      updateMetaDataMap.put(key, updateMetaDataList.size() - 1);
+    } else {
+      updateMetaDataList.get(idx).addPartition(partSpec);
+    }
   }
 
-  public void addPartition(String dbName, String tableName, Map <String, String> partSpec) {
+  public void addPartition(String dbName, String tableName, Map <String, String> partSpec) throws HiveException {
     String key = getKey(normalizeIdentifier(dbName), normalizeIdentifier(tableName));
-    updateMetaDataList.get(updateMetaDataMap.get(key)).addPartition(partSpec);
+    Integer idx = updateMetaDataMap.get(key);
+    if (idx == null) {
+      throw new HiveException("add partition to metadata map failed as list is not yet set for table : " + key);
+    }
+    updateMetaDataList.get(idx).addPartition(partSpec);
   }
 
   public List<UpdateMetaData> getUpdateMetaDataList() {

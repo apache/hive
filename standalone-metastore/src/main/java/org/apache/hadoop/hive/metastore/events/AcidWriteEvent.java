@@ -69,7 +69,7 @@ public class AcidWriteEvent extends ListenerEvent {
   }
 
   public String getPartition() {
-    return partition == null ? null : StringUtils.normalizeIdentifier(partition);
+    return partition; //Don't normalize partition value, as its case sensitive.
   }
 
   public Long getWriteId() {
