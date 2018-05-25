@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
+import org.apache.parquet.bytes.ByteBufferInputStream;
 import org.apache.parquet.column.Dictionary;
 
 import java.io.IOException;
@@ -31,11 +32,10 @@ public interface ParquetDataColumnReader {
   /**
    * Initialize the reader by page data.
    * @param valueCount value count
-   * @param page page data
-   * @param offset current offset
+   * @param in page data
    * @throws IOException
    */
-  void initFromPage(int valueCount, byte[] page, int offset) throws IOException;
+  void initFromPage(int valueCount, ByteBufferInputStream in) throws IOException;
 
   /**
    * @return the next Dictionary ID from the page
