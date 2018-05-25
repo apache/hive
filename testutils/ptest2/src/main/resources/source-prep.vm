@@ -125,4 +125,9 @@ cd $workingDir/
    fi
    date +"%Y-%m-%d %T.%3N"
 ) 2>&1 | tee $logDir/source-prep.txt
-exit ${PIPESTATUS[0]}
+result=${PIPESTATUS[0]}
+if [ ${result} -ne 0 ]
+then
+  rm -rf yetus_${buildTag}
+fi
+exit ${result}
