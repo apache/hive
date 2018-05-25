@@ -459,9 +459,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         AcidUtils.Directory directoryState
                 = AcidUtils.getAcidState(mergerOptions.getRootPath(), conf, validWriteIdList, false, true);
         for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
-          AcidOutputFormat.Options bucketOptions =
-            AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
-          if (bucketOptions.getBucketId() != bucketId) {
+          int bucketIdFromPath = AcidUtils.parseBucketId(f.getFileStatus().getPath());
+          if (bucketIdFromPath != bucketId) {
             continue;//todo: HIVE-16952
           }
           if (haveSeenCurrentFile) {
@@ -632,9 +631,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
      */
     private Reader advanceToNextFile() throws IOException {
       while(nextFileIndex < originalFiles.size()) {
-        AcidOutputFormat.Options bucketOptions = AcidUtils.parseBaseOrDeltaBucketFilename(
-          originalFiles.get(nextFileIndex).getFileStatus().getPath(), conf);
-        if (bucketOptions.getBucketId() == bucketId) {
+        int bucketIdFromPath = AcidUtils.parseBucketId(originalFiles.get(nextFileIndex).getFileStatus().getPath());
+        if (bucketIdFromPath == bucketId) {
           break;
         }
         //the the bucket we care about here
