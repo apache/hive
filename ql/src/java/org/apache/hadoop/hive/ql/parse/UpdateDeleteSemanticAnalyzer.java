@@ -277,7 +277,9 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     TableSpec exportTableSpec = new TableSpec(db, conf, tableTree, false, true);
     if(exportTableSpec.getPartSpec() != null) {
       StringBuilder whereClause = null;
+      int partColsIdx = -1; //keep track of corresponding col in partCols
       for(Map.Entry<String, String> ent : exportTableSpec.getPartSpec().entrySet()) {
+        partColsIdx++;
         if(ent.getValue() == null) {
           continue; //partial spec
         }
@@ -288,7 +290,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
           whereClause.append(" AND ");
         }
         whereClause.append(HiveUtils.unparseIdentifier(ent.getKey(), conf))
-            .append(" = ").append(ent.getValue());
+            .append(" = ").append(genPartValueString(partCols.get(partColsIdx).getType(), ent.getValue()));
       }
       if(whereClause != null) {
         rewrittenQueryStr.append(whereClause);
