@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.parquet.bytes.ByteBufferInputStream;
 import org.apache.parquet.bytes.BytesInput;
 import org.apache.parquet.bytes.BytesUtils;
 import org.apache.parquet.column.ColumnDescriptor;
@@ -168,7 +169,7 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
     });
   }
 
-  private void initDataReader(Encoding dataEncoding, byte[] bytes, int offset, int valueCount)
+  private void initDataReader(Encoding dataEncoding, ByteBufferInputStream in, int valueCount)
       throws IOException {
     this.pageValueCount = valueCount;
     this.endOfPageValueCount = valuesRead + pageValueCount;
@@ -190,7 +191,7 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
     }
 
     try {
-      dataColumn.initFromPage(pageValueCount, bytes, offset);
+      dataColumn.initFromPage(pageValueCount, in);
     } catch (IOException e) {
       throw new IOException("could not read page in col " + descriptor, e);
     }
@@ -202,16 +203,15 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
     this.repetitionLevelColumn = new ValuesReaderIntIterator(rlReader);
     this.definitionLevelColumn = new ValuesReaderIntIterator(dlReader);
     try {
-      byte[] bytes = page.getBytes().toByteArray();
-      LOG.debug("page size " + bytes.length + " bytes and " + pageValueCount + " records");
-      LOG.debug("reading repetition levels at 0");
-      rlReader.initFromPage(pageValueCount, bytes, 0);
-      int next = rlReader.getNextOffset();
-      LOG.debug("reading definition levels at " + next);
-      dlReader.initFromPage(pageValueCount, bytes, next);
-      next = dlReader.getNextOffset();
-      LOG.debug("reading data at " + next);
-      initDataReader(page.getValueEncoding(), bytes, next, page.getValueCount());
+      BytesInput bytes = page.getBytes();
+      LOG.debug("page size " + bytes.size() + " bytes and " + pageValueCount + " records");
+      ByteBufferInputStream in = bytes.toInputStream();
+      LOG.debug("reading repetition levels at " + in.position());
+      rlReader.initFromPage(pageValueCount, in);
+      LOG.debug("reading definition levels at " + in.position());
+      dlReader.initFromPage(pageValueCount, in);
+      LOG.debug("reading data at " + in.position());
+      initDataReader(page.getValueEncoding(), in, page.getValueCount());
     } catch (IOException e) {
       throw new ParquetDecodingException("could not read page " + page + " in col " + descriptor, e);
     }
@@ -224,7 +224,7 @@ public abstract class BaseVectorizedColumnReader implements VectorizedColumnRead
     this.definitionLevelColumn = newRLEIterator(descriptor.getMaxDefinitionLevel(), page.getDefinitionLevels());
     try {
       LOG.debug("page data size " + page.getData().size() + " bytes and " + pageValueCount + " records");
-      initDataReader(page.getDataEncoding(), page.getData().toByteArray(), 0, page.getValueCount());
+      initDataReader(page.getDataEncoding(), page.getData().toInputStream(), page.getValueCount());
     } catch (IOException e) {
       throw new ParquetDecodingException("could not read page " + page + " in col " + descriptor, e);
     }
