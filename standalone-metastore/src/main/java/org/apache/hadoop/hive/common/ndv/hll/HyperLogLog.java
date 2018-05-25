@@ -281,7 +281,7 @@ public class HyperLogLog implements NumDistinctValueEstimator {
         // if encoding is still SPARSE use linear counting with increase
         // accuracy (as we use pPrime bits for register index)
         int mPrime = 1 << sparseRegister.getPPrime();
-        cachedCount = linearCount(mPrime, mPrime - sparseRegister.getSize());
+        cachedCount = linearCount(mPrime, mPrime - sparseRegister.getSparseMap().size());
       } else {
 
         // for DENSE encoding, use bias table lookup for HLLNoBias algorithm
