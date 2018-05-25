@@ -740,7 +740,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-0
 PREHOOK: query: EXPLAIN SELECT EXTRACT(MINUTE from `__time`) FROM druid_table
 WHERE  EXTRACT(MINUTE from `__time`) >= 0 LIMIT 2
 PREHOOK: type: QUERY
@@ -862,7 +861,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 31	4	31
-31	4	31
 PREHOOK: query: EXPLAIN SELECT EXTRACT(WEEK from `__time`) FROM druid_table WHERE EXTRACT(WEEK from `__time`) >= 1
 AND  EXTRACT(WEEK from `__time`) DIV 4 + 1 = 1 LIMIT 1
 PREHOOK: type: QUERY
@@ -899,7 +897,6 @@ AND  EXTRACT(WEEK from `__time`) DIV 4 + 1 = 1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1
 1
 PREHOOK: query: EXPLAIN SELECT EXTRACT(MONTH FROM  `__time`) / 4 + 1, EXTRACT(MONTH FROM  `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 6, 2) as month_str FROM druid_table
 WHERE EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 AND EXTRACT(MONTH FROM  `__time`) BETWEEN 11 AND 12 LIMIT 1
@@ -938,7 +935,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 4.0	12	12
-4.0	12	12
 PREHOOK: query: EXPLAIN SELECT EXTRACT(QUARTER from `__time`),  EXTRACT(MONTH FROM  `__time`) / 4 + 1 as q_number FROM druid_table WHERE EXTRACT(QUARTER from `__time`) >= 4
           AND EXTRACT(MONTH FROM  `__time`) / 4 + 1 = 4 LIMIT 1
 PREHOOK: type: QUERY
@@ -976,7 +972,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	4.0
-4	4.0
 PREHOOK: query: EXPLAIN SELECT EXTRACT(YEAR from `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 1, 4) AS year_str FROM druid_table WHERE EXTRACT(YEAR from `__time`) >= 1969
 AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1
 PREHOOK: type: QUERY
@@ -1013,7 +1008,6 @@ AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1969	1969
 1969	1969
 PREHOOK: query: DROP TABLE druid_table
 PREHOOK: type: DROPTABLE
