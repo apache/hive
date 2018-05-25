@@ -17,13 +17,19 @@
  */
 package org.apache.hadoop.hive.druid.io;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.List;
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Lists;
+import com.metamx.http.client.Request;
+import io.druid.query.BaseQuery;
+import io.druid.query.LocatedSegmentDescriptor;
+import io.druid.query.Query;
+import io.druid.query.SegmentDescriptor;
+import io.druid.query.scan.ScanQuery;
+import io.druid.query.select.PagingSpec;
+import io.druid.query.select.SelectQuery;
+import io.druid.query.spec.MultipleSpecificSegmentSpec;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -54,20 +60,12 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.collect.Lists;
-import com.metamx.http.client.Request;
-
-import io.druid.query.BaseQuery;
-import io.druid.query.LocatedSegmentDescriptor;
-import io.druid.query.Query;
-import io.druid.query.SegmentDescriptor;
-import io.druid.query.scan.ScanQuery;
-import io.druid.query.select.PagingSpec;
-import io.druid.query.select.SelectQuery;
-import io.druid.query.spec.MultipleSpecificSegmentSpec;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Druid query based input format.
@@ -127,9 +125,9 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       if (dataSource == null || dataSource.isEmpty()) {
         throw new IOException("Druid data source cannot be empty or null");
       }
-      //@FIXME https://issues.apache.org/jira/browse/HIVE-19023 use scan instead of Select
-      druidQuery = DruidStorageHandlerUtils.createSelectStarQuery(dataSource);
-      druidQueryType = Query.SELECT;
+
+      druidQuery = DruidStorageHandlerUtils.createScanAllQuery(dataSource);
+      druidQueryType = Query.SCAN;
     } else {
       druidQueryType = conf.get(Constants.DRUID_QUERY_TYPE);
       if (druidQueryType == null) {
@@ -210,7 +208,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
   private static HiveDruidSplit[] distributeScanQuery(Configuration conf, String address,
       ScanQuery query, Path dummyPath) throws IOException {
     // If it has a limit, we use it and we do not distribute the query
-    final boolean isFetch = query.getContextBoolean(Constants.DRUID_QUERY_FETCH, false);
+    final boolean isFetch = query.getLimit() < Long.MAX_VALUE;
     if (isFetch) {
       return new HiveDruidSplit[] { new HiveDruidSplit(
           DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath,

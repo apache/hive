@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.druid;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
@@ -47,7 +48,6 @@ import io.druid.math.expr.ExprMacroTable;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
-import io.druid.query.Druids;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.DoubleSumAggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
@@ -60,7 +60,7 @@ import io.druid.query.expression.TimestampFormatExprMacro;
 import io.druid.query.expression.TimestampParseExprMacro;
 import io.druid.query.expression.TimestampShiftExprMacro;
 import io.druid.query.expression.TrimExprMacro;
-import io.druid.query.select.PagingSpec;
+import io.druid.query.scan.ScanQuery;
 import io.druid.query.select.SelectQueryConfig;
 import io.druid.query.spec.MultipleIntervalSegmentSpec;
 import io.druid.segment.IndexIO;
@@ -127,7 +127,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -635,19 +634,16 @@ public final class DruidStorageHandlerUtils {
     );
   }
 
-  public static String createSelectStarQuery(String dataSource) throws IOException {
-    // Create Select query
-    Druids.SelectQueryBuilder builder = new Druids.SelectQueryBuilder();
-    builder.dataSource(dataSource);
+  public static String createScanAllQuery(String dataSourceName) throws JsonProcessingException {
+    final ScanQuery.ScanQueryBuilder scanQueryBuilder = ScanQuery.newScanQueryBuilder();
     final List<Interval> intervals = Arrays.asList(DEFAULT_INTERVAL);
-    builder.intervals(new MultipleIntervalSegmentSpec(intervals));
-    builder.pagingSpec(PagingSpec.newSpec(1));
-    Map<String, Object> context = new HashMap<>();
-    context.put(Constants.DRUID_QUERY_FETCH, false);
-    builder.context(context);
-    return JSON_MAPPER.writeValueAsString(builder.build());
+    ScanQuery scanQuery = scanQueryBuilder
+        .dataSource(dataSourceName)
+        .resultFormat(ScanQuery.RESULT_FORMAT_COMPACTED_LIST)
+        .intervals(new MultipleIntervalSegmentSpec(intervals))
+        .build();
+    return JSON_MAPPER.writeValueAsString(scanQuery);
   }
-
   /**
    * Simple interface for retry operations
    */
