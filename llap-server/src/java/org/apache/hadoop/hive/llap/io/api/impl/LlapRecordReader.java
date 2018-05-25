@@ -86,6 +86,8 @@ class LlapRecordReader
   private final IncludesImpl includes;
   private final SearchArgument sarg;
   private final VectorizedRowBatchCtx rbCtx;
+  private final boolean isVectorized;
+  private VectorizedOrcAcidRowBatchReader acidReader;
   private final Object[] partitionValues;
 
   private final LinkedBlockingQueue<Object> queue;
@@ -172,6 +174,12 @@ class LlapRecordReader
       VectorizedRowBatchCtx.getPartitionValues(rbCtx, mapWork, split, partitionValues);
     } else {
       partitionValues = null;
+    }
+
+    this.isVectorized = HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+    if (isAcidScan) {
+      this.acidReader = new VectorizedOrcAcidRowBatchReader((OrcSplit) split, jobConf, Reporter.NULL, null, rbCtx,
+        true);
     }
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
@@ -309,8 +317,6 @@ class LlapRecordReader
       counters.incrTimeCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
       return false;
     }
-    final boolean isVectorized = HiveConf.getBoolVar(jobConf,
-        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
     if (isAcidScan) {
       vrb.selectedInUse = true;
       if (isVectorized) {
@@ -329,10 +335,7 @@ class LlapRecordReader
           inputVrb.cols[ixInVrb] = cvb.cols[ixInReadSet];
         }
         inputVrb.size = cvb.size;
-        // TODO: reuse between calls
-        @SuppressWarnings("resource")
-        VectorizedOrcAcidRowBatchReader acidReader = new VectorizedOrcAcidRowBatchReader(
-            (OrcSplit)split, jobConf, Reporter.NULL, new AcidWrapper(inputVrb), rbCtx, true);
+        acidReader.setBaseAndInnerReader(new AcidWrapper(inputVrb));
         acidReader.next(NullWritable.get(), vrb);
       } else {
          // TODO: WTF? The old code seems to just drop the ball here.

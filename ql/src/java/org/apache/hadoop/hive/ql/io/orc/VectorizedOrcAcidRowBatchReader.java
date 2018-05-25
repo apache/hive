@@ -150,12 +150,12 @@ public class VectorizedOrcAcidRowBatchReader
    * LLAP IO c'tor
    */
   public VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf, Reporter reporter,
-      org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader,
-      VectorizedRowBatchCtx rbCtx, boolean isFlatPayload) throws IOException {
+    org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader,
+    VectorizedRowBatchCtx rbCtx, boolean isFlatPayload) throws IOException {
     this(conf, inputSplit, reporter, rbCtx, isFlatPayload);
-    this.baseReader = baseReader;
-    this.innerReader = null;
-    this.vectorizedRowBatchBase = baseReader.createValue();
+    if (baseReader != null) {
+      setBaseAndInnerReader(baseReader);
+    }
   }
 
   private VectorizedOrcAcidRowBatchReader(JobConf conf, OrcSplit orcSplit, Reporter reporter,
@@ -224,6 +224,13 @@ public class VectorizedOrcAcidRowBatchReader
     syntheticProps = computeOffsetAndBucket(orcSplit, conf, validWriteIdList);
   }
 
+  public void setBaseAndInnerReader(
+    final org.apache.hadoop.mapred.RecordReader<NullWritable,VectorizedRowBatch> baseReader) {
+    this.baseReader = baseReader;
+    this.innerReader = null;
+    this.vectorizedRowBatchBase = baseReader.createValue();
+  }
+
   /**
    * Used for generating synthetic ROW__IDs for reading "original" files
    */
@@ -268,16 +275,15 @@ public class VectorizedOrcAcidRowBatchReader
     long rowIdOffset = 0;
     OrcRawRecordMerger.TransactionMetaData syntheticTxnInfo =
         OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(split.getPath(), split.getRootDir(), conf);
-    int bucketId = AcidUtils.parseBaseOrDeltaBucketFilename(split.getPath(), conf).getBucketId();
+    int bucketId = AcidUtils.parseBucketId(split.getPath());
     int bucketProperty = BucketCodec.V1.encode(new AcidOutputFormat.Options(conf)
         //statementId is from directory name (or 0 if there is none)
       .statementId(syntheticTxnInfo.statementId).bucket(bucketId));
     AcidUtils.Directory directoryState = AcidUtils.getAcidState( syntheticTxnInfo.folder, conf,
         validWriteIdList, false, true);
     for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
-      AcidOutputFormat.Options bucketOptions =
-        AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
-      if (bucketOptions.getBucketId() != bucketId) {
+      int bucketIdFromPath = AcidUtils.parseBucketId(f.getFileStatus().getPath());
+      if (bucketIdFromPath != bucketId) {
         continue;//HIVE-16952
       }
       if (f.getFileStatus().getPath().equals(split.getPath())) {
@@ -653,7 +659,7 @@ public class VectorizedOrcAcidRowBatchReader
             throws IOException {
       final Path[] deleteDeltas = getDeleteDeltaDirsFromSplit(orcSplit);
       if (deleteDeltas.length > 0) {
-        int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucketId();
+        int bucket = AcidUtils.parseBucketId(orcSplit.getPath());
         String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
         this.validWriteIdList
                 = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
@@ -1001,7 +1007,7 @@ public class VectorizedOrcAcidRowBatchReader
 
     ColumnizedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
         Reader.Options readerOptions) throws IOException, DeleteEventsOverflowMemoryException {
-      int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucketId();
+      int bucket = AcidUtils.parseBucketId(orcSplit.getPath());
       String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       this.validWriteIdList
               = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
