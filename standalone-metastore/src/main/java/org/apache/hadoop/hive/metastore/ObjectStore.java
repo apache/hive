@@ -2550,6 +2550,22 @@ public class ObjectStore implements RawStore, Configurable {
     if (CollectionUtils.isEmpty(partNames)) {
       return;
     }
+    new GetListHelper<Void>(catName, dbName, tblName, true, true) {
+      @Override
+      protected List<Void> getSqlResult(GetHelper<List<Void>> ctx) throws MetaException {
+        directSql.dropPartitionsViaSqlFilter(catName, dbName, tblName, partNames);
+        return Collections.emptyList();
+      }
+      @Override
+      protected List<Void> getJdoResult(GetHelper<List<Void>> ctx) throws MetaException {
+        dropPartitionsViaJdo(catName, dbName, tblName, partNames);
+        return Collections.emptyList();
+      }
+    }.run(false);
+  }
+
+  private void dropPartitionsViaJdo(String catName, String dbName, String tblName,
+      List<String> partNames) throws MetaException {
     boolean success = false;
     openTransaction();
     try {
@@ -2558,7 +2574,7 @@ public class ObjectStore implements RawStore, Configurable {
       dropPartitionAllColumnGrantsNoTxn(catName, dbName, tblName, partNames);
       dropPartitionColumnStatisticsNoTxn(catName, dbName, tblName, partNames);
 
-      // CDs are reused; go thry partition SDs, detach all CDs from SDs, then remove unused CDs.
+      // CDs are reused; go try partition SDs, detach all CDs from SDs, then remove unused CDs.
       for (MColumnDescriptor mcd : detachCdsFromSdsNoTxn(catName, dbName, tblName, partNames)) {
         removeUnusedColumnDescriptor(mcd);
       }
