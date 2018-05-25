@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -27,13 +26,11 @@ import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
-import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -52,7 +49,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -77,21 +73,6 @@ public class LoadTable {
     this.replLogger = replLogger;
     this.tableContext = tableContext;
     this.tracker = new TaskTracker(limiter);
-  }
-
-  private void createTableReplLogTask(String tableName, TableType tableType) throws SemanticException {
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,tableName, tableType);
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork);
-    DAGTraversal.traverse(tracker.tasks(), new AddDependencyToLeaves(replLogTask));
-
-    if (tracker.tasks().isEmpty()) {
-      tracker.addTask(replLogTask);
-    } else {
-      DAGTraversal.traverse(tracker.tasks(), new AddDependencyToLeaves(replLogTask));
-
-      List<Task<? extends Serializable>> visited = new ArrayList<>();
-      tracker.updateTaskCount(replLogTask, visited);
-    }
   }
 
   public TaskTracker tasks() throws SemanticException {
@@ -159,9 +140,20 @@ public class LoadTable {
         existingTableTasks(tableDesc, table, replicationSpec);
       }
 
+      // Set Checkpoint task as dependant to create table task. So, if same dump is retried for
+      // bootstrap, we skip current table update.
+      Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
+              tableDesc,
+              null,
+              context.dumpDirectory,
+              context.hiveConf
+      );
       if (!isPartitioned(tableDesc)) {
-        createTableReplLogTask(tableDesc.getTableName(), tableDesc.tableType());
+        Task<? extends Serializable> replLogTask
+                = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf);
+        ckptTask.addDependentTask(replLogTask);
       }
+      tracker.addDependentTask(ckptTask);
       return tracker;
     } catch (Exception e) {
       throw new SemanticException(e);
