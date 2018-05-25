@@ -185,6 +185,10 @@
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
                         <exclude>core-default.xml</exclude>
+			<exclude>webapps/</exclude>
+			<exclude>hive-webapps/</exclude>
+			<exclude>hbase-webapps/</exclude>
+			<exclude>static/</exclude>
                       </excludes>
                     </filter>
                   </filters>
