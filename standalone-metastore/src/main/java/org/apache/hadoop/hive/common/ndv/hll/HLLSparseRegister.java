@@ -148,12 +148,7 @@ public class HLLSparseRegister implements HLLRegister {
   }
 
   public int getSize() {
-
-    // merge temp list before getting the size of sparse map
-    if (tempListIdx != 0) {
-      mergeTempListToSparseMap();
-    }
-    return sparseMap.size();
+    return sparseMap.size() + tempListIdx;
   }
 
   public void merge(HLLRegister hllRegister) {
@@ -172,27 +167,20 @@ public class HLLSparseRegister implements HLLRegister {
   }
 
   public boolean set(int key, byte value) {
-    boolean updated = false;
-
     // retain only the largest value for a register index
-    if (sparseMap.containsKey(key)) {
-      byte containedVal = sparseMap.get(key);
-      if (value > containedVal) {
-        sparseMap.put(key, value);
-        updated = true;
-      }
-    } else {
+    Byte containedValue = sparseMap.get(key);
+    if (containedValue == null || value > containedValue) {
       sparseMap.put(key, value);
-      updated = true;
+      return true;
     }
-    return updated;
+    return false;
   }
 
   public TreeMap<Integer,Byte> getSparseMap() {
-    return sparseMap;
+    return getMergedSparseMap();
   }
 
-  public TreeMap<Integer,Byte> getMergedSparseMap() {
+  private TreeMap<Integer,Byte> getMergedSparseMap() {
     if (tempListIdx != 0) {
       mergeTempListToSparseMap();
     }
