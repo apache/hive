@@ -880,10 +880,6 @@ public class VectorizedBatchUtil {
     return newBatch;
   }
 
-  public static Writable getPrimitiveWritable(TypeInfo typeInfo) {
-    return getPrimitiveWritable(((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory());
-  }
-
   public static Writable getPrimitiveWritable(PrimitiveCategory primitiveCategory) {
     switch (primitiveCategory) {
     case VOID:

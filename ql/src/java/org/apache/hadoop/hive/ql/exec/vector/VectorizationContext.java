@@ -133,7 +133,6 @@ public class VectorizationContext {
   }
 
   private HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode;
-  private boolean testVectorAdaptorOverride;
 
   public enum HiveVectorIfStmtMode {
     ADAPTOR,
@@ -159,8 +158,6 @@ public class VectorizationContext {
 
   private void setHiveConfVars(HiveConf hiveConf) {
     hiveVectorAdaptorUsageMode = HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf);
-    testVectorAdaptorOverride =
-        HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE);
     hiveVectorIfStmtMode = HiveVectorIfStmtMode.getHiveConfValue(hiveConf);
     this.reuseScratchColumns =
         HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_VECTORIZATION_TESTING_REUSE_SCRATCH_COLUMNS);
@@ -174,11 +171,8 @@ public class VectorizationContext {
 
   private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
     hiveVectorAdaptorUsageMode = vContextEnvironment.hiveVectorAdaptorUsageMode;
-    testVectorAdaptorOverride = vContextEnvironment.testVectorAdaptorOverride;
     hiveVectorIfStmtMode = vContextEnvironment.hiveVectorIfStmtMode;
     this.reuseScratchColumns = vContextEnvironment.reuseScratchColumns;
-    useCheckedVectorExpressions = vContextEnvironment.useCheckedVectorExpressions;
-    adaptorSuppressEvaluateExceptions = vContextEnvironment.adaptorSuppressEvaluateExceptions;
     this.ocm.setReuseColumns(reuseScratchColumns);
   }
 
@@ -807,12 +801,8 @@ public class VectorizationContext {
       // Note: this is a no-op for custom UDFs
       List<ExprNodeDesc> childExpressions = getChildExpressionsWithImplicitCast(expr.getGenericUDF(),
           exprDesc.getChildren(), exprDesc.getTypeInfo());
-
-      // Are we forcing the usage of VectorUDFAdaptor for test purposes?
-      if (!testVectorAdaptorOverride) {
-        ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
-            childExpressions, mode, exprDesc.getTypeInfo());
-      }
+      ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
+          childExpressions, mode, exprDesc.getTypeInfo());
       if (ve == null) {
         // Ok, no vectorized class available.  No problem -- try to use the VectorUDFAdaptor
         // when configured.
@@ -1114,7 +1104,7 @@ public class VectorizationContext {
     return HiveDecimalUtils.getPrecisionForType(typeInfo);
   }
 
-  public static GenericUDF getGenericUDFForCast(TypeInfo castType) throws HiveException {
+  private GenericUDF getGenericUDFForCast(TypeInfo castType) throws HiveException {
     UDF udfClass = null;
     GenericUDF genericUdf = null;
     switch (((PrimitiveTypeInfo) castType).getPrimitiveCategory()) {
@@ -1175,10 +1165,8 @@ public class VectorizationContext {
       if (udfClass == null) {
         throw new HiveException("Could not add implicit cast for type "+castType.getTypeName());
       }
-      GenericUDFBridge genericUDFBridge = new GenericUDFBridge();
-      genericUDFBridge.setUdfClassName(udfClass.getClass().getName());
-      genericUDFBridge.setUdfName(udfClass.getClass().getSimpleName());
-      genericUdf = genericUDFBridge;
+      genericUdf = new GenericUDFBridge();
+      ((GenericUDFBridge) genericUdf).setUdfClassName(udfClass.getClass().getName());
     }
     if (genericUdf instanceof SettableUDF) {
       ((SettableUDF) genericUdf).setTypeInfo(castType);
@@ -2748,9 +2736,7 @@ public class VectorizationContext {
     }
     if (isIntFamily(inputType)) {
       return createVectorExpression(CastLongToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
-    } else if (inputType.equals("float")) {
-      return createVectorExpression(CastFloatToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
-    } else if (inputType.equals("double")) {
+    } else if (isFloatFamily(inputType)) {
       return createVectorExpression(CastDoubleToDecimal.class, childExpr, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
     } else if (decimalTypePattern.matcher(inputType).matches()) {
       if (child instanceof ExprNodeColumnDesc) {
