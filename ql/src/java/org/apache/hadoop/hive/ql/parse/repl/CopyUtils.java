@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
@@ -96,21 +97,54 @@ public class CopyUtils {
     boolean isCopyError = false;
     List<Path> pathList = Lists.transform(srcFileList, ReplChangeManager.FileInfo::getEffectivePath);
     while (!pathList.isEmpty() && (repeat < MAX_COPY_RETRY)) {
-      LOG.info("Attempt: " + (repeat+1) + ". Copying files: " + pathList);
       try {
-        isCopyError = false;
+        // if its retrying, first regenerate the path list.
+        if (repeat > 0) {
+          pathList = getFilesToRetry(sourceFs, srcFileList, destinationFs, destination, isCopyError);
+          if (pathList.isEmpty()) {
+            // all files were copied successfully in last try. So can break from here.
+            break;
+          }
+        }
+
+        LOG.info("Attempt: " + (repeat+1) + ". Copying files: " + pathList);
+
+        // if exception happens during doCopyOnce, then need to call getFilesToRetry with copy error as true in retry.
+        isCopyError = true;
         doCopyOnce(sourceFs, pathList, destinationFs, destination, useRegularCopy);
+
+        // if exception happens after doCopyOnce, then need to call getFilesToRetry with copy error as false in retry.
+        isCopyError = false;
       } catch (IOException e) {
         // If copy fails, fall through the retry logic
-        isCopyError = true;
+        LOG.info("file operation failed", e);
+
+        if (repeat >= (MAX_COPY_RETRY - 1)) {
+          //no need to wait in the last iteration
+          break;
+        }
+
+        if (!(e instanceof FileNotFoundException)) {
+          int sleepTime = FileUtils.getSleepTime(repeat);
+          LOG.info("Sleep for " + sleepTime + " milliseconds before retry " + (repeat+1));
+          try {
+            Thread.sleep(sleepTime);
+          } catch (InterruptedException timerEx) {
+            LOG.info("sleep interrupted", timerEx.getMessage());
+          }
+
+          // looks like some network outrage, reset the file system object and retry.
+          FileSystem.closeAllForUGI(Utils.getUGI());
+          sourceFs = pathList.get(0).getFileSystem(hiveConf);
+          destinationFs = destination.getFileSystem(hiveConf);
+        }
       }
-      pathList = getFilesToRetry(sourceFs, srcFileList, destinationFs, destination, isCopyError);
       repeat++;
     }
 
     // If still files remains to be copied due to failure/checksum mismatch after several attempts, then throw error
     if (!pathList.isEmpty()) {
-      LOG.error("File copy failed even after several attempts. Files list: " + srcFileList);
+      LOG.error("File copy failed even after several attempts. Files list: " + pathList);
       throw new IOException("File copy failed even after several attempts.");
     }
   }
@@ -148,27 +182,11 @@ public class CopyUtils {
             continue;
           }
         }
-      } else {
-        // If destination file is missing, then retry copy
-        if (sourceFs.exists(srcPath)) {
-          // If checksum does not match, likely the file is changed/removed, retry from CM path
-          if (isSourceFileMismatch(sourceFs, srcFile)) {
-            srcFile.setIsUseSourcePath(false);
-          }
-        } else {
-          if (srcFile.isUseSourcePath()) {
-            // Source file missing, then try with CM path
-            srcFile.setIsUseSourcePath(false);
-          } else {
-            // CM path itself is missing, cannot recover from this error
-            LOG.error("File Copy Failed. Both source and CM files are missing from source. "
-                    + "Missing Source File: " + srcFile.getSourcePath() + ", CM File: " + srcFile.getCmPath() + ". "
-                    + "Try setting higher value for hive.repl.cm.retain in source warehouse. "
-                    + "Also, bootstrap the system again to get back the consistent replicated state.");
-            throw new IOException("Both source and CM path are missing from source.");
-          }
-        }
+      } else if (isSourceFileMismatch(sourceFs, srcFile)) {
+        // If checksum does not match, likely the file is changed/removed, retry from CM path
+        srcFile.setIsUseSourcePath(false);
       }
+
       srcPath = srcFile.getEffectivePath();
       if (null == srcPath) {
         // This case possible if CM path is not enabled.
@@ -176,6 +194,16 @@ public class CopyUtils {
                 + "Source File: " + srcFile.getSourcePath());
         throw new IOException("File copy failed and likely source file is deleted or modified.");
       }
+
+      if (!srcFile.isUseSourcePath() && !sourceFs.exists(srcFile.getCmPath())) {
+        // CM path itself is missing, cannot recover from this error
+        LOG.error("File Copy Failed. Both source and CM files are missing from source. "
+                + "Missing Source File: " + srcFile.getSourcePath() + ", CM File: " + srcFile.getCmPath() + ". "
+                + "Try setting higher value for hive.repl.cm.retain in source warehouse. "
+                + "Also, bootstrap the system again to get back the consistent replicated state.");
+        throw new IOException("Both source and CM path are missing from source.");
+      }
+
       pathList.add(srcPath);
     }
     return pathList;
