@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
 import org.junit.Test;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -49,8 +50,7 @@ public class TestSparkSessionManagerImpl {
   /** Tests CLI scenario where we get a single session and use it multiple times. */
   @Test
   public void testSingleSessionMultipleUse() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.set("spark.master", "local");
+    HiveConf conf = getHiveConf();
 
     SparkSessionManager sessionManager = SparkSessionManagerImpl.getInstance();
     SparkSession sparkSession1 = sessionManager.getSession(null, conf, true);
@@ -76,8 +76,7 @@ public class TestSparkSessionManagerImpl {
     // Shutdown existing session manager
     sessionManagerHS2.shutdown();
 
-    HiveConf hiveConf = new HiveConf();
-    hiveConf.set("spark.master", "local");
+    HiveConf hiveConf = getHiveConf();
 
     sessionManagerHS2.setup(hiveConf);
 
@@ -110,8 +109,7 @@ public class TestSparkSessionManagerImpl {
    */
   @Test
   public void testForceConfCloning() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.set("spark.master", "local");
+    HiveConf conf = getHiveConf();
     String sparkCloneConfiguration = HiveSparkClientFactory.SPARK_CLONE_CONFIGURATION;
 
     // Clear the value of sparkCloneConfiguration
@@ -133,8 +131,7 @@ public class TestSparkSessionManagerImpl {
 
   @Test
   public void testGetHiveException() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.set("spark.master", "local");
+    HiveConf conf = getHiveConf();
     SparkSessionManager ssm = SparkSessionManagerImpl.getInstance();
     SparkSessionImpl ss = (SparkSessionImpl) ssm.getSession(
         null, conf, true);
@@ -229,8 +226,7 @@ public class TestSparkSessionManagerImpl {
         Random random = new Random(Thread.currentThread().getId());
         String threadName = Thread.currentThread().getName();
         System.out.println(threadName + " started.");
-        HiveConf conf = new HiveConf();
-        conf.set("spark.master", "local");
+        HiveConf conf = getHiveConf();
 
         SparkSession prevSession = null;
         SparkSession currentSession = null;
@@ -255,5 +251,13 @@ public class TestSparkSessionManagerImpl {
         fail(msg + " " + StringUtils.stringifyException(e));
       }
     }
+  }
+
+  private HiveConf getHiveConf() {
+    HiveConf conf = new HiveConf();
+    conf.set("spark.master", "local");
+    conf.set("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
+            "TestSparkSessionManagerImpl-local-dir").toString());
+    return conf;
   }
 }
