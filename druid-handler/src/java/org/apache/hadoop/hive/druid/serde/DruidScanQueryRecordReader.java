@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import io.druid.query.Result;
 import io.druid.query.scan.ScanQuery;
 import io.druid.query.scan.ScanResultValue;
 
