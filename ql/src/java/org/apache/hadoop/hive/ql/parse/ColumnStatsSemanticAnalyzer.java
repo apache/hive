@@ -162,7 +162,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         } else {
           whereClause.append(" and ");
         }
-        whereClause.append("`").append(partKey).append("` = ").append(genPartValueString(partKey, value));
+        whereClause.append("`").append(partKey).append("` = ").append(genPartValueString(getColTypeOf(partKey), value));
       }
     }
 
@@ -179,33 +179,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return predPresent ? whereClause.append(groupByClause) : groupByClause;
   }
 
-  private String genPartValueString(String partKey, String partVal) throws SemanticException {
-    String returnVal = partVal;
-    String partColType = getColTypeOf(partKey);
-    if (partColType.equals(serdeConstants.STRING_TYPE_NAME) ||
-        partColType.contains(serdeConstants.VARCHAR_TYPE_NAME) ||
-        partColType.contains(serdeConstants.CHAR_TYPE_NAME)) {
-      returnVal = "'" + escapeSQLString(partVal) + "'";
-    } else if (partColType.equals(serdeConstants.TINYINT_TYPE_NAME)) {
-      returnVal = partVal + "Y";
-    } else if (partColType.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
-      returnVal = partVal + "S";
-    } else if (partColType.equals(serdeConstants.INT_TYPE_NAME)) {
-      returnVal = partVal;
-    } else if (partColType.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-      returnVal = partVal + "L";
-    } else if (partColType.contains(serdeConstants.DECIMAL_TYPE_NAME)) {
-      returnVal = partVal + "BD";
-    } else if (partColType.equals(serdeConstants.DATE_TYPE_NAME) ||
-        partColType.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
-      returnVal = partColType + " '" + escapeSQLString(partVal) + "'";
-    } else {
-      //for other usually not used types, just quote the value
-      returnVal = "'" + escapeSQLString(partVal) + "'";
-    }
 
-    return returnVal;
-  }
 
   private String getColTypeOf(String partKey) throws SemanticException{
 

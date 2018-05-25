@@ -533,6 +533,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return ctx.getOpContext();
   }
 
+  public String genPartValueString(String partColType, String partVal) throws SemanticException {
+    String returnVal = partVal;
+    if (partColType.equals(serdeConstants.STRING_TYPE_NAME) ||
+        partColType.contains(serdeConstants.VARCHAR_TYPE_NAME) ||
+        partColType.contains(serdeConstants.CHAR_TYPE_NAME)) {
+      returnVal = "'" + escapeSQLString(partVal) + "'";
+    } else if (partColType.equals(serdeConstants.TINYINT_TYPE_NAME)) {
+      returnVal = partVal + "Y";
+    } else if (partColType.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
+      returnVal = partVal + "S";
+    } else if (partColType.equals(serdeConstants.INT_TYPE_NAME)) {
+      returnVal = partVal;
+    } else if (partColType.equals(serdeConstants.BIGINT_TYPE_NAME)) {
+      returnVal = partVal + "L";
+    } else if (partColType.contains(serdeConstants.DECIMAL_TYPE_NAME)) {
+      returnVal = partVal + "BD";
+    } else if (partColType.equals(serdeConstants.DATE_TYPE_NAME) ||
+        partColType.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+      returnVal = partColType + " '" + escapeSQLString(partVal) + "'";
+    } else {
+      //for other usually not used types, just quote the value
+      returnVal = "'" + escapeSQLString(partVal) + "'";
+    }
+
+    return returnVal;
+  }
+
   public void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias)
       throws SemanticException {
     doPhase1QBExpr(ast, qbexpr, id, alias, false);
