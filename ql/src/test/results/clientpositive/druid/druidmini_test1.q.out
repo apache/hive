@@ -797,3 +797,27 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
+PREHOOK: query: explain select (cstring1 is null ) AS is_null, (cint is not null ) as isnotnull FROM druid_table_n3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select (cstring1 is null ) AS is_null, (cint is not null ) as isnotnull FROM druid_table_n3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n3
+          properties:
+            druid.fieldNames vc,vc0
+            druid.fieldTypes boolean,boolean
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n3","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"(\"cstring1\" isnull)","outputType":"FLOAT"},{"type":"expression","name":"vc0","expression":"(\"cint\" notnull)","outputType":"FLOAT"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: boolean), vc0 (type: boolean)
+            outputColumnNames: _col0, _col1
+            ListSink
+
