@@ -120,3 +120,8 @@ SELECT `__time`
 FROM druid_table_n3
 WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
     OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10;
+
+-- Running this against Druid  will if Druid version does not include
+-- this patch https://github.com/druid-io/druid/commit/219e77aeac9b07dc20dd9ab2dd537f3f17498346
+
+explain select (cstring1 is null ) AS is_null, (cint is not null ) as isnotnull FROM druid_table_n3;
