@@ -3551,7 +3551,7 @@ STAGE PLANS:
               name: default.t1_n56
             name: default.t1_n56
       Truncated Path -> Alias:
-        /t1_n56 [null-subquery1:$hdt$_0-subquery1:t1_n56, null-subquery2:$hdt$_0-subquery2:t1_n56]
+        /t1_n56 [$hdt$_0-subquery1:t1_n56, $hdt$_0-subquery2:t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -3966,7 +3966,7 @@ STAGE PLANS:
               name: default.t1_n56
             name: default.t1_n56
       Truncated Path -> Alias:
-        /t1_n56 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:t1_n56]
+        /t1_n56 [$hdt$_0-subquery2:$hdt$_0:t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -4274,7 +4274,7 @@ STAGE PLANS:
               name: default.t1_n56
             name: default.t1_n56
       Truncated Path -> Alias:
-        /t1_n56 [null-subquery1:$hdt$_0-subquery1:t1_n56]
+        /t1_n56 [$hdt$_0-subquery1:t1_n56]
 #### A masked pattern was here ####
       Needs Tagging: false
       Reduce Operator Tree:

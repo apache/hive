@@ -68,10 +68,10 @@ STAGE PLANS:
         $hdt$_0:a 
           Fetch Operator
             limit: -1
-        $hdt$_2-subquery1:$hdt$_2-subquery1:src13 
+        $hdt$_2:$hdt$_2-subquery1:src13 
           Fetch Operator
             limit: -1
-        $hdt$_2-subquery2:$hdt$_2-subquery2:src14 
+        $hdt$_2:$hdt$_2-subquery2:src14 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
@@ -90,7 +90,7 @@ STAGE PLANS:
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
-        $hdt$_2-subquery1:$hdt$_2-subquery1:src13 
+        $hdt$_2:$hdt$_2-subquery1:src13 
           TableScan
             alias: src13
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -107,7 +107,7 @@ STAGE PLANS:
                     keys:
                       0 _col3 (type: string)
                       1 _col1 (type: string)
-        $hdt$_2-subquery2:$hdt$_2-subquery2:src14 
+        $hdt$_2:$hdt$_2-subquery2:src14 
           TableScan
             alias: src14
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
