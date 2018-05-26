@@ -17,16 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -75,7 +66,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -85,7 +75,14 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 
 /** There is a set of queries which can be answered entirely from statistics stored in metastore.
@@ -179,7 +176,7 @@ public class StatsOptimizer extends Transform {
 
       abstract Object cast(double doubleValue);
     }
-    
+
     enum DateSubType {
       DAYS {@Override
         Object cast(long longValue) { return (new DateWritable((int)longValue)).get();}
@@ -287,6 +284,10 @@ public class StatsOptimizer extends Transform {
         Table tbl = tsOp.getConf().getTableMetadata();
         if (MetaStoreUtils.isExternalTable(tbl.getTTable())) {
           Logger.info("Table " + tbl.getTableName() + " is external. Skip StatsOptimizer.");
+          return null;
+        }
+        if (MetaStoreUtils.isNonNativeTable(tbl.getTTable())) {
+          Logger.info("Table " + tbl.getTableName() + " is non Native table. Skip StatsOptimizer.");
           return null;
         }
         if (AcidUtils.isTransactionalTable(tbl)) {
@@ -553,7 +554,7 @@ public class StatsOptimizer extends Transform {
                 case Date: {
                   DateColumnStatsData dstats = statData.getDateStats();
                   if (dstats.isSetHighValue()) {
-                    oneRow.add(DateSubType.DAYS.cast(dstats.getHighValue().getDaysSinceEpoch())); 
+                    oneRow.add(DateSubType.DAYS.cast(dstats.getHighValue().getDaysSinceEpoch()));
                   } else {
                     oneRow.add(null);
                   }
@@ -690,7 +691,7 @@ public class StatsOptimizer extends Transform {
                 case Date: {
                   DateColumnStatsData dstats = statData.getDateStats();
                   if (dstats.isSetLowValue()) {
-                    oneRow.add(DateSubType.DAYS.cast(dstats.getLowValue().getDaysSinceEpoch())); 
+                    oneRow.add(DateSubType.DAYS.cast(dstats.getLowValue().getDaysSinceEpoch()));
                   } else {
                     oneRow.add(null);
                   }
