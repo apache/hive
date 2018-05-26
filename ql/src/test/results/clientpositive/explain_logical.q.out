@@ -159,7 +159,7 @@ POSTHOOK: query: EXPLAIN LOGICAL
   ) S1
 POSTHOOK: type: QUERY
 LOGICAL PLAN:
-null-subquery1:$hdt$_0-subquery1:src 
+$hdt$_0-subquery1:src 
   TableScan (TS_0)
     alias: src
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -176,7 +176,7 @@ null-subquery1:$hdt$_0-subquery1:src
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-null-subquery2:$hdt$_0-subquery2:srcpart 
+$hdt$_0-subquery2:srcpart 
   TableScan (TS_2)
     alias: srcpart
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE

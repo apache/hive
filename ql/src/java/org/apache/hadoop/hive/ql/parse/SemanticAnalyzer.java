@@ -535,6 +535,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     doPhase1QBExpr(ast, qbexpr, id, alias, false);
   }
+
   @SuppressWarnings("nls")
   public void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView)
       throws SemanticException {
@@ -574,15 +575,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // query 1
       assert (ast.getChild(0) != null);
       QBExpr qbexpr1 = new QBExpr(alias + SUBQUERY_TAG_1);
-      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id + SUBQUERY_TAG_1, alias
-          + SUBQUERY_TAG_1, insideView);
+      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id,
+          alias + SUBQUERY_TAG_1, insideView);
       qbexpr.setQBExpr1(qbexpr1);
 
       // query 2
       assert (ast.getChild(1) != null);
       QBExpr qbexpr2 = new QBExpr(alias + SUBQUERY_TAG_2);
-      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + SUBQUERY_TAG_2, alias
-          + SUBQUERY_TAG_2, insideView);
+      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id,
+          alias + SUBQUERY_TAG_2, insideView);
       qbexpr.setQBExpr2(qbexpr2);
     }
   }
