@@ -1815,7 +1815,7 @@ STAGE PLANS:
                     name: default.t1_n80
                   name: default.t1_n80
             Truncated Path -> Alias:
-              /t1_n80 [null-subquery1:$hdt$_0-subquery1:t1_n80]
+              /t1_n80 [$hdt$_0-subquery1:t1_n80]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1926,7 +1926,7 @@ STAGE PLANS:
                     name: default.t1_n80
                   name: default.t1_n80
             Truncated Path -> Alias:
-              /t1_n80 [null-subquery2:$hdt$_0-subquery2:t1_n80]
+              /t1_n80 [$hdt$_0-subquery2:t1_n80]
 
   Stage: Stage-0
     Move Operator
@@ -2138,7 +2138,7 @@ STAGE PLANS:
                     name: default.t1_n80
                   name: default.t1_n80
             Truncated Path -> Alias:
-              /t1_n80 [null-subquery1:$hdt$_0-subquery1:t1_n80]
+              /t1_n80 [$hdt$_0-subquery1:t1_n80]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -2221,7 +2221,7 @@ STAGE PLANS:
                     name: default.t1_n80
                   name: default.t1_n80
             Truncated Path -> Alias:
-              /t1_n80 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:t1_n80]
+              /t1_n80 [$hdt$_0-subquery2:$hdt$_0:t1_n80]
         Reducer 3 
             Execution mode: vectorized
             Needs Tagging: false
