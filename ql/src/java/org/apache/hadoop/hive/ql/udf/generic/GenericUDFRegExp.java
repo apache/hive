@@ -18,24 +18,27 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColRegExpStringScalar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 /**
  * UDF to extract a specific group identified by a java regex. Note that if a
@@ -43,9 +46,9 @@ import org.apache.hadoop.io.BooleanWritable;
  * regexp_extract('100-200', '(\\d+)-(\\d+)', 1) will return '100'
  */
 @Description(name = "rlike,regexp",
-    value = "str _FUNC_ regexp - Returns true if str matches regexp and "
-    + "false otherwise", extended = "Example:\n"
-    + "  > SELECT 'fb' _FUNC_ '.*' FROM src LIMIT 1;\n" + "  true")
+        value = "str _FUNC_ regexp - Returns true if str matches regexp and "
+                + "false otherwise", extended = "Example:\n"
+        + "  > SELECT 'fb' _FUNC_ '.*' FROM src LIMIT 1;\n" + "  true")
 @VectorizedExpressions({FilterStringColRegExpStringScalar.class})
 public class GenericUDFRegExp extends GenericUDF {
   static final Logger LOG = LoggerFactory.getLogger(GenericUDFRegExp.class.getName());
@@ -54,11 +57,27 @@ public class GenericUDFRegExp extends GenericUDF {
   private final BooleanWritable output = new BooleanWritable();
   private transient boolean isRegexConst;
   private transient String regexConst;
-  private transient Pattern patternConst;
+  private transient java.util.regex.Pattern patternConst;
+  private transient com.google.re2j.Pattern patternConstR2j;
   private transient boolean warned;
+  private MapredContext context;
+  private boolean useGoogleRegexEngine=false;
+
+  @Override
+  public void configure(MapredContext context) {
+    this.context = context;
+  }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    if (context != null) {
+      if(context.getJobConf().get("hive.use.googleregex.engine").equals("true")){
+        useGoogleRegexEngine=true;
+      }
+    }else {
+      useGoogleRegexEngine = SessionState.getSessionConf().getBoolVar(HiveConf.ConfVars.HIVEUSEGOOGLEREGEXENGINE);
+    }
+
     checkArgsSize(arguments, 2, 2);
 
     checkArgPrimitive(arguments, 0);
@@ -73,7 +92,12 @@ public class GenericUDFRegExp extends GenericUDF {
     if (arguments[1] instanceof ConstantObjectInspector) {
       regexConst = getConstantStringValue(arguments, 1);
       if (regexConst != null) {
-        patternConst = Pattern.compile(regexConst);
+        if(!useGoogleRegexEngine){
+          //if(!HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVEUSEGOOGLEREGEXENGINE)){
+          patternConst = Pattern.compile(regexConst);
+        }else{
+          patternConstR2j = com.google.re2j.Pattern.compile(regexConst);
+        }
       }
       isRegexConst = true;
     }
@@ -103,22 +127,34 @@ public class GenericUDFRegExp extends GenericUDF {
       if (!warned) {
         warned = true;
         LOG.warn(getClass().getSimpleName() + " regex is empty. Additional "
-            + "warnings for an empty regex will be suppressed.");
+                + "warnings for an empty regex will be suppressed.");
       }
       output.set(false);
       return output;
     }
+    if(!useGoogleRegexEngine){
+      Pattern p;
+      if (isRegexConst) {
+        p = patternConst;
+      } else {
+        p = Pattern.compile(regex);
+      }
 
-    Pattern p;
-    if (isRegexConst) {
-      p = patternConst;
-    } else {
-      p = Pattern.compile(regex);
+      Matcher m = p.matcher(s);
+      output.set(m.find(0));
+      return output;
+    }else{
+      com.google.re2j.Pattern patternR2j;
+      if (isRegexConst) {
+        patternR2j = patternConstR2j;
+      } else {
+        patternR2j = com.google.re2j.Pattern.compile(regex);
+      }
+
+      com.google.re2j.Matcher m = patternR2j.matcher(s);
+      output.set(m.find(0));
+      return output;
     }
-
-    Matcher m = p.matcher(s);
-    output.set(m.find(0));
-    return output;
   }
 
   @Override
