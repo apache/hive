@@ -186,7 +186,7 @@ POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=1).value SIMPL
 POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=7).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge2a_n0 PARTITION(one=1,two=9,three=7).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###        339 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        349 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge2a_n0

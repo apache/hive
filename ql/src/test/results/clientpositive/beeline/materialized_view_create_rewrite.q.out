@@ -69,7 +69,7 @@ bucketing_version	2
 numFiles	1
 numRows	2
 rawDataSize	408
-totalSize	453
+totalSize	457
 #### A masked pattern was here ####
 PREHOOK: query: create materialized view if not exists cmv_mat_view2_n4 enable rewrite
 as select a, c from cmv_basetable_n10 where a = 3
@@ -102,7 +102,7 @@ bucketing_version	2
 numFiles	1
 numRows	2
 rawDataSize	232
-totalSize	322
+totalSize	326
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select a, c from cmv_basetable_n10 where a = 3

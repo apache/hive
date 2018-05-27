@@ -1696,7 +1696,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: od
-                  Statistics: Num rows: 10 Data size: 2640 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -1710,7 +1710,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: []
-                    Statistics: Num rows: 10 Data size: 2640 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0

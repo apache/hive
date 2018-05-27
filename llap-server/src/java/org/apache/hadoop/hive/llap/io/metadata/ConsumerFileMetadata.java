@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.io.metadata;
 import java.util.List;
 
 import org.apache.orc.CompressionKind;
+import org.apache.orc.FileFormatException;
 import org.apache.orc.OrcProto.Type;
 import org.apache.orc.TypeDescription;
 
@@ -27,5 +28,5 @@ public interface ConsumerFileMetadata {
   int getStripeCount();
   CompressionKind getCompressionKind();
   List<Type> getTypes();
-  TypeDescription getSchema();
+  TypeDescription getSchema() throws FileFormatException;
 }

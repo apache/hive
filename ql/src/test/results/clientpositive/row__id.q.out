@@ -62,24 +62,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-            Statistics: Num rows: 77 Data size: 19340 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 78 Data size: 19830 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ROW__ID.writeid (type: bigint)
               outputColumnNames: _col0
-              Statistics: Num rows: 77 Data size: 19340 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 78 Data size: 19830 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: bigint)
                 sort order: +
-                Statistics: Num rows: 77 Data size: 19340 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 78 Data size: 19830 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: bigint)
           outputColumnNames: _col0
-          Statistics: Num rows: 77 Data size: 19340 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 78 Data size: 19830 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 77 Data size: 19340 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 78 Data size: 19830 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -124,17 +124,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-            Statistics: Num rows: 77 Data size: 19340 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 78 Data size: 19830 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ROW__ID.writeid = 3) (type: boolean)
-              Statistics: Num rows: 38 Data size: 9544 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 39 Data size: 9915 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ROW__ID.writeid (type: bigint)
                 outputColumnNames: _col0
-                Statistics: Num rows: 38 Data size: 9544 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 39 Data size: 9915 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 38 Data size: 9544 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 39 Data size: 9915 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -73,29 +73,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:acid1 
+        $hdt$_1:acid2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:acid1 
-          TableScan
-            alias: acid1
-            Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: int)
-                outputColumnNames: _col0
-                Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
-                HashTable Sink Operator
-                  keys:
-                    0 _col0 (type: int)
-                    1 _col0 (type: int)
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
+        $hdt$_1:acid2 
           TableScan
             alias: acid2
             Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: NONE
@@ -106,6 +88,24 @@ STAGE PLANS:
                 expressions: key (type: int)
                 outputColumnNames: _col0
                 Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid1
+            Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
