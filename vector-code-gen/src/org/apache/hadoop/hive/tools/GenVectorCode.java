@@ -1035,8 +1035,6 @@ public class GenVectorCode extends Task {
         "", "", ""},
       {"ColumnUnaryFunc", "CastLongToBooleanVia", "long", "long", "MathExpr.toBool", "",
         "", "", ""},
-      {"ColumnUnaryFunc", "CastDateToBooleanVia", "long", "long", "MathExpr.toBool", "",
-            "", "", "date"},
 
       // Boolean to long is done with an IdentityExpression
       // Boolean to double is done with standard Long to Double cast
