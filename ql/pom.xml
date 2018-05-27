@@ -774,6 +774,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>com.google.re2j</groupId>
+      <artifactId>re2j</artifactId>
+      <version>${re2j.version}</version>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -1031,6 +1036,7 @@
                   <include>org.apache.orc:orc-shims</include>
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
+                  <include>com.google.re2j:re2j</include>
                 </includes>
               </artifactSet>
               <relocations>
