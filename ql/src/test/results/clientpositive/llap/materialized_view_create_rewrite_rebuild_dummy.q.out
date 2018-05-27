@@ -749,7 +749,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n0
-                  Statistics: Num rows: 42 Data size: 4872 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 43 Data size: 4988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10.1) and a is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 1624 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1027,7 +1027,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n0
-                  Statistics: Num rows: 42 Data size: 4872 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 43 Data size: 4988 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((c > 10.1) and a is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 1624 Basic stats: COMPLETE Column stats: COMPLETE

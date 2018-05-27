@@ -1183,9 +1183,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolorc_n0
 #### A masked pattern was here ####
 1	2017-11-07 09:02:49.999999999
-2	1400-01-01 01:01:00.000000001
-3	1400-01-01 01:01:00.000000001
-4	1400-01-01 01:01:00.000000001
+2	1400-01-01 01:01:01.000000001
+3	1400-01-01 01:01:01.000000001
+4	1400-01-01 01:01:01.000000001
 PREHOOK: query: select cId, cDecimal, cDouble, cFloat from testAltColORC_n0 order by cId
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testaltcolorc_n0
@@ -1259,9 +1259,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolorc_n0
 #### A masked pattern was here ####
 1	2017-11-07 09:02:49.999999999
-2	1400-01-01 01:01:00.000000001
-3	1400-01-01 01:01:00.000000001
-4	1400-01-01 01:01:00.000000001
+2	1400-01-01 01:01:01.000000001
+3	1400-01-01 01:01:01.000000001
+4	1400-01-01 01:01:01.000000001
 PREHOOK: query: select cId, cDecimal, cDouble, cFloat from testAltColORC_n0 order by cId
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testaltcolorc_n0
@@ -1335,9 +1335,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolorc_n0
 #### A masked pattern was here ####
 1	2017-11-07 09:02:49.999999999
-2	1400-01-01 01:01:00.000000001
-3	1400-01-01 01:01:00.000000001
-4	1400-01-01 01:01:00.000000001
+2	1400-01-01 01:01:01.000000001
+3	1400-01-01 01:01:01.000000001
+4	1400-01-01 01:01:01.000000001
 PREHOOK: query: select cId, cDecimal, cDouble, cFloat from testAltColORC_n0 order by cId
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testaltcolorc_n0
@@ -1411,9 +1411,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolorc_n0
 #### A masked pattern was here ####
 1	2017-11-07 09:02:49.999999999                                                                       
-2	1400-01-01 01:01:00.000000001                                                                       
-3	1400-01-01 01:01:00.000000001                                                                       
-4	1400-01-01 01:01:00.000000001                                                                       
+2	1400-01-01 01:01:01.000000001                                                                       
+3	1400-01-01 01:01:01.000000001                                                                       
+4	1400-01-01 01:01:01.000000001                                                                       
 PREHOOK: query: select cId, cDecimal, cDouble, cFloat from testAltColORC_n0 order by cId
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testaltcolorc_n0

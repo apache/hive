@@ -94,7 +94,7 @@ Table:              	acid
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	2                   
-	totalSize           	4009                
+	totalSize           	4064                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -132,9 +132,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
-            Statistics: Num rows: 82 Data size: 40090 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 83 Data size: 40640 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              Statistics: Num rows: 82 Data size: 40090 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 83 Data size: 40640 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -210,7 +210,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	4009                
+	totalSize           	4064                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -261,7 +261,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	4009                
+	totalSize           	4064                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -385,7 +385,7 @@ Table:              	acid
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	4                   
-	totalSize           	8011                
+	totalSize           	8119                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -432,7 +432,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	416000              
-	totalSize           	8011                
+	totalSize           	8119                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -667,7 +667,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	176000              
-	totalSize           	2979                
+	totalSize           	3008                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

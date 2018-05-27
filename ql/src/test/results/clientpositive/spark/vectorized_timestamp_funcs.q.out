@@ -258,7 +258,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -269,7 +269,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 1, 3, 14, 15, 16, 17, 18]
                         selectExpressions: VectorUDFUnixTimeStampTimestamp(col 1:timestamp) -> 5:bigint, VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 6:int, VectorUDFMonthTimestamp(col 1:timestamp, field MONTH) -> 7:int, VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 8:int, VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 9:int, VectorUDFWeekOfYearTimestamp(col 1:timestamp, field WEEK_OF_YEAR) -> 10:int, VectorUDFHourTimestamp(col 1:timestamp, field HOUR_OF_DAY) -> 11:int, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 12:int, VectorUDFSecondTimestamp(col 1:timestamp, field SECOND) -> 13:int, IfExprTimestampColumnScalar(col 0:boolean, col 1:timestamp, val 1319-02-02 16:31:57.778) -> 14:timestamp, IfExprTimestampScalarColumn(col 0:boolean, val 2000-12-18 08:42:30.0005, col 1:timestamp) -> 15:timestamp, IfExprTimestampColumnColumn(col 0:boolean, col 1:timestampcol 3:timestamp) -> 16:timestamp, IfExprColumnNull(col 0:boolean, col 1:timestamp, null)(children: col 0:boolean, col 1:timestamp) -> 17:timestamp, IfExprNullColumn(col 0:boolean, null, col 3)(children: col 0:boolean, col 3:timestamp) -> 18:timestamp
-                    Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
@@ -277,7 +277,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: boolean), _col10 (type: timestamp), _col11 (type: timestamp), _col12 (type: timestamp), _col13 (type: timestamp), _col14 (type: timestamp), _col15 (type: timestamp), _col16 (type: timestamp)
             Execution mode: vectorized
             Map Vectorization:
@@ -305,13 +305,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-                Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -466,7 +466,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -477,7 +477,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [5, 6, 7, 8, 9, 10, 11, 12, 13]
                         selectExpressions: VectorUDFUnixTimeStampString(col 2:string) -> 5:bigint, VectorUDFYearString(col 2:string, fieldStart 0, fieldLength 4) -> 6:int, VectorUDFMonthString(col 2:string, fieldStart 5, fieldLength 2) -> 7:int, VectorUDFDayOfMonthString(col 2:string, fieldStart 8, fieldLength 2) -> 8:int, VectorUDFDayOfMonthString(col 2:string, fieldStart 8, fieldLength 2) -> 9:int, VectorUDFWeekOfYearString(col 2:string) -> 10:int, VectorUDFHourString(col 2:string, fieldStart 11, fieldLength 2) -> 11:int, VectorUDFMinuteString(col 2:string, fieldStart 14, fieldLength 2) -> 12:int, VectorUDFSecondString(col 2:string, fieldStart 17, fieldLength 2) -> 13:int
-                    Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
@@ -485,7 +485,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int)
             Execution mode: vectorized
             Map Vectorization:
@@ -513,13 +513,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -658,7 +658,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -669,7 +669,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [7, 8, 9, 10, 11, 12, 13, 14, 15]
                         selectExpressions: LongColEqualLongColumn(col 5:bigint, col 6:bigint)(children: VectorUDFUnixTimeStampTimestamp(col 1:timestamp) -> 5:bigint, VectorUDFUnixTimeStampString(col 2:string) -> 6:bigint) -> 7:boolean, LongColEqualLongColumn(col 5:int, col 6:int)(children: VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 5:int, VectorUDFYearString(col 2:string, fieldStart 0, fieldLength 4) -> 6:int) -> 8:boolean, LongColEqualLongColumn(col 5:int, col 6:int)(children: VectorUDFMonthTimestamp(col 1:timestamp, field MONTH) -> 5:int, VectorUDFMonthString(col 2:string, fieldStart 5, fieldLength 2) -> 6:int) -> 9:boolean, LongColEqualLongColumn(col 5:int, col 6:int)(children: VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 5:int, VectorUDFDayOfMonthString(col 2:string, fieldStart 8, fieldLength 2) -> 6:int) -> 10:boolean, LongColEqualLongColumn(col 5:int, col 6:int)(children: VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 5:int, VectorUDFDayOfMonthString(col 2:string, fieldStart 8, fieldLength 2) -> 6:int) -> 11:boolean, LongColEqualLongColumn(col 5:int, col 6:int)(children: VectorUDFWeekOfYearTimestamp(col 1:timestamp, field WEEK_OF_YEAR) -> 5:int, VectorUDFWeekOfYearString(col 2:string) -> 6:int) -> 12:boolean, LongColEqualLongColumn(col 5:int, col 6:int)(children: VectorUDFHourTimestamp(col 1:timestamp, field HOUR_OF_DAY) -> 5:int, VectorUDFHourString(col 2:string, fieldStart 11, fieldLength 2) -> 6:int) -> 13:boolean, LongColEqualLongColumn(col 5:int, col 6:int)(children: VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 5:int, VectorUDFMinuteString(col 2:string, fieldStart 14, fieldLength 2) -> 6:int) -> 14:boolean, LongColEqualLongColumn(col 5:int, col 6:int)(children: VectorUDFSecondTimestamp(col 1:timestamp, field SECOND) -> 5:int, VectorUDFSecondString(col 2:string, fieldStart 17, fieldLength 2) -> 6:int) -> 15:boolean
-                    Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: boolean)
                       sort order: +
@@ -677,7 +677,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean)
             Execution mode: vectorized
             Map Vectorization:
@@ -705,13 +705,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -981,7 +981,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -991,7 +991,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [1]
-                    Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: min(ctimestamp1), max(ctimestamp1), count(ctimestamp1), count()
                       Group By Vectorization:
@@ -1106,7 +1106,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1116,7 +1116,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [1]
-                    Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(ctimestamp1)
                       Group By Vectorization:
@@ -1248,7 +1248,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_string
-                  Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1259,7 +1259,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [1, 5, 8]
                         selectExpressions: CastTimestampToDouble(col 1:timestamp) -> 5:double, DoubleColMultiplyDoubleColumn(col 6:double, col 7:double)(children: CastTimestampToDouble(col 1:timestamp) -> 6:double, CastTimestampToDouble(col 1:timestamp) -> 7:double) -> 8:double
-                    Statistics: Num rows: 52 Data size: 3555 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col0), count(_col0), sum(_col2), sum(_col1)
                       Group By Vectorization:
