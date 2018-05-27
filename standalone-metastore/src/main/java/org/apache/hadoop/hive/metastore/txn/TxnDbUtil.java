@@ -79,6 +79,7 @@ public final class TxnDbUtil {
           "  TXN_STARTED bigint NOT NULL," +
           "  TXN_LAST_HEARTBEAT bigint NOT NULL," +
           "  TXN_USER varchar(128) NOT NULL," +
+          "  TXN_TYPE integer," +
           "  TXN_HOST varchar(128) NOT NULL)");
 
       stmt.execute("CREATE TABLE TXN_COMPONENTS (" +
