@@ -117,10 +117,10 @@ POSTHOOK: Lineage: alltypes_orc_n1.ti SIMPLE [(alltypes_n1)alltypes_n1.FieldSche
 POSTHOOK: Lineage: alltypes_orc_n1.ts SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc_n1.vc SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:vc, type:varchar(5), comment:null), ]
 Found 4 items
--rw-r--r--   3 ### USER ### ### GROUP ###       1595 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###       1595 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###       1606 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###       1606 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1647 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1647 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1665 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1665 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: alter table alltypes_orc_n1 concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
 PREHOOK: Input: default@alltypes_orc_n1
@@ -130,4 +130,4 @@ POSTHOOK: type: ALTER_TABLE_MERGE
 POSTHOOK: Input: default@alltypes_orc_n1
 POSTHOOK: Output: default@alltypes_orc_n1
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###       4634 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       4695 ### HDFS DATE ### hdfs://### HDFS PATH ###

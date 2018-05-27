@@ -943,6 +943,7 @@
                   <include>org.apache.hive:hive-spark-client</include>
                   <include>org.apache.hive:hive-storage-api</include>
                   <include>org.apache.orc:orc-core</include>
+                  <include>org.apache.orc:orc-shims</include>
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
                 </includes>

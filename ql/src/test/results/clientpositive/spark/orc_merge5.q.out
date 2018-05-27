@@ -94,9 +94,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 Found 3 items
--rw-r--r--   3 ### USER ### ### GROUP ###        649 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        667 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        601 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        623 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from orc_merge5b_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b_n0
@@ -222,7 +222,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###       1022 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1051 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from orc_merge5b_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b_n0
@@ -256,9 +256,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 Found 3 items
--rw-r--r--   3 ### USER ### ### GROUP ###        649 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        667 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        601 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        623 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from orc_merge5b_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b_n0
@@ -313,7 +313,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b_n0
 POSTHOOK: Output: default@orc_merge5b_n0
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###       1022 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1051 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from orc_merge5b_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b_n0

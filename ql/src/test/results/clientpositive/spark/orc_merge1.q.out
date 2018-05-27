@@ -113,8 +113,8 @@ POSTHOOK: Lineage: orcfile_merge1_n1 PARTITION(ds=1,part=0).value SIMPLE [(src)s
 POSTHOOK: Lineage: orcfile_merge1_n1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1_n1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 2 items
--rw-r--r--   3 ### USER ### ### GROUP ###        738 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###       1041 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        752 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1056 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -238,7 +238,7 @@ POSTHOOK: Lineage: orcfile_merge1b_n1 PARTITION(ds=1,part=0).value SIMPLE [(src)
 POSTHOOK: Lineage: orcfile_merge1b_n1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1b_n1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###       1344 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1360 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c_n1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -354,7 +354,7 @@ POSTHOOK: Lineage: orcfile_merge1c_n1 PARTITION(ds=1,part=0).value SIMPLE [(src)
 POSTHOOK: Lineage: orcfile_merge1c_n1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1c_n1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###       1648 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1669 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1_n1 WHERE ds='1'

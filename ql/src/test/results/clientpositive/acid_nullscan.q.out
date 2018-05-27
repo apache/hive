@@ -42,12 +42,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid_vectorized_n1
-            Statistics: Num rows: 88 Data size: 25400 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 90 Data size: 26090 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: false (type: boolean)
-              Statistics: Num rows: 1 Data size: 288 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 289 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(a)
                 mode: hash
@@ -82,7 +82,7 @@ STAGE PLANS:
               serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
-              totalSize 2540
+              totalSize 2609
               transactional true
               transactional_properties default
 #### A masked pattern was here ####
@@ -104,7 +104,7 @@ STAGE PLANS:
                 serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 2540
+                totalSize 2609
                 transactional true
                 transactional_properties default
 #### A masked pattern was here ####
