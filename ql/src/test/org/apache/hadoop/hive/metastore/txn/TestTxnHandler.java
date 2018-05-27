@@ -1169,8 +1169,37 @@ public class TestTxnHandler {
     } finally {
       txnHandler.setTimeout(timeout);
     }
+  }
 
-
+  @Test
+  public void testReplTimeouts() throws Exception {
+    long timeout = txnHandler.setTimeout(1);
+    try {
+      OpenTxnRequest request = new OpenTxnRequest(3, "me", "localhost");
+      OpenTxnsResponse response = txnHandler.openTxns(request);
+      request.setReplPolicy("default.*");
+      request.setReplSrcTxnIds(response.getTxn_ids());
+      OpenTxnsResponse responseRepl = txnHandler.openTxns(request);
+      Thread.sleep(10);
+      txnHandler.performTimeOuts();
+      GetOpenTxnsInfoResponse rsp = txnHandler.getOpenTxnsInfo();
+      int numAborted = 0;
+      int numOpen = 0;
+      for (TxnInfo txnInfo : rsp.getOpen_txns()) {
+        if (TxnState.ABORTED == txnInfo.getState()) {
+          assertTrue(response.getTxn_ids().contains(txnInfo.getId()));
+          numAborted++;
+        }
+        if (TxnState.OPEN == txnInfo.getState()) {
+          assertTrue(responseRepl.getTxn_ids().contains(txnInfo.getId()));
+          numOpen++;
+        }
+      }
+      assertEquals(3, numAborted);
+      assertEquals(3, numOpen);
+    } finally {
+      txnHandler.setTimeout(timeout);
+    }
   }
 
   @Test
