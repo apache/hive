@@ -80,7 +80,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_interval_1
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -91,7 +91,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [2, 5, 6]
                   selectExpressions: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month, CastStringToIntervalDayTime(col 3:string) -> 6:interval_day_time
-              Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
@@ -100,7 +100,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: interval_year_month), _col2 (type: interval_day_time)
       Execution mode: vectorized
       Map Vectorization:
@@ -120,10 +120,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), INTERVAL'1-2' (type: interval_year_month), VALUE._col0 (type: interval_year_month), INTERVAL'1 02:03:04.000000000' (type: interval_day_time), VALUE._col1 (type: interval_day_time)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -191,7 +191,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_interval_1
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -202,7 +202,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [1, 7, 6, 9, 8]
                   selectExpressions: IntervalYearMonthColAddIntervalYearMonthColumn(col 5:interval_year_month, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month, CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 7:interval_year_month, IntervalYearMonthScalarAddIntervalYearMonthColumn(val 14, col 5:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month) -> 6:interval_year_month, IntervalYearMonthColSubtractIntervalYearMonthColumn(col 5:interval_year_month, col 8:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month, CastStringToIntervalYearMonth(col 2:string) -> 8:interval_year_month) -> 9:interval_year_month, IntervalYearMonthScalarSubtractIntervalYearMonthColumn(val 14, col 5:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 5:interval_year_month) -> 8:interval_year_month
-              Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -211,7 +211,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: interval_year_month), _col2 (type: interval_year_month), _col3 (type: interval_year_month), _col4 (type: interval_year_month)
       Execution mode: vectorized
       Map Vectorization:
@@ -231,10 +231,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), INTERVAL'2-4' (type: interval_year_month), VALUE._col0 (type: interval_year_month), VALUE._col1 (type: interval_year_month), INTERVAL'0-0' (type: interval_year_month), VALUE._col2 (type: interval_year_month), VALUE._col3 (type: interval_year_month)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -310,7 +310,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_interval_1
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -321,7 +321,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [1, 7, 6, 9, 8]
                   selectExpressions: IntervalDayTimeColAddIntervalDayTimeColumn(col 5:interval_day_time, col 6:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 5:interval_day_time, CastStringToIntervalDayTime(col 3:string) -> 6:interval_day_time) -> 7:interval_day_time, IntervalDayTimeScalarAddIntervalDayTimeColumn(val 1 02:03:04.000000000, col 5:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 5:interval_day_time) -> 6:interval_day_time, IntervalDayTimeColSubtractIntervalDayTimeColumn(col 5:interval_day_time, col 8:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 5:interval_day_time, CastStringToIntervalDayTime(col 3:string) -> 8:interval_day_time) -> 9:interval_day_time, IntervalDayTimeScalarSubtractIntervalDayTimeColumn(val 1 02:03:04.000000000, col 5:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 5:interval_day_time) -> 8:interval_day_time
-              Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -330,7 +330,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: interval_day_time), _col2 (type: interval_day_time), _col3 (type: interval_day_time), _col4 (type: interval_day_time)
       Execution mode: vectorized
       Map Vectorization:
@@ -350,10 +350,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), INTERVAL'2 04:06:08.000000000' (type: interval_day_time), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), INTERVAL'0 00:00:00.000000000' (type: interval_day_time), VALUE._col2 (type: interval_day_time), VALUE._col3 (type: interval_day_time)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -441,7 +441,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_interval_1
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -452,7 +452,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [1, 5, 7, 6, 9, 8, 11, 12, 14, 15, 16, 17, 18]
                   selectExpressions: DateColAddIntervalYearMonthScalar(col 1:date, val 1-2) -> 5:date, DateColAddIntervalYearMonthColumn(col 1:date, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 7:date, IntervalYearMonthScalarAddDateColumn(val 1-2, col 1:interval_year_month) -> 6:date, IntervalYearMonthColAddDateColumn(col 8:interval_year_month, col 1:date)(children: CastStringToIntervalYearMonth(col 2:string) -> 8:interval_year_month) -> 9:date, DateColSubtractIntervalYearMonthScalar(col 1:date, val 1-2) -> 8:date, DateColSubtractIntervalYearMonthColumn(col 1:date, col 10:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 10:interval_year_month) -> 11:date, DateColAddIntervalDayTimeScalar(col 1:date, val 1 02:03:04.000000000) -> 12:timestamp, DateColAddIntervalDayTimeColumn(col 1:date, col 13:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 14:timestamp, IntervalDayTimeScalarAddDateColumn(val 1 02:03:04.000000000, col 1:date) -> 15:timestamp, IntervalDayTimeColAddDateColumn(col 13:interval_day_time, col 1:date)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 16:timestamp, DateColSubtractIntervalDayTimeScalar(col 1:date, val 1 02:03:04.000000000) -> 17:timestamp, DateColSubtractIntervalDayTimeColumn(col 1:date, col 13:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 18:timestamp
-              Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -461,7 +461,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: date), _col4 (type: date), _col5 (type: date), _col6 (type: date), _col7 (type: timestamp), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: timestamp), _col11 (type: timestamp), _col12 (type: timestamp)
       Execution mode: vectorized
       Map Vectorization:
@@ -481,10 +481,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: date), VALUE._col1 (type: date), VALUE._col2 (type: date), VALUE._col3 (type: date), VALUE._col4 (type: date), VALUE._col5 (type: date), VALUE._col6 (type: timestamp), VALUE._col7 (type: timestamp), VALUE._col8 (type: timestamp), VALUE._col9 (type: timestamp), VALUE._col10 (type: timestamp), VALUE._col11 (type: timestamp)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-          Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -584,7 +584,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_interval_1
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -595,7 +595,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [0, 5, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18]
                   selectExpressions: TimestampColAddIntervalYearMonthScalar(col 0:timestamp, val 1-2) -> 5:timestamp, TimestampColAddIntervalYearMonthColumn(col 0:timestamp, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 7:timestamp, IntervalYearMonthScalarAddTimestampColumn(val 1-2, col 0:interval_year_month) -> 8:timestamp, IntervalYearMonthColAddTimestampColumn(col 6:interval_year_month, col 0:timestamp)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 9:timestamp, TimestampColSubtractIntervalYearMonthScalar(col 0:timestamp, val 1-2) -> 10:timestamp, TimestampColSubtractIntervalYearMonthColumn(col 0:timestamp, col 6:interval_year_month)(children: CastStringToIntervalYearMonth(col 2:string) -> 6:interval_year_month) -> 11:timestamp, TimestampColAddIntervalDayTimeScalar(col 0:timestamp, val 1 02:03:04.000000000) -> 12:timestamp, TimestampColAddIntervalDayTimeColumn(col 0:timestamp, col 13:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 14:timestamp, IntervalDayTimeScalarAddTimestampColumn(val 1 02:03:04.000000000, col 0:timestamp) -> 15:timestamp, IntervalDayTimeColAddTimestampColumn(col 13:interval_day_time, col 0:timestamp)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 16:timestamp, TimestampColSubtractIntervalDayTimeScalar(col 0:timestamp, val 1 02:03:04.000000000) -> 17:timestamp, TimestampColSubtractIntervalDayTimeColumn(col 0:timestamp, col 13:interval_day_time)(children: CastStringToIntervalDayTime(col 3:string) -> 13:interval_day_time) -> 18:timestamp
-              Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: timestamp)
                 sort order: +
@@ -604,7 +604,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: timestamp), _col2 (type: timestamp), _col3 (type: timestamp), _col4 (type: timestamp), _col5 (type: timestamp), _col6 (type: timestamp), _col7 (type: timestamp), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: timestamp), _col11 (type: timestamp), _col12 (type: timestamp)
       Execution mode: vectorized
       Map Vectorization:
@@ -624,10 +624,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: timestamp), VALUE._col0 (type: timestamp), VALUE._col1 (type: timestamp), VALUE._col2 (type: timestamp), VALUE._col3 (type: timestamp), VALUE._col4 (type: timestamp), VALUE._col5 (type: timestamp), VALUE._col6 (type: timestamp), VALUE._col7 (type: timestamp), VALUE._col8 (type: timestamp), VALUE._col9 (type: timestamp), VALUE._col10 (type: timestamp), VALUE._col11 (type: timestamp)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-          Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -709,7 +709,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_interval_1
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -720,7 +720,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [0, 5, 6, 7]
                   selectExpressions: TimestampColSubtractTimestampColumn(col 0:timestamp, col 0:timestamp) -> 5:interval_day_time, TimestampScalarSubtractTimestampColumn(val 2001-01-01 01:02:03.0, col 0:timestamp) -> 6:interval_day_time, TimestampColSubtractTimestampScalar(col 0:timestamp, val 2001-01-01 01:02:03.0) -> 7:interval_day_time
-              Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: timestamp)
                 sort order: +
@@ -729,7 +729,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: interval_day_time), _col2 (type: interval_day_time), _col3 (type: interval_day_time)
       Execution mode: vectorized
       Map Vectorization:
@@ -749,10 +749,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: timestamp), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), VALUE._col2 (type: interval_day_time)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -816,7 +816,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_interval_1
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -827,7 +827,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [1, 5, 6, 7]
                   selectExpressions: DateColSubtractDateColumn(col 1:date, col 1:date) -> 5:interval_day_time, DateScalarSubtractDateColumn(val 2001-01-01 00:00:00.0, col 1:date) -> 6:interval_day_time, DateColSubtractDateScalar(col 1:date, val 2001-01-01 00:00:00.0) -> 7:interval_day_time
-              Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -836,7 +836,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: interval_day_time), _col2 (type: interval_day_time), _col3 (type: interval_day_time)
       Execution mode: vectorized
       Map Vectorization:
@@ -856,10 +856,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), VALUE._col2 (type: interval_day_time)
           outputColumnNames: _col0, _col1, _col2, _col3
-          Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -929,7 +929,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vector_interval_1
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -940,7 +940,7 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [1, 5, 6, 7, 8, 9, 10]
                   selectExpressions: TimestampColSubtractDateColumn(col 0:timestamp, col 1:date) -> 5:interval_day_time, TimestampScalarSubtractDateColumn(val 2001-01-01 01:02:03.0, col 1:date) -> 6:interval_day_time, TimestampColSubtractDateScalar(col 0:timestamp, val 2001-01-01 00:00:00.0) -> 7:interval_day_time, DateColSubtractTimestampColumn(col 1:date, col 0:timestamp) -> 8:interval_day_time, DateColSubtractTimestampScalar(col 1:date, val 2001-01-01 01:02:03.0) -> 9:interval_day_time, DateScalarSubtractTimestampColumn(val 2001-01-01 00:00:00.0, col 0:timestamp) -> 10:interval_day_time
-              Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: date)
                 sort order: +
@@ -949,7 +949,7 @@ STAGE PLANS:
                     native: false
                     nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: interval_day_time), _col2 (type: interval_day_time), _col3 (type: interval_day_time), _col4 (type: interval_day_time), _col5 (type: interval_day_time), _col6 (type: interval_day_time)
       Execution mode: vectorized
       Map Vectorization:
@@ -969,10 +969,10 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: date), VALUE._col0 (type: interval_day_time), VALUE._col1 (type: interval_day_time), VALUE._col2 (type: interval_day_time), VALUE._col3 (type: interval_day_time), VALUE._col4 (type: interval_day_time), VALUE._col5 (type: interval_day_time)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 2 Data size: 442 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 274 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

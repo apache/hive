@@ -155,7 +155,7 @@ POSTHOOK: Output: default@orcfile_merge3b_n0
 POSTHOOK: Lineage: orcfile_merge3b_n0.key SIMPLE [(orcfile_merge3a_n0)orcfile_merge3a_n0.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: orcfile_merge3b_n0.value SIMPLE [(orcfile_merge3a_n0)orcfile_merge3a_n0.FieldSchema(name:value, type:string, comment:null), ]
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###       4859 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       4875 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
     FROM orcfile_merge3a_n0

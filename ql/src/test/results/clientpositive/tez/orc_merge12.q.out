@@ -161,8 +161,8 @@ Stripe Statistics:
     Column 6: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 7: count: 12288 hasNull: false min: 00020767-dd8f-4f4d-bd68-4b7be64b8e44 max: fffa3516-e219-4027-b0d3-72bb2e676c52 sum: 442368
     Column 8: count: 12288 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 884736
-    Column 9: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
-    Column 10: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
+    Column 9: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 10: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
     Column 11: count: 9174 hasNull: true true: 6138
     Column 12: count: 9173 hasNull: true true: 3983
     Column 13: count: 9173 hasNull: true min: -64 max: 62 sum: -39856
@@ -173,8 +173,8 @@ Stripe Statistics:
     Column 18: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 19: count: 9174 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 127881
     Column 20: count: 9173 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 149134
-    Column 21: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
-    Column 22: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
+    Column 21: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 22: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
     Column 23: count: 9174 hasNull: true true: 6138
     Column 24: count: 9173 hasNull: true true: 3983
     Column 25: count: 9173 hasNull: true min: -64 max: 62 sum: -39856
@@ -185,8 +185,8 @@ Stripe Statistics:
     Column 30: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 31: count: 9174 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 127881
     Column 32: count: 9173 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 149134
-    Column 33: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
-    Column 34: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
+    Column 33: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 34: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
     Column 35: count: 9174 hasNull: true true: 6138
     Column 36: count: 9173 hasNull: true true: 3983
   Stripe 2:
@@ -199,8 +199,8 @@ Stripe Statistics:
     Column 6: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 7: count: 12288 hasNull: false min: 00020767-dd8f-4f4d-bd68-4b7be64b8e44 max: fffa3516-e219-4027-b0d3-72bb2e676c52 sum: 442368
     Column 8: count: 12288 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 884736
-    Column 9: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
-    Column 10: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
+    Column 9: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 10: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
     Column 11: count: 9174 hasNull: true true: 6138
     Column 12: count: 9173 hasNull: true true: 3983
     Column 13: count: 9173 hasNull: true min: -64 max: 62 sum: -39856
@@ -211,8 +211,8 @@ Stripe Statistics:
     Column 18: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 19: count: 9174 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 127881
     Column 20: count: 9173 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 149134
-    Column 21: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
-    Column 22: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
+    Column 21: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 22: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
     Column 23: count: 9174 hasNull: true true: 6138
     Column 24: count: 9173 hasNull: true true: 3983
     Column 25: count: 9173 hasNull: true min: -64 max: 62 sum: -39856
@@ -223,8 +223,8 @@ Stripe Statistics:
     Column 30: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 31: count: 9174 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 127881
     Column 32: count: 9173 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 149134
-    Column 33: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
-    Column 34: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
+    Column 33: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 34: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
     Column 35: count: 9174 hasNull: true true: 6138
     Column 36: count: 9173 hasNull: true true: 3983
 
@@ -238,8 +238,8 @@ File Statistics:
   Column 6: count: 18348 hasNull: true min: -16379.0 max: 9763215.5639 sum: 1.12447306061E8
   Column 7: count: 24576 hasNull: false min: 00020767-dd8f-4f4d-bd68-4b7be64b8e44 max: fffa3516-e219-4027-b0d3-72bb2e676c52 sum: 884736
   Column 8: count: 24576 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 1769472
-  Column 9: count: 18346 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
-  Column 10: count: 18348 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
+  Column 9: count: 18346 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+  Column 10: count: 18348 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
   Column 11: count: 18348 hasNull: true true: 12276
   Column 12: count: 18346 hasNull: true true: 7966
   Column 13: count: 18346 hasNull: true min: -64 max: 62 sum: -79712
@@ -250,8 +250,8 @@ File Statistics:
   Column 18: count: 18348 hasNull: true min: -16379.0 max: 9763215.5639 sum: 1.12447306061E8
   Column 19: count: 18348 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 255762
   Column 20: count: 18346 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 298268
-  Column 21: count: 18346 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
-  Column 22: count: 18348 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
+  Column 21: count: 18346 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+  Column 22: count: 18348 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
   Column 23: count: 18348 hasNull: true true: 12276
   Column 24: count: 18346 hasNull: true true: 7966
   Column 25: count: 18346 hasNull: true min: -64 max: 62 sum: -79712
@@ -262,8 +262,8 @@ File Statistics:
   Column 30: count: 18348 hasNull: true min: -16379.0 max: 9763215.5639 sum: 1.12447306061E8
   Column 31: count: 18348 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 255762
   Column 32: count: 18346 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 298268
-  Column 33: count: 18346 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
-  Column 34: count: 18348 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808
+  Column 33: count: 18346 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+  Column 34: count: 18348 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
   Column 35: count: 18348 hasNull: true true: 12276
   Column 36: count: 18346 hasNull: true true: 7966
 
@@ -457,11 +457,11 @@ Stripes:
       Entry 0: count: 10000 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 720000 positions: 0,0,0,0,0
       Entry 1: count: 2288 hasNull: false min: 00124556-8383-44c4-a28b-7a413de74ccc4137606f-2cf7-43fb-beff-b6d374fd15ec max: ffde3bce-bb56-4fa9-81d7-146ca2eab946225c18e0-0002-4d07-9853-12c92c0f5637 sum: 164736 positions: 306445,195712,0,9766,272
     Row group indices for column 9:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
     Row group indices for column 10:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
     Row group indices for column 11:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -493,11 +493,11 @@ Stripes:
       Entry 0: count: 6889 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 109415 positions: 0,0,0,0,0,0,0
       Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,13280,262
     Row group indices for column 21:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
     Row group indices for column 22:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
     Row group indices for column 23:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -529,11 +529,11 @@ Stripes:
       Entry 0: count: 6889 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 109415 positions: 0,0,0,0,0,0,0
       Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,13280,262
     Row group indices for column 33:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
     Row group indices for column 34:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
     Row group indices for column 35:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -729,11 +729,11 @@ Stripes:
       Entry 0: count: 10000 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 720000 positions: 0,0,0,0,0
       Entry 1: count: 2288 hasNull: false min: 00124556-8383-44c4-a28b-7a413de74ccc4137606f-2cf7-43fb-beff-b6d374fd15ec max: ffde3bce-bb56-4fa9-81d7-146ca2eab946225c18e0-0002-4d07-9853-12c92c0f5637 sum: 164736 positions: 306445,195712,0,9766,272
     Row group indices for column 9:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
     Row group indices for column 10:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
     Row group indices for column 11:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -765,11 +765,11 @@ Stripes:
       Entry 0: count: 6889 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 109415 positions: 0,0,0,0,0,0,0
       Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,13280,262
     Row group indices for column 21:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
     Row group indices for column 22:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
     Row group indices for column 23:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -801,11 +801,11 @@ Stripes:
       Entry 0: count: 6889 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 109415 positions: 0,0,0,0,0,0,0
       Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,13280,262
     Row group indices for column 33:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
     Row group indices for column 34:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
     Row group indices for column 35:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -813,7 +813,7 @@ Stripes:
       Entry 0: count: 6889 hasNull: true true: 3402 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2284 hasNull: true true: 581 positions: 0,168,8,0,0,520,97,1
 
-File length: 3007982 bytes
+File length: 3007984 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

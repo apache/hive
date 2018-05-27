@@ -81,11 +81,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emp_orc
-          Statistics: Num rows: 13 Data size: 2444 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 14 Data size: 2632 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: lastname (type: string), deptid (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 13 Data size: 2444 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 14 Data size: 2632 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: analyze table emp_orc compute statistics
