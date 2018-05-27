@@ -23,14 +23,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.curator.shaded.com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.TypeDescription;
-import org.apache.orc.TypeDescription.Category;
 import org.apache.orc.impl.InStream;
 import org.apache.orc.impl.PositionProvider;
 import org.apache.orc.impl.SettableUncompressedStream;
@@ -1053,7 +1051,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         boolean isFileCompressed,
         OrcProto.ColumnEncoding encoding, TreeReaderFactory.Context context,
         List<ColumnVector> vectors) throws IOException {
-      super(columnId, presentStream, valueStream, scaleStream, encoding, context);
+      super(columnId, presentStream, valueStream, scaleStream, encoding,
+          precision, scale, context);
       this._isFileCompressed = isFileCompressed;
       this._presentStream = presentStream;
       this._valueStream = valueStream;

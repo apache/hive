@@ -3726,7 +3726,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -3734,7 +3734,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: []
-                    Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:

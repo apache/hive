@@ -233,7 +233,7 @@ Table Parameters:
 	orc.bloom.filter.columns	*                   
 	orc.row.index.stride	1000                
 	rawDataSize         	1139514             
-	totalSize           	55376               
+	totalSize           	55453               
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -251,7 +251,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 16673
+   HDFS_BYTES_READ: 16676
    HDFS_BYTES_WRITTEN: 104
    HDFS_READ_OPS: 7
    HDFS_LARGE_READ_OPS: 0

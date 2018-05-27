@@ -90,11 +90,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
-          Statistics: Num rows: 18 Data size: 14640 Basic stats: COMPLETE Column stats: PARTIAL
+          Statistics: Num rows: 20 Data size: 15680 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 18 Data size: 6840 Basic stats: COMPLETE Column stats: PARTIAL
+            Statistics: Num rows: 20 Data size: 7600 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
 PREHOOK: query: analyze table loc_orc_n4 partition(year='2001') compute statistics
@@ -121,11 +121,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
-          Statistics: Num rows: 8 Data size: 5048 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 9 Data size: 5364 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '__HIVE_DEFAULT_PARTITION__' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 8 Data size: 5048 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 9 Data size: 5364 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: explain select * from loc_orc_n4
