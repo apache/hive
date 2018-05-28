@@ -108,14 +108,10 @@ public class TestArrowColumnarBatchSerDe {
   private final static long NEGATIVE_TIME_IN_MS = TimeUnit.DAYS.toMillis(-9 * 365 + 31 + 3);
   private final static Timestamp TIMESTAMP;
   private final static Timestamp NEGATIVE_TIMESTAMP_WITHOUT_NANOS;
-  private final static Timestamp NEGATIVE_TIMESTAMP_WITH_NANOS;
 
   static {
     TIMESTAMP = new Timestamp(TIME_IN_MS);
-    TIMESTAMP.setNanos(123456789);
     NEGATIVE_TIMESTAMP_WITHOUT_NANOS = new Timestamp(NEGATIVE_TIME_IN_MS);
-    NEGATIVE_TIMESTAMP_WITH_NANOS = new Timestamp(NEGATIVE_TIME_IN_MS);
-    NEGATIVE_TIMESTAMP_WITH_NANOS.setNanos(123456789);
   }
 
   private final static Object[][] DTI_ROWS = {
@@ -128,12 +124,6 @@ public class TestArrowColumnarBatchSerDe {
       {
           new DateWritable(DateWritable.millisToDays(NEGATIVE_TIME_IN_MS)),
           new TimestampWritable(NEGATIVE_TIMESTAMP_WITHOUT_NANOS),
-          null,
-          null
-      },
-      {
-          null,
-          new TimestampWritable(NEGATIVE_TIMESTAMP_WITH_NANOS),
           null,
           null
       },
@@ -773,5 +763,4 @@ public class TestArrowColumnarBatchSerDe {
 
     initAndSerializeAndDeserialize(schema, toList(DECIMAL_ROWS));
   }
-
 }
