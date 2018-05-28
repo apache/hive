@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -66,6 +67,7 @@ import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -126,7 +128,7 @@ public final class HiveMaterializedViewsRegistry {
       // Create a new conf object to bypass metastore authorization, as we need to
       // retrieve all materialized views from all databases
       HiveConf conf = new HiveConf();
-      conf.set(HiveConf.ConfVars.METASTORE_FILTER_HOOK.varname,
+      conf.set(MetastoreConf.ConfVars.FILTER_HOOK.getVarname(),
           DefaultMetaStoreFilterHookImpl.class.getName());
       init(Hive.get(conf));
     } catch (HiveException e) {
@@ -159,6 +161,7 @@ public final class HiveMaterializedViewsRegistry {
     @Override
     public void run() {
       try {
+        SessionState.start(db.getConf());
         for (String dbName : db.getAllDatabases()) {
           for (Table mv : db.getAllMaterializedViewObjects(dbName)) {
             addMaterializedView(db.getConf(), mv, OpType.LOAD);
@@ -413,7 +416,7 @@ public final class HiveMaterializedViewsRegistry {
       return analyzer.genLogicalPlan(node);
     } catch (Exception e) {
       // We could not parse the view
-      LOG.error(e.getMessage());
+      LOG.error("Error parsing original query for materialized view", e);
       return null;
     }
   }
