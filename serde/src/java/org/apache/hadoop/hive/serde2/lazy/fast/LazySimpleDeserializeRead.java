@@ -917,11 +917,10 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   private void copyToBuffer(byte[] buffer, int bufferStart, int bufferLength) {
 
     final int fieldStart = currentFieldStart;
-    final int fieldLength = currentFieldLength;
     int k = 0;
-    for (int i = 0; i < fieldLength; i++) {
+    for (int i = 0; i < bufferLength; i++) {
       byte b = bytes[fieldStart + i];
-      if (b == escapeChar && i < fieldLength - 1) {
+      if (b == escapeChar && i < bufferLength - 1) {
         ++i;
         // Check if it's '\r' or '\n'
         if (bytes[fieldStart + i] == 'r') {
