@@ -771,6 +771,35 @@ public class TestDbTxnManager2 {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE, true);
   }
 
+  @Test
+  public void testLockingOnInsertIntoNonNativeTables() throws Exception {
+    dropTable(new String[] {"tab_not_acid"});
+    checkCmdOnDriver(driver.run("create table if not exists tab_not_acid (a int, b int)  " +
+        " STORED BY 'org.apache.hadoop.hive.ql.metadata.StorageHandlerMock'"));
+    txnMgr.openTxn(ctx, "T1");
+    checkCmdOnDriver(driver.compileAndRespond("insert into tab_not_acid values(1,2)", true));
+
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "_dummy_database", "_dummy_table", null, locks);
+  }
+
+  @Test
+  public void testLockingOnInsertOverwriteNonNativeTables() throws Exception {
+    dropTable(new String[] {"tab_not_acid"});
+    checkCmdOnDriver(driver.run("create table if not exists tab_not_acid (a int, b int)  " +
+        " STORED BY 'org.apache.hadoop.hive.ql.metadata.StorageHandlerMock'"));
+    txnMgr.openTxn(ctx, "T1");
+    checkCmdOnDriver(driver.compileAndRespond("insert overwrite table tab_not_acid values(1,2)", true));
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "_dummy_database", "_dummy_table", null, locks);
+  }
+
   /** The list is small, and the object is generated, so we don't use sets/equals/etc. */
   public static ShowLocksResponseElement checkLock(LockType expectedType, LockState expectedState, String expectedDb,
       String expectedTable, String expectedPartition, List<ShowLocksResponseElement> actuals) {
