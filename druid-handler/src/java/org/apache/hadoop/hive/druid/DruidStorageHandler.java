@@ -81,9 +81,11 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -98,7 +100,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
-
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
@@ -888,6 +889,14 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     return conf;
   }
 
+  @Override public LockType getLockType(WriteEntity writeEntity
+  ) {
+    if (writeEntity.getWriteType().equals(WriteEntity.WriteType.INSERT)) {
+      return LockType.SHARED_READ;
+    }
+    return LockType.SHARED_WRITE;
+  }
+
   @Override
   public String toString() {
     return Constants.DRUID_HIVE_STORAGE_HANDLER_ID;
@@ -918,55 +927,50 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   }
 
   private SQLMetadataConnector getConnector() {
+    return Suppliers.memoize(this::buildConnector).get();
+  }
+
+  private SQLMetadataConnector buildConnector() {
+
     if (connector != null) {
       return connector;
     }
 
-    final String dbType = HiveConf
-            .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_TYPE);
-    final String username = HiveConf
-            .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_USERNAME);
-    final String password = HiveConf
-            .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
-    final String uri = HiveConf
-            .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
+    final String dbType = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_TYPE);
+    final String username = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_USERNAME);
+    final String password = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
+    final String uri = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
+    LOG.debug("Supplying SQL Connector with DB type {}, URI {}, User {}", dbType, uri, username);
+    final Supplier<MetadataStorageConnectorConfig> storageConnectorConfigSupplier =
+        Suppliers.ofInstance(new MetadataStorageConnectorConfig() {
+          @Override public String getConnectURI() {
+            return uri;
+          }
 
+          @Override public String getUser() {
+            return Strings.emptyToNull(username);
+          }
 
-    final Supplier<MetadataStorageConnectorConfig> storageConnectorConfigSupplier = Suppliers.ofInstance(
-            new MetadataStorageConnectorConfig() {
-              @Override
-              public String getConnectURI() {
-                return uri;
-              }
-
-              @Override
-              public String getUser() {
-                return Strings.emptyToNull(username);
-              }
-
-              @Override
-              public String getPassword() {
-                return Strings.emptyToNull(password);
-              }
-            });
+          @Override public String getPassword() {
+            return Strings.emptyToNull(password);
+          }
+        });
     if (dbType.equals("mysql")) {
       connector = new MySQLConnector(storageConnectorConfigSupplier,
-              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
-          , new MySQLConnectorConfig());
+          Suppliers.ofInstance(getDruidMetadataStorageTablesConfig()), new MySQLConnectorConfig()
+      );
     } else if (dbType.equals("postgresql")) {
       connector = new PostgreSQLConnector(storageConnectorConfigSupplier,
-              Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
+          Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
       );
 
     } else if (dbType.equals("derby")) {
       connector = new DerbyConnector(new DerbyMetadataStorage(storageConnectorConfigSupplier.get()),
-              storageConnectorConfigSupplier, Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
+          storageConnectorConfigSupplier, Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
       );
-    }
-    else {
+    } else {
       throw new IllegalStateException(String.format("Unknown metadata storage type [%s]", dbType));
     }
-
     return connector;
   }
 
