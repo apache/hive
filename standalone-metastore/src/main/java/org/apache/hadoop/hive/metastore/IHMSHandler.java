@@ -91,21 +91,6 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
       throws MetaException, NoSuchObjectException;
 
   /**
-   * Equivalent of get_table, but does not log audits and fire pre-event listener.
-   * Meant to be used for calls made by other hive classes, that are not using the
-   * thrift interface.  Uses the configured catalog.
-   * @param dbName database name
-   * @param name table name
-   * @return Table object
-   * @throws NoSuchObjectException If the table does not exist.
-   * @throws MetaException  If another error occurs.
-   */
-  default Table get_table_core(final String dbName, final String name)
-      throws MetaException, NoSuchObjectException {
-    return get_table_core(MetaStoreUtils.getDefaultCatalog(getConf()), dbName, name);
-  }
-
-  /**
    * Get a list of all transactional listeners.
    * @return list of listeners.
    */
