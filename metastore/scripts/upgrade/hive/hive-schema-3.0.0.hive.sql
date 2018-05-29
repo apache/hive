@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS `DB_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `DB_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_DB_PRIVS` PRIMARY KEY (`DB_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -124,7 +125,8 @@ TBLPROPERTIES (
   \"GRANTOR_TYPE\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"DB_PRIV\"
+  \"DB_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"DB_PRIVS\""
 );
@@ -138,6 +140,7 @@ CREATE TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `USER_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_GLOBAL_PRIVS` PRIMARY KEY (`USER_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -152,7 +155,8 @@ TBLPROPERTIES (
   \"GRANTOR_TYPE\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"USER_PRIV\"
+  \"USER_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"GLOBAL_PRIVS\""
 );
@@ -250,6 +254,7 @@ CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_COL_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_PART_COL_PRIVS` PRIMARY KEY (`PART_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -266,7 +271,8 @@ TBLPROPERTIES (
   \"PART_ID\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"PART_COL_PRIV\"
+  \"PART_COL_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"PART_COL_PRIVS\""
 );
@@ -281,6 +287,7 @@ CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
   `PRINCIPAL_NAME` string,
   `PRINCIPAL_TYPE` string,
   `PART_PRIV` string,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_PART_PRIVS` PRIMARY KEY (`PART_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -296,7 +303,8 @@ TBLPROPERTIES (
   \"PART_ID\",
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
-  \"PART_PRIV\"
+  \"PART_PRIV\",
+  \"AUTHORIZER\"
 FROM
   \"PART_PRIVS\""
 );
@@ -652,6 +660,7 @@ CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_COL_PRIV` string,
   `TBL_ID` bigint,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_TBL_COL_PRIVS` PRIMARY KEY (`TBL_COLUMN_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -668,7 +677,8 @@ TBLPROPERTIES (
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
   \"TBL_COL_PRIV\",
-  \"TBL_ID\"
+  \"TBL_ID\",
+  \"AUTHORIZER\"
 FROM
   \"TBL_COL_PRIVS\""
 );
@@ -683,6 +693,7 @@ CREATE TABLE IF NOT EXISTS `TBL_PRIVS` (
   `PRINCIPAL_TYPE` string,
   `TBL_PRIV` string,
   `TBL_ID` bigint,
+  `AUTHORIZER` string,
   CONSTRAINT `SYS_PK_TBL_PRIVS` PRIMARY KEY (`TBL_GRANT_ID`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -698,7 +709,8 @@ TBLPROPERTIES (
   \"PRINCIPAL_NAME\",
   \"PRINCIPAL_TYPE\",
   \"TBL_PRIV\",
-  \"TBL_ID\"
+  \"TBL_ID\",
+  \"AUTHORIZER\"
 FROM
   \"TBL_PRIVS\""
 );
@@ -1082,7 +1094,8 @@ WHERE
   D.`DB_ID` = T.`DB_ID`
   AND T.`TBL_ID` = P.`TBL_ID`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'));
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND current_authorizer() = P.`AUTHORIZER`;
 
 CREATE VIEW IF NOT EXISTS `TABLES`
 (
@@ -1118,8 +1131,8 @@ WHERE
   D.`DB_ID` = T.`DB_ID`
   AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_PRIV`='SELECT');
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP')))
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer();
 
 CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
 (
@@ -1152,8 +1165,8 @@ WHERE
   AND (NOT restrict_information_schema() OR
   P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
-    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT');
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP')))
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER` = current_authorizer() AND P2.`AUTHORIZER` = current_authorizer();
 
 CREATE VIEW IF NOT EXISTS `COLUMNS`
 (
@@ -1308,7 +1321,7 @@ WHERE
   AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_COL_PRIV`='SELECT');
+  AND P.`TBL_COL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());
 
 CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
 (
@@ -1344,7 +1357,7 @@ WHERE
   P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
   AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
-  AND P2.`TBL_PRIV`='SELECT');
+  AND P2.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer() AND P2.`AUTHORIZER`=current_authorizer());
 
 CREATE VIEW IF NOT EXISTS `VIEWS`
 (
@@ -1381,4 +1394,4 @@ WHERE
   T.`TBL_ID` = P.`TBL_ID`
   AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
     OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
-  AND P.`TBL_PRIV`='SELECT');
+  AND P.`TBL_PRIV`='SELECT' AND P.`AUTHORIZER`=current_authorizer());

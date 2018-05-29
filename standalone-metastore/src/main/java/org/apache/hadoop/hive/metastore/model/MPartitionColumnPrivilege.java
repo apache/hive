@@ -39,6 +39,8 @@ public class MPartitionColumnPrivilege {
 
   private boolean grantOption;
 
+  private String authorizer;
+
   public MPartitionColumnPrivilege() {
   }
 
@@ -52,10 +54,11 @@ public class MPartitionColumnPrivilege {
    * @param grantor
    * @param grantorType
    * @param grantOption
+   * @param authorizer
    */
   public MPartitionColumnPrivilege(String principalName, String principalType,
       MPartition partition, String columnName, String privileges, int createTime,
-      String grantor, String grantorType, boolean grantOption) {
+      String grantor, String grantorType, boolean grantOption, String authorizer) {
     super();
     this.principalName = principalName;
     this.principalType = principalType;
@@ -66,6 +69,7 @@ public class MPartitionColumnPrivilege {
     this.grantor = grantor;
     this.grantorType = grantorType;
     this.grantOption = grantOption;
+    this.authorizer = authorizer;
   }
 
   /**
@@ -157,5 +161,11 @@ public class MPartitionColumnPrivilege {
   public void setPrincipalType(String principalType) {
     this.principalType = principalType;
   }
+  public String getAuthorizer() {
+    return authorizer;
+  }
 
+  public void setAuthorizer(String authorizer) {
+    this.authorizer = authorizer;
+  }
 }

@@ -1062,11 +1062,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   public function grant_revoke_privileges(\metastore\GrantRevokePrivilegeRequest $request);
   /**
    * @param \metastore\HiveObjectRef $objToRefresh
+   * @param string $authorizer
    * @param \metastore\GrantRevokePrivilegeRequest $grantRequest
    * @return \metastore\GrantRevokePrivilegeResponse
    * @throws \metastore\MetaException
    */
-  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, \metastore\GrantRevokePrivilegeRequest $grantRequest);
+  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, $authorizer, \metastore\GrantRevokePrivilegeRequest $grantRequest);
   /**
    * @param string $user_name
    * @param string[] $group_names
@@ -8927,16 +8928,17 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("grant_revoke_privileges failed: unknown result");
   }
 
-  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, \metastore\GrantRevokePrivilegeRequest $grantRequest)
+  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, $authorizer, \metastore\GrantRevokePrivilegeRequest $grantRequest)
   {
-    $this->send_refresh_privileges($objToRefresh, $grantRequest);
+    $this->send_refresh_privileges($objToRefresh, $authorizer, $grantRequest);
     return $this->recv_refresh_privileges();
   }
 
-  public function send_refresh_privileges(\metastore\HiveObjectRef $objToRefresh, \metastore\GrantRevokePrivilegeRequest $grantRequest)
+  public function send_refresh_privileges(\metastore\HiveObjectRef $objToRefresh, $authorizer, \metastore\GrantRevokePrivilegeRequest $grantRequest)
   {
     $args = new \metastore\ThriftHiveMetastore_refresh_privileges_args();
     $args->objToRefresh = $objToRefresh;
+    $args->authorizer = $authorizer;
     $args->grantRequest = $grantRequest;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
@@ -44513,6 +44515,10 @@ class ThriftHiveMetastore_refresh_privileges_args {
    */
   public $objToRefresh = null;
   /**
+   * @var string
+   */
+  public $authorizer = null;
+  /**
    * @var \metastore\GrantRevokePrivilegeRequest
    */
   public $grantRequest = null;
@@ -44526,6 +44532,10 @@ class ThriftHiveMetastore_refresh_privileges_args {
           'class' => '\metastore\HiveObjectRef',
           ),
         2 => array(
+          'var' => 'authorizer',
+          'type' => TType::STRING,
+          ),
+        3 => array(
           'var' => 'grantRequest',
           'type' => TType::STRUCT,
           'class' => '\metastore\GrantRevokePrivilegeRequest',
@@ -44535,6 +44545,9 @@ class ThriftHiveMetastore_refresh_privileges_args {
     if (is_array($vals)) {
       if (isset($vals['objToRefresh'])) {
         $this->objToRefresh = $vals['objToRefresh'];
+      }
+      if (isset($vals['authorizer'])) {
+        $this->authorizer = $vals['authorizer'];
       }
       if (isset($vals['grantRequest'])) {
         $this->grantRequest = $vals['grantRequest'];
@@ -44570,6 +44583,13 @@ class ThriftHiveMetastore_refresh_privileges_args {
           }
           break;
         case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->authorizer);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
           if ($ftype == TType::STRUCT) {
             $this->grantRequest = new \metastore\GrantRevokePrivilegeRequest();
             $xfer += $this->grantRequest->read($input);
@@ -44598,11 +44618,16 @@ class ThriftHiveMetastore_refresh_privileges_args {
       $xfer += $this->objToRefresh->write($output);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->authorizer !== null) {
+      $xfer += $output->writeFieldBegin('authorizer', TType::STRING, 2);
+      $xfer += $output->writeString($this->authorizer);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->grantRequest !== null) {
       if (!is_object($this->grantRequest)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('grantRequest', TType::STRUCT, 2);
+      $xfer += $output->writeFieldBegin('grantRequest', TType::STRUCT, 3);
       $xfer += $this->grantRequest->write($output);
       $xfer += $output->writeFieldEnd();
     }
