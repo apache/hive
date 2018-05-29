@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.orc.TypeDescription;
@@ -160,7 +161,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    * Contains only stripes that are read, and only columns included. null => read all RGs.
    */
   private boolean[][] stripeRgs;
-  private volatile boolean isStopped = false;
+  private AtomicBoolean isStopped = new AtomicBoolean(false);
   @SuppressWarnings("unused")
   private volatile boolean isPaused = false;
 
@@ -226,7 +227,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   @Override
   public void stop() {
     LOG.debug("Encoded reader is being stopped");
-    isStopped = true;
+    isStopped.set(true);
   }
 
   @Override
@@ -330,6 +331,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       DataWrapperForOrc dw = new DataWrapperForOrc();
       stripeReader = orcReader.encodedReader(fileKey, dw, dw, POOL_FACTORY, trace);
       stripeReader.setTracing(LlapIoImpl.ORC_LOGGER.isTraceEnabled());
+      stripeReader.setStopped(isStopped);
     } catch (Throwable t) {
       handleReaderError(startTime, t);
       return null;
@@ -383,7 +385,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
                 orcReader.getSchema(), orcReader.getWriterVersion());
             counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTimeHdfs);
             if (hasFileId && metadataCache != null) {
-              OrcStripeMetadata newMetadata = metadataCache.putStripeMetadata(stripeMetadata);
+              OrcStripeMetadata newMetadata = metadataCache.putStripeMetadata(
+                  stripeMetadata, isStopped);
               isFoundInCache = newMetadata != stripeMetadata; // May be cached concurrently.
               stripeMetadata = newMetadata;
               if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
@@ -510,7 +513,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private boolean processStop() {
-    if (!isStopped) return false;
+    if (!isStopped.get()) return false;
     LOG.info("Encoded data reader is stopping");
     tracePool.offer(trace);
     cleanupReaders();
@@ -620,7 +623,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // We assume this call doesn't touch HDFS because everything is already read; don't add time.
     metadata = new OrcFileMetadata(fileKey, orcReader);
     if (fileKey == null || metadataCache == null) return metadata;
-    return metadataCache.putFileMetadata(metadata);
+    return metadataCache.putFileMetadata(metadata, isStopped);
   }
 
   /**
@@ -649,7 +652,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
               orcReader.getWriterVersion());
           counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
           if (hasFileId && metadataCache != null) {
-            value = metadataCache.putStripeMetadata(value);
+            value = metadataCache.putStripeMetadata(value, isStopped);
             if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
               LlapIoImpl.ORC_LOGGER.trace("Caching stripe {} metadata with includes: {}",
                   stripeKey.stripeIx, DebugUtils.toString(globalInc));
@@ -862,7 +865,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         return lowLevelCache.putFileData(
             fileKey, ranges, data, baseOffset, Priority.NORMAL, counters);
       } else if (metadataCache != null) {
-        metadataCache.putIncompleteCbs(fileKey, ranges, baseOffset);
+        metadataCache.putIncompleteCbs(fileKey, ranges, baseOffset, isStopped);
       }
       return null;
     }

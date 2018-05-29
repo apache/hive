@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
@@ -53,18 +54,26 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     }
   }
 
+  public static class ReserveFailedException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+    public ReserveFailedException(AtomicBoolean isStopped) {
+      super("Cannot reserve memory"
+          + (Thread.currentThread().isInterrupted() ? "; thread interrupted" : "")
+          + ((isStopped != null && isStopped.get()) ? "; thread stopped" : ""));
+    }
+  }
 
   @Override
-  public void reserveMemory(final long memoryToReserve) {
-    boolean result = reserveMemory(memoryToReserve, true);
+  public void reserveMemory(final long memoryToReserve, AtomicBoolean isStopped) {
+    boolean result = reserveMemory(memoryToReserve, true, isStopped);
     if (result) return;
     // Can only happen if there's no evictor, or if thread is interrupted.
-    throw new RuntimeException("Cannot reserve memory"
-        + (Thread.currentThread().isInterrupted() ? "; thread interrupted" : ""));
+    throw new ReserveFailedException(isStopped);
   }
 
   @VisibleForTesting
-  public boolean reserveMemory(final long memoryToReserve, boolean waitForEviction) {
+  public boolean reserveMemory(final long memoryToReserve,
+      boolean waitForEviction, AtomicBoolean isStopped) {
     // TODO: if this cannot evict enough, it will spin infinitely. Terminate at some point?
     int badCallCount = 0;
     long evictedTotalMetric = 0, reservedTotalMetric = 0, remainingToReserve = memoryToReserve;
@@ -97,6 +106,10 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
           Thread.sleep(waitTimeMs);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
+          result = false;
+          break;
+        }
+        if (isStopped != null && isStopped.get()) {
           result = false;
           break;
         }

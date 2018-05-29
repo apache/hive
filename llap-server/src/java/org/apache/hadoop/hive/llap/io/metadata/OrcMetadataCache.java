@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -49,17 +50,17 @@ public class OrcMetadataCache implements LlapOomDebugDump {
         ? new ConcurrentHashMap<Object, OrcFileEstimateErrors>() : null;
   }
 
-  public OrcFileMetadata putFileMetadata(OrcFileMetadata metaData) {
+  public OrcFileMetadata putFileMetadata(OrcFileMetadata metaData, AtomicBoolean isStopped) {
     long memUsage = metaData.getMemoryUsage();
-    memoryManager.reserveMemory(memUsage);
+    memoryManager.reserveMemory(memUsage, isStopped);
     OrcFileMetadata val = metadata.putIfAbsent(metaData.getFileKey(), metaData);
     // See OrcFileMetadata; it is always unlocked, so we just "touch" it here to simulate use.
     return touchOnPut(metaData, val, memUsage);
   }
 
-  public OrcStripeMetadata putStripeMetadata(OrcStripeMetadata metaData) {
+  public OrcStripeMetadata putStripeMetadata(OrcStripeMetadata metaData, AtomicBoolean isStopped) {
     long memUsage = metaData.getMemoryUsage();
-    memoryManager.reserveMemory(memUsage);
+    memoryManager.reserveMemory(memUsage, isStopped);
     OrcStripeMetadata val = stripeMetadata.putIfAbsent(metaData.getKey(), metaData);
     // See OrcStripeMetadata; it is always unlocked, so we just "touch" it here to simulate use.
     return touchOnPut(metaData, val, memUsage);
@@ -78,7 +79,8 @@ public class OrcMetadataCache implements LlapOomDebugDump {
   }
 
 
-  public void putIncompleteCbs(Object fileKey, DiskRange[] ranges, long baseOffset) {
+  public void putIncompleteCbs(
+      Object fileKey, DiskRange[] ranges, long baseOffset, AtomicBoolean isStopped) {
     if (estimateErrors == null) return;
     OrcFileEstimateErrors errorData = estimateErrors.get(fileKey);
     boolean isNew = false;
@@ -90,7 +92,7 @@ public class OrcMetadataCache implements LlapOomDebugDump {
         errorData.addError(range.getOffset(), range.getLength(), baseOffset);
       }
       long memUsage = errorData.estimateMemoryUsage();
-      memoryManager.reserveMemory(memUsage);
+      memoryManager.reserveMemory(memUsage, isStopped);
       OrcFileEstimateErrors old = estimateErrors.putIfAbsent(fileKey, errorData);
       if (old != null) {
         errorData = old;

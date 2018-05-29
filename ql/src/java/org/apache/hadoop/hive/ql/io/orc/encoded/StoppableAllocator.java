@@ -15,15 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.hadoop.hive.llap.cache;
+package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public interface MemoryManager extends LlapOomDebugDump {
-  void releaseMemory(long memUsage);
-  void updateMaxSize(long maxSize);
-  /** TODO: temporary method until we get a better allocator. */
-  long forceReservedMemory(int allocationSize, int count);
-  void reserveMemory(long memoryToReserve, AtomicBoolean isStopped);
+import org.apache.hadoop.hive.common.io.Allocator;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+
+public interface StoppableAllocator extends Allocator {
+  /** Stoppable allocate method specific to branch-2. */
+  void allocateMultiple(MemoryBuffer[] dest, int size, AtomicBoolean isStopped)
+      throws AllocatorOutOfMemoryException;
 }

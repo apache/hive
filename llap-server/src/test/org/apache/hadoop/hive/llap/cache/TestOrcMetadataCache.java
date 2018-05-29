@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.llap.cache;
 
 import static org.junit.Assert.*;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -76,7 +78,7 @@ public class TestOrcMetadataCache {
     int allocs = 0;
 
     @Override
-    public void reserveMemory(long memoryToReserve) {
+    public void reserveMemory(long memoryToReserve, AtomicBoolean isStopped) {
       ++allocs;
     }
 
@@ -110,31 +112,31 @@ public class TestOrcMetadataCache {
     DummyCachePolicy cp = new DummyCachePolicy();
     OrcMetadataCache cache = new OrcMetadataCache(mm, cp, false);
     OrcFileMetadata ofm1 = OrcFileMetadata.createDummy(1), ofm2 = OrcFileMetadata.createDummy(2);
-    assertSame(ofm1, cache.putFileMetadata(ofm1));
+    assertSame(ofm1, cache.putFileMetadata(ofm1, null));
     assertEquals(1, mm.allocs);
     cp.verifyEquals(1);
-    assertSame(ofm2, cache.putFileMetadata(ofm2));
+    assertSame(ofm2, cache.putFileMetadata(ofm2, null));
     assertEquals(2, mm.allocs);
     cp.verifyEquals(2);
     assertSame(ofm1, cache.getFileMetadata(1));
     assertSame(ofm2, cache.getFileMetadata(2));
     cp.verifyEquals(4);
     OrcFileMetadata ofm3 = OrcFileMetadata.createDummy(1);
-    assertSame(ofm1, cache.putFileMetadata(ofm3));
+    assertSame(ofm1, cache.putFileMetadata(ofm3, null));
     assertEquals(2, mm.allocs);
     cp.verifyEquals(5);
     assertSame(ofm1, cache.getFileMetadata(1));
     cp.verifyEquals(6);
 
     OrcStripeMetadata osm1 = OrcStripeMetadata.createDummy(1), osm2 = OrcStripeMetadata.createDummy(2);
-    assertSame(osm1, cache.putStripeMetadata(osm1));
+    assertSame(osm1, cache.putStripeMetadata(osm1, null));
     assertEquals(3, mm.allocs);
-    assertSame(osm2, cache.putStripeMetadata(osm2));
+    assertSame(osm2, cache.putStripeMetadata(osm2, null));
     assertEquals(4, mm.allocs);
     assertSame(osm1, cache.getStripeMetadata(osm1.getKey()));
     assertSame(osm2, cache.getStripeMetadata(osm2.getKey()));
     OrcStripeMetadata osm3 = OrcStripeMetadata.createDummy(1);
-    assertSame(osm1, cache.putStripeMetadata(osm3));
+    assertSame(osm1, cache.putStripeMetadata(osm3, null));
     assertEquals(4, mm.allocs);
     assertSame(osm1, cache.getStripeMetadata(osm3.getKey()));
     cp.verifyEquals(12);

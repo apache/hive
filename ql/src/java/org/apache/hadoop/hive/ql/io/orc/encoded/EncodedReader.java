@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
@@ -54,4 +55,6 @@ public interface EncodedReader {
    * to just checking the constant in the first place.
    */
   void setTracing(boolean isEnabled);
+
+  void setStopped(AtomicBoolean isStopped);
 }
