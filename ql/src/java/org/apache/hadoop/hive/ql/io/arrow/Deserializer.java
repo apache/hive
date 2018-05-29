@@ -136,19 +136,21 @@ class Deserializer {
     return rows;
   }
 
-  private void read(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo, boolean encodable) {
+  private void read(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo,
+      boolean encode) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
-        readPrimitive(arrowVector, hiveVector, typeInfo, encodable);
+        readPrimitive(arrowVector, hiveVector, typeInfo, encode);
         break;
       case LIST:
-        readList(arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo);
+        readList(arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo, encode);
         break;
       case MAP:
-        readMap(arrowVector, (MapColumnVector) hiveVector, (MapTypeInfo) typeInfo);
+        readMap(arrowVector, (MapColumnVector) hiveVector, (MapTypeInfo) typeInfo, encode);
         break;
       case STRUCT:
-        readStruct(arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo);
+        readStruct(arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo,
+            encode);
         break;
       case UNION:
         readUnion(arrowVector, (UnionColumnVector) hiveVector, (UnionTypeInfo) typeInfo);
@@ -159,7 +161,7 @@ class Deserializer {
   }
 
   private void readPrimitive(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo,
-      boolean encodable) {
+      boolean encode) {
     final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
         ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
 
@@ -256,7 +258,7 @@ class Deserializer {
       case CHAR:
         {
           final VarCharVector varCharVector;
-          if (encodable) {
+          if (encode) {
             final long id = arrowVector.getField().getDictionary().getId();
             final Dictionary dictionary = dictionaryProvider.lookup(id);
             varCharVector = (VarCharVector) DictionaryEncoder.decode(arrowVector, dictionary);
@@ -380,14 +382,14 @@ class Deserializer {
     }
   }
 
-  private void readList(FieldVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo) {
+  private void readList(FieldVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo,
+      boolean encode) {
     final int size = arrowVector.getValueCount();
     final ArrowBuf offsets = arrowVector.getOffsetBuffer();
     final int OFFSET_WIDTH = 4;
 
-    read(arrowVector.getChildrenFromFields().get(0),
-        hiveVector.child,
-        typeInfo.getListElementTypeInfo(), false);
+    read(arrowVector.getChildrenFromFields().get(0), hiveVector.child,
+        typeInfo.getListElementTypeInfo(), encode);
 
     for (int i = 0; i < size; i++) {
       if (arrowVector.isNull(i)) {
@@ -401,13 +403,14 @@ class Deserializer {
     }
   }
 
-  private void readMap(FieldVector arrowVector, MapColumnVector hiveVector, MapTypeInfo typeInfo) {
+  private void readMap(FieldVector arrowVector, MapColumnVector hiveVector, MapTypeInfo typeInfo,
+      boolean encode) {
     final int size = arrowVector.getValueCount();
     final ListTypeInfo mapStructListTypeInfo = toStructListTypeInfo(typeInfo);
     final ListColumnVector mapStructListVector = toStructListVector(hiveVector);
     final StructColumnVector mapStructVector = (StructColumnVector) mapStructListVector.child;
 
-    read(arrowVector, mapStructListVector, mapStructListTypeInfo, false);
+    read(arrowVector, mapStructListVector, mapStructListTypeInfo, encode);
 
     hiveVector.isRepeating = mapStructListVector.isRepeating;
     hiveVector.childCount = mapStructListVector.childCount;
@@ -419,13 +422,14 @@ class Deserializer {
     System.arraycopy(mapStructListVector.isNull, 0, hiveVector.isNull, 0, size);
   }
 
-  private void readStruct(FieldVector arrowVector, StructColumnVector hiveVector, StructTypeInfo typeInfo) {
+  private void readStruct(FieldVector arrowVector, StructColumnVector hiveVector,
+      StructTypeInfo typeInfo, boolean encode) {
     final int size = arrowVector.getValueCount();
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
     final int fieldSize = arrowVector.getChildrenFromFields().size();
     for (int i = 0; i < fieldSize; i++) {
       read(arrowVector.getChildrenFromFields().get(i), hiveVector.fields[i], fieldTypeInfos.get(i),
-          false);
+          encode);
     }
 
     for (int i = 0; i < size; i++) {

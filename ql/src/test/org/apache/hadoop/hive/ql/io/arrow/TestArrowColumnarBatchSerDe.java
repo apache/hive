@@ -601,6 +601,27 @@ public class TestArrowColumnarBatchSerDe {
   }
 
   @Test
+  public void testListEncodeString() throws SerDeException {
+    String[][] schema = {
+        {"string1", "array<string>"},
+    };
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ARROW_ENCODE, true);
+
+    final Object[][] rows = {
+        {text("")},
+        {text("Hello")},
+        {text("Hello")},
+        {text("world!")},
+        {text("Hello")},
+        {text("world!")},
+        {text("world")},
+        {null},
+    };
+    initAndSerializeAndDeserialize(schema, toList(rows));
+  }
+
+  @Test
   public void testListDTI() throws SerDeException {
     String[][] schema = {
         {"date_list", "array<date>"},

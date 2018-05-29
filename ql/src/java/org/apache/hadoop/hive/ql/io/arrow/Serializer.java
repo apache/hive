@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -72,6 +73,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 
 import java.nio.ByteBuffer;
@@ -194,13 +196,23 @@ class Serializer {
   }
 
   private FieldType toFieldType(TypeInfo typeInfo) {
-    final DictionaryEncoding dictionaryEncoding;
     if (encode) {
-      dictionaryEncoding = new DictionaryEncoding(dictionaryId++, false, null);
-    } else {
-      dictionaryEncoding = null;
+      if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+        final PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+        final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
+            primitiveTypeInfo.getPrimitiveCategory();
+        switch (primitiveCategory) {
+          case VARCHAR:
+          case CHAR:
+          case STRING:
+            {
+              return new FieldType(true, toArrowType(TypeInfoFactory.intTypeInfo),
+                  new DictionaryEncoding(dictionaryId++, false, null));
+            }
+        }
+      }
     }
-    return new FieldType(true, toArrowType(typeInfo), dictionaryEncoding);
+    return new FieldType(true, toArrowType(typeInfo), null);
   }
 
   private ArrowType toArrowType(TypeInfo typeInfo) {
@@ -258,32 +270,32 @@ class Serializer {
 
   @SuppressWarnings("unchecked")
   private FieldVector write(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo,
-      int size, boolean encodable) {
+      int size, boolean encode) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
-        return writePrimitive(arrowVector, hiveVector, size, encodable);
+        return writePrimitive(arrowVector, hiveVector, (PrimitiveTypeInfo) typeInfo, size, encode);
       case LIST:
         return writeList((ListVector) arrowVector, (ListColumnVector) hiveVector,
-            (ListTypeInfo) typeInfo, size);
+            (ListTypeInfo) typeInfo, size, encode);
       case STRUCT:
         return writeStruct((MapVector) arrowVector, (StructColumnVector) hiveVector,
-            (StructTypeInfo) typeInfo, size);
+            (StructTypeInfo) typeInfo, size, encode);
       case UNION:
-        return writeUnion(arrowVector, hiveVector, typeInfo, size);
+        return writeUnion(arrowVector, hiveVector, typeInfo, size, encode);
       case MAP:
         return writeMap((ListVector) arrowVector, (MapColumnVector) hiveVector,
-            (MapTypeInfo) typeInfo, size);
+            (MapTypeInfo) typeInfo, size, encode);
       default:
         throw new IllegalArgumentException();
     }
   }
 
   private FieldVector writeMap(ListVector arrowVector, MapColumnVector hiveVector,
-      MapTypeInfo typeInfo, int size) {
+      MapTypeInfo typeInfo, int size, boolean encode) {
     final ListTypeInfo structListTypeInfo = toStructListTypeInfo(typeInfo);
     final ListColumnVector structListVector = toStructListVector(hiveVector);
 
-    write(arrowVector, structListVector, structListTypeInfo, size, false);
+    write(arrowVector, structListVector, structListTypeInfo, size, encode);
 
     final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
@@ -298,7 +310,7 @@ class Serializer {
   }
 
   private FieldVector writeUnion(FieldVector arrowVector, ColumnVector hiveVector,
-      TypeInfo typeInfo, int size) {
+      TypeInfo typeInfo, int size, boolean encode) {
     final UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
     final List<TypeInfo> objectTypeInfos = unionTypeInfo.getAllUnionObjectTypeInfos();
     final UnionColumnVector hiveUnionVector = (UnionColumnVector) hiveVector;
@@ -308,14 +320,14 @@ class Serializer {
     final ColumnVector hiveObjectVector = hiveObjectVectors[tag];
     final TypeInfo objectTypeInfo = objectTypeInfos.get(tag);
 
-    write(arrowVector, hiveObjectVector, objectTypeInfo, size, false);
+    write(arrowVector, hiveObjectVector, objectTypeInfo, size, encode);
 
     return arrowVector;
   }
 
   @SuppressWarnings("unchecked")
   private FieldVector writeStruct(MapVector arrowVector, StructColumnVector hiveVector,
-      StructTypeInfo typeInfo, int size) {
+      StructTypeInfo typeInfo, int size, boolean encode) {
     final List<String> fieldNames = typeInfo.getAllStructFieldNames();
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
     final ColumnVector[] hiveFieldVectors = hiveVector.fields;
@@ -329,7 +341,7 @@ class Serializer {
           toFieldType(fieldTypeInfos.get(fieldIndex)), FieldVector.class);
       arrowFieldVector.setInitialCapacity(size);
       arrowFieldVector.allocateNew();
-      write(arrowFieldVector, hiveFieldVector, fieldTypeInfo, size, false);
+      write(arrowFieldVector, hiveFieldVector, fieldTypeInfo, size, encode);
     }
 
     final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
@@ -345,7 +357,7 @@ class Serializer {
   }
 
   private FieldVector writeList(ListVector arrowVector, ListColumnVector hiveVector,
-      ListTypeInfo typeInfo, int size) {
+      ListTypeInfo typeInfo, int size, boolean encode) {
     final int OFFSET_WIDTH = 4;
     final TypeInfo elementTypeInfo = typeInfo.getListElementTypeInfo();
     final ColumnVector hiveElementVector = hiveVector.child;
@@ -354,7 +366,7 @@ class Serializer {
     arrowElementVector.setInitialCapacity(hiveVector.childCount);
     arrowElementVector.allocateNew();
 
-    write(arrowElementVector, hiveElementVector, elementTypeInfo, hiveVector.childCount, false);
+    write(arrowElementVector, hiveElementVector, elementTypeInfo, hiveVector.childCount, encode);
 
     final ArrowBuf offsetBuffer = arrowVector.getOffsetBuffer();
     int nextOffset = 0;
@@ -372,10 +384,10 @@ class Serializer {
     return arrowVector;
   }
 
-  private FieldVector writePrimitive(FieldVector arrowVector, ColumnVector hiveVector, int size,
-      boolean encodable) {
-    switch (arrowVector.getMinorType()) {
-      case BIT:
+  private FieldVector writePrimitive(FieldVector arrowVector, ColumnVector hiveVector,
+      PrimitiveTypeInfo primitiveTypeInfo, int size, boolean encode) {
+    switch (primitiveTypeInfo.getPrimitiveCategory()) {
+      case BOOLEAN:
         {
           final BitVector bitVector = (BitVector) arrowVector;
           for (int i = 0; i < size; i++) {
@@ -387,7 +399,7 @@ class Serializer {
           }
           return bitVector;
         }
-      case TINYINT:
+      case BYTE:
         {
           final TinyIntVector tinyIntVector = (TinyIntVector) arrowVector;
           for (int i = 0; i < size; i++) {
@@ -399,7 +411,7 @@ class Serializer {
           }
           return tinyIntVector;
         }
-      case SMALLINT:
+      case SHORT:
         {
           final SmallIntVector smallIntVector = (SmallIntVector) arrowVector;
           for (int i = 0; i < size; i++) {
@@ -423,7 +435,7 @@ class Serializer {
           }
           return intVector;
         }
-      case BIGINT:
+      case LONG:
         {
           final BigIntVector bigIntVector = (BigIntVector) arrowVector;
           for (int i = 0; i < size; i++) {
@@ -435,7 +447,7 @@ class Serializer {
           }
           return bigIntVector;
         }
-      case FLOAT4:
+      case FLOAT:
         {
           final Float4Vector float4Vector = (Float4Vector) arrowVector;
           for (int i = 0; i < size; i++) {
@@ -447,7 +459,7 @@ class Serializer {
           }
           return float4Vector;
         }
-      case FLOAT8:
+      case DOUBLE:
         {
           final Float8Vector float8Vector = (Float8Vector) arrowVector;
           for (int i = 0; i < size; i++) {
@@ -460,25 +472,31 @@ class Serializer {
           return float8Vector;
         }
       case VARCHAR:
+      case CHAR:
+      case STRING:
         {
-          final VarCharVector varCharVector = (VarCharVector) arrowVector;
-          final BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
-          for (int i = 0; i < size; i++) {
-            if (hiveVector.isNull[i]) {
-              varCharVector.setNull(i);
-            } else {
-              varCharVector.setSafe(i, bytesVector.vector[i], bytesVector.start[i], bytesVector.length[i]);
+          if (encode) {
+            final BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
+            final VarCharVector varCharVector = (VarCharVector)
+                Types.MinorType.VARCHAR.getNewVector(null,
+                    FieldType.nullable(Types.MinorType.VARCHAR.getType()), bufferAllocator, null);
+            for (int i = 0; i < size; i++) {
+              if (hiveVector.isNull[i]) {
+                varCharVector.setNull(i);
+              } else {
+                varCharVector.setSafe(i, bytesVector.vector[i], bytesVector.start[i],
+                    bytesVector.length[i]);
+              }
             }
-          }
-          varCharVector.setValueCount(size);
+            arrowVector.setValueCount(size);
 
-          if (encodable) {
             int j = 0;
             final Set<ByteBuffer> occurrences = new HashSet<>();
             for (int i = 0; i < size; i++) {
               if (!bytesVector.isNull[i]) {
                 final ByteBuffer byteBuffer =
-                    ByteBuffer.wrap(bytesVector.vector[j], bytesVector.start[j], bytesVector.length[j]);
+                    ByteBuffer.wrap(bytesVector.vector[j], bytesVector.start[j],
+                        bytesVector.length[j]);
                 if (!occurrences.contains(byteBuffer)) {
                   occurrences.add(byteBuffer);
                 }
@@ -486,8 +504,8 @@ class Serializer {
               }
             }
             final FieldType fieldType = arrowVector.getField().getFieldType();
-            final VarCharVector dictionaryVector = (VarCharVector)
-                Types.MinorType.VARCHAR.getNewVector(null, fieldType, bufferAllocator, null);
+            final VarCharVector dictionaryVector = (VarCharVector) Types.MinorType.VARCHAR.
+                getNewVector(null, fieldType, bufferAllocator, null);
             j = 0;
             for (ByteBuffer occurrence : occurrences) {
               final int start = occurrence.position();
@@ -499,12 +517,27 @@ class Serializer {
             final DictionaryEncoding dictionaryEncoding = arrowVector.getField().getDictionary();
             final Dictionary dictionary = new Dictionary(dictionaryVector, dictionaryEncoding);
             dictionaryProvider.put(dictionary);
-            return (FieldVector) DictionaryEncoder.encode(varCharVector, dictionary);
+            final IntVector encodedVector = (IntVector) DictionaryEncoder.encode(varCharVector,
+                dictionary);
+            encodedVector.makeTransferPair(arrowVector).transfer();
+            return arrowVector;
           } else {
+            final BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
+            final VarCharVector varCharVector = (VarCharVector) arrowVector;
+            for (int i = 0; i < size; i++) {
+              if (hiveVector.isNull[i]) {
+                varCharVector.setNull(i);
+              } else {
+                varCharVector.setSafe(i, bytesVector.vector[i], bytesVector.start[i],
+                    bytesVector.length[i]);
+              }
+            }
+            varCharVector.setValueCount(size);
+
             return varCharVector;
           }
         }
-      case DATEDAY:
+      case DATE:
         {
           final DateDayVector dateDayVector = (DateDayVector) arrowVector;
           for (int i = 0; i < size; i++) {
@@ -516,7 +549,7 @@ class Serializer {
           }
           return dateDayVector;
         }
-      case TIMESTAMPNANO:
+      case TIMESTAMP:
         {
           final TimeStampNanoVector timeStampNanoVector = (TimeStampNanoVector) arrowVector;
           final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
@@ -539,7 +572,7 @@ class Serializer {
           }
           return timeStampNanoVector;
         }
-      case VARBINARY:
+      case BINARY:
         {
           final VarBinaryVector varBinaryVector = (VarBinaryVector) arrowVector;
           final BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
@@ -566,7 +599,7 @@ class Serializer {
           }
           return decimalVector;
         }
-      case INTERVALYEAR:
+      case INTERVAL_YEAR_MONTH:
         {
           final IntervalYearVector intervalYearVector = (IntervalYearVector) arrowVector;
           for (int i = 0; i < size; i++) {
@@ -578,7 +611,7 @@ class Serializer {
           }
           return intervalYearVector;
         }
-      case INTERVALDAY:
+      case INTERVAL_DAY_TIME:
         {
           final IntervalDayVector intervalDayVector = (IntervalDayVector) arrowVector;
           final IntervalDayTimeColumnVector intervalDayTimeColumnVector =
