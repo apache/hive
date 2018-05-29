@@ -2658,6 +2658,10 @@ void HiveObjectPrivilege::__set_grantInfo(const PrivilegeGrantInfo& val) {
   this->grantInfo = val;
 }
 
+void HiveObjectPrivilege::__set_authorizer(const std::string& val) {
+  this->authorizer = val;
+}
+
 uint32_t HiveObjectPrivilege::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -2713,6 +2717,14 @@ uint32_t HiveObjectPrivilege::read(::apache::thrift::protocol::TProtocol* iprot)
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->authorizer);
+          this->__isset.authorizer = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -2746,6 +2758,10 @@ uint32_t HiveObjectPrivilege::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += this->grantInfo.write(oprot);
   xfer += oprot->writeFieldEnd();
 
+  xfer += oprot->writeFieldBegin("authorizer", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->authorizer);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -2757,6 +2773,7 @@ void swap(HiveObjectPrivilege &a, HiveObjectPrivilege &b) {
   swap(a.principalName, b.principalName);
   swap(a.principalType, b.principalType);
   swap(a.grantInfo, b.grantInfo);
+  swap(a.authorizer, b.authorizer);
   swap(a.__isset, b.__isset);
 }
 
@@ -2765,6 +2782,7 @@ HiveObjectPrivilege::HiveObjectPrivilege(const HiveObjectPrivilege& other37) {
   principalName = other37.principalName;
   principalType = other37.principalType;
   grantInfo = other37.grantInfo;
+  authorizer = other37.authorizer;
   __isset = other37.__isset;
 }
 HiveObjectPrivilege& HiveObjectPrivilege::operator=(const HiveObjectPrivilege& other38) {
@@ -2772,6 +2790,7 @@ HiveObjectPrivilege& HiveObjectPrivilege::operator=(const HiveObjectPrivilege& o
   principalName = other38.principalName;
   principalType = other38.principalType;
   grantInfo = other38.grantInfo;
+  authorizer = other38.authorizer;
   __isset = other38.__isset;
   return *this;
 }
@@ -2782,6 +2801,7 @@ void HiveObjectPrivilege::printTo(std::ostream& out) const {
   out << ", " << "principalName=" << to_string(principalName);
   out << ", " << "principalType=" << to_string(principalType);
   out << ", " << "grantInfo=" << to_string(grantInfo);
+  out << ", " << "authorizer=" << to_string(authorizer);
   out << ")";
 }
 

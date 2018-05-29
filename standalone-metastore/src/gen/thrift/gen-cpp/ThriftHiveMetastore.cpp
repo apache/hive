@@ -33259,6 +33259,14 @@ uint32_t ThriftHiveMetastore_refresh_privileges_args::read(::apache::thrift::pro
         }
         break;
       case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->authorizer);
+          this->__isset.authorizer = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->grantRequest.read(iprot);
           this->__isset.grantRequest = true;
@@ -33287,7 +33295,11 @@ uint32_t ThriftHiveMetastore_refresh_privileges_args::write(::apache::thrift::pr
   xfer += this->objToRefresh.write(oprot);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("grantRequest", ::apache::thrift::protocol::T_STRUCT, 2);
+  xfer += oprot->writeFieldBegin("authorizer", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->authorizer);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("grantRequest", ::apache::thrift::protocol::T_STRUCT, 3);
   xfer += this->grantRequest.write(oprot);
   xfer += oprot->writeFieldEnd();
 
@@ -33310,7 +33322,11 @@ uint32_t ThriftHiveMetastore_refresh_privileges_pargs::write(::apache::thrift::p
   xfer += (*(this->objToRefresh)).write(oprot);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("grantRequest", ::apache::thrift::protocol::T_STRUCT, 2);
+  xfer += oprot->writeFieldBegin("authorizer", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->authorizer)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("grantRequest", ::apache::thrift::protocol::T_STRUCT, 3);
   xfer += (*(this->grantRequest)).write(oprot);
   xfer += oprot->writeFieldEnd();
 
@@ -58204,19 +58220,20 @@ void ThriftHiveMetastoreClient::recv_grant_revoke_privileges(GrantRevokePrivileg
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "grant_revoke_privileges failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest)
+void ThriftHiveMetastoreClient::refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest)
 {
-  send_refresh_privileges(objToRefresh, grantRequest);
+  send_refresh_privileges(objToRefresh, authorizer, grantRequest);
   recv_refresh_privileges(_return);
 }
 
-void ThriftHiveMetastoreClient::send_refresh_privileges(const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest)
+void ThriftHiveMetastoreClient::send_refresh_privileges(const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("refresh_privileges", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_refresh_privileges_pargs args;
   args.objToRefresh = &objToRefresh;
+  args.authorizer = &authorizer;
   args.grantRequest = &grantRequest;
   args.write(oprot_);
 
@@ -70714,7 +70731,7 @@ void ThriftHiveMetastoreProcessor::process_refresh_privileges(int32_t seqid, ::a
 
   ThriftHiveMetastore_refresh_privileges_result result;
   try {
-    iface_->refresh_privileges(result.success, args.objToRefresh, args.grantRequest);
+    iface_->refresh_privileges(result.success, args.objToRefresh, args.authorizer, args.grantRequest);
     result.__isset.success = true;
   } catch (MetaException &o1) {
     result.o1 = o1;
@@ -87024,13 +87041,13 @@ void ThriftHiveMetastoreConcurrentClient::recv_grant_revoke_privileges(GrantRevo
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest)
+void ThriftHiveMetastoreConcurrentClient::refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest)
 {
-  int32_t seqid = send_refresh_privileges(objToRefresh, grantRequest);
+  int32_t seqid = send_refresh_privileges(objToRefresh, authorizer, grantRequest);
   recv_refresh_privileges(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_refresh_privileges(const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest)
+int32_t ThriftHiveMetastoreConcurrentClient::send_refresh_privileges(const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
@@ -87038,6 +87055,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_refresh_privileges(const HiveO
 
   ThriftHiveMetastore_refresh_privileges_pargs args;
   args.objToRefresh = &objToRefresh;
+  args.authorizer = &authorizer;
   args.grantRequest = &grantRequest;
   args.write(oprot_);
 

@@ -36,6 +36,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
 import org.apache.thrift.TException;
 
 public abstract class HiveAuthorizationProviderBase implements
@@ -133,4 +135,8 @@ public abstract class HiveAuthorizationProviderBase implements
     this.authenticator = authenticator;
   }
 
+  @Override
+  public HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException {
+    return null;
+  }
 }

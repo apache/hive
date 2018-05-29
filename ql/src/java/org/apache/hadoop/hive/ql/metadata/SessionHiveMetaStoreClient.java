@@ -709,7 +709,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   private static Map<String, Map<String, Table>> getTempTables(String msg) {
     SessionState ss = SessionState.get();
     if (ss == null) {
-      LOG.warn("No current SessionState, skipping temp tables for " + msg);
+      LOG.debug("No current SessionState, skipping temp tables for " + msg);
       return Collections.emptyMap();
     }
     return ss.getTempTables();

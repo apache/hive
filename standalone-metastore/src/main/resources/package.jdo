@@ -598,6 +598,7 @@
     <class name="MGlobalPrivilege" table="GLOBAL_PRIVS" identity-type="datastore" detachable="true">
       
       <index name="GlobalPrivilegeIndex" unique="true">
+        <column name="AUTHORIZER"/>
         <column name="PRINCIPAL_NAME"/>
         <column name="PRINCIPAL_TYPE"/>
         <column name="USER_PRIV"/>
@@ -630,11 +631,15 @@
       <field name="grantOption">
         <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
       </field>
+      <field name="authorizer">
+        <column name="AUTHORIZER" length="128" jdbc-type="VARCHAR"/>
+      </field>
     </class>
 
     <class name="MDBPrivilege" table="DB_PRIVS" identity-type="datastore" detachable="true">
       
       <index name="DBPrivilegeIndex" unique="true">
+        <column name="AUTHORIZER"/>
         <column name="DB_ID"/>
         <column name="PRINCIPAL_NAME"/>
         <column name="PRINCIPAL_TYPE"/>
@@ -671,11 +676,15 @@
       <field name="grantOption">
         <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
       </field>
+      <field name="authorizer">
+        <column name="AUTHORIZER" length="128" jdbc-type="VARCHAR"/>
+      </field>
     </class>
 
     <class name="MTablePrivilege" table="TBL_PRIVS" identity-type="datastore" detachable="true">
     
       <index name="TablePrivilegeIndex" unique="false">
+        <column name="AUTHORIZER"/>
         <column name="TBL_ID"/>
         <column name="PRINCIPAL_NAME"/>
         <column name="PRINCIPAL_TYPE"/>
@@ -712,11 +721,15 @@
       <field name="grantOption">
         <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
       </field>
+      <field name="authorizer">
+        <column name="AUTHORIZER" length="128" jdbc-type="VARCHAR"/>
+      </field>
     </class>
 
     <class name="MPartitionPrivilege" table="PART_PRIVS" identity-type="datastore" detachable="true">
     
       <index name="PartPrivilegeIndex" unique="false">
+        <column name="AUTHORIZER"/>
         <column name="PART_ID"/>
         <column name="PRINCIPAL_NAME"/>
         <column name="PRINCIPAL_TYPE"/>
@@ -753,11 +766,15 @@
       <field name="grantOption">
         <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
       </field>
+      <field name="authorizer">
+        <column name="AUTHORIZER" length="128" jdbc-type="VARCHAR"/>
+      </field>
     </class>
 
     <class name="MTableColumnPrivilege" table="TBL_COL_PRIVS" identity-type="datastore" detachable="true">
     
      <index name="TableColumnPrivilegeIndex" unique="false">
+        <column name="AUTHORIZER"/>
         <column name="TBL_ID"/>
         <column name="COLUMN_NAME"/>
         <column name="PRINCIPAL_NAME"/>
@@ -798,11 +815,15 @@
       <field name="grantOption">
         <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
       </field>
+      <field name="authorizer">
+        <column name="AUTHORIZER" length="128" jdbc-type="VARCHAR"/>
+      </field>
     </class>
 
     <class name="MPartitionColumnPrivilege" table="PART_COL_PRIVS" identity-type="datastore" detachable="true">
     
      <index name="PartitionColumnPrivilegeIndex" unique="false">
+        <column name="AUTHORIZER"/>
         <column name="PART_ID"/>
         <column name="COLUMN_NAME"/>
         <column name="PRINCIPAL_NAME"/>
@@ -842,6 +863,9 @@
       </field>
       <field name="grantOption">
         <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+      </field>
+      <field name="authorizer">
+        <column name="AUTHORIZER" length="128" jdbc-type="VARCHAR"/>
       </field>
     </class>
 

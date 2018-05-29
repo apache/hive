@@ -754,7 +754,7 @@ public interface RawStore extends Configurable {
   boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
   throws InvalidObjectException, MetaException, NoSuchObjectException;
 
-  boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+  boolean refreshPrivileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
   throws InvalidObjectException, MetaException, NoSuchObjectException;
 
   org.apache.hadoop.hive.metastore.api.Role getRole(

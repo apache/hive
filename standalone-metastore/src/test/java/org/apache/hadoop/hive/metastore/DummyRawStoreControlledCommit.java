@@ -510,9 +510,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+  public boolean refreshPrivileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
           throws InvalidObjectException, MetaException, NoSuchObjectException {
-    return objectStore.refreshPrivileges(objToRefresh, grantPrivileges);
+    return objectStore.refreshPrivileges(objToRefresh, authorizer, grantPrivileges);
   }
   @Override
   public Role getRole(String roleName) throws NoSuchObjectException {
