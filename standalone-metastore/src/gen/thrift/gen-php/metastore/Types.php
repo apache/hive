@@ -2719,6 +2719,10 @@ class HiveObjectPrivilege {
    * @var \metastore\PrivilegeGrantInfo
    */
   public $grantInfo = null;
+  /**
+   * @var string
+   */
+  public $authorizer = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -2741,6 +2745,10 @@ class HiveObjectPrivilege {
           'type' => TType::STRUCT,
           'class' => '\metastore\PrivilegeGrantInfo',
           ),
+        5 => array(
+          'var' => 'authorizer',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -2755,6 +2763,9 @@ class HiveObjectPrivilege {
       }
       if (isset($vals['grantInfo'])) {
         $this->grantInfo = $vals['grantInfo'];
+      }
+      if (isset($vals['authorizer'])) {
+        $this->authorizer = $vals['authorizer'];
       }
     }
   }
@@ -2808,6 +2819,13 @@ class HiveObjectPrivilege {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->authorizer);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -2845,6 +2863,11 @@ class HiveObjectPrivilege {
       }
       $xfer += $output->writeFieldBegin('grantInfo', TType::STRUCT, 4);
       $xfer += $this->grantInfo->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->authorizer !== null) {
+      $xfer += $output->writeFieldBegin('authorizer', TType::STRING, 5);
+      $xfer += $output->writeString($this->authorizer);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

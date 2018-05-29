@@ -36,12 +36,14 @@ public class MTablePrivilege {
 
   private boolean grantOption;
 
+  private String authorizer;
+
   public MTablePrivilege() {
   }
 
   public MTablePrivilege(String principalName, String principalType,
       MTable table, String privilege, int createTime,
-      String grantor, String grantorType, boolean grantOption) {
+      String grantor, String grantorType, boolean grantOption, String authorizer) {
     super();
     this.principalName = principalName;
     this.principalType = principalType;
@@ -51,6 +53,7 @@ public class MTablePrivilege {
     this.grantor = grantor;
     this.grantorType = grantorType;
     this.grantOption = grantOption;
+    this.authorizer = authorizer;
   }
 
   public String getPrincipalName() {
@@ -136,4 +139,11 @@ public class MTablePrivilege {
     this.grantorType = grantorType;
   }
 
+  public String getAuthorizer() {
+    return authorizer;
+  }
+
+  public void setAuthorizer(String authorizer) {
+    this.authorizer = authorizer;
+  }
 }

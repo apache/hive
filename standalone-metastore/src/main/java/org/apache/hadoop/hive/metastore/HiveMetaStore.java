@@ -814,7 +814,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       PrivilegeBag privs = new PrivilegeBag();
       privs.addToPrivileges(new HiveObjectPrivilege( new HiveObjectRef(HiveObjectType.GLOBAL, null,
         null, null, null), ADMIN, PrincipalType.ROLE, new PrivilegeGrantInfo("All", 0, ADMIN,
-        PrincipalType.ROLE, true)));
+          PrincipalType.ROLE, true), "SQL"));
       try {
         ms.grantPrivileges(privs);
       } catch (InvalidObjectException e) {
@@ -6226,14 +6226,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public GrantRevokePrivilegeResponse refresh_privileges(HiveObjectRef objToRefresh,
+    public GrantRevokePrivilegeResponse refresh_privileges(HiveObjectRef objToRefresh, String authorizer,
         GrantRevokePrivilegeRequest grantRequest)
         throws TException {
       incrementCounter("refresh_privileges");
       firePreEvent(new PreAuthorizationCallEvent(this));
       GrantRevokePrivilegeResponse response = new GrantRevokePrivilegeResponse();
       try {
-        boolean result = getMS().refreshPrivileges(objToRefresh, grantRequest.getPrivileges());
+        boolean result = getMS().refreshPrivileges(objToRefresh, authorizer, grantRequest.getPrivileges());
         response.setSuccess(result);
       } catch (MetaException e) {
         throw e;

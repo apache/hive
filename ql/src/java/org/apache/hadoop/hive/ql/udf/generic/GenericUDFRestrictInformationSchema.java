@@ -61,13 +61,15 @@ public class GenericUDFRestrictInformationSchema extends GenericUDF {
     }
 
     if (enabled == null) {
+      HiveConf hiveConf = SessionState.getSessionConf();
+
       boolean enableHS2PolicyProvider = false;
       boolean enableMetastorePolicyProvider = false;
 
-      HiveConf hiveConf = SessionState.getSessionConf();
       HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
       try {
-        if (authorizer.getHivePolicyProvider() != null) {
+        if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)
+            && authorizer.getHivePolicyProvider() != null) {
           enableHS2PolicyProvider = true;
         }
       } catch (HiveAuthzPluginException e) {
@@ -95,12 +97,12 @@ public class GenericUDFRestrictInformationSchema extends GenericUDF {
             LOG.warn("Error instantiating hive.security.metastore.authorization.manager", e);
           }
         }
-      }
 
-      if (enableHS2PolicyProvider || enableMetastorePolicyProvider) {
-        enabled = new BooleanWritable(true);
-      } else {
-        enabled = new BooleanWritable(false);
+        if (enableHS2PolicyProvider || enableMetastorePolicyProvider) {
+          enabled = new BooleanWritable(true);
+        } else {
+          enabled = new BooleanWritable(false);
+        }
       }
     }
 

@@ -61,7 +61,8 @@ public class DatabaseAccessorFactory {
 
 
   public static DatabaseAccessor getAccessor(Configuration conf) {
-    DatabaseType dbType = DatabaseType.valueOf(conf.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
+    DatabaseType dbType = DatabaseType.valueOf(
+        conf.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()).toUpperCase());
     return getAccessor(dbType);
   }
 

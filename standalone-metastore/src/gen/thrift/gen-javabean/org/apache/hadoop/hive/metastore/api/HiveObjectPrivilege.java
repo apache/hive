@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField PRINCIPAL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("principalName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField PRINCIPAL_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("principalType", org.apache.thrift.protocol.TType.I32, (short)3);
   private static final org.apache.thrift.protocol.TField GRANT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("grantInfo", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+  private static final org.apache.thrift.protocol.TField AUTHORIZER_FIELD_DESC = new org.apache.thrift.protocol.TField("authorizer", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,6 +54,7 @@ import org.slf4j.LoggerFactory;
   private String principalName; // required
   private PrincipalType principalType; // required
   private PrivilegeGrantInfo grantInfo; // required
+  private String authorizer; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -63,7 +65,8 @@ import org.slf4j.LoggerFactory;
      * @see PrincipalType
      */
     PRINCIPAL_TYPE((short)3, "principalType"),
-    GRANT_INFO((short)4, "grantInfo");
+    GRANT_INFO((short)4, "grantInfo"),
+    AUTHORIZER((short)5, "authorizer");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -86,6 +89,8 @@ import org.slf4j.LoggerFactory;
           return PRINCIPAL_TYPE;
         case 4: // GRANT_INFO
           return GRANT_INFO;
+        case 5: // AUTHORIZER
+          return AUTHORIZER;
         default:
           return null;
       }
@@ -137,6 +142,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
     tmpMap.put(_Fields.GRANT_INFO, new org.apache.thrift.meta_data.FieldMetaData("grantInfo", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PrivilegeGrantInfo.class)));
+    tmpMap.put(_Fields.AUTHORIZER, new org.apache.thrift.meta_data.FieldMetaData("authorizer", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(HiveObjectPrivilege.class, metaDataMap);
   }
@@ -148,13 +155,15 @@ import org.slf4j.LoggerFactory;
     HiveObjectRef hiveObject,
     String principalName,
     PrincipalType principalType,
-    PrivilegeGrantInfo grantInfo)
+    PrivilegeGrantInfo grantInfo,
+    String authorizer)
   {
     this();
     this.hiveObject = hiveObject;
     this.principalName = principalName;
     this.principalType = principalType;
     this.grantInfo = grantInfo;
+    this.authorizer = authorizer;
   }
 
   /**
@@ -173,6 +182,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetGrantInfo()) {
       this.grantInfo = new PrivilegeGrantInfo(other.grantInfo);
     }
+    if (other.isSetAuthorizer()) {
+      this.authorizer = other.authorizer;
+    }
   }
 
   public HiveObjectPrivilege deepCopy() {
@@ -185,6 +197,7 @@ import org.slf4j.LoggerFactory;
     this.principalName = null;
     this.principalType = null;
     this.grantInfo = null;
+    this.authorizer = null;
   }
 
   public HiveObjectRef getHiveObject() {
@@ -287,6 +300,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getAuthorizer() {
+    return this.authorizer;
+  }
+
+  public void setAuthorizer(String authorizer) {
+    this.authorizer = authorizer;
+  }
+
+  public void unsetAuthorizer() {
+    this.authorizer = null;
+  }
+
+  /** Returns true if field authorizer is set (has been assigned a value) and false otherwise */
+  public boolean isSetAuthorizer() {
+    return this.authorizer != null;
+  }
+
+  public void setAuthorizerIsSet(boolean value) {
+    if (!value) {
+      this.authorizer = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case HIVE_OBJECT:
@@ -321,6 +357,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case AUTHORIZER:
+      if (value == null) {
+        unsetAuthorizer();
+      } else {
+        setAuthorizer((String)value);
+      }
+      break;
+
     }
   }
 
@@ -337,6 +381,9 @@ import org.slf4j.LoggerFactory;
 
     case GRANT_INFO:
       return getGrantInfo();
+
+    case AUTHORIZER:
+      return getAuthorizer();
 
     }
     throw new IllegalStateException();
@@ -357,6 +404,8 @@ import org.slf4j.LoggerFactory;
       return isSetPrincipalType();
     case GRANT_INFO:
       return isSetGrantInfo();
+    case AUTHORIZER:
+      return isSetAuthorizer();
     }
     throw new IllegalStateException();
   }
@@ -410,6 +459,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_authorizer = true && this.isSetAuthorizer();
+    boolean that_present_authorizer = true && that.isSetAuthorizer();
+    if (this_present_authorizer || that_present_authorizer) {
+      if (!(this_present_authorizer && that_present_authorizer))
+        return false;
+      if (!this.authorizer.equals(that.authorizer))
+        return false;
+    }
+
     return true;
   }
 
@@ -436,6 +494,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_grantInfo);
     if (present_grantInfo)
       list.add(grantInfo);
+
+    boolean present_authorizer = true && (isSetAuthorizer());
+    list.add(present_authorizer);
+    if (present_authorizer)
+      list.add(authorizer);
 
     return list.hashCode();
   }
@@ -484,6 +547,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetGrantInfo()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.grantInfo, other.grantInfo);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetAuthorizer()).compareTo(other.isSetAuthorizer());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAuthorizer()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.authorizer, other.authorizer);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -537,6 +610,14 @@ import org.slf4j.LoggerFactory;
       sb.append("null");
     } else {
       sb.append(this.grantInfo);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("authorizer:");
+    if (this.authorizer == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.authorizer);
     }
     first = false;
     sb.append(")");
@@ -622,6 +703,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // AUTHORIZER
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.authorizer = iprot.readString();
+              struct.setAuthorizerIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -655,6 +744,11 @@ import org.slf4j.LoggerFactory;
         struct.grantInfo.write(oprot);
         oprot.writeFieldEnd();
       }
+      if (struct.authorizer != null) {
+        oprot.writeFieldBegin(AUTHORIZER_FIELD_DESC);
+        oprot.writeString(struct.authorizer);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -685,7 +779,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetGrantInfo()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetAuthorizer()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetHiveObject()) {
         struct.hiveObject.write(oprot);
       }
@@ -698,12 +795,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetGrantInfo()) {
         struct.grantInfo.write(oprot);
       }
+      if (struct.isSetAuthorizer()) {
+        oprot.writeString(struct.authorizer);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, HiveObjectPrivilege struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.hiveObject = new HiveObjectRef();
         struct.hiveObject.read(iprot);
@@ -721,6 +821,10 @@ import org.slf4j.LoggerFactory;
         struct.grantInfo = new PrivilegeGrantInfo();
         struct.grantInfo.read(iprot);
         struct.setGrantInfoIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.authorizer = iprot.readString();
+        struct.setAuthorizerIsSet(true);
       }
     }
   }
