@@ -393,12 +393,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 110 Data size: 19504 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) >= 0.0D) (type: boolean)
-                    Statistics: Num rows: 36 Data size: 6383 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 37 Data size: 6562 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      Statistics: Num rows: 36 Data size: 6383 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 37 Data size: 6562 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -490,19 +490,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab1_n6
-                  Statistics: Num rows: 110 Data size: 19504 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 105 Data size: 18617 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 106 Data size: 18801 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 105 Data size: 18617 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 106 Data size: 18801 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 105 Data size: 18617 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 106 Data size: 18801 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
@@ -533,7 +533,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 115 Data size: 20478 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 116 Data size: 20681 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -634,11 +634,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
-                  Statistics: Num rows: 110 Data size: 19504 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: key
-                    Statistics: Num rows: 110 Data size: 19504 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: max(key)
                       mode: hash
@@ -705,38 +705,38 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tab1_n6
-                  Statistics: Num rows: 110 Data size: 19504 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 105 Data size: 18617 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 106 Data size: 18801 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 105 Data size: 18617 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 106 Data size: 18801 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 105 Data size: 18617 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 106 Data size: 18801 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: tab2_n5
-                  Statistics: Num rows: 110 Data size: 19504 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 111 Data size: 19688 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 105 Data size: 18617 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 106 Data size: 18801 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 105 Data size: 18617 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 106 Data size: 18801 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 105 Data size: 18617 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 106 Data size: 18801 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -748,7 +748,7 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 115 Data size: 20478 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 116 Data size: 20681 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash

@@ -41,6 +41,6 @@ public class CastLongToDecimal extends FuncLongToDecimal {
 
   @Override
   protected void func(DecimalColumnVector outV, LongColumnVector inV, int i) {
-    outV.vector[i].set(HiveDecimal.create(inV.vector[i]));
+    outV.set(i, HiveDecimal.create(inV.vector[i]));
   }
 }

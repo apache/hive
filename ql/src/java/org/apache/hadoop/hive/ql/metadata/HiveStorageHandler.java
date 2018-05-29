@@ -18,21 +18,22 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.util.Collections;
-import java.util.Map;
-
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+
+import java.util.Map;
 
 /**
  * HiveStorageHandler defines a pluggable interface for adding
@@ -166,5 +167,9 @@ public interface HiveStorageHandler extends Configurable {
   public default StorageHandlerInfo getStorageHandlerInfo(Table table) throws MetaException
   {
     return null;
+  }
+
+  default LockType getLockType(WriteEntity writeEntity){
+    return LockType.EXCLUSIVE;
   }
 }

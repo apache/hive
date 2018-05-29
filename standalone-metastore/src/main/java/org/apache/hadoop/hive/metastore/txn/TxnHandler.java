@@ -215,6 +215,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   //todo: make these like OperationType and remove above char constatns
   enum TxnStatus {OPEN, ABORTED, COMMITTED, UNKNOWN}
 
+  public enum TxnType {
+    DEFAULT(0), REPL_CREATED(1), READ_ONLY(2);
+
+    private final int value;
+    TxnType(int value) {
+      this.value = value;
+    }
+
+    public int getValue() {
+      return value;
+    }
+  }
+
   // Lock states
   static final protected char LOCK_ACQUIRED = 'a';
   static final protected char LOCK_WAITING = 'w';
@@ -608,6 +621,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throws SQLException, MetaException {
     int numTxns = rqst.getNum_txns();
     ResultSet rs = null;
+    TxnType txnType = TxnType.DEFAULT;
     try {
       if (rqst.isSetReplPolicy()) {
         List<Long> targetTxnIdList = getTargetTxnIdList(rqst.getReplPolicy(), rqst.getReplSrcTxnIds(), stmt);
@@ -621,6 +635,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   rqst.getReplPolicy() + " and Source transaction id : " + rqst.getReplSrcTxnIds().toString());
           return targetTxnIdList;
         }
+        txnType = TxnType.REPL_CREATED;
       }
 
       String s = sqlGenerator.addForUpdateClause("select ntxn_next from NEXT_TXN_ID");
@@ -642,10 +657,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       for (long i = first; i < first + numTxns; i++) {
         txnIds.add(i);
         rows.add(i + "," + quoteChar(TXN_OPEN) + "," + now + "," + now + ","
-                + quoteString(rqst.getUser()) + "," + quoteString(rqst.getHostname()));
+                + quoteString(rqst.getUser()) + "," + quoteString(rqst.getHostname()) + "," + txnType.getValue());
       }
       List<String> queries = sqlGenerator.createInsertValuesStmt(
-              "TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, txn_user, txn_host)", rows);
+            "TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, txn_user, txn_host, txn_type)", rows);
       for (String q : queries) {
         LOG.debug("Going to execute update <" + q + ">");
         stmt.execute(q);
@@ -1136,11 +1151,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
 
-        // Clean the txn to writeid map/TXN_COMPONENTS for the given table as we bootstrap here
-        String sql = "delete from TXN_TO_WRITE_ID where t2w_database = " + quoteString(dbName)
-                + " and t2w_table = " + quoteString(tblName);
-        LOG.debug("Going to execute delete <" + sql + ">");
-        stmt.executeUpdate(sql);
+        // Check if this txn state is already replicated for this given table. If yes, then it is
+        // idempotent case and just return.
+        String sql = "select nwi_next from NEXT_WRITE_ID where nwi_database = " + quoteString(dbName)
+                        + " and nwi_table = " + quoteString(tblName);
+        LOG.debug("Going to execute query <" + sql + ">");
+
+        rs = stmt.executeQuery(sql);
+        if (rs.next()) {
+          LOG.info("Idempotent flow: WriteId state <" + validWriteIdList + "> is already applied for the table: "
+                  + dbName + "." + tblName);
+          rollbackDBConn(dbConn);
+          return;
+        }
 
         if (numAbortedWrites > 0) {
           // Allocate/Map one txn per aborted writeId and abort the txn to mark writeid as aborted.
@@ -1173,30 +1196,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         // There are some txns in the list which has no write id allocated and hence go ahead and do it.
         // Get the next write id for the given table and update it with new next write id.
-        // This is select for update query which takes a lock if the table entry is already there in NEXT_WRITE_ID
-        sql = sqlGenerator.addForUpdateClause(
-                "select nwi_next from NEXT_WRITE_ID where nwi_database = " + quoteString(dbName)
-                        + " and nwi_table = " + quoteString(tblName));
-        LOG.debug("Going to execute query <" + sql + ">");
-
+        // It is expected NEXT_WRITE_ID doesn't have entry for this table and hence directly insert it.
         long nextWriteId = validWriteIdList.getHighWatermark() + 1;
-        rs = stmt.executeQuery(sql);
-        if (!rs.next()) {
-          // First allocation of write id (hwm+1) should add the table to the next_write_id meta table.
-          sql = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
-                  + quoteString(dbName) + "," + quoteString(tblName) + ","
-                  + Long.toString(nextWriteId) + ")";
-          LOG.debug("Going to execute insert <" + sql + ">");
-          stmt.execute(sql);
-        } else {
-          // Update the NEXT_WRITE_ID for the given table with hwm+1 from source
-          sql = "update NEXT_WRITE_ID set nwi_next = " + (nextWriteId)
-                  + " where nwi_database = " + quoteString(dbName)
-                  + " and nwi_table = " + quoteString(tblName);
-          LOG.debug("Going to execute update <" + sql + ">");
-          stmt.executeUpdate(sql);
-        }
 
+        // First allocation of write id (hwm+1) should add the table to the next_write_id meta table.
+        sql = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
+                + quoteString(dbName) + "," + quoteString(tblName) + ","
+                + Long.toString(nextWriteId) + ")";
+        LOG.debug("Going to execute insert <" + sql + ">");
+        stmt.execute(sql);
+
+        LOG.info("WriteId state <" + validWriteIdList + "> is applied for the table: " + dbName + "." + tblName);
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
@@ -4235,7 +4245,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       while(true) {
         stmt = dbConn.createStatement();
         String s = " txn_id from TXNS where txn_state = '" + TXN_OPEN +
-          "' and txn_last_heartbeat <  " + (now - timeout);
+            "' and txn_last_heartbeat <  " + (now - timeout) + " and txn_type != " + TxnType.REPL_CREATED.getValue();
         //safety valve for extreme cases
         s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
         LOG.debug("Going to execute query <" + s + ">");

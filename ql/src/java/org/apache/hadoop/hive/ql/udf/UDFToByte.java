@@ -187,7 +187,12 @@ public class UDFToByte extends UDF {
     if (i == null) {
       return null;
     } else {
-      byteWritable.set((byte)i.getSeconds());
+      final long longValue = i.getSeconds();
+      final byte byteValue = (byte) longValue;
+      if (byteValue != longValue) {
+        return null;
+      }
+      byteWritable.set(byteValue);
       return byteWritable;
     }
   }

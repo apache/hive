@@ -115,6 +115,7 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
+import org.apache.orc.FileFormatException;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
@@ -737,6 +738,70 @@ public class TestInputOutputFormat {
   }
 
   @Test
+  public void testFSCallsVectorizedOrcAcidRowBatchReader() throws IOException {
+    try {
+      MockFileSystem fs = new MockFileSystem(conf);
+      MockFileSystem.addGlobalFile(
+        new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")));
+      MockFileSystem.addGlobalFile(
+        new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00001", 1000, new byte[1], new MockBlock("host1")));
+      MockFileSystem.addGlobalFile(
+        new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00002", 1000, new byte[1], new MockBlock("host1")));
+      MockFileSystem.addGlobalFile(
+        new MockFile("mock:/a/delta_0000001_0000001_0000/bucket_00003", 1000, new byte[1], new MockBlock("host1")));
+      MockFileSystem.addGlobalFile(
+        new MockFile("mock:/a/delta_0000002_0000002_0000/bucket_00000", 1000, new byte[1], new MockBlock("host1")));
+      MockFileSystem.addGlobalFile(
+        new MockFile("mock:/a/delta_0000002_0000002_0000/bucket_00001", 1000, new byte[1], new MockBlock("host1")));
+      MockFileSystem.addGlobalFile(
+        new MockFile("mock:/a/delta_0000002_0000002_0000/bucket_00002", 1000, new byte[1], new MockBlock("host1")));
+      MockFileSystem.addGlobalFile(
+        new MockFile("mock:/a/delta_0000002_0000002_0000/bucket_00003", 1000, new byte[1], new MockBlock("host1")));
+
+      conf.set("bucket_count", "4");
+      //set up props for read
+      conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
+      AcidUtils.setAcidOperationalProperties(conf, true, null);
+      conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS,
+        TestVectorizedOrcAcidRowBatchReader.DummyRow.getColumnNamesProperty());
+      conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES,
+        TestVectorizedOrcAcidRowBatchReader.DummyRow.getColumnTypesProperty());
+      conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, true);
+      MockPath mockPath = new MockPath(fs, "mock:/a");
+      conf.set("mapred.input.dir", mockPath.toString());
+      conf.set("fs.defaultFS", "mock:///");
+      conf.set("fs.mock.impl", MockFileSystem.class.getName());
+      OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
+
+      OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(context, fs, new MockPath(fs, "mock:/a"),
+        false, null);
+      List<OrcInputFormat.SplitStrategy<?>> splitStrategies = createSplitStrategies(context, gen);
+      assertEquals(1, splitStrategies.size());
+      assertEquals(true, splitStrategies.get(0) instanceof OrcInputFormat.ACIDSplitStrategy);
+      List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy) splitStrategies.get(0)).getSplits();
+      // marker comment to look at stats read ops in target/surefire-reports/*-output.txt
+      System.out.println("STATS TRACE START - " + testCaseName.getMethodName());
+      // when creating the reader below there are 2 read ops per bucket file (listStatus and open).
+      // HIVE-19588 removes listStatus from the code path so there should only be one read ops (open) after HIVE-19588
+      int readsBefore = fs.statistics.getReadOps();
+      for (OrcSplit split : splits) {
+        try {
+          new VectorizedOrcAcidRowBatchReader(split, conf, Reporter.NULL, new VectorizedRowBatchCtx());
+        } catch (FileFormatException e) {
+          // this is expected as these mock files are not valid orc file
+        }
+      }
+      int readsAfter = fs.statistics.getReadOps();
+      System.out.println("STATS TRACE END - " + testCaseName.getMethodName());
+      int delta = readsAfter - readsBefore;
+      // 16 without HIVE-19588, 8 with HIVE-19588
+      assertEquals(8, delta);
+    } finally {
+      MockFileSystem.clearGlobalFiles();
+    }
+  }
+
+  @Test
   public void testBIStrategySplitBlockBoundary() throws Exception {
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "BI");
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
@@ -1182,6 +1247,7 @@ public class TestInputOutputFormat {
     @Override
     public FSDataInputStream open(Path path, int i) throws IOException {
       statistics.incrementReadOps(1);
+      System.out.println("STATS: open - " + path);
       checkAccess();
       MockFile file = findFile(path);
       if (file != null) return new FSDataInputStream(new MockInputStream(file));
@@ -1293,6 +1359,7 @@ public class TestInputOutputFormat {
 
     private List<LocatedFileStatus> listLocatedFileStatuses(Path path) throws IOException {
       statistics.incrementReadOps(1);
+      System.out.println("STATS: listLocatedFileStatuses - " + path);
       checkAccess();
       path = path.makeQualified(this);
       List<LocatedFileStatus> result = new ArrayList<>();
@@ -1316,6 +1383,7 @@ public class TestInputOutputFormat {
     @Override
     public FileStatus[] listStatus(Path path) throws IOException {
       statistics.incrementReadOps(1);
+      System.out.println("STATS: listStatus - " + path);
       checkAccess();
       path = path.makeQualified(this);
       List<FileStatus> result = new ArrayList<FileStatus>();
@@ -1415,6 +1483,7 @@ public class TestInputOutputFormat {
     @Override
     public FileStatus getFileStatus(Path path) throws IOException {
       statistics.incrementReadOps(1);
+      System.out.println("STATS: getFileStatus - " + path);
       checkAccess();
       path = path.makeQualified(this);
       String pathnameAsDir = path.toString() + "/";
@@ -1444,6 +1513,7 @@ public class TestInputOutputFormat {
         final boolean updateStats) throws IOException {
       if (updateStats) {
         statistics.incrementReadOps(1);
+        System.out.println("STATS: getFileBlockLocationsImpl - " + stat.getPath());
       }
       checkAccess();
       List<BlockLocation> result = new ArrayList<BlockLocation>();
@@ -2477,14 +2547,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(677, split.getLength());
+    assertEquals(700, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(703, split.getLength());
+    assertEquals(724, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -2492,7 +2562,7 @@ public class TestInputOutputFormat {
       assertEquals("mock:/combinationAcid/p=1/00000" + bucket + "_0",
           combineSplit.getPath(bucket).toString());
       assertEquals(0, combineSplit.getOffset(bucket));
-      assertEquals(241, combineSplit.getLength(bucket));
+      assertEquals(251, combineSplit.getLength(bucket));
     }
     String[] hosts = combineSplit.getLocations();
     assertEquals(2, hosts.length);

@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +66,21 @@ public class TaskTracker {
     updateTaskCount(task, visited);
   }
 
-  public void updateTaskCount(Task<? extends Serializable> task,
-                              List <Task<? extends Serializable>> visited) {
+  // This method is used to traverse the DAG created in tasks list and add the dependent task to
+  // the tail of each task chain.
+  public void addDependentTask(Task<? extends Serializable> dependent) {
+    if (tasks.isEmpty()) {
+      addTask(dependent);
+    } else {
+      DAGTraversal.traverse(tasks, new AddDependencyToLeaves(dependent));
+
+      List<Task<? extends Serializable>> visited = new ArrayList<>();
+      updateTaskCount(dependent, visited);
+    }
+  }
+
+  private void updateTaskCount(Task<? extends Serializable> task,
+                               List <Task<? extends Serializable>> visited) {
     numberOfTasks += 1;
     visited.add(task);
     if (task.getChildTasks() != null) {

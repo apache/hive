@@ -140,7 +140,11 @@ public class LlapCacheAwareFs extends FileSystem {
   @Override
   public FileStatus getFileStatus(Path arg0) throws IOException {
     LlapCacheAwareFs.CacheAwareInputStream ctx = getCtx(arg0);
-    return ctx.getFs().getFileStatus(ctx.path);
+    FileStatus fileStatus = ctx.getFs().getFileStatus(ctx.path);
+    // We replace the path in the file status by the input path as Parquet
+    // may use the path in the file status to open the file
+    fileStatus.setPath(arg0);
+    return fileStatus;
   }
 
   @Override

@@ -160,7 +160,7 @@ STAGE PLANS:
                     name: default.dst_union22_delta
                   name: default.dst_union22_delta
             Truncated Path -> Alias:
-              /dst_union22_delta/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_1:dst_union22_delta]
+              /dst_union22_delta/ds=1 [$hdt$_0-subquery2:$hdt$_1:dst_union22_delta]
 
   Stage: Stage-1
     Spark
@@ -264,7 +264,7 @@ STAGE PLANS:
                     name: default.dst_union22_delta
                   name: default.dst_union22_delta
             Truncated Path -> Alias:
-              /dst_union22_delta/ds=1 [null-subquery1:$hdt$_0-subquery1:dst_union22_delta]
+              /dst_union22_delta/ds=1 [$hdt$_0-subquery1:dst_union22_delta]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -385,7 +385,7 @@ STAGE PLANS:
                     name: default.dst_union22
                   name: default.dst_union22
             Truncated Path -> Alias:
-              /dst_union22/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:a]
+              /dst_union22/ds=1 [$hdt$_0-subquery2:$hdt$_0:a]
 
   Stage: Stage-0
     Move Operator

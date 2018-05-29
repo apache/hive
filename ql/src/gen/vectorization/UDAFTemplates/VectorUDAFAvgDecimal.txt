@@ -522,7 +522,7 @@ public class <ClassName> extends VectorAggregateExpression {
     fields[AVERAGE_COUNT_FIELD_INDEX].isNull[batchIndex] = false;
     ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
     fields[AVERAGE_SUM_FIELD_INDEX].isNull[batchIndex] = false;
-    ((DecimalColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector[batchIndex].set(myagg.sum);
+    ((DecimalColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).set(batchIndex, myagg.sum);
 
     // NULL out useless source field.
     ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];

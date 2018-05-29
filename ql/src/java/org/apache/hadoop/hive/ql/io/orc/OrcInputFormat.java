@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -116,6 +115,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
+import org.apache.orc.FileFormatException;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.Footer;
 import org.apache.orc.OrcProto.Type;
@@ -2167,7 +2167,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
   public static boolean[] pickStripesViaTranslatedSarg(SearchArgument sarg,
       OrcFile.WriterVersion writerVersion, List<OrcProto.Type> types,
-      List<StripeStatistics> stripeStats, int stripeCount) {
+      List<StripeStatistics> stripeStats, int stripeCount) throws FileFormatException {
     LOG.info("Translated ORC pushdown predicate: " + sarg);
     assert sarg != null;
     if (stripeStats == null || writerVersion == OrcFile.WriterVersion.ORIGINAL) {
@@ -2311,8 +2311,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       boolean isOriginal,
       List<ParsedDelta> parsedDeltas,
       List<OrcProto.Type> readerTypes,
-      UserGroupInformation ugi, boolean allowSyntheticFileIds, boolean isDefaultFs)
-    throws IOException {
+      UserGroupInformation ugi, boolean allowSyntheticFileIds, boolean isDefaultFs) {
     List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(parsedDeltas);
     boolean[] covered = new boolean[context.numBuckets];
 
@@ -2321,9 +2320,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       long totalFileSize = 0;
       for (HdfsFileStatusWithId child : baseFiles) {
         totalFileSize += child.getFileStatus().getLen();
-        AcidOutputFormat.Options opts = AcidUtils.parseBaseOrDeltaBucketFilename
-            (child.getFileStatus().getPath(), context.conf);
-        int b = opts.getBucketId();
+        int b = AcidUtils.parseBucketId(child.getFileStatus().getPath());
         // If the bucket is in the valid range, mark it as covered.
         // I wish Hive actually enforced bucketing all of the time.
         if (b >= 0 && b < covered.length) {

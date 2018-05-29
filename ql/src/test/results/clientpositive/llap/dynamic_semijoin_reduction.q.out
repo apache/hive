@@ -1600,7 +1600,7 @@ STAGE PLANS:
                     serialization.ddl struct srcpart_date_n7 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 3038
+                    totalSize 3052
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1644,7 +1644,7 @@ STAGE PLANS:
                     serialization.ddl struct srcpart_date_n7 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 3038
+                    totalSize 3052
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1780,7 +1780,7 @@ STAGE PLANS:
                     serialization.ddl struct srcpart_small_n3 { string key1, string value1}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 459
+                    totalSize 469
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 

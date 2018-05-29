@@ -162,9 +162,9 @@ POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 3 items
--rw-r--r--   3 ### USER ### ### GROUP ###        933 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        861 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###        842 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        947 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        875 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###        856 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -337,7 +337,7 @@ POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=0).value SIMPLE [(src)src
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       1740 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       1754 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -502,7 +502,7 @@ POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).value SIMPLE [(src)src
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       2384 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       2409 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1 WHERE ds='1'
@@ -605,7 +605,7 @@ POSTHOOK: type: ALTER_PARTITION_MERGE
 POSTHOOK: Input: default@orcfile_merge1
 POSTHOOK: Output: default@orcfile_merge1@ds=1/part=0
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       2384 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       2409 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1c WHERE ds='1'
@@ -686,21 +686,21 @@ Type: struct<key:int,value:string>
 Stripe Statistics:
   Stripe 1:
     Column 0: count: 90 hasNull: false
-    Column 1: count: 90 hasNull: false min: 0 max: 495 sum: 22736
-    Column 2: count: 90 hasNull: false min: val_0 max: val_86 sum: 612
+    Column 1: count: 90 hasNull: false bytesOnDisk: 185 min: 0 max: 495 sum: 22736
+    Column 2: count: 90 hasNull: false bytesOnDisk: 428 min: val_0 max: val_86 sum: 612
   Stripe 2:
     Column 0: count: 78 hasNull: false
-    Column 1: count: 78 hasNull: false min: 0 max: 497 sum: 18371
-    Column 2: count: 78 hasNull: false min: val_0 max: val_95 sum: 529
+    Column 1: count: 78 hasNull: false bytesOnDisk: 161 min: 0 max: 497 sum: 18371
+    Column 2: count: 78 hasNull: false bytesOnDisk: 380 min: val_0 max: val_95 sum: 529
   Stripe 3:
     Column 0: count: 74 hasNull: false
-    Column 1: count: 74 hasNull: false min: 2 max: 493 sum: 19663
-    Column 2: count: 74 hasNull: false min: val_105 max: val_97 sum: 505
+    Column 1: count: 74 hasNull: false bytesOnDisk: 153 min: 2 max: 493 sum: 19663
+    Column 2: count: 74 hasNull: false bytesOnDisk: 363 min: val_105 max: val_97 sum: 505
 
 File Statistics:
   Column 0: count: 242 hasNull: false
-  Column 1: count: 242 hasNull: false min: 0 max: 497 sum: 60770
-  Column 2: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646
+  Column 1: count: 242 hasNull: false bytesOnDisk: 499 min: 0 max: 497 sum: 60770
+  Column 2: count: 242 hasNull: false bytesOnDisk: 1171 min: val_0 max: val_97 sum: 1646
 
 Stripes:
   Stripe: offset: 3 data: 613 rows: 90 tail: 61 index: 76
@@ -752,7 +752,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 74 hasNull: false min: val_105 max: val_97 sum: 505 positions: 0,0,0,0,0
 
-File length: 2384 bytes
+File length: 2409 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -775,21 +775,21 @@ Type: struct<key:int,value:string>
 Stripe Statistics:
   Stripe 1:
     Column 0: count: 90 hasNull: false
-    Column 1: count: 90 hasNull: false min: 0 max: 495 sum: 22736
-    Column 2: count: 90 hasNull: false min: val_0 max: val_86 sum: 612
+    Column 1: count: 90 hasNull: false bytesOnDisk: 185 min: 0 max: 495 sum: 22736
+    Column 2: count: 90 hasNull: false bytesOnDisk: 428 min: val_0 max: val_86 sum: 612
   Stripe 2:
     Column 0: count: 78 hasNull: false
-    Column 1: count: 78 hasNull: false min: 0 max: 497 sum: 18371
-    Column 2: count: 78 hasNull: false min: val_0 max: val_95 sum: 529
+    Column 1: count: 78 hasNull: false bytesOnDisk: 161 min: 0 max: 497 sum: 18371
+    Column 2: count: 78 hasNull: false bytesOnDisk: 380 min: val_0 max: val_95 sum: 529
   Stripe 3:
     Column 0: count: 74 hasNull: false
-    Column 1: count: 74 hasNull: false min: 2 max: 493 sum: 19663
-    Column 2: count: 74 hasNull: false min: val_105 max: val_97 sum: 505
+    Column 1: count: 74 hasNull: false bytesOnDisk: 153 min: 2 max: 493 sum: 19663
+    Column 2: count: 74 hasNull: false bytesOnDisk: 363 min: val_105 max: val_97 sum: 505
 
 File Statistics:
   Column 0: count: 242 hasNull: false
-  Column 1: count: 242 hasNull: false min: 0 max: 497 sum: 60770
-  Column 2: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646
+  Column 1: count: 242 hasNull: false bytesOnDisk: 499 min: 0 max: 497 sum: 60770
+  Column 2: count: 242 hasNull: false bytesOnDisk: 1171 min: val_0 max: val_97 sum: 1646
 
 Stripes:
   Stripe: offset: 3 data: 613 rows: 90 tail: 61 index: 76
@@ -841,7 +841,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 74 hasNull: false min: val_105 max: val_97 sum: 505 positions: 0,0,0,0,0
 
-File length: 2384 bytes
+File length: 2409 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

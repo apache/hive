@@ -131,7 +131,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [null-subquery1:$hdt$_0-subquery1:src, null-subquery2:$hdt$_0-subquery2:src]
+        /src [$hdt$_0-subquery1:src, $hdt$_0-subquery2:src]
 
   Stage: Stage-7
     Conditional Operator

@@ -82,6 +82,7 @@ import org.datanucleus.AbstractNucleusContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestJdbcWithMiniHS2 {
@@ -1021,6 +1022,7 @@ public class TestJdbcWithMiniHS2 {
    * Test for jdbc driver retry on NoHttpResponseException
    * @throws Exception
    */
+  @Ignore("Flaky test. Should be re-enabled in HIVE-19706")
   @Test
   public void testHttpRetryOnServerIdleTimeout() throws Exception {
     // Stop HiveServer2

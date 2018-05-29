@@ -20,9 +20,9 @@ columns:struct columns { i32 cint, string cstring1}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:47120
-maxFileSize:47120
-minFileSize:47120
+totalFileSize:47137
+maxFileSize:47137
+minFileSize:47137
 #### A masked pattern was here ####
 
 PREHOOK: query: drop materialized view dmv_mat_view

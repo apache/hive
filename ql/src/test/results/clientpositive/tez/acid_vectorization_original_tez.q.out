@@ -370,10 +370,10 @@ POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.Fie
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 4 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8942 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7710 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7297 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7204 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8997 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7773 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7358 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7261 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_n9
@@ -394,14 +394,14 @@ POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.Fie
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 8 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8942 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8942 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7710 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7710 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7297 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7297 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7204 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7204 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8997 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8997 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7773 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7773 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7358 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7358 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7261 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7261 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed_n0
@@ -680,22 +680,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_orc_bucketed_n0
-                  Statistics: Num rows: 1229 Data size: 703430 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1241 Data size: 710230 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: ROW__ID
-                    Statistics: Num rows: 1229 Data size: 703430 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1241 Data size: 710230 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       keys: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 614 Data size: 51576 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 620 Data size: 52080 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                        Statistics: Num rows: 614 Data size: 51576 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 620 Data size: 52080 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
@@ -704,13 +704,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 614 Data size: 51576 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 620 Data size: 52080 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: (_col1 > 1L) (type: boolean)
-                  Statistics: Num rows: 204 Data size: 17136 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 206 Data size: 17304 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 204 Data size: 17136 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 206 Data size: 17304 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

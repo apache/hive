@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
@@ -536,6 +537,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     doPhase1QBExpr(ast, qbexpr, id, alias, false);
   }
+
   @SuppressWarnings("nls")
   public void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView)
       throws SemanticException {
@@ -575,15 +577,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // query 1
       assert (ast.getChild(0) != null);
       QBExpr qbexpr1 = new QBExpr(alias + SUBQUERY_TAG_1);
-      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id + SUBQUERY_TAG_1, alias
-          + SUBQUERY_TAG_1, insideView);
+      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id,
+          alias + SUBQUERY_TAG_1, insideView);
       qbexpr.setQBExpr1(qbexpr1);
 
       // query 2
       assert (ast.getChild(1) != null);
       QBExpr qbexpr2 = new QBExpr(alias + SUBQUERY_TAG_2);
-      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + SUBQUERY_TAG_2, alias
-          + SUBQUERY_TAG_2, insideView);
+      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id,
+          alias + SUBQUERY_TAG_2, insideView);
       qbexpr.setQBExpr2(qbexpr2);
     }
   }
@@ -7297,6 +7299,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         boolean overwrite = !qb.getParseInfo().isInsertIntoTable(
             String.format("%s.%s", dest_tab.getDbName(), dest_tab.getTableName()));
         createPreInsertDesc(dest_tab, overwrite);
+
+        ltd = new LoadTableDesc(queryTmpdir, table_desc, partSpec == null ? ImmutableMap.of() : partSpec);
+        ltd.setInsertOverwrite(overwrite);
+        ltd.setLoadFileType(overwrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING);
       }
 
       if (dest_tab.isMaterializedView()) {
@@ -14408,15 +14414,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private WriteEntity.WriteType determineWriteType(LoadTableDesc ltd, boolean isNonNativeTable, String dest) {
-    // Don't know the characteristics of non-native tables,
-    // and don't have a rational way to guess, so assume the most
-    // conservative case.
-    if (isNonNativeTable) {
+
+    if (ltd == null) {
       return WriteEntity.WriteType.INSERT_OVERWRITE;
-    } else {
-      return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL || ltd.isInsertOverwrite())
-          ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
     }
+    return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL || ltd
+        .isInsertOverwrite()) ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
+
   }
 
   private WriteEntity.WriteType getWriteType(String dest) {

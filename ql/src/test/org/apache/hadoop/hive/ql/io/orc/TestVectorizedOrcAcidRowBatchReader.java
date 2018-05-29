@@ -63,7 +63,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
   private FileSystem fs;
   private Path root;
 
-  static class DummyRow {
+  public static class DummyRow {
     LongWritable field;
     RecordIdentifier ROW__ID;
 

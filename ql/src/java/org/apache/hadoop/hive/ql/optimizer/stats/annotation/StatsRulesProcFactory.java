@@ -100,6 +100,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -347,12 +349,12 @@ public class StatsRulesProcFactory {
           for (ExprNodeDesc child : genFunc.getChildren()) {
             evaluatedRowCount = evaluateChildExpr(aspCtx.getAndExprStats(), child,
                 aspCtx, neededCols, op, evaluatedRowCount);
-          }
-          newNumRows = evaluatedRowCount;
-          if (satisfyPrecondition(aspCtx.getAndExprStats())) {
-            updateStats(aspCtx.getAndExprStats(), newNumRows, true, op);
-          } else {
-            updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
+            newNumRows = evaluatedRowCount;
+            if (satisfyPrecondition(aspCtx.getAndExprStats())) {
+              updateStats(aspCtx.getAndExprStats(), newNumRows, true, op);
+            } else {
+              updateStats(aspCtx.getAndExprStats(), newNumRows, false, op);
+            }
           }
         } else if (udf instanceof GenericUDFOPOr) {
           // for OR condition independently compute and update stats.
@@ -751,8 +753,14 @@ public class StatsRulesProcFactory {
             }
           } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME) ||
                   colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
+            int value;
+            if (colTypeLowerCase == serdeConstants.DATE_TYPE_NAME) {
+              DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(boundValue));
+              value = writableVal.getDays();
+            } else {
+              value = new Integer(boundValue);
+            }
             // Date is an integer internally
-            int value = new Integer(boundValue);
             int maxValue = cs.getRange().maxValue.intValue();
             int minValue = cs.getRange().minValue.intValue();
             if (upperBound) {

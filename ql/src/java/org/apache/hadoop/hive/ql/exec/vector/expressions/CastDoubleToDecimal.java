@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
@@ -41,9 +42,21 @@ public class CastDoubleToDecimal extends FuncDoubleToDecimal {
   protected void func(DecimalColumnVector outV, DoubleColumnVector inV, int i) {
     HiveDecimalWritable decWritable = outV.vector[i];
     decWritable.setFromDouble(inV.vector[i]);
-    if (!decWritable.isSet()) {
+    if (!decWritable.mutateEnforcePrecisionScale(outV.precision, outV.scale)) {
       outV.isNull[i] = true;
       outV.noNulls = false;
     }
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
+    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(1)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.FLOAT)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN);
+    return b.build();
   }
 }

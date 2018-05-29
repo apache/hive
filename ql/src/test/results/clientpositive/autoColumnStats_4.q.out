@@ -200,7 +200,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	2                   
-	totalSize           	1856                
+	totalSize           	1907                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -243,7 +243,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{}                  
 	bucketing_version   	2                   
 	numFiles            	4                   
-	totalSize           	3000                
+	totalSize           	3091                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

@@ -2077,15 +2077,15 @@ public class TestStreaming {
     Assert.assertEquals(true, outDump.contains("Compression: NONE"));
     // no stats/indexes
     Assert.assertEquals(true, outDump.contains("Column 0: count: 0 hasNull: false"));
-    Assert.assertEquals(true, outDump.contains("Column 1: count: 0 hasNull: false sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 2: count: 0 hasNull: false sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 3: count: 0 hasNull: false sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 4: count: 0 hasNull: false sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 5: count: 0 hasNull: false sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 1: count: 0 hasNull: false bytesOnDisk: 12 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 2: count: 0 hasNull: false bytesOnDisk: 12 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 3: count: 0 hasNull: false bytesOnDisk: 24 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 4: count: 0 hasNull: false bytesOnDisk: 14 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 5: count: 0 hasNull: false bytesOnDisk: 12 sum: 0"));
     Assert.assertEquals(true, outDump.contains("Column 6: count: 0 hasNull: false"));
-    Assert.assertEquals(true, outDump.contains("Column 7: count: 0 hasNull: false"));
-    Assert.assertEquals(true, outDump.contains("Column 8: count: 0 hasNull: false sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 9: count: 0 hasNull: false"));
+    Assert.assertEquals(true, outDump.contains("Column 7: count: 0 hasNull: false bytesOnDisk: 11864"));
+    Assert.assertEquals(true, outDump.contains("Column 8: count: 0 hasNull: false bytesOnDisk: 2033 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 9: count: 0 hasNull: false bytesOnDisk: 13629"));
     // no dictionary
     Assert.assertEquals(true, outDump.contains("Encoding column 7: DIRECT_V2"));
     Assert.assertEquals(true, outDump.contains("Encoding column 9: DIRECT_V2"));

@@ -315,6 +315,21 @@ public class AcidUtils {
   }
 
   /**
+   * Get the bucket id from the file path
+   * @param bucketFile - bucket file path
+   * @return - bucket id
+   */
+  public static int parseBucketId(Path bucketFile) {
+    String filename = bucketFile.getName();
+    if (ORIGINAL_PATTERN.matcher(filename).matches() || ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
+      return Integer.parseInt(filename.substring(0, filename.indexOf('_')));
+    } else if (filename.startsWith(BUCKET_PREFIX)) {
+      return Integer.parseInt(filename.substring(filename.indexOf('_') + 1));
+    }
+    return -1;
+  }
+
+  /**
    * Parse a bucket filename back into the options that would have created
    * the file.
    * @param bucketFile the path to a bucket file
@@ -326,9 +341,8 @@ public class AcidUtils {
                                                    Configuration conf) throws IOException {
     AcidOutputFormat.Options result = new AcidOutputFormat.Options(conf);
     String filename = bucketFile.getName();
+    int bucket = parseBucketId(bucketFile);
     if (ORIGINAL_PATTERN.matcher(filename).matches()) {
-      int bucket =
-          Integer.parseInt(filename.substring(0, filename.indexOf('_')));
       result
           .setOldStyle(true)
           .minimumWriteId(0)
@@ -338,8 +352,6 @@ public class AcidUtils {
     }
     else if(ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
       //todo: define groups in regex and use parseInt(Matcher.group(2))....
-      int bucket =
-        Integer.parseInt(filename.substring(0, filename.indexOf('_')));
       int copyNumber = Integer.parseInt(filename.substring(filename.lastIndexOf('_') + 1));
       result
         .setOldStyle(true)
@@ -350,8 +362,6 @@ public class AcidUtils {
         .writingBase(!bucketFile.getParent().getName().startsWith(DELTA_PREFIX));
     }
     else if (filename.startsWith(BUCKET_PREFIX)) {
-      int bucket =
-          Integer.parseInt(filename.substring(filename.indexOf('_') + 1));
       if (bucketFile.getParent().getName().startsWith(BASE_PREFIX)) {
         result
             .setOldStyle(false)
@@ -377,7 +387,7 @@ public class AcidUtils {
             .bucket(bucket);
       }
     } else {
-      result.setOldStyle(true).bucket(-1).minimumWriteId(0)
+      result.setOldStyle(true).bucket(bucket).minimumWriteId(0)
           .maximumWriteId(0);
     }
     return result;
