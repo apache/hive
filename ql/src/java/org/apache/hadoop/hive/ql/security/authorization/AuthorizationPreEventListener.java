@@ -464,8 +464,10 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
     public PartitionWrapper(org.apache.hadoop.hive.metastore.api.Partition mapiPart,
         PreEventContext context) throws HiveException, NoSuchObjectException, MetaException {
       org.apache.hadoop.hive.metastore.api.Partition wrapperApiPart = mapiPart.deepCopy();
+      String catName = mapiPart.isSetCatName() ? mapiPart.getCatName() :
+          MetaStoreUtils.getDefaultCatalog(context.getHandler().getConf());
       org.apache.hadoop.hive.metastore.api.Table t = context.getHandler().get_table_core(
-          mapiPart.getDbName(), mapiPart.getTableName());
+          catName, mapiPart.getDbName(), mapiPart.getTableName());
       if (wrapperApiPart.getSd() == null){
         // In the cases of create partition, by the time this event fires, the partition
         // object has not yet come into existence, and thus will not yet have a
