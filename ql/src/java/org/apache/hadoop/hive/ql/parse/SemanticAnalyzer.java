@@ -12777,7 +12777,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private Map<String, String> addDefaultProperties(
       Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
-      String qualifiedTableName, List<Order> sortCols, boolean isMaterialization) {
+      String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
+      boolean isTemporaryTable) {
     Map<String, String> retValue;
     if (tblProp == null) {
       retValue = new HashMap<String, String>();
@@ -12797,7 +12798,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     boolean makeInsertOnly = HiveConf.getBoolVar(conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
-    boolean makeAcid = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
+    boolean makeAcid = !isTemporaryTable &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID) &&
         HiveConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY) &&
         DbTxnManager.class.getCanonicalName().equals(HiveConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER));
     if ((makeInsertOnly || makeAcid)
@@ -13109,7 +13111,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       tblProps = addDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
@@ -13133,7 +13135,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     case CTLT: // create table like <tbl_name>
       tblProps = addDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
 
       if (isTemporary) {
@@ -13213,7 +13215,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       tblProps = addDefaultProperties(
-          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
+          tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
       addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
