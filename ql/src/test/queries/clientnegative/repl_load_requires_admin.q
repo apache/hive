@@ -18,7 +18,7 @@ drop database if exists test_replload_adminpriv_tgt2 cascade;
 set user.name=ruser1;
 show role grant user ruser1;
 
-create database test_replload_adminpriv_src;
+create database test_replload_adminpriv_src with DBPROPERTIES ('repl.source.for' = '1,2,3');
 create table test_replload_adminpriv_src.dummy_tbl(a int) partitioned by (b string);
 show tables test_replload_adminpriv_src;
 

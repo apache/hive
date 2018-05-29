@@ -301,18 +301,16 @@ public class Warehouse {
     }
   }
 
-  public boolean deleteDir(Path f, boolean recursive) throws MetaException {
-    return deleteDir(f, recursive, false);
+  public boolean deleteDir(Path f, boolean recursive, Database db) throws MetaException {
+    return deleteDir(f, recursive, false, db);
   }
 
-  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge) throws MetaException {
-    return deleteDir(f, recursive, ifPurge, true);
+  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, Database db) throws MetaException {
+    return deleteDir(f, recursive, ifPurge, ReplChangeManager.isSourceOfReplication(db));
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, boolean needCmRecycle) throws MetaException {
-    // no need to create the CM recycle file for temporary tables
     if (needCmRecycle) {
-
       try {
         cm.recycle(f, RecycleType.MOVE, ifPurge);
       } catch (IOException e) {

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +34,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -56,6 +58,7 @@ public class ReplChangeManager {
   private static final String ORIG_LOC_TAG = "user.original-loc";
   static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
   private static final String URI_FRAGMENT_SEPARATOR = "#";
+  public static final String SOURCE_OF_REPLICATION = "repl.source.for";
 
   public enum RecycleType {
     MOVE,
@@ -466,5 +469,25 @@ public class ReplChangeManager {
           MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
           0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
     }
+  }
+
+  public static boolean isSourceOfReplication(Database db) {
+    // Can not judge, so assuming replication is not enabled.
+    assert (db != null);
+    String replPolicyIds = getReplPolicyIdString(db);
+    return  !StringUtils.isEmpty(replPolicyIds);
+  }
+
+  public static String getReplPolicyIdString(Database db) {
+    if (db != null) {
+      Map<String, String> m = db.getParameters();
+      if ((m != null) && (m.containsKey(SOURCE_OF_REPLICATION))) {
+        String replPolicyId = m.get(SOURCE_OF_REPLICATION);
+        LOG.debug("repl policy for database {} is {}", db.getName(), replPolicyId);
+        return replPolicyId;
+      }
+      LOG.debug("Repl policy is not set for database ", db.getName());
+    }
+    return null;
   }
 }

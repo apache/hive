@@ -242,7 +242,8 @@ public class HiveAlterHandler implements AlterHandler {
                       " already exists : " + destPath);
             }
             // check that src exists and also checks permissions necessary, rename src to dest
-            if (srcFs.exists(srcPath) && wh.renameDir(srcPath, destPath, true)) {
+            if (srcFs.exists(srcPath) && wh.renameDir(srcPath, destPath,
+                    ReplChangeManager.isSourceOfReplication(olddb))) {
               dataWasMoved = true;
             }
           } catch (IOException | MetaException e) {
@@ -559,6 +560,7 @@ public class HiveAlterHandler implements AlterHandler {
     FileSystem srcFs;
     FileSystem destFs = null;
     boolean dataWasMoved = false;
+    Database db;
     try {
       msdb.openTransaction();
       Table tbl = msdb.getTable(DEFAULT_CATALOG_NAME, dbname, name);
@@ -593,9 +595,11 @@ public class HiveAlterHandler implements AlterHandler {
       // 3) rename the partition directory if it is not an external table
       if (!tbl.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
         try {
+          db = msdb.getDatabase(catName, dbname);
+
           // if tbl location is available use it
           // else derive the tbl location from database location
-          destPath = wh.getPartitionPath(msdb.getDatabase(catName, dbname), tbl, new_part.getValues());
+          destPath = wh.getPartitionPath(db, tbl, new_part.getValues());
           destPath = constructRenamedPath(destPath, new Path(new_part.getSd().getLocation()));
         } catch (NoSuchObjectException e) {
           LOG.debug("Didn't find object in metastore ", e);
@@ -633,7 +637,7 @@ public class HiveAlterHandler implements AlterHandler {
               }
 
               //rename the data directory
-              wh.renameDir(srcPath, destPath, true);
+              wh.renameDir(srcPath, destPath, ReplChangeManager.isSourceOfReplication(db));
               LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
               dataWasMoved = true;
             }
@@ -645,7 +649,6 @@ public class HiveAlterHandler implements AlterHandler {
             LOG.error("Cannot rename partition directory from " + srcPath + " to " + destPath, me);
             throw me;
           }
-
           new_part.getSd().setLocation(newPartLoc);
         }
       } else {

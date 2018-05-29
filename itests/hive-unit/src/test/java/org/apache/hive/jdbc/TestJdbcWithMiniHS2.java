@@ -84,6 +84,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
@@ -120,7 +121,8 @@ public class TestJdbcWithMiniHS2 {
     }
     Statement stmt = conDefault.createStatement();
     stmt.execute("drop database if exists " + testDbName + " cascade");
-    stmt.execute("create database " + testDbName);
+    stmt.execute("create database " + testDbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')");
     stmt.close();
 
     try {
