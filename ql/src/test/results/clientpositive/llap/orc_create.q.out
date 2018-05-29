@@ -2,13 +2,13 @@ PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE orc_create_complex
+PREHOOK: query: DROP TABLE orc_create_complex_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orc_create_complex
+POSTHOOK: query: DROP TABLE orc_create_complex_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE orc_create_staging
+PREHOOK: query: DROP TABLE orc_create_staging_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orc_create_staging
+POSTHOOK: query: DROP TABLE orc_create_staging_n1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE orc_create_people_staging
 PREHOOK: type: DROPTABLE
@@ -22,7 +22,7 @@ PREHOOK: query: DROP TABLE if exists orc_create_cprl
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE if exists orc_create_cprl
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE orc_create_staging (
+PREHOOK: query: CREATE TABLE orc_create_staging_n1 (
   str STRING,
   mp  MAP<STRING,STRING>,
   lst ARRAY<STRING>,
@@ -33,8 +33,8 @@ PREHOOK: query: CREATE TABLE orc_create_staging (
     MAP KEYS TERMINATED BY ':'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_staging
-POSTHOOK: query: CREATE TABLE orc_create_staging (
+PREHOOK: Output: default@orc_create_staging_n1
+POSTHOOK: query: CREATE TABLE orc_create_staging_n1 (
   str STRING,
   mp  MAP<STRING,STRING>,
   lst ARRAY<STRING>,
@@ -45,13 +45,13 @@ POSTHOOK: query: CREATE TABLE orc_create_staging (
     MAP KEYS TERMINATED BY ':'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_staging
-PREHOOK: query: DESCRIBE FORMATTED orc_create_staging
+POSTHOOK: Output: default@orc_create_staging_n1
+PREHOOK: query: DESCRIBE FORMATTED orc_create_staging_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_staging
-POSTHOOK: query: DESCRIBE FORMATTED orc_create_staging
+PREHOOK: Input: default@orc_create_staging_n1
+POSTHOOK: query: DESCRIBE FORMATTED orc_create_staging_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Input: default@orc_create_staging_n1
 # col_name            	data_type           	comment             
 str                 	string              	                    
 mp                  	map<string,string>  	                    
@@ -303,7 +303,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: CREATE TABLE orc_create_complex (
+PREHOOK: query: CREATE TABLE orc_create_complex_n1 (
   str STRING,
   mp  MAP<STRING,STRING>,
   lst ARRAY<STRING>,
@@ -311,8 +311,8 @@ PREHOOK: query: CREATE TABLE orc_create_complex (
 ) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_complex
-POSTHOOK: query: CREATE TABLE orc_create_complex (
+PREHOOK: Output: default@orc_create_complex_n1
+POSTHOOK: query: CREATE TABLE orc_create_complex_n1 (
   str STRING,
   mp  MAP<STRING,STRING>,
   lst ARRAY<STRING>,
@@ -320,13 +320,13 @@ POSTHOOK: query: CREATE TABLE orc_create_complex (
 ) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_complex
-PREHOOK: query: DESCRIBE FORMATTED orc_create_complex
+POSTHOOK: Output: default@orc_create_complex_n1
+PREHOOK: query: DESCRIBE FORMATTED orc_create_complex_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@orc_create_complex
-POSTHOOK: query: DESCRIBE FORMATTED orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n1
+POSTHOOK: query: DESCRIBE FORMATTED orc_create_complex_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n1
 # col_name            	data_type           	comment             
 str                 	string              	                    
 mp                  	map<string,string>  	                    
@@ -358,88 +358,88 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_create_staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+PREHOOK: Output: default@orc_create_staging_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_create_staging
-PREHOOK: query: SELECT * from orc_create_staging
+POSTHOOK: Output: default@orc_create_staging_n1
+PREHOOK: query: SELECT * from orc_create_staging_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_staging
+PREHOOK: Input: default@orc_create_staging_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from orc_create_staging
+POSTHOOK: query: SELECT * from orc_create_staging_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Input: default@orc_create_staging_n1
 #### A masked pattern was here ####
 line1	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]	{"a":"one","b":"two"}
 line2	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	{"a":"three","b":"four"}
 line3	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	{"a":"five","b":"six"}
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_complex SELECT * FROM orc_create_staging
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_complex_n1 SELECT * FROM orc_create_staging_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_staging
-PREHOOK: Output: default@orc_create_complex
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_complex SELECT * FROM orc_create_staging
+PREHOOK: Input: default@orc_create_staging_n1
+PREHOOK: Output: default@orc_create_complex_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_complex_n1 SELECT * FROM orc_create_staging_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_staging
-POSTHOOK: Output: default@orc_create_complex
-POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
-PREHOOK: query: SELECT * from orc_create_complex
+POSTHOOK: Input: default@orc_create_staging_n1
+POSTHOOK: Output: default@orc_create_complex_n1
+POSTHOOK: Lineage: orc_create_complex_n1.lst SIMPLE [(orc_create_staging_n1)orc_create_staging_n1.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n1.mp SIMPLE [(orc_create_staging_n1)orc_create_staging_n1.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n1.str SIMPLE [(orc_create_staging_n1)orc_create_staging_n1.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n1.strct SIMPLE [(orc_create_staging_n1)orc_create_staging_n1.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+PREHOOK: query: SELECT * from orc_create_complex_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from orc_create_complex
+POSTHOOK: query: SELECT * from orc_create_complex_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
 line1	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]	{"A":"one","B":"two"}
 line2	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	{"A":"three","B":"four"}
 line3	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	{"A":"five","B":"six"}
-PREHOOK: query: SELECT str from orc_create_complex
+PREHOOK: query: SELECT str from orc_create_complex_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT str from orc_create_complex
+POSTHOOK: query: SELECT str from orc_create_complex_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
 line1
 line2
 line3
-PREHOOK: query: SELECT mp from orc_create_complex
+PREHOOK: query: SELECT mp from orc_create_complex_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT mp from orc_create_complex
+POSTHOOK: query: SELECT mp from orc_create_complex_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
 {"key11":"value11","key12":"value12","key13":"value13"}
 {"key21":"value21","key22":"value22","key23":"value23"}
 {"key31":"value31","key32":"value32","key33":"value33"}
-PREHOOK: query: SELECT lst from orc_create_complex
+PREHOOK: query: SELECT lst from orc_create_complex_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT lst from orc_create_complex
+POSTHOOK: query: SELECT lst from orc_create_complex_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
 ["a","b","c"]
 ["d","e","f"]
 ["g","h","i"]
-PREHOOK: query: SELECT strct from orc_create_complex
+PREHOOK: query: SELECT strct from orc_create_complex_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT strct from orc_create_complex
+POSTHOOK: query: SELECT strct from orc_create_complex_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n1
 #### A masked pattern was here ####
 {"A":"five","B":"six"}
 {"A":"one","B":"two"}
@@ -747,22 +747,22 @@ POSTHOOK: query: DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create
 POSTHOOK: Output: default@orc_create
-PREHOOK: query: DROP TABLE orc_create_complex
+PREHOOK: query: DROP TABLE orc_create_complex_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_create_complex
-PREHOOK: Output: default@orc_create_complex
-POSTHOOK: query: DROP TABLE orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n1
+PREHOOK: Output: default@orc_create_complex_n1
+POSTHOOK: query: DROP TABLE orc_create_complex_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_create_complex
-POSTHOOK: Output: default@orc_create_complex
-PREHOOK: query: DROP TABLE orc_create_staging
+POSTHOOK: Input: default@orc_create_complex_n1
+POSTHOOK: Output: default@orc_create_complex_n1
+PREHOOK: query: DROP TABLE orc_create_staging_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_create_staging
-PREHOOK: Output: default@orc_create_staging
-POSTHOOK: query: DROP TABLE orc_create_staging
+PREHOOK: Input: default@orc_create_staging_n1
+PREHOOK: Output: default@orc_create_staging_n1
+POSTHOOK: query: DROP TABLE orc_create_staging_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_create_staging
-POSTHOOK: Output: default@orc_create_staging
+POSTHOOK: Input: default@orc_create_staging_n1
+POSTHOOK: Output: default@orc_create_staging_n1
 PREHOOK: query: DROP TABLE orc_create_people_staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_staging

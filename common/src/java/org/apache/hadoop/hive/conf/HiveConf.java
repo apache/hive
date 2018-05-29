@@ -397,6 +397,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_VALIDATE_ACLS.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_LOGGER.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_AM_USE_FQDN.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_OUTPUT_FORMAT_ARROW.varname);
   }
 
   /**
@@ -1911,6 +1912,9 @@ public class HiveConf extends Configuration {
       "Hive streaming ingest has auto flush mechanism to flush all open record updaters under memory pressure.\n" +
         "When memory usage exceed hive.heap.memory.monitor.default.usage.threshold, the auto-flush mechanism will \n" +
         "wait until this size (default 100Mb) of records are ingested before triggering flush."),
+    HIVE_CLASSLOADER_SHADE_PREFIX("hive.classloader.shade.prefix", "", "During reflective instantiation of a class\n" +
+      "(input, output formats, serde etc.), when classloader throws ClassNotFoundException, as a fallback this\n" +
+      "shade prefix will be used before class reference and retried."),
 
     HIVE_ORC_MS_FOOTER_CACHE_ENABLED("hive.orc.splits.ms.footer.cache.enabled", false,
         "Whether to enable using file metadata cache in metastore for ORC file footers."),
@@ -2003,7 +2007,7 @@ public class HiveConf extends Configuration {
         "However, if it is on, and the predicted number of entries in hashtable for a given join \n" +
         "input is larger than this number, the join will not be converted to a mapjoin. \n" +
         "The value \"-1\" means no limit."),
-    HIVECONVERTJOINMAXSHUFFLESIZE("hive.auto.convert.join.shuffle.max.size", 10000000L,
+    HIVECONVERTJOINMAXSHUFFLESIZE("hive.auto.convert.join.shuffle.max.size", 10000000000L,
        "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
        "However, if it is on, and the predicted size of the larger input for a given join is greater \n" +
        "than this number, the join will not be converted to a dynamically partitioned hash join. \n" +
@@ -2370,6 +2374,8 @@ public class HiveConf extends Configuration {
         "in the number of rows filtered by a certain operator, which in turn might lead to overprovision or\n" +
         "underprovision of resources. This factor is applied to the cardinality estimation of IN clauses in\n" +
         "filter operators."),
+    HIVE_STATS_IN_MIN_RATIO("hive.stats.filter.in.min.ratio", (float) 0.05,
+        "Output estimation of an IN filter can't be lower than this ratio"),
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
@@ -2388,6 +2394,10 @@ public class HiveConf extends Configuration {
     HIVE_LOCK_QUERY_STRING_MAX_LENGTH("hive.lock.query.string.max.length", 1000000,
         "The maximum length of the query string to store in the lock.\n" +
         "The default value is 1000000, since the data limit of a znode is 1MB"),
+    HIVE_MM_ALLOW_ORIGINALS("hive.mm.allow.originals", false,
+        "Whether to allow original files in MM tables. Conversion to MM may be expensive if\n" +
+        "this is set to false, however unless MAPREDUCE-7086 fix is present, queries that\n" +
+        "read MM tables with original files will fail. The default in Hive 3.0 is false."),
 
      // Zookeeper related configs
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
@@ -2397,7 +2407,8 @@ public class HiveConf extends Configuration {
         "2. When HiveServer2 supports service discovery via Zookeeper.\n" +
         "3. For delegation token storage if zookeeper store is used, if\n" +
         "hive.cluster.delegation.token.store.zookeeper.connectString is not set\n" +
-        "4. LLAP daemon registry service"),
+        "4. LLAP daemon registry service\n" +
+        "5. Leader selection for privilege synchronizer"),
 
     HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", "2181",
         "The port of ZooKeeper servers to talk to.\n" +
@@ -2564,6 +2575,9 @@ public class HiveConf extends Configuration {
     COMPACTOR_JOB_QUEUE("hive.compactor.job.queue", "", "Used to specify name of Hadoop queue to which\n" +
       "Compaction jobs will be submitted.  Set to empty string to let Hadoop choose the queue."),
 
+    TRANSACTIONAL_CONCATENATE_NOBLOCK("hive.transactional.concatenate.noblock", false,
+        "Will cause 'alter table T concatenate' to be non-blocking"),
+
     HIVE_COMPACTOR_COMPACT_MM("hive.compactor.compact.insert.only", true,
         "Whether the compactor should compact insert-only tables. A safety switch."),
     /**
@@ -2615,6 +2629,11 @@ public class HiveConf extends Configuration {
     MERGE_CARDINALITY_VIOLATION_CHECK("hive.merge.cardinality.check", true,
       "Set to true to ensure that each SQL Merge statement ensures that for each row in the target\n" +
         "table there is at most 1 matching row in the source table per SQL Specification."),
+
+    // For Arrow SerDe
+    HIVE_ARROW_ROOT_ALLOCATOR_LIMIT("hive.arrow.root.allocator.limit", Long.MAX_VALUE,
+        "Arrow root allocator memory size limitation in bytes."),
+    HIVE_ARROW_BATCH_SIZE("hive.arrow.batch.size", 1000, "The number of rows sent in one Arrow batch."),
 
     // For Druid storage handler
     HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "DAY",
@@ -2678,9 +2697,6 @@ public class HiveConf extends Configuration {
             "Wait time in ms default to 30 seconds."
     ),
     HIVE_DRUID_BITMAP_FACTORY_TYPE("hive.druid.bitmap.type", "roaring", new PatternSet("roaring", "concise"), "Coding algorithm use to encode the bitmaps"),
-    HIVE_DRUID_APPROX_RESULT("hive.druid.approx.result", false,
-        "Whether to allow approximate results from druid. \n" +
-        "When set to true decimals will be stored as double and druid is allowed to return approximate results for decimal columns."),
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +
@@ -2960,6 +2976,10 @@ public class HiveConf extends Configuration {
 
     HIVE_SSL_PROTOCOL_BLACKLIST("hive.ssl.protocol.blacklist", "SSLv2,SSLv3",
         "SSL Versions to disable for all Hive Servers"),
+
+    HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL("hive.privilege.synchronizer.interval",
+        "1800s", new TimeValidator(TimeUnit.SECONDS),
+        "Interval to synchronize privileges from external authorizer periodically in HS2"),
 
      // HiveServer2 specific configs
     HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR("hive.server2.clear.dangling.scratchdir", false,
@@ -3526,7 +3546,7 @@ public class HiveConf extends Configuration {
         "The default value is false."),
     HIVE_VECTORIZATION_ROW_DESERIALIZE_INPUTFORMAT_EXCLUDES(
         "hive.vectorized.row.serde.inputformat.excludes",
-        "org.apache.parquet.hadoop.ParquetInputFormat,org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
+        "org.apache.parquet.hadoop.ParquetInputFormat,org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat,org.apache.hive.storage.jdbc.JdbcInputFormat",
         "The input formats not supported by row deserialize vectorization."),
     HIVE_VECTOR_ADAPTOR_USAGE_MODE("hive.vectorized.adaptor.usage.mode", "all", new StringSet("none", "chosen", "all"),
         "Specifies the extent to which the VectorUDFAdaptor will be used for UDFs that do not have a corresponding vectorized class.\n" +
@@ -3534,6 +3554,10 @@ public class HiveConf extends Configuration {
         "1. chosen : use VectorUDFAdaptor for a small set of UDFs that were chosen for good performance\n" +
         "2. all    : use VectorUDFAdaptor for all UDFs"
     ),
+    HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE("hive.test.vectorized.adaptor.override", false,
+        "internal use only, used to force always using the VectorUDFAdaptor.\n" +
+        "The default is false, of course",
+        true),
     HIVE_VECTORIZATION_PTF_ENABLED("hive.vectorized.execution.ptf.enabled", true,
         "This flag should be set to true to enable vectorized mode of the PTF of query execution.\n" +
         "The default value is true."),
@@ -3563,6 +3587,10 @@ public class HiveConf extends Configuration {
         "This flag should be set to true to use overflow checked vector expressions when available.\n" +
         "For example, arithmetic expressions which can overflow the output data type can be evaluated using\n" +
         " checked vector expressions so that they produce same result as non-vectorized evaluation."),
+    HIVE_VECTORIZED_ADAPTOR_SUPPRESS_EVALUATE_EXCEPTIONS(
+		"hive.vectorized.adaptor.suppress.evaluate.exceptions", false,
+        "This flag should be set to true to suppress HiveException from the generic UDF function\n" +
+		"evaluate call and turn them into NULLs. Assume, by default, this is not needed"),
     HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED(
         "hive.vectorized.input.format.supports.enabled",
         "decimal_64",
@@ -4131,6 +4159,9 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES("hive.llap.daemon.output.service.max.pending.writes",
         8, "Maximum number of queued writes allowed per connection when sending data\n" +
         " via the LLAP output service to external clients."),
+    LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT("hive.llap.external.splits.temp.table.storage.format",
+        "orc", new StringSet("default", "text", "orc"),
+        "Storage format for temp tables created using LLAP external client"),
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
         "Override if grace join should be allowed to run in llap."),
 
@@ -4143,6 +4174,8 @@ public class HiveConf extends Configuration {
             Constants.LLAP_LOGGER_NAME_RFA,
             Constants.LLAP_LOGGER_NAME_CONSOLE),
         "logger used for llap-daemons."),
+    LLAP_OUTPUT_FORMAT_ARROW("hive.llap.output.format.arrow", true,
+      "Whether LLapOutputFormatService should output arrow batches"),
 
     HIVE_TRIGGER_VALIDATION_INTERVAL("hive.trigger.validation.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
@@ -4224,12 +4257,12 @@ public class HiveConf extends Configuration {
        "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
        " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
     HIVE_MSCK_REPAIR_BATCH_SIZE(
-        "hive.msck.repair.batch.size", 0,
+        "hive.msck.repair.batch.size", 3000,
         "Batch size for the msck repair command. If the value is greater than zero,\n "
             + "it will execute batch wise with the configured batch size. In case of errors while\n"
             + "adding unknown partitions the batch size is automatically reduced by half in the subsequent\n"
-            + "retry attempt. The default value is zero which means it will execute directly (not batch wise)"),
-    HIVE_MSCK_REPAIR_BATCH_MAX_RETRIES("hive.msck.repair.batch.max.retries", 0,
+            + "retry attempt. The default value is 3000 which means it will execute in the batches of 3000."),
+    HIVE_MSCK_REPAIR_BATCH_MAX_RETRIES("hive.msck.repair.batch.max.retries", 4,
         "Maximum number of retries for the msck repair command when adding unknown partitions.\n "
         + "If the value is greater than zero it will retry adding unknown partitions until the maximum\n"
         + "number of attempts is reached or batch size is reduced to 0, whichever is earlier.\n"
@@ -4265,6 +4298,8 @@ public class HiveConf extends Configuration {
             "hive.server2.authentication.ldap.userMembershipKey," +
             "hive.server2.authentication.ldap.groupClassKey," +
             "hive.server2.authentication.ldap.customLDAPQuery," +
+            "hive.privilege.synchronizer," +
+            "hive.privilege.synchronizer.interval," +
             "hive.spark.client.connect.timeout," +
             "hive.spark.client.server.connect.timeout," +
             "hive.spark.client.channel.log.level," +

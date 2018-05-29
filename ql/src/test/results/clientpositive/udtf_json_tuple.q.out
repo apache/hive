@@ -406,40 +406,40 @@ POSTHOOK: Input: default@json_t
 NULL	1
 2	2
 value2	1
-PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS RCFILE
+PREHOOK: query: CREATE TABLE dest1_n65(c1 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS RCFILE
+PREHOOK: Output: default@dest1_n65
+POSTHOOK: query: CREATE TABLE dest1_n65(c1 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
+POSTHOOK: Output: default@dest1_n65
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n65 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
+PREHOOK: Output: default@dest1_n65
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n65 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-PREHOOK: query: SELECT * FROM dest1
+POSTHOOK: Output: default@dest1_n65
+POSTHOOK: Lineage: dest1_n65.c1 SIMPLE []
+PREHOOK: query: SELECT * FROM dest1_n65
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n65
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest1
+POSTHOOK: query: SELECT * FROM dest1_n65
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n65
 #### A masked pattern was here ####
 {"a":"b
 c"}
-PREHOOK: query: SELECT json FROM dest1 a LATERAL VIEW json_tuple(c1, 'a') b AS json
+PREHOOK: query: SELECT json FROM dest1_n65 a LATERAL VIEW json_tuple(c1, 'a') b AS json
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n65
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT json FROM dest1 a LATERAL VIEW json_tuple(c1, 'a') b AS json
+POSTHOOK: query: SELECT json FROM dest1_n65 a LATERAL VIEW json_tuple(c1, 'a') b AS json
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n65
 #### A masked pattern was here ####
 b
 c

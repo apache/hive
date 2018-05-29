@@ -245,6 +245,11 @@
 </property>
 
 <property>
+  <name>spark.local.dir</name>
+  <value>${test.tmp.dir}/spark-local-dir</value>
+</property>
+
+<property>
   <name>hive.aux.jars.path</name>
   <value>${maven.local.repository}/org/apache/hive/hive-it-util/${hive.version}/hive-it-util-${hive.version}.jar</value>
 </property>

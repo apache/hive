@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.List;
-import java.util.Set;
-
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -52,6 +49,9 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Finds Acid FileSinkDesc objects which can be created in the physical (disconnected) plan, e.g.

@@ -1,45 +1,45 @@
-PREHOOK: query: create table test (key int, value string) partitioned by (p int) stored as textfile
+PREHOOK: query: create table test_n9 (key int, value string) partitioned by (p int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test
-POSTHOOK: query: create table test (key int, value string) partitioned by (p int) stored as textfile
+PREHOOK: Output: default@test_n9
+POSTHOOK: query: create table test_n9 (key int, value string) partitioned by (p int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test
-PREHOOK: query: insert into table test partition (p=1) select * from src order by key limit 10
+POSTHOOK: Output: default@test_n9
+PREHOOK: query: insert into table test_n9 partition (p=1) select * from src order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test@p=1
-POSTHOOK: query: insert into table test partition (p=1) select * from src order by key limit 10
+PREHOOK: Output: default@test_n9@p=1
+POSTHOOK: query: insert into table test_n9 partition (p=1) select * from src order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test@p=1
-POSTHOOK: Lineage: test PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: alter table test set fileformat orc
+POSTHOOK: Output: default@test_n9@p=1
+POSTHOOK: Lineage: test_n9 PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_n9 PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table test_n9 set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@test
-PREHOOK: Output: default@test
-POSTHOOK: query: alter table test set fileformat orc
+PREHOOK: Input: default@test_n9
+PREHOOK: Output: default@test_n9
+POSTHOOK: query: alter table test_n9 set fileformat orc
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@test
-POSTHOOK: Output: default@test
-PREHOOK: query: insert into table test partition (p=2) select * from src order by key limit 10
+POSTHOOK: Input: default@test_n9
+POSTHOOK: Output: default@test_n9
+PREHOOK: query: insert into table test_n9 partition (p=2) select * from src order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test@p=2
-POSTHOOK: query: insert into table test partition (p=2) select * from src order by key limit 10
+PREHOOK: Output: default@test_n9@p=2
+POSTHOOK: query: insert into table test_n9 partition (p=2) select * from src order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test@p=2
-POSTHOOK: Lineage: test PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe test
+POSTHOOK: Output: default@test_n9@p=2
+POSTHOOK: Lineage: test_n9 PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_n9 PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe test_n9
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test
-POSTHOOK: query: describe test
+PREHOOK: Input: default@test_n9
+POSTHOOK: query: describe test_n9
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n9
 key                 	int                 	                    
 value               	string              	                    
 p                   	int                 	                    
@@ -47,15 +47,15 @@ p                   	int
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 p                   	int                 	                    
-PREHOOK: query: select * from test where p=1 and key > 0 order by key
+PREHOOK: query: select * from test_n9 where p=1 and key > 0 order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
-PREHOOK: Input: default@test@p=1
+PREHOOK: Input: default@test_n9
+PREHOOK: Input: default@test_n9@p=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test where p=1 and key > 0 order by key
+POSTHOOK: query: select * from test_n9 where p=1 and key > 0 order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
-POSTHOOK: Input: default@test@p=1
+POSTHOOK: Input: default@test_n9
+POSTHOOK: Input: default@test_n9@p=1
 #### A masked pattern was here ####
 10	val_10	1
 100	val_100	1
@@ -64,15 +64,15 @@ POSTHOOK: Input: default@test@p=1
 103	val_103	1
 104	val_104	1
 104	val_104	1
-PREHOOK: query: select * from test where p=2 and key > 0 order by key
+PREHOOK: query: select * from test_n9 where p=2 and key > 0 order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
-PREHOOK: Input: default@test@p=2
+PREHOOK: Input: default@test_n9
+PREHOOK: Input: default@test_n9@p=2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test where p=2 and key > 0 order by key
+POSTHOOK: query: select * from test_n9 where p=2 and key > 0 order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
-POSTHOOK: Input: default@test@p=2
+POSTHOOK: Input: default@test_n9
+POSTHOOK: Input: default@test_n9@p=2
 #### A masked pattern was here ####
 10	val_10	2
 100	val_100	2
@@ -81,17 +81,17 @@ POSTHOOK: Input: default@test@p=2
 103	val_103	2
 104	val_104	2
 104	val_104	2
-PREHOOK: query: select * from test where key > 0 order by key
+PREHOOK: query: select * from test_n9 where key > 0 order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
-PREHOOK: Input: default@test@p=1
-PREHOOK: Input: default@test@p=2
+PREHOOK: Input: default@test_n9
+PREHOOK: Input: default@test_n9@p=1
+PREHOOK: Input: default@test_n9@p=2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test where key > 0 order by key
+POSTHOOK: query: select * from test_n9 where key > 0 order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
-POSTHOOK: Input: default@test@p=1
-POSTHOOK: Input: default@test@p=2
+POSTHOOK: Input: default@test_n9
+POSTHOOK: Input: default@test_n9@p=1
+POSTHOOK: Input: default@test_n9@p=2
 #### A masked pattern was here ####
 10	val_10	1
 10	val_10	2

@@ -1,139 +1,139 @@
-PREHOOK: query: create table a(key int, value int)
+PREHOOK: query: create table a_n17(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a(key int, value int)
+PREHOOK: Output: default@a_n17
+POSTHOOK: query: create table a_n17(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: insert into table a values (1,2),(1,2),(1,3),(2,3)
+POSTHOOK: Output: default@a_n17
+PREHOOK: query: insert into table a_n17 values (1,2),(1,2),(1,3),(2,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@a
-POSTHOOK: query: insert into table a values (1,2),(1,2),(1,3),(2,3)
+PREHOOK: Output: default@a_n17
+POSTHOOK: query: insert into table a_n17 values (1,2),(1,2),(1,3),(2,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.key SCRIPT []
-POSTHOOK: Lineage: a.value SCRIPT []
-PREHOOK: query: create table b(key int, value int)
+POSTHOOK: Output: default@a_n17
+POSTHOOK: Lineage: a_n17.key SCRIPT []
+POSTHOOK: Lineage: a_n17.value SCRIPT []
+PREHOOK: query: create table b_n13(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b(key int, value int)
+PREHOOK: Output: default@b_n13
+POSTHOOK: query: create table b_n13(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: insert into table b values (1,2),(2,3)
+POSTHOOK: Output: default@b_n13
+PREHOOK: query: insert into table b_n13 values (1,2),(2,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@b
-POSTHOOK: query: insert into table b values (1,2),(2,3)
+PREHOOK: Output: default@b_n13
+POSTHOOK: query: insert into table b_n13 values (1,2),(2,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key SCRIPT []
-POSTHOOK: Lineage: b.value SCRIPT []
-PREHOOK: query: select key, count(1) as c from a group by key intersect all select value, max(key) as c from b group by value
+POSTHOOK: Output: default@b_n13
+POSTHOOK: Lineage: b_n13.key SCRIPT []
+POSTHOOK: Lineage: b_n13.value SCRIPT []
+PREHOOK: query: select key, count(1) as c from a_n17 group by key intersect all select value, max(key) as c from b_n13 group by value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n17
+PREHOOK: Input: default@b_n13
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select key, count(1) as c from a group by key intersect all select value, max(key) as c from b group by value
+POSTHOOK: query: select key, count(1) as c from a_n17 group by key intersect all select value, max(key) as c from b_n13 group by value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n17
+POSTHOOK: Input: default@b_n13
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	1
-PREHOOK: query: select * from a intersect distinct select * from b
+PREHOOK: query: select * from a_n17 intersect distinct select * from b_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n17
+PREHOOK: Input: default@b_n13
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from a intersect distinct select * from b
+POSTHOOK: query: select * from a_n17 intersect distinct select * from b_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n17
+POSTHOOK: Input: default@b_n13
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
-PREHOOK: query: select * from b intersect distinct select * from a intersect distinct select * from b
+PREHOOK: query: select * from b_n13 intersect distinct select * from a_n17 intersect distinct select * from b_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n17
+PREHOOK: Input: default@b_n13
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from b intersect distinct select * from a intersect distinct select * from b
+POSTHOOK: query: select * from b_n13 intersect distinct select * from a_n17 intersect distinct select * from b_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n17
+POSTHOOK: Input: default@b_n13
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
-PREHOOK: query: select * from a intersect distinct select * from b union all select * from a intersect distinct select * from b
+PREHOOK: query: select * from a_n17 intersect distinct select * from b_n13 union all select * from a_n17 intersect distinct select * from b_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n17
+PREHOOK: Input: default@b_n13
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from a intersect distinct select * from b union all select * from a intersect distinct select * from b
+POSTHOOK: query: select * from a_n17 intersect distinct select * from b_n13 union all select * from a_n17 intersect distinct select * from b_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n17
+POSTHOOK: Input: default@b_n13
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
-PREHOOK: query: select * from a intersect distinct select * from b union select * from a intersect distinct select * from b
+PREHOOK: query: select * from a_n17 intersect distinct select * from b_n13 union select * from a_n17 intersect distinct select * from b_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n17
+PREHOOK: Input: default@b_n13
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from a intersect distinct select * from b union select * from a intersect distinct select * from b
+POSTHOOK: query: select * from a_n17 intersect distinct select * from b_n13 union select * from a_n17 intersect distinct select * from b_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n17
+POSTHOOK: Input: default@b_n13
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
-PREHOOK: query: select * from a intersect distinct select * from b intersect distinct select * from a intersect distinct select * from b
+PREHOOK: query: select * from a_n17 intersect distinct select * from b_n13 intersect distinct select * from a_n17 intersect distinct select * from b_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n17
+PREHOOK: Input: default@b_n13
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from a intersect distinct select * from b intersect distinct select * from a intersect distinct select * from b
+POSTHOOK: query: select * from a_n17 intersect distinct select * from b_n13 intersect distinct select * from a_n17 intersect distinct select * from b_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n17
+POSTHOOK: Input: default@b_n13
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
-PREHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
+PREHOOK: query: select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub1 
 intersect distinct 
-select * from (select a.key, b.value from a join b on a.key=b.key)sub2
+select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n17
+PREHOOK: Input: default@b_n13
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
+POSTHOOK: query: select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub1 
 intersect distinct 
-select * from (select a.key, b.value from a join b on a.key=b.key)sub2
+select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n17
+POSTHOOK: Input: default@b_n13
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 1	2
-PREHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1
+PREHOOK: query: select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub1
 intersect distinct
-select * from (select b.value as key, a.key as value from a join b on a.key=b.key)sub2
+select * from (select b_n13.value as key, a_n17.key as value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n17
+PREHOOK: Input: default@b_n13
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1
+POSTHOOK: query: select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub1
 intersect distinct
-select * from (select b.value as key, a.key as value from a join b on a.key=b.key)sub2
+select * from (select b_n13.value as key, a_n17.key as value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n17
+POSTHOOK: Input: default@b_n13
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select * from src intersect distinct select * from src
 PREHOOK: type: QUERY
@@ -1135,9 +1135,9 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 82	val_82
 87	val_87
 96	val_96
-PREHOOK: query: explain select value from a group by value intersect distinct select key from b group by key
+PREHOOK: query: explain select value from a_n17 group by value intersect distinct select key from b_n13 group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select value from a group by value intersect distinct select key from b group by key
+POSTHOOK: query: explain select value from a_n17 group by value intersect distinct select key from b_n13 group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1156,7 +1156,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n17
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: value (type: int)
@@ -1177,7 +1177,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n13
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int)
@@ -1279,14 +1279,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select value from a group by value intersect distinct select key from b group by key
+PREHOOK: query: select value from a_n17 group by value intersect distinct select key from b_n13 group by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n17
+PREHOOK: Input: default@b_n13
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select value from a group by value intersect distinct select key from b group by key
+POSTHOOK: query: select value from a_n17 group by value intersect distinct select key from b_n13 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n17
+POSTHOOK: Input: default@b_n13
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2

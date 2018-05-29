@@ -3,7 +3,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join = true;
 
-CREATE TABLE dest1(c1 INT, c2 STRING, c3 INT, c4 STRING, c5 INT, c6 STRING) STORED AS TEXTFILE;
+CREATE TABLE dest1_n147(c1 INT, c2 STRING, c3 INT, c4 STRING, c5 INT, c6 STRING) STORED AS TEXTFILE;
 
 
 explain
@@ -24,7 +24,7 @@ FROM (
  ON (a.c1 = c.c5)
  SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4, c.c5 AS c5, c.c6 AS c6
 ) c
-INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4, c.c5, c.c6;
+INSERT OVERWRITE TABLE dest1_n147 SELECT c.c1, c.c2, c.c3, c.c4, c.c5, c.c6;
 
 FROM (
  FROM 
@@ -43,7 +43,7 @@ FROM (
  ON (a.c1 = c.c5)
  SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4, c.c5 AS c5, c.c6 AS c6
 ) c
-INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4, c.c5, c.c6;
+INSERT OVERWRITE TABLE dest1_n147 SELECT c.c1, c.c2, c.c3, c.c4, c.c5, c.c6;
 
 
-SELECT sum(hash(dest1.c1,dest1.c2,dest1.c3,dest1.c4,dest1.c5,dest1.c6)) FROM dest1;
+SELECT sum(hash(dest1_n147.c1,dest1_n147.c2,dest1_n147.c3,dest1_n147.c4,dest1_n147.c5,dest1_n147.c6)) FROM dest1_n147;

@@ -4378,14 +4378,14 @@ Manufacturer#5	almond antique sky peru orange	2	[{"x":1018.1,"y":1.0},{"x":1464.
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	[{"x":1018.1,"y":1.0},{"x":1464.48,"y":1.0},{"x":1611.66,"y":1.0},{"x":1788.73,"y":1.0}]	60577.5	4
 Manufacturer#5	almond azure blanched chiffon midnight	23	[{"x":1018.1,"y":1.0},{"x":1464.48,"y":1.0},{"x":1788.73,"y":1.0}]	78486.0	5
 PREHOOK: query: explain vectorization detail
-create view IF NOT EXISTS mfgr_price_view as 
+create view IF NOT EXISTS mfgr_price_view_n2 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
 POSTHOOK: query: explain vectorization detail
-create view IF NOT EXISTS mfgr_price_view as 
+create view IF NOT EXISTS mfgr_price_view_n2 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
@@ -4409,13 +4409,13 @@ STAGE PLANS:
 round(sum(`part`.`p_retailprice`),2) as `s` 
 from `default`.`part` 
 group by `part`.`p_mfgr`, `part`.`p_brand`
-          name: default.mfgr_price_view
+          name: default.mfgr_price_view_n2
           original text: select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
 group by p_mfgr, p_brand
 
-PREHOOK: query: create view IF NOT EXISTS mfgr_price_view as 
+PREHOOK: query: create view IF NOT EXISTS mfgr_price_view_n2 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
@@ -4423,8 +4423,8 @@ group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@part
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mfgr_price_view
-POSTHOOK: query: create view IF NOT EXISTS mfgr_price_view as 
+PREHOOK: Output: default@mfgr_price_view_n2
+POSTHOOK: query: create view IF NOT EXISTS mfgr_price_view_n2 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
@@ -4432,17 +4432,17 @@ group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@part
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mfgr_price_view
-POSTHOOK: Lineage: mfgr_price_view.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
-POSTHOOK: Lineage: mfgr_price_view.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
-POSTHOOK: Lineage: mfgr_price_view.s EXPRESSION [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
+POSTHOOK: Output: default@mfgr_price_view_n2
+POSTHOOK: Lineage: mfgr_price_view_n2.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_price_view_n2.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_price_view_n2.s EXPRESSION [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
 p_mfgr	p_brand	s
 PREHOOK: query: explain vectorization detail
 select * 
 from (
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1 , 2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n2 
 window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand
@@ -4452,7 +4452,7 @@ select *
 from (
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1 , 2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n2 
 window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand
@@ -4626,24 +4626,24 @@ PREHOOK: query: select *
 from (
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1 , 2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n2 
 window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mfgr_price_view
+PREHOOK: Input: default@mfgr_price_view_n2
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: select * 
 from (
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1 , 2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n2 
 window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mfgr_price_view
+POSTHOOK: Input: default@mfgr_price_view_n2
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 sq.p_mfgr	sq.p_brand	sq.s	sq.s1
@@ -4665,18 +4665,18 @@ Manufacturer#5	Brand#52	3254.17	7672.66
 Manufacturer#5	Brand#53	2806.83	7672.66
 PREHOOK: query: select p_mfgr, p_brand, s, 
 round(sum(s) over w1 ,2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n2 
 window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and current row)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mfgr_price_view
+PREHOOK: Input: default@mfgr_price_view_n2
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_brand, s, 
 round(sum(s) over w1 ,2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n2 
 window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and current row)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mfgr_price_view
+POSTHOOK: Input: default@mfgr_price_view_n2
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 p_mfgr	p_brand	s	s1
@@ -4697,14 +4697,14 @@ Manufacturer#5	Brand#51	1611.66	1611.66
 Manufacturer#5	Brand#52	3254.17	4865.83
 Manufacturer#5	Brand#53	2806.83	7672.66
 PREHOOK: query: explain vectorization detail
-create view IF NOT EXISTS mfgr_brand_price_view as 
+create view IF NOT EXISTS mfgr_brand_price_view_n0 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row)
 PREHOOK: type: CREATEVIEW
 POSTHOOK: query: explain vectorization detail
-create view IF NOT EXISTS mfgr_brand_price_view as 
+create view IF NOT EXISTS mfgr_brand_price_view_n0 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
@@ -4728,13 +4728,13 @@ STAGE PLANS:
 round(sum(`part`.`p_retailprice`) over w1,2) as `s`
 from `default`.`part` 
 window w1 as (distribute by `part`.`p_mfgr` sort by `part`.`p_name` rows between 2 preceding and current row)
-          name: default.mfgr_brand_price_view
+          name: default.mfgr_brand_price_view_n0
           original text: select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row)
 
-PREHOOK: query: create view IF NOT EXISTS mfgr_brand_price_view as 
+PREHOOK: query: create view IF NOT EXISTS mfgr_brand_price_view_n0 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
@@ -4742,8 +4742,8 @@ window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and c
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@part
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mfgr_brand_price_view
-POSTHOOK: query: create view IF NOT EXISTS mfgr_brand_price_view as 
+PREHOOK: Output: default@mfgr_brand_price_view_n0
+POSTHOOK: query: create view IF NOT EXISTS mfgr_brand_price_view_n0 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
@@ -4751,16 +4751,16 @@ window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and c
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@part
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mfgr_brand_price_view
-POSTHOOK: Lineage: mfgr_brand_price_view.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
-POSTHOOK: Lineage: mfgr_brand_price_view.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
-POSTHOOK: Lineage: mfgr_brand_price_view.s SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Output: default@mfgr_brand_price_view_n0
+POSTHOOK: Lineage: mfgr_brand_price_view_n0.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_brand_price_view_n0.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_brand_price_view_n0.s SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
 p_mfgr	p_brand	s
 PREHOOK: query: explain vectorization detail
-select * from mfgr_brand_price_view
+select * from mfgr_brand_price_view_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select * from mfgr_brand_price_view
+select * from mfgr_brand_price_view_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -4870,17 +4870,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from mfgr_brand_price_view
+PREHOOK: query: select * from mfgr_brand_price_view_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mfgr_brand_price_view
+PREHOOK: Input: default@mfgr_brand_price_view_n0
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: select * from mfgr_brand_price_view
+POSTHOOK: query: select * from mfgr_brand_price_view_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mfgr_brand_price_view
+POSTHOOK: Input: default@mfgr_brand_price_view_n0
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-mfgr_brand_price_view.p_mfgr	mfgr_brand_price_view.p_brand	mfgr_brand_price_view.s
+mfgr_brand_price_view_n0.p_mfgr	mfgr_brand_price_view_n0.p_brand	mfgr_brand_price_view_n0.s
 Manufacturer#1	Brand#12	4100.06
 Manufacturer#1	Brand#12	4649.67
 Manufacturer#1	Brand#12	4770.77
@@ -5131,7 +5131,7 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	3	46	138
 Manufacturer#5	almond azure blanched chiffon midnight	1	23	35
 Manufacturer#5	almond azure blanched chiffon midnight	2	23	52
 Manufacturer#5	almond azure blanched chiffon midnight	3	23	69
-PREHOOK: query: CREATE TABLE part_1( 
+PREHOOK: query: CREATE TABLE part_1_n0( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5140,8 +5140,8 @@ dr INT,
 s DOUBLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_1
-POSTHOOK: query: CREATE TABLE part_1( 
+PREHOOK: Output: default@part_1_n0
+POSTHOOK: query: CREATE TABLE part_1_n0( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5150,8 +5150,8 @@ dr INT,
 s DOUBLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_1
-PREHOOK: query: CREATE TABLE part_2( 
+POSTHOOK: Output: default@part_1_n0
+PREHOOK: query: CREATE TABLE part_2_n0( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5162,8 +5162,8 @@ s2 DOUBLE,
 fv1 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_2
-POSTHOOK: query: CREATE TABLE part_2( 
+PREHOOK: Output: default@part_2_n0
+POSTHOOK: query: CREATE TABLE part_2_n0( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5174,8 +5174,8 @@ s2 DOUBLE,
 fv1 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_2
-PREHOOK: query: CREATE TABLE part_3( 
+POSTHOOK: Output: default@part_2_n0
+PREHOOK: query: CREATE TABLE part_3_n0( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5184,8 +5184,8 @@ ca INT,
 fv INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_3
-POSTHOOK: query: CREATE TABLE part_3( 
+PREHOOK: Output: default@part_3_n0
+POSTHOOK: query: CREATE TABLE part_3_n0( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5194,15 +5194,15 @@ ca INT,
 fv INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_3
+POSTHOOK: Output: default@part_3_n0
 PREHOOK: query: explain vectorization detail
 from part 
-INSERT OVERWRITE TABLE part_1 
+INSERT OVERWRITE TABLE part_1_n0 
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name ) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name ) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
-INSERT OVERWRITE TABLE part_2 
+INSERT OVERWRITE TABLE part_2_n0 
 select  p_mfgr,p_name, p_size,  
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
@@ -5210,7 +5210,7 @@ cume_dist() over(distribute by p_mfgr sort by p_name) as cud,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2, 
 first_value(p_size) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
-INSERT OVERWRITE TABLE part_3 
+INSERT OVERWRITE TABLE part_3_n0 
 select  p_mfgr,p_name, p_size,  
 count(*) over(distribute by p_mfgr sort by p_name) as c, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as ca, 
@@ -5219,12 +5219,12 @@ window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 precedi
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 from part 
-INSERT OVERWRITE TABLE part_1 
+INSERT OVERWRITE TABLE part_1_n0 
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name ) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name ) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
-INSERT OVERWRITE TABLE part_2 
+INSERT OVERWRITE TABLE part_2_n0 
 select  p_mfgr,p_name, p_size,  
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
@@ -5232,7 +5232,7 @@ cume_dist() over(distribute by p_mfgr sort by p_name) as cud,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2, 
 first_value(p_size) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
-INSERT OVERWRITE TABLE part_3 
+INSERT OVERWRITE TABLE part_3_n0 
 select  p_mfgr,p_name, p_size,  
 count(*) over(distribute by p_mfgr sort by p_name) as c, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as ca, 
@@ -5412,7 +5412,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.part_1
+                          name: default.part_1_n0
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: double)
                       outputColumnNames: p_mfgr, p_name, p_size, r, dr, s
@@ -5588,7 +5588,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.part_2
+                          name: default.part_2_n0
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: double), _col7 (type: int)
                       outputColumnNames: p_mfgr, p_name, p_size, r, dr, cud, s2, fv1
@@ -5749,7 +5749,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.part_3
+                          name: default.part_3_n0
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int)
                       outputColumnNames: p_mfgr, p_name, p_size, c, ca, fv
@@ -5775,7 +5775,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.part_1
+              name: default.part_1_n0
 
   Stage: Stage-5
     Stats Work
@@ -5783,7 +5783,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: p_mfgr, p_name, p_size, r, dr, s
           Column Types: string, string, int, int, int, double
-          Table: default.part_1
+          Table: default.part_1_n0
 
   Stage: Stage-1
     Move Operator
@@ -5793,7 +5793,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.part_2
+              name: default.part_2_n0
 
   Stage: Stage-6
     Stats Work
@@ -5801,7 +5801,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: p_mfgr, p_name, p_size, r, dr, cud, s2, fv1
           Column Types: string, string, int, int, int, int, double, int
-          Table: default.part_2
+          Table: default.part_2_n0
 
   Stage: Stage-2
     Move Operator
@@ -5811,7 +5811,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.part_3
+              name: default.part_3_n0
 
   Stage: Stage-7
     Stats Work
@@ -5819,15 +5819,15 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: p_mfgr, p_name, p_size, c, ca, fv
           Column Types: string, string, int, int, int, int
-          Table: default.part_3
+          Table: default.part_3_n0
 
 PREHOOK: query: from part 
-INSERT OVERWRITE TABLE part_1 
+INSERT OVERWRITE TABLE part_1_n0 
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name ) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name ) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
-INSERT OVERWRITE TABLE part_2 
+INSERT OVERWRITE TABLE part_2_n0 
 select  p_mfgr,p_name, p_size,  
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
@@ -5835,7 +5835,7 @@ cume_dist() over(distribute by p_mfgr sort by p_name) as cud,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2, 
 first_value(p_size) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
-INSERT OVERWRITE TABLE part_3 
+INSERT OVERWRITE TABLE part_3_n0 
 select  p_mfgr,p_name, p_size,  
 count(*) over(distribute by p_mfgr sort by p_name) as c, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as ca, 
@@ -5843,16 +5843,16 @@ first_value(p_size) over w1  as fv
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Output: default@part_1
-PREHOOK: Output: default@part_2
-PREHOOK: Output: default@part_3
+PREHOOK: Output: default@part_1_n0
+PREHOOK: Output: default@part_2_n0
+PREHOOK: Output: default@part_3_n0
 POSTHOOK: query: from part 
-INSERT OVERWRITE TABLE part_1 
+INSERT OVERWRITE TABLE part_1_n0 
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name ) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name ) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
-INSERT OVERWRITE TABLE part_2 
+INSERT OVERWRITE TABLE part_2_n0 
 select  p_mfgr,p_name, p_size,  
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
@@ -5860,7 +5860,7 @@ cume_dist() over(distribute by p_mfgr sort by p_name) as cud,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2, 
 first_value(p_size) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
-INSERT OVERWRITE TABLE part_3 
+INSERT OVERWRITE TABLE part_3_n0 
 select  p_mfgr,p_name, p_size,  
 count(*) over(distribute by p_mfgr sort by p_name) as c, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as ca, 
@@ -5868,39 +5868,39 @@ first_value(p_size) over w1  as fv
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Output: default@part_1
-POSTHOOK: Output: default@part_2
-POSTHOOK: Output: default@part_3
-POSTHOOK: Lineage: part_1.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_1.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
-POSTHOOK: Lineage: part_1.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
-POSTHOOK: Lineage: part_1.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
-POSTHOOK: Lineage: part_1.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_1.s SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_2.cud SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_2.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_2.fv1 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_2.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
-POSTHOOK: Lineage: part_2.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
-POSTHOOK: Lineage: part_2.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
-POSTHOOK: Lineage: part_2.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_2.s2 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_3.c SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_3.ca SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_3.fv SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
-POSTHOOK: Lineage: part_3.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
-POSTHOOK: Lineage: part_3.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
-POSTHOOK: Lineage: part_3.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Output: default@part_1_n0
+POSTHOOK: Output: default@part_2_n0
+POSTHOOK: Output: default@part_3_n0
+POSTHOOK: Lineage: part_1_n0.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_1_n0.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: part_1_n0.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: part_1_n0.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: part_1_n0.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_1_n0.s SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_2_n0.cud SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_2_n0.dr SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_2_n0.fv1 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_2_n0.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: part_2_n0.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: part_2_n0.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: part_2_n0.r SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_2_n0.s2 SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_3_n0.c SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_3_n0.ca SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_3_n0.fv SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_3_n0.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: part_3_n0.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: part_3_n0.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
 _col0	_col1	_col2	_col3	_col4	_col5
-PREHOOK: query: select * from part_1
+PREHOOK: query: select * from part_1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_1
+PREHOOK: Input: default@part_1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_1
+POSTHOOK: query: select * from part_1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_1
+POSTHOOK: Input: default@part_1_n0
 #### A masked pattern was here ####
-part_1.p_mfgr	part_1.p_name	part_1.p_size	part_1.r	part_1.dr	part_1.s
+part_1_n0.p_mfgr	part_1_n0.p_name	part_1_n0.p_size	part_1_n0.r	part_1_n0.dr	part_1_n0.s
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	1173.15
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	2346.3
 Manufacturer#1	almond antique chartreuse lavender yellow	34	3	2	4100.06
@@ -5927,15 +5927,15 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: select * from part_2
+PREHOOK: query: select * from part_2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_2
+PREHOOK: Input: default@part_2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_2
+POSTHOOK: query: select * from part_2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_2
+POSTHOOK: Input: default@part_2_n0
 #### A masked pattern was here ####
-part_2.p_mfgr	part_2.p_name	part_2.p_size	part_2.r	part_2.dr	part_2.cud	part_2.s2	part_2.fv1
+part_2_n0.p_mfgr	part_2_n0.p_name	part_2_n0.p_size	part_2_n0.r	part_2_n0.dr	part_2_n0.cud	part_2_n0.s2	part_2_n0.fv1
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	0	4.0	2
 Manufacturer#1	almond antique burnished rose metallic	2	1	1	0	4.0	2
 Manufacturer#1	almond antique chartreuse lavender yellow	34	3	2	0	34.0	2
@@ -5962,15 +5962,15 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	0	8.0	31
 Manufacturer#5	almond antique sky peru orange	2	3	3	0	2.0	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	0	46.0	6
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	1	23.0	2
-PREHOOK: query: select * from part_3
+PREHOOK: query: select * from part_3_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_3
+PREHOOK: Input: default@part_3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_3
+POSTHOOK: query: select * from part_3_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_3
+POSTHOOK: Input: default@part_3_n0
 #### A masked pattern was here ####
-part_3.p_mfgr	part_3.p_name	part_3.p_size	part_3.c	part_3.ca	part_3.fv
+part_3_n0.p_mfgr	part_3_n0.p_name	part_3_n0.p_size	part_3_n0.c	part_3_n0.ca	part_3_n0.fv
 Manufacturer#1	almond antique burnished rose metallic	2	2	2	2
 Manufacturer#1	almond antique burnished rose metallic	2	2	2	2
 Manufacturer#1	almond antique chartreuse lavender yellow	34	3	3	2

@@ -165,34 +165,34 @@ explain select count(*) as c from part as e where p_size + 100 not in ( select p
 select count(*) as c from part as e where p_size + 100 not in ( select p_type from part where p_brand = e.p_brand);
 
 --nullability tests
-CREATE TABLE t1 (c1 INT, c2 CHAR(100));
-INSERT INTO t1 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij');
+CREATE TABLE t1_n0 (c1 INT, c2 CHAR(100));
+INSERT INTO t1_n0 VALUES (null,null), (1,''), (2,'abcde'), (100,'abcdefghij');
 
-CREATE TABLE t2 (c1 INT);
-INSERT INTO t2 VALUES (null), (2), (100);
+CREATE TABLE t2_n0 (c1 INT);
+INSERT INTO t2_n0 VALUES (null), (2), (100);
 
 -- uncorr
-explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2);
-SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2);
+explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0);
+SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0);
 
 -- corr
-explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c2=t2.c1);
-SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1);
+explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1);
+SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c1=t2_n0.c1);
 
-DROP TABLE t1;
-DROP TABLE t2;
+DROP TABLE t1_n0;
+DROP TABLE t2_n0;
 
 -- corr, nullability, should not produce any result
-create table t1(a int, b int);
-insert into t1 values(1,0), (1,0),(1,0);
+create table t1_n0(a int, b int);
+insert into t1_n0 values(1,0), (1,0),(1,0);
 
-create table t2(a int, b int);
-insert into t2 values(2,1), (3,1), (NULL,1);
+create table t2_n0(a int, b int);
+insert into t2_n0 values(2,1), (3,1), (NULL,1);
 
-explain select t1.a from t1 where t1.b NOT IN (select t2.a from t2 where t2.b=t1.a);
-select t1.a from t1 where t1.b NOT IN (select t2.a from t2 where t2.b=t1.a);
-drop table t1;
-drop table t2;
+explain select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a);
+select t1_n0.a from t1_n0 where t1_n0.b NOT IN (select t2_n0.a from t2_n0 where t2_n0.b=t1_n0.a);
+drop table t1_n0;
+drop table t2_n0;
 
 
 -- coor, nullability, should produce result
@@ -208,27 +208,27 @@ select * from fixOb where j NOT IN (select i from t7 where t7.j=fixOb.j);
 drop table t7;
 drop table fixOb;
 
-create table t(i int, j int);
-insert into t values(1,2), (4,5), (7, NULL);
+create table t_n0(i int, j int);
+insert into t_n0 values(1,2), (4,5), (7, NULL);
 
 
--- case with empty inner result (t1.j=t.j=NULL) and null subquery key(t.j = NULL)
-explain select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j);
-select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j);
+-- case with empty inner result (t1_n0.j=t_n0.j=NULL) and null subquery key(t_n0.j = NULL)
+explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j);
+select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j);
 
--- case with empty inner result (t1.j=t.j=NULL) and non-null subquery key(t.i is never null)
-explain select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j);
-select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j);
+-- case with empty inner result (t1_n0.j=t_n0.j=NULL) and non-null subquery key(t_n0.i is never null)
+explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j);
+select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 where t1_n0.j=t_n0.j);
 
--- case with non-empty inner result and null subquery key(t.j is null)
-explain select t.i from t where t.j NOT IN (select t1.i from t t1 );
-select t.i from t where t.j NOT IN (select t1.i from t t1 );
+-- case with non-empty inner result and null subquery key(t_n0.j is null)
+explain select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 );
+select t_n0.i from t_n0 where t_n0.j NOT IN (select t1_n0.i from t_n0 t1_n0 );
 
--- case with non-empty inner result and non-null subquery key(t.i is never null)
-explain select t.i from t where t.i NOT IN (select t1.i from t t1 );
-select t.i from t where t.i NOT IN (select t1.i from t t1 );
+-- case with non-empty inner result and non-null subquery key(t_n0.i is never null)
+explain select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 );
+select t_n0.i from t_n0 where t_n0.i NOT IN (select t1_n0.i from t_n0 t1_n0 );
 
-drop table t1;
+drop table t1_n0;
 
 -- corr predicate is not equi
 explain select *

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Vectorized instruction to get an element from a list with the index from another column and put
@@ -45,7 +46,7 @@ public class ListIndexColColumn extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }

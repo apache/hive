@@ -20,40 +20,40 @@ set mapred.input.dir.recursive=true;
 -- on
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- Since this test creates sub-directories for the output table outputTbl1, it might be easier
+-- Since this test creates sub-directories for the output table outputTbl1_n9, it might be easier
 -- to run the test only on hadoop 23
 
-create table inputTbl1(key string, val string) stored as textfile;
-create table outputTbl1(key string, `values` bigint) stored as rcfile;
+create table inputTbl1_n7(key string, val string) stored as textfile;
+create table outputTbl1_n9(key string, `values` bigint) stored as rcfile;
 
-load data local inpath '../../data/files/T1.txt' into table inputTbl1;
+load data local inpath '../../data/files/T1.txt' into table inputTbl1_n7;
 
 explain
-insert overwrite table outputTbl1
+insert overwrite table outputTbl1_n9
 SELECT * FROM
 (
-select key, 1 as `values` from inputTbl1
+select key, 1 as `values` from inputTbl1_n7
 union all
 select * FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n7 group by key
   UNION ALL
-  SELECT key, 2 as `values` from inputTbl1
+  SELECT key, 2 as `values` from inputTbl1_n7
 ) a
 )b;
 
-insert overwrite table outputTbl1
+insert overwrite table outputTbl1_n9
 SELECT * FROM
 (
-select key, 1 as `values` from inputTbl1
+select key, 1 as `values` from inputTbl1_n7
 union all
 select * FROM (
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n7 group by key
   UNION ALL
-  SELECT key, 2 as `values` from inputTbl1
+  SELECT key, 2 as `values` from inputTbl1_n7
 ) a
 )b;
 
-desc formatted outputTbl1;
+desc formatted outputTbl1_n9;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
-select * from outputTbl1;
+select * from outputTbl1_n9;

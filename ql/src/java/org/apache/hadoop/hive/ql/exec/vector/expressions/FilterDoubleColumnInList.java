@@ -71,7 +71,7 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);

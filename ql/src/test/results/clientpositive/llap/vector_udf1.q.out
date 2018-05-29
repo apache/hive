@@ -1,48 +1,48 @@
-PREHOOK: query: drop table varchar_udf_1
+PREHOOK: query: drop table varchar_udf_1_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table varchar_udf_1
+POSTHOOK: query: drop table varchar_udf_1_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20),
+PREHOOK: query: create table varchar_udf_1_n2 (c1 string, c2 string, c3 varchar(10), c4 varchar(20),
      d1 string, d2 string, d3 varchar(10), d4 varchar(10)) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@varchar_udf_1
-POSTHOOK: query: create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20),
+PREHOOK: Output: default@varchar_udf_1_n2
+POSTHOOK: query: create table varchar_udf_1_n2 (c1 string, c2 string, c3 varchar(10), c4 varchar(20),
      d1 string, d2 string, d3 varchar(10), d4 varchar(10)) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@varchar_udf_1
-PREHOOK: query: insert overwrite table varchar_udf_1
+POSTHOOK: Output: default@varchar_udf_1_n2
+PREHOOK: query: insert overwrite table varchar_udf_1_n2
   select key, value, key, value, '2015-01-14', '2015-01-14', '2017-01-11', '2017-01-11' from src where key = '238' limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@varchar_udf_1
-POSTHOOK: query: insert overwrite table varchar_udf_1
+PREHOOK: Output: default@varchar_udf_1_n2
+POSTHOOK: query: insert overwrite table varchar_udf_1_n2
   select key, value, key, value, '2015-01-14', '2015-01-14', '2017-01-11', '2017-01-11' from src where key = '238' limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@varchar_udf_1
-POSTHOOK: Lineage: varchar_udf_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: varchar_udf_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: varchar_udf_1.c3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: varchar_udf_1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: varchar_udf_1.d1 SIMPLE []
-POSTHOOK: Lineage: varchar_udf_1.d2 SIMPLE []
-POSTHOOK: Lineage: varchar_udf_1.d3 EXPRESSION []
-POSTHOOK: Lineage: varchar_udf_1.d4 EXPRESSION []
+POSTHOOK: Output: default@varchar_udf_1_n2
+POSTHOOK: Lineage: varchar_udf_1_n2.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1_n2.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1_n2.c3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1_n2.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_1_n2.d1 SIMPLE []
+POSTHOOK: Lineage: varchar_udf_1_n2.d2 SIMPLE []
+POSTHOOK: Lineage: varchar_udf_1_n2.d3 EXPRESSION []
+POSTHOOK: Lineage: varchar_udf_1_n2.d4 EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select
   concat(c1, c2),
   concat(c3, c4),
   concat(c1, c2) = concat(c3, c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   concat(c1, c2),
   concat(c3, c4),
   concat(c1, c2) = concat(c3, c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -60,7 +60,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -118,17 +118,17 @@ PREHOOK: query: select
   concat(c1, c2),
   concat(c3, c4),
   concat(c1, c2) = concat(c3, c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   concat(c1, c2),
   concat(c3, c4),
   concat(c1, c2) = concat(c3, c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 238val_238	238val_238	true
 PREHOOK: query: explain vectorization detail
@@ -136,14 +136,14 @@ select
   upper(c2),
   upper(c4),
   upper(c2) = upper(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   upper(c2),
   upper(c4),
   upper(c2) = upper(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -161,7 +161,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -219,17 +219,17 @@ PREHOOK: query: select
   upper(c2),
   upper(c4),
   upper(c2) = upper(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   upper(c2),
   upper(c4),
   upper(c2) = upper(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 VAL_238	VAL_238	true
 PREHOOK: query: explain vectorization detail
@@ -237,14 +237,14 @@ select
   lower(c2),
   lower(c4),
   lower(c2) = lower(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   lower(c2),
   lower(c4),
   lower(c2) = lower(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -262,7 +262,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -320,17 +320,17 @@ PREHOOK: query: select
   lower(c2),
   lower(c4),
   lower(c2) = lower(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   lower(c2),
   lower(c4),
   lower(c2) = lower(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 val_238	val_238	true
 PREHOOK: query: explain vectorization detail
@@ -338,14 +338,14 @@ select
   ascii(c2),
   ascii(c4),
   ascii(c2) = ascii(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   ascii(c2),
   ascii(c4),
   ascii(c2) = ascii(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -363,7 +363,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -421,17 +421,17 @@ PREHOOK: query: select
   ascii(c2),
   ascii(c4),
   ascii(c2) = ascii(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   ascii(c2),
   ascii(c4),
   ascii(c2) = ascii(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 118	118	true
 PREHOOK: query: explain vectorization detail
@@ -439,14 +439,14 @@ select
   concat_ws('|', c1, c2),
   concat_ws('|', c3, c4),
   concat_ws('|', c1, c2) = concat_ws('|', c3, c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   concat_ws('|', c1, c2),
   concat_ws('|', c3, c4),
   concat_ws('|', c1, c2) = concat_ws('|', c3, c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -464,7 +464,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -522,17 +522,17 @@ PREHOOK: query: select
   concat_ws('|', c1, c2),
   concat_ws('|', c3, c4),
   concat_ws('|', c1, c2) = concat_ws('|', c3, c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   concat_ws('|', c1, c2),
   concat_ws('|', c3, c4),
   concat_ws('|', c1, c2) = concat_ws('|', c3, c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 238|val_238	238|val_238	true
 PREHOOK: query: explain vectorization detail
@@ -540,14 +540,14 @@ select
   decode(encode(c2, 'US-ASCII'), 'US-ASCII'),
   decode(encode(c4, 'US-ASCII'), 'US-ASCII'),
   decode(encode(c2, 'US-ASCII'), 'US-ASCII') = decode(encode(c4, 'US-ASCII'), 'US-ASCII')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   decode(encode(c2, 'US-ASCII'), 'US-ASCII'),
   decode(encode(c4, 'US-ASCII'), 'US-ASCII'),
   decode(encode(c2, 'US-ASCII'), 'US-ASCII') = decode(encode(c4, 'US-ASCII'), 'US-ASCII')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -565,7 +565,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -623,17 +623,17 @@ PREHOOK: query: select
   decode(encode(c2, 'US-ASCII'), 'US-ASCII'),
   decode(encode(c4, 'US-ASCII'), 'US-ASCII'),
   decode(encode(c2, 'US-ASCII'), 'US-ASCII') = decode(encode(c4, 'US-ASCII'), 'US-ASCII')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   decode(encode(c2, 'US-ASCII'), 'US-ASCII'),
   decode(encode(c4, 'US-ASCII'), 'US-ASCII'),
   decode(encode(c2, 'US-ASCII'), 'US-ASCII') = decode(encode(c4, 'US-ASCII'), 'US-ASCII')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 val_238	val_238	true
 PREHOOK: query: explain vectorization detail
@@ -641,14 +641,14 @@ select
   instr(c2, '_'),
   instr(c4, '_'),
   instr(c2, '_') = instr(c4, '_')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   instr(c2, '_'),
   instr(c4, '_'),
   instr(c2, '_') = instr(c4, '_')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -666,7 +666,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -724,17 +724,17 @@ PREHOOK: query: select
   instr(c2, '_'),
   instr(c4, '_'),
   instr(c2, '_') = instr(c4, '_')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   instr(c2, '_'),
   instr(c4, '_'),
   instr(c2, '_') = instr(c4, '_')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 4	4	true
 PREHOOK: query: explain vectorization detail
@@ -742,14 +742,14 @@ select
   replace(c1, '_', c2),
   replace(c3, '_', c4),
   replace(c1, '_', c2) = replace(c3, '_', c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   replace(c1, '_', c2),
   replace(c3, '_', c4),
   replace(c1, '_', c2) = replace(c3, '_', c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -767,7 +767,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -825,17 +825,17 @@ PREHOOK: query: select
   replace(c1, '_', c2),
   replace(c3, '_', c4),
   replace(c1, '_', c2) = replace(c3, '_', c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   replace(c1, '_', c2),
   replace(c3, '_', c4),
   replace(c1, '_', c2) = replace(c3, '_', c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 238	238	true
 PREHOOK: query: explain vectorization detail
@@ -843,14 +843,14 @@ select
   reverse(c2),
   reverse(c4),
   reverse(c2) = reverse(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   reverse(c2),
   reverse(c4),
   reverse(c2) = reverse(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -868,7 +868,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -926,17 +926,17 @@ PREHOOK: query: select
   reverse(c2),
   reverse(c4),
   reverse(c2) = reverse(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   reverse(c2),
   reverse(c4),
   reverse(c2) = reverse(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 832_lav	832_lav	true
 PREHOOK: query: explain vectorization detail
@@ -944,14 +944,14 @@ select
   next_day(d1, 'TU'),
   next_day(d4, 'WE'),
   next_day(d1, 'TU') = next_day(d4, 'WE')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   next_day(d1, 'TU'),
   next_day(d4, 'WE'),
   next_day(d1, 'TU') = next_day(d4, 'WE')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -969,7 +969,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1027,17 +1027,17 @@ PREHOOK: query: select
   next_day(d1, 'TU'),
   next_day(d4, 'WE'),
   next_day(d1, 'TU') = next_day(d4, 'WE')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   next_day(d1, 'TU'),
   next_day(d4, 'WE'),
   next_day(d1, 'TU') = next_day(d4, 'WE')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 2015-01-20	2017-01-18	false
 PREHOOK: query: explain vectorization detail
@@ -1045,14 +1045,14 @@ select
   months_between(d1, d3),
   months_between(d2, d4),
   months_between(d1, d3) = months_between(d2, d4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   months_between(d1, d3),
   months_between(d2, d4),
   months_between(d1, d3) = months_between(d2, d4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1070,7 +1070,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1128,17 +1128,17 @@ PREHOOK: query: select
   months_between(d1, d3),
   months_between(d2, d4),
   months_between(d1, d3) = months_between(d2, d4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   months_between(d1, d3),
   months_between(d2, d4),
   months_between(d1, d3) = months_between(d2, d4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 -23.90322581	-23.90322581	true
 PREHOOK: query: explain vectorization detail
@@ -1146,14 +1146,14 @@ select
   length(c2),
   length(c4),
   length(c2) = length(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   length(c2),
   length(c4),
   length(c2) = length(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1171,7 +1171,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1229,17 +1229,17 @@ PREHOOK: query: select
   length(c2),
   length(c4),
   length(c2) = length(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   length(c2),
   length(c4),
   length(c2) = length(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 7	7	true
 PREHOOK: query: explain vectorization detail
@@ -1247,14 +1247,14 @@ select
   locate('a', 'abcdabcd', 3),
   locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3),
   locate('a', 'abcdabcd', 3) = locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   locate('a', 'abcdabcd', 3),
   locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3),
   locate('a', 'abcdabcd', 3) = locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1272,7 +1272,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 732 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1330,17 +1330,17 @@ PREHOOK: query: select
   locate('a', 'abcdabcd', 3),
   locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3),
   locate('a', 'abcdabcd', 3) = locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   locate('a', 'abcdabcd', 3),
   locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3),
   locate('a', 'abcdabcd', 3) = locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 5	5	true
 PREHOOK: query: explain vectorization detail
@@ -1348,14 +1348,14 @@ select
   lpad(c2, 15, ' '),
   lpad(c4, 15, ' '),
   lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   lpad(c2, 15, ' '),
   lpad(c4, 15, ' '),
   lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1373,7 +1373,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1431,17 +1431,17 @@ PREHOOK: query: select
   lpad(c2, 15, ' '),
   lpad(c4, 15, ' '),
   lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   lpad(c2, 15, ' '),
   lpad(c4, 15, ' '),
   lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
         val_238	        val_238	true
 PREHOOK: query: explain vectorization detail
@@ -1449,14 +1449,14 @@ select
   ltrim(c2),
   ltrim(c4),
   ltrim(c2) = ltrim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   ltrim(c2),
   ltrim(c4),
   ltrim(c2) = ltrim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1474,7 +1474,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1532,17 +1532,17 @@ PREHOOK: query: select
   ltrim(c2),
   ltrim(c4),
   ltrim(c2) = ltrim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   ltrim(c2),
   ltrim(c4),
   ltrim(c2) = ltrim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 val_238	val_238	true
 PREHOOK: query: explain vectorization detail
@@ -1550,14 +1550,14 @@ select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1575,7 +1575,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1633,17 +1633,17 @@ PREHOOK: query: select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 true	true	true
 PREHOOK: query: explain vectorization detail
@@ -1651,14 +1651,14 @@ select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1676,7 +1676,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1734,17 +1734,17 @@ PREHOOK: query: select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 238	238	true
 PREHOOK: query: explain vectorization detail
@@ -1752,14 +1752,14 @@ select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1777,7 +1777,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1835,17 +1835,17 @@ PREHOOK: query: select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
   regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 replaced_238	replaced_238	true
 PREHOOK: query: explain vectorization detail
@@ -1853,14 +1853,14 @@ select
   reverse(c2),
   reverse(c4),
   reverse(c2) = reverse(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   reverse(c2),
   reverse(c4),
   reverse(c2) = reverse(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1878,7 +1878,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1936,17 +1936,17 @@ PREHOOK: query: select
   reverse(c2),
   reverse(c4),
   reverse(c2) = reverse(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   reverse(c2),
   reverse(c4),
   reverse(c2) = reverse(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 832_lav	832_lav	true
 PREHOOK: query: explain vectorization detail
@@ -1954,14 +1954,14 @@ select
   rpad(c2, 15, ' '),
   rpad(c4, 15, ' '),
   rpad(c2, 15, ' ') = rpad(c4, 15, ' ')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   rpad(c2, 15, ' '),
   rpad(c4, 15, ' '),
   rpad(c2, 15, ' ') = rpad(c4, 15, ' ')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1979,7 +1979,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2037,17 +2037,17 @@ PREHOOK: query: select
   rpad(c2, 15, ' '),
   rpad(c4, 15, ' '),
   rpad(c2, 15, ' ') = rpad(c4, 15, ' ')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   rpad(c2, 15, ' '),
   rpad(c4, 15, ' '),
   rpad(c2, 15, ' ') = rpad(c4, 15, ' ')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 val_238        	val_238        	true
 PREHOOK: query: explain vectorization detail
@@ -2055,14 +2055,14 @@ select
   rtrim(c2),
   rtrim(c4),
   rtrim(c2) = rtrim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   rtrim(c2),
   rtrim(c4),
   rtrim(c2) = rtrim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2080,7 +2080,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2138,30 +2138,30 @@ PREHOOK: query: select
   rtrim(c2),
   rtrim(c4),
   rtrim(c2) = rtrim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   rtrim(c2),
   rtrim(c4),
   rtrim(c2) = rtrim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 val_238	val_238	true
 PREHOOK: query: explain vectorization detail
 select
   sentences('See spot run.  See jane run.'),
   sentences(cast('See spot run.  See jane run.' as varchar(50)))
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   sentences('See spot run.  See jane run.'),
   sentences(cast('See spot run.  See jane run.' as varchar(50)))
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2179,7 +2179,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 732 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2236,29 +2236,29 @@ STAGE PLANS:
 PREHOOK: query: select
   sentences('See spot run.  See jane run.'),
   sentences(cast('See spot run.  See jane run.' as varchar(50)))
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   sentences('See spot run.  See jane run.'),
   sentences(cast('See spot run.  See jane run.' as varchar(50)))
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 [["See","spot","run"],["See","jane","run"]]	[["See","spot","run"],["See","jane","run"]]
 PREHOOK: query: explain vectorization detail
 select
   split(c2, '_'),
   split(c4, '_')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   split(c2, '_'),
   split(c4, '_')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2276,7 +2276,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2333,29 +2333,29 @@ STAGE PLANS:
 PREHOOK: query: select
   split(c2, '_'),
   split(c4, '_')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   split(c2, '_'),
   split(c4, '_')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 ["val","238"]	["val","238"]
 PREHOOK: query: explain vectorization detail
 select
   str_to_map('a:1,b:2,c:3',',',':'),
   str_to_map(cast('a:1,b:2,c:3' as varchar(20)),',',':')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   str_to_map('a:1,b:2,c:3',',',':'),
   str_to_map(cast('a:1,b:2,c:3' as varchar(20)),',',':')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2373,7 +2373,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 732 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2430,16 +2430,16 @@ STAGE PLANS:
 PREHOOK: query: select
   str_to_map('a:1,b:2,c:3',',',':'),
   str_to_map(cast('a:1,b:2,c:3' as varchar(20)),',',':')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   str_to_map('a:1,b:2,c:3',',',':'),
   str_to_map(cast('a:1,b:2,c:3' as varchar(20)),',',':')
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 {"a":"1","b":"2","c":"3"}	{"a":"1","b":"2","c":"3"}
 PREHOOK: query: explain vectorization detail
@@ -2447,14 +2447,14 @@ select
   substr(c2, 1, 3),
   substr(c4, 1, 3),
   substr(c2, 1, 3) = substr(c4, 1, 3)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   substr(c2, 1, 3),
   substr(c4, 1, 3),
   substr(c2, 1, 3) = substr(c4, 1, 3)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2472,7 +2472,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2530,17 +2530,17 @@ PREHOOK: query: select
   substr(c2, 1, 3),
   substr(c4, 1, 3),
   substr(c2, 1, 3) = substr(c4, 1, 3)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   substr(c2, 1, 3),
   substr(c4, 1, 3),
   substr(c2, 1, 3) = substr(c4, 1, 3)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 val	val	true
 PREHOOK: query: explain vectorization detail
@@ -2548,14 +2548,14 @@ select
   trim(c2),
   trim(c4),
   trim(c2) = trim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   trim(c2),
   trim(c4),
   trim(c2) = trim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2573,7 +2573,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2631,30 +2631,30 @@ PREHOOK: query: select
   trim(c2),
   trim(c4),
   trim(c2) = trim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   trim(c2),
   trim(c4),
   trim(c2) = trim(c4)
-from varchar_udf_1 limit 1
+from varchar_udf_1_n2 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 val_238	val_238	true
 PREHOOK: query: explain vectorization detail
 select
   compute_stats(c2, 16),
   compute_stats(c4, 16)
-from varchar_udf_1
+from varchar_udf_1_n2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   compute_stats(c2, 16),
   compute_stats(c4, 16)
-from varchar_udf_1
+from varchar_udf_1_n2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2675,7 +2675,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: c2 (type: string), c4 (type: varchar(20))
@@ -2728,29 +2728,29 @@ STAGE PLANS:
 PREHOOK: query: select
   compute_stats(c2, 'fm', 16),
   compute_stats(c4, 'fm', 16)
-from varchar_udf_1
+from varchar_udf_1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   compute_stats(c2, 'fm', 16),
   compute_stats(c4, 'fm', 16)
-from varchar_udf_1
+from varchar_udf_1_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 {"columntype":"String","maxlength":7,"avglength":7.0,"countnulls":0,"numdistinctvalues":1,"ndvbitvector":FM                                                 }	{"columntype":"String","maxlength":7,"avglength":7.0,"countnulls":0,"numdistinctvalues":1,"ndvbitvector":FM                                                 }
 PREHOOK: query: explain vectorization detail
 select
   min(c2),
   min(c4)
-from varchar_udf_1
+from varchar_udf_1_n2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   min(c2),
   min(c4)
-from varchar_udf_1
+from varchar_udf_1_n2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2771,7 +2771,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2871,29 +2871,29 @@ STAGE PLANS:
 PREHOOK: query: select
   min(c2),
   min(c4)
-from varchar_udf_1
+from varchar_udf_1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   min(c2),
   min(c4)
-from varchar_udf_1
+from varchar_udf_1_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 val_238	val_238
 PREHOOK: query: explain vectorization detail
 select
   max(c2),
   max(c4)
-from varchar_udf_1
+from varchar_udf_1_n2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select
   max(c2),
   max(c4)
-from varchar_udf_1
+from varchar_udf_1_n2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2914,7 +2914,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_udf_1
+                  alias: varchar_udf_1_n2
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3014,23 +3014,23 @@ STAGE PLANS:
 PREHOOK: query: select
   max(c2),
   max(c4)
-from varchar_udf_1
+from varchar_udf_1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select
   max(c2),
   max(c4)
-from varchar_udf_1
+from varchar_udf_1_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
 #### A masked pattern was here ####
 val_238	val_238
-PREHOOK: query: drop table varchar_udf_1
+PREHOOK: query: drop table varchar_udf_1_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@varchar_udf_1
-PREHOOK: Output: default@varchar_udf_1
-POSTHOOK: query: drop table varchar_udf_1
+PREHOOK: Input: default@varchar_udf_1_n2
+PREHOOK: Output: default@varchar_udf_1_n2
+POSTHOOK: query: drop table varchar_udf_1_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@varchar_udf_1
-POSTHOOK: Output: default@varchar_udf_1
+POSTHOOK: Input: default@varchar_udf_1_n2
+POSTHOOK: Output: default@varchar_udf_1_n2

@@ -3,7 +3,7 @@
 set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 
-CREATE TABLE dest1(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS TEXTFILE;
+CREATE TABLE dest1_n72(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED AS TEXTFILE;
 
 EXPLAIN
 FROM (
@@ -18,7 +18,7 @@ FROM (
  ON (a.c1 = b.c3)
  SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4
 ) c
-INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4;
+INSERT OVERWRITE TABLE dest1_n72 SELECT c.c1, c.c2, c.c3, c.c4;
 
 FROM (
  FROM 
@@ -32,6 +32,6 @@ FROM (
  ON (a.c1 = b.c3)
  SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4
 ) c
-INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4;
+INSERT OVERWRITE TABLE dest1_n72 SELECT c.c1, c.c2, c.c3, c.c4;
 
-SELECT dest1.* FROM dest1;
+SELECT dest1_n72.* FROM dest1_n72;

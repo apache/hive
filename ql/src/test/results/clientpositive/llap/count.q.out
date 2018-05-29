@@ -1,26 +1,26 @@
-PREHOOK: query: create table abcd (a int, b int, c int, d int)
+PREHOOK: query: create table abcd_n2 (a int, b int, c int, d int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@abcd
-POSTHOOK: query: create table abcd (a int, b int, c int, d int)
+PREHOOK: Output: default@abcd_n2
+POSTHOOK: query: create table abcd_n2 (a int, b int, c int, d int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@abcd
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd
+POSTHOOK: Output: default@abcd_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@abcd
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd
+PREHOOK: Output: default@abcd_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@abcd
-PREHOOK: query: select * from abcd
+POSTHOOK: Output: default@abcd_n2
+PREHOOK: query: select * from abcd_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from abcd
+POSTHOOK: query: select * from abcd_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 10	100	45	4
 10	100	NULL	5
@@ -29,9 +29,9 @@ POSTHOOK: Input: default@abcd
 12	100	75	7
 12	NULL	80	2
 NULL	35	23	6
-PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -48,7 +48,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: int), b (type: int), c (type: int), d (type: int)
@@ -91,21 +91,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 10	2	2	10
 100	1	1	3
 12	1	2	9
 NULL	1	1	6
-PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -122,7 +122,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: int), b (type: int), c (type: int), d (type: int)
@@ -167,18 +167,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
-PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -195,7 +195,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: int), b (type: int), c (type: int), d (type: int)
@@ -232,21 +232,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd_n2 group by a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 10	2	2	10
 100	1	1	3
 12	1	2	9
 NULL	1	1	6
-PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -263,7 +263,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: int), b (type: int), c (type: int), d (type: int)
@@ -301,18 +301,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
-PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -329,7 +329,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: int), b (type: int), c (type: int), d (type: int)
@@ -374,18 +374,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
-PREHOOK: query: explain select count(distinct b) from abcd group by a
+PREHOOK: query: explain select count(distinct b) from abcd_n2 group by a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(distinct b) from abcd group by a
+POSTHOOK: query: explain select count(distinct b) from abcd_n2 group by a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -403,7 +403,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: int), b (type: int)
@@ -457,21 +457,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct b) from abcd group by a
+PREHOOK: query: select count(distinct b) from abcd_n2 group by a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct b) from abcd group by a
+POSTHOOK: query: select count(distinct b) from abcd_n2 group by a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 1
 1
 1
 2
-PREHOOK: query: explain select count(distinct b) from abcd group by b
+PREHOOK: query: explain select count(distinct b) from abcd_n2 group by b
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(distinct b) from abcd group by b
+POSTHOOK: query: explain select count(distinct b) from abcd_n2 group by b
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -489,7 +489,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: b (type: int)
@@ -542,21 +542,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct b) from abcd group by b
+PREHOOK: query: select count(distinct b) from abcd_n2 group by b
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct b) from abcd group by b
+POSTHOOK: query: select count(distinct b) from abcd_n2 group by b
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 0
 1
 1
 1
-PREHOOK: query: explain select count(distinct b) from abcd group by c
+PREHOOK: query: explain select count(distinct b) from abcd_n2 group by c
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(distinct b) from abcd group by c
+POSTHOOK: query: explain select count(distinct b) from abcd_n2 group by c
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -574,7 +574,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: b (type: int), c (type: int)
@@ -628,13 +628,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct b) from abcd group by c
+PREHOOK: query: select count(distinct b) from abcd_n2 group by c
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct b) from abcd group by c
+POSTHOOK: query: select count(distinct b) from abcd_n2 group by c
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 0
 1
@@ -643,9 +643,9 @@ POSTHOOK: Input: default@abcd
 1
 1
 1
-PREHOOK: query: explain select count(b), count(distinct c) from abcd group by d
+PREHOOK: query: explain select count(b), count(distinct c) from abcd_n2 group by d
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(b), count(distinct c) from abcd group by d
+POSTHOOK: query: explain select count(b), count(distinct c) from abcd_n2 group by d
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -662,7 +662,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: b (type: int), c (type: int), d (type: int)
@@ -703,13 +703,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(b), count(distinct c) from abcd group by d
+PREHOOK: query: select count(b), count(distinct c) from abcd_n2 group by d
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(b), count(distinct c) from abcd group by d
+POSTHOOK: query: select count(b), count(distinct c) from abcd_n2 group by d
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 0	1
 1	0
@@ -718,9 +718,9 @@ POSTHOOK: Input: default@abcd
 1	1
 1	1
 1	1
-PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd group by a
+PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd_n2 group by a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd group by a
+POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd_n2 group by a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -737,7 +737,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: int), b (type: int), c (type: int), d (type: int), (d + d) (type: int), (d * 3) (type: int)
@@ -774,21 +774,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd group by a
+PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd_n2 group by a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd group by a
+POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d), sum(d+d), sum(d*3), sum(b), sum(c), sum(a), sum(distinct a), sum(distinct b) from abcd_n2 group by a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 10	2	2	10	20	30	1200	95	30	10	1100
 100	1	1	3	6	9	100	10	100	100	100
 12	1	2	9	18	27	100	155	24	12	100
 NULL	1	1	6	12	18	35	23	NULL	NULL	35
-PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd group by a
+PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd_n2 group by a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd group by a
+POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd_n2 group by a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -805,7 +805,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: int), b (type: int), c (type: int), d (type: int)
@@ -842,21 +842,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd group by a
+PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd_n2 group by a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd group by a
+POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d), sum(c) from abcd_n2 group by a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 10	2	2	10	95
 100	1	1	3	10
 12	1	2	9	155
 NULL	1	1	6	23
-PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+PREHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -873,7 +873,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: abcd
+                  alias: abcd_n2
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: a (type: int), b (type: int), c (type: int), d (type: int)
@@ -911,12 +911,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@abcd
+PREHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
+POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@abcd
+POSTHOOK: Input: default@abcd_n2
 #### A masked pattern was here ####
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4

@@ -3697,7 +3697,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -3705,7 +3705,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: []
-                    Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -3808,7 +3808,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -3818,7 +3818,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(ctinyint)
                       Group By Vectorization:
@@ -3921,7 +3921,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -3931,7 +3931,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                    Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cint)
                       Group By Vectorization:
@@ -4034,7 +4034,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -4044,7 +4044,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [4]
-                    Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cfloat)
                       Group By Vectorization:
@@ -4147,7 +4147,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -4157,7 +4157,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [6]
-                    Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cstring1)
                       Group By Vectorization:
@@ -4260,7 +4260,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesnullorc
-                  Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -4270,7 +4270,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [10]
-                    Statistics: Num rows: 12288 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 9580 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(cboolean1)
                       Group By Vectorization:

@@ -1,63 +1,63 @@
-PREHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+PREHOOK: query: CREATE TABLE test_tab_n2 (key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_tab
-POSTHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+PREHOOK: Output: default@test_tab_n2
+POSTHOOK: query: CREATE TABLE test_tab_n2 (key STRING, value STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_tab
-PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (5 rows)
+POSTHOOK: Output: default@test_tab_n2
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab_n2 SELECT * FROM src tablesample (5 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_tab
-POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (5 rows)
+PREHOOK: Output: default@test_tab_n2
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab_n2 SELECT * FROM src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_tab
-POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT INTO TABLE test_tab SELECT * FROM src tablesample (5 rows)
+POSTHOOK: Output: default@test_tab_n2
+POSTHOOK: Lineage: test_tab_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT INTO TABLE test_tab_n2 SELECT * FROM src tablesample (5 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_tab
-POSTHOOK: query: INSERT INTO TABLE test_tab SELECT * FROM src tablesample (5 rows)
+PREHOOK: Output: default@test_tab_n2
+POSTHOOK: query: INSERT INTO TABLE test_tab_n2 SELECT * FROM src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_tab
-POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+POSTHOOK: Output: default@test_tab_n2
+POSTHOOK: Lineage: test_tab_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_tab_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_tab
+PREHOOK: Input: default@test_tab_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_tab
+POSTHOOK: Input: default@test_tab_n2
 #### A masked pattern was here ####
 2
-PREHOOK: query: TRUNCATE TABLE test_tab COLUMNS (key)
+PREHOOK: query: TRUNCATE TABLE test_tab_n2 COLUMNS (key)
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Input: default@test_tab
-PREHOOK: Output: default@test_tab
-POSTHOOK: query: TRUNCATE TABLE test_tab COLUMNS (key)
+PREHOOK: Input: default@test_tab_n2
+PREHOOK: Output: default@test_tab_n2
+POSTHOOK: query: TRUNCATE TABLE test_tab_n2 COLUMNS (key)
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Input: default@test_tab
-POSTHOOK: Output: default@test_tab
-PREHOOK: query: ALTER TABLE test_tab CONCATENATE
+POSTHOOK: Input: default@test_tab_n2
+POSTHOOK: Output: default@test_tab_n2
+PREHOOK: query: ALTER TABLE test_tab_n2 CONCATENATE
 PREHOOK: type: ALTER_TABLE_MERGE
-PREHOOK: Input: default@test_tab
-PREHOOK: Output: default@test_tab
-POSTHOOK: query: ALTER TABLE test_tab CONCATENATE
+PREHOOK: Input: default@test_tab_n2
+PREHOOK: Output: default@test_tab_n2
+POSTHOOK: query: ALTER TABLE test_tab_n2 CONCATENATE
 POSTHOOK: type: ALTER_TABLE_MERGE
-POSTHOOK: Input: default@test_tab
-POSTHOOK: Output: default@test_tab
-PREHOOK: query: SELECT * FROM test_tab ORDER BY value
+POSTHOOK: Input: default@test_tab_n2
+POSTHOOK: Output: default@test_tab_n2
+PREHOOK: query: SELECT * FROM test_tab_n2 ORDER BY value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_tab
+PREHOOK: Input: default@test_tab_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_tab ORDER BY value
+POSTHOOK: query: SELECT * FROM test_tab_n2 ORDER BY value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_tab
+POSTHOOK: Input: default@test_tab_n2
 #### A masked pattern was here ####
 NULL	val_165
 NULL	val_165
@@ -69,12 +69,12 @@ NULL	val_311
 NULL	val_311
 NULL	val_86
 NULL	val_86
-PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_tab
+PREHOOK: Input: default@test_tab_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_tab
+POSTHOOK: Input: default@test_tab_n2
 #### A masked pattern was here ####
 1

@@ -1,134 +1,134 @@
-PREHOOK: query: create table srcpart_merge_dp like srcpart
+PREHOOK: query: create table srcpart_merge_dp_n2 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_merge_dp
-POSTHOOK: query: create table srcpart_merge_dp like srcpart
+PREHOOK: Output: default@srcpart_merge_dp_n2
+POSTHOOK: query: create table srcpart_merge_dp_n2 like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_merge_dp
-PREHOOK: query: create table merge_dynamic_part like srcpart
+POSTHOOK: Output: default@srcpart_merge_dp_n2
+PREHOOK: query: create table merge_dynamic_part_n2 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@merge_dynamic_part
-POSTHOOK: query: create table merge_dynamic_part like srcpart
+PREHOOK: Output: default@merge_dynamic_part_n2
+POSTHOOK: query: create table merge_dynamic_part_n2 like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@merge_dynamic_part
-PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+POSTHOOK: Output: default@merge_dynamic_part_n2
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+PREHOOK: Output: default@srcpart_merge_dp_n2
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
-PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+POSTHOOK: Output: default@srcpart_merge_dp_n2
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+PREHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+PREHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
-PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
+PREHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
-PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=12)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+PREHOOK: Output: default@srcpart_merge_dp_n2
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=12)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
-PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+POSTHOOK: Output: default@srcpart_merge_dp_n2
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=12)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+PREHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=12)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=12)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+PREHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=12)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
-PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
+PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=12)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
+PREHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-08', hr=12)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
-PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=11)
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-09', hr=11)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp
-POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=11)
+PREHOOK: Output: default@srcpart_merge_dp_n2
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-09', hr=11)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=11
-PREHOOK: query: load data local inpath '../../data/files/kv2.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=11)
+POSTHOOK: Output: default@srcpart_merge_dp_n2
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=11
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-09', hr=11)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=11
-POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=11)
+PREHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=11
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-09', hr=11)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=11
-PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=12)
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=11
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-09', hr=12)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp
-POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=12)
+PREHOOK: Output: default@srcpart_merge_dp_n2
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-09', hr=12)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=12
-PREHOOK: query: load data local inpath '../../data/files/kv2.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=12)
+POSTHOOK: Output: default@srcpart_merge_dp_n2
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=12
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-09', hr=12)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=12
-POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=12)
+PREHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=12
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' INTO TABLE srcpart_merge_dp_n2 partition(ds='2008-04-09', hr=12)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=12
-PREHOOK: query: show partitions srcpart_merge_dp
+POSTHOOK: Output: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=12
+PREHOOK: query: show partitions srcpart_merge_dp_n2
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@srcpart_merge_dp
-POSTHOOK: query: show partitions srcpart_merge_dp
+PREHOOK: Input: default@srcpart_merge_dp_n2
+POSTHOOK: query: show partitions srcpart_merge_dp_n2
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@srcpart_merge_dp
+POSTHOOK: Input: default@srcpart_merge_dp_n2
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 ds=2008-04-09/hr=11
 ds=2008-04-09/hr=12
 PREHOOK: query: explain
-insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds>='2008-04-08'
+insert overwrite table merge_dynamic_part_n2 partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp_n2 where ds>='2008-04-08'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds>='2008-04-08'
+insert overwrite table merge_dynamic_part_n2 partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp_n2 where ds>='2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -145,7 +145,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: srcpart_merge_dp
+            alias: srcpart_merge_dp_n2
             Statistics: Num rows: 594 Data size: 348300 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -158,7 +158,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.merge_dynamic_part
+                    name: default.merge_dynamic_part_n2
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                 outputColumnNames: key, value, ds, hr
@@ -214,7 +214,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.merge_dynamic_part
+              name: default.merge_dynamic_part_n2
 
   Stage: Stage-2
     Stats Work
@@ -222,7 +222,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.merge_dynamic_part
+          Table: default.merge_dynamic_part_n2
 
   Stage: Stage-3
     Map Reduce
@@ -234,7 +234,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.merge_dynamic_part
+                  name: default.merge_dynamic_part_n2
 
   Stage: Stage-5
     Map Reduce
@@ -246,7 +246,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.merge_dynamic_part
+                  name: default.merge_dynamic_part_n2
 
   Stage: Stage-6
     Move Operator
@@ -254,58 +254,58 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds>='2008-04-08'
+PREHOOK: query: insert overwrite table merge_dynamic_part_n2 partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp_n2 where ds>='2008-04-08'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_merge_dp
-PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_merge_dp@ds=2008-04-09/hr=12
-PREHOOK: Output: default@merge_dynamic_part
-POSTHOOK: query: insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds>='2008-04-08'
+PREHOOK: Input: default@srcpart_merge_dp_n2
+PREHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=12
+PREHOOK: Output: default@merge_dynamic_part_n2
+POSTHOOK: query: insert overwrite table merge_dynamic_part_n2 partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp_n2 where ds>='2008-04-08'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_merge_dp
-POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_merge_dp@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-08/hr=11
-POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-09/hr=11
-POSTHOOK: Output: default@merge_dynamic_part@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select ds, hr, count(1) from merge_dynamic_part where ds>='2008-04-08' group by ds, hr
+POSTHOOK: Input: default@srcpart_merge_dp_n2
+POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_merge_dp_n2@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@merge_dynamic_part_n2@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@merge_dynamic_part_n2@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@merge_dynamic_part_n2@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@merge_dynamic_part_n2@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: merge_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp_n2)srcpart_merge_dp_n2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp_n2)srcpart_merge_dp_n2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp_n2)srcpart_merge_dp_n2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part_n2 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp_n2)srcpart_merge_dp_n2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part_n2 PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpart_merge_dp_n2)srcpart_merge_dp_n2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part_n2 PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart_merge_dp_n2)srcpart_merge_dp_n2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part_n2 PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_merge_dp_n2)srcpart_merge_dp_n2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: merge_dynamic_part_n2 PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart_merge_dp_n2)srcpart_merge_dp_n2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select ds, hr, count(1) from merge_dynamic_part_n2 where ds>='2008-04-08' group by ds, hr
 PREHOOK: type: QUERY
-PREHOOK: Input: default@merge_dynamic_part
-PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
-PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=12
-PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=11
-PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=12
+PREHOOK: Input: default@merge_dynamic_part_n2
+PREHOOK: Input: default@merge_dynamic_part_n2@ds=2008-04-08/hr=11
+PREHOOK: Input: default@merge_dynamic_part_n2@ds=2008-04-08/hr=12
+PREHOOK: Input: default@merge_dynamic_part_n2@ds=2008-04-09/hr=11
+PREHOOK: Input: default@merge_dynamic_part_n2@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select ds, hr, count(1) from merge_dynamic_part where ds>='2008-04-08' group by ds, hr
+POSTHOOK: query: select ds, hr, count(1) from merge_dynamic_part_n2 where ds>='2008-04-08' group by ds, hr
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@merge_dynamic_part
-POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@merge_dynamic_part_n2
+POSTHOOK: Input: default@merge_dynamic_part_n2@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@merge_dynamic_part_n2@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@merge_dynamic_part_n2@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@merge_dynamic_part_n2@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 2008-04-08	11	500
 2008-04-08	12	500
 2008-04-09	11	1000
 2008-04-09	12	1000
-PREHOOK: query: show table extended like `merge_dynamic_part`
+PREHOOK: query: show table extended like `merge_dynamic_part_n2`
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like `merge_dynamic_part`
+POSTHOOK: query: show table extended like `merge_dynamic_part_n2`
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:merge_dynamic_part
+tableName:merge_dynamic_part_n2
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

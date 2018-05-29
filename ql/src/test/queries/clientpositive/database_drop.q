@@ -15,15 +15,15 @@ dfs -rmr ${system:test.tmp.dir}/dbcascade;
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/dbcascade;
 
 -- add a table, view
-CREATE TABLE temp_tbl (id INT, name STRING);
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE temp_tbl;
-CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl;
+CREATE TABLE temp_tbl_n0 (id INT, name STRING);
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE temp_tbl_n0;
+CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl_n0;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/dbcascade/temp_tbl2;
 -- add a table, view with a different storage location
-CREATE TABLE temp_tbl2 (id INT, name STRING) LOCATION 'file:${system:test.tmp.dir}/dbcascade/temp_tbl2';
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl2;
-CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2;
+CREATE TABLE temp_tbl2_n0 (id INT, name STRING) LOCATION 'file:${system:test.tmp.dir}/dbcascade/temp_tbl2';
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl2_n0;
+CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2_n0;
 
 -- add a partitioned table, view
 CREATE TABLE part_tab (id INT, name STRING)  PARTITIONED BY (ds string);

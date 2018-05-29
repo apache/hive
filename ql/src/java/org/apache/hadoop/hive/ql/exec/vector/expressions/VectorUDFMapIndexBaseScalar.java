@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Superclass to support vectorized functions that take a scalar as key of Map
@@ -42,7 +43,7 @@ public abstract class VectorUDFMapIndexBaseScalar extends VectorUDFMapIndexBase 
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }

@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -108,21 +108,6 @@
       <artifactId>commons-codec</artifactId>
       <version>${commons-codec.version}</version>
     </dependency>
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>${commons-httpclient.version}</version>
-       <exclusions>
-             <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commmons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-   </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -958,6 +943,7 @@
                   <include>org.apache.hive:hive-spark-client</include>
                   <include>org.apache.hive:hive-storage-api</include>
                   <include>org.apache.orc:orc-core</include>
+                  <include>org.apache.orc:orc-shims</include>
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
                 </includes>

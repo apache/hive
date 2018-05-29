@@ -40,10 +40,10 @@ select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2',
 
 -- Verify that json_tuple can handle new lines in JSON values
 
-CREATE TABLE dest1(c1 STRING) STORED AS RCFILE;
+CREATE TABLE dest1_n65(c1 STRING) STORED AS RCFILE;
 
-INSERT OVERWRITE TABLE dest1 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows);
+INSERT OVERWRITE TABLE dest1_n65 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows);
 
-SELECT * FROM dest1;
+SELECT * FROM dest1_n65;
 
-SELECT json FROM dest1 a LATERAL VIEW json_tuple(c1, 'a') b AS json;
+SELECT json FROM dest1_n65 a LATERAL VIEW json_tuple(c1, 'a') b AS json;

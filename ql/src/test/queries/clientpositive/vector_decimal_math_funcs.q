@@ -3,10 +3,10 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 
-CREATE TABLE decimal_test STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc;
+CREATE TABLE decimal_test_n0 STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc;
 
 -- Add a single NULL row that will come from ORC as isRepeated.
-insert into decimal_test values (NULL, NULL, NULL, NULL);
+insert into decimal_test_n0 values (NULL, NULL, NULL, NULL);
 
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
@@ -44,7 +44,7 @@ select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 -- limit output to a reasonably small number of rows
 where cbigint % 500 = 0
 -- test use of a math function in the WHERE clause
@@ -80,7 +80,7 @@ select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 -- limit output to a reasonably small number of rows
 where cbigint % 500 = 0
 -- test use of a math function in the WHERE clause

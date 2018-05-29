@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>3.1.0-SNAPSHOT</version>
+  <version>4.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -65,7 +65,7 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>3.0.0</hive.version.shortname>
+    <hive.version.shortname>3.1.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -119,6 +119,7 @@
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.6</apache-directory-server.version>
     <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
+    <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.8.0</arrow.version>
     <avatica.version>1.11.0</avatica.version>
     <avro.version>1.7.7</avro.version>
@@ -133,7 +134,6 @@
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-compress.version>1.9</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-httpclient.version>3.0.1</commons-httpclient.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
     <commons-lang3.version>3.2</commons-lang3.version>
@@ -169,7 +169,7 @@
     <javolution.version>5.5.1</javolution.version>
     <jdo-api.version>3.0.1</jdo-api.version>
     <jettison.version>1.1</jettison.version>
-    <jetty.version>9.3.8.v20160314</jetty.version>
+    <jetty.version>9.3.20.v20170531</jetty.version>
     <jersey.version>1.19</jersey.version>
     <!-- Glassfish jersey is included for Spark client test only -->
     <glassfish.jersey.version>2.22.2</glassfish.jersey.version>
@@ -184,12 +184,12 @@
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.10.0</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.4.3</orc.version>
+    <orc.version>1.5.0</orc.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.17.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
-    <parquet.version>1.9.0</parquet.version>
+    <parquet.version>1.10.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>2.5.0</protobuf.version>
@@ -357,11 +357,6 @@
         <groupId>commons-collections</groupId>
         <artifactId>commons-collections</artifactId>
         <version>${commons-collections.version}</version>
-      </dependency>
-     <dependency>
-        <groupId>commons-httpclient</groupId>
-        <artifactId>commons-httpclient</artifactId>
-        <version>${commons-httpclient.version}</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
@@ -947,6 +942,12 @@
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-server</artifactId>
         <version>${hbase.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.servlet.jsp</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
@@ -1570,11 +1571,4 @@
       </modules>
     </profile>
   </profiles>
-  <distributionManagement>
-    <repository>
-      <id>${repoid}</id>
-      <name>${reponame}</name>
-      <url>${repourl}</url>
-    </repository>
-  </distributionManagement>
 </project>

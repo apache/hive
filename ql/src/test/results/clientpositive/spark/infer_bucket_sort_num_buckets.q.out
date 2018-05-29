@@ -1,13 +1,13 @@
-PREHOOK: query: CREATE TABLE test_table (key INT, value STRING) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: query: CREATE TABLE test_table_n0 (key INT, value STRING) PARTITIONED BY (ds STRING, hr STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table
-POSTHOOK: query: CREATE TABLE test_table (key INT, value STRING) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: Output: default@test_table_n0
+POSTHOOK: query: CREATE TABLE test_table_n0 (key INT, value STRING) PARTITIONED BY (ds STRING, hr STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table
+POSTHOOK: Output: default@test_table_n0
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+INSERT OVERWRITE TABLE test_table_n0 PARTITION (ds = '2008-04-08', hr)
 SELECT key2, value, cast(hr as int) FROM
 (SELECT if ((key % 3) < 2, 0, 1) as key2, value, (key % 2) as hr
 FROM srcpart
@@ -15,7 +15,7 @@ WHERE ds = '2008-04-08') a
 DISTRIBUTE BY key2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+INSERT OVERWRITE TABLE test_table_n0 PARTITION (ds = '2008-04-08', hr)
 SELECT key2, value, cast(hr as int) FROM
 (SELECT if ((key % 3) < 2, 0, 1) as key2, value, (key % 2) as hr
 FROM srcpart
@@ -63,7 +63,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table
+                      name: default.test_table_n0
 
   Stage: Stage-0
     Move Operator
@@ -76,13 +76,13 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table
+              name: default.test_table_n0
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_n0 PARTITION (ds = '2008-04-08', hr)
 SELECT key2, value, cast(hr as int) FROM
 (SELECT if ((key % 3) < 2, 0, 1) as key2, value, (key % 3 % 2) as hr
 FROM srcpart
@@ -92,8 +92,8 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@test_table@ds=2008-04-08
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
+PREHOOK: Output: default@test_table_n0@ds=2008-04-08
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_n0 PARTITION (ds = '2008-04-08', hr)
 SELECT key2, value, cast(hr as int) FROM
 (SELECT if ((key % 3) < 2, 0, 1) as key2, value, (key % 3 % 2) as hr
 FROM srcpart
@@ -103,18 +103,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=0
-POSTHOOK: Output: default@test_table@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='0')
+POSTHOOK: Output: default@test_table_n0@ds=2008-04-08/hr=0
+POSTHOOK: Output: default@test_table_n0@ds=2008-04-08/hr=1
+POSTHOOK: Lineage: test_table_n0 PARTITION(ds=2008-04-08,hr=0).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n0 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n0 PARTITION(ds=2008-04-08,hr=1).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n0 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_n0 PARTITION (ds='2008-04-08', hr='0')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='0')
+PREHOOK: Input: default@test_table_n0
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n0 PARTITION (ds='2008-04-08', hr='0')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n0
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -127,7 +127,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 0]     	 
 Database:           	default             	 
-Table:              	test_table          	 
+Table:              	test_table_n0       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -147,12 +147,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='1')
+PREHOOK: query: DESCRIBE FORMATTED test_table_n0 PARTITION (ds='2008-04-08', hr='1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (ds='2008-04-08', hr='1')
+PREHOOK: Input: default@test_table_n0
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n0 PARTITION (ds='2008-04-08', hr='1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n0
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -165,7 +165,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 1]     	 
 Database:           	default             	 
-Table:              	test_table          	 
+Table:              	test_table_n0       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}

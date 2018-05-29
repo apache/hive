@@ -375,12 +375,12 @@ window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 precedi
 
 -- 22. testViewAsTableInputWithWindowing
 explain vectorization detail
-create view IF NOT EXISTS mfgr_price_view as 
+create view IF NOT EXISTS mfgr_price_view_n2 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
 group by p_mfgr, p_brand;
-create view IF NOT EXISTS mfgr_price_view as 
+create view IF NOT EXISTS mfgr_price_view_n2 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
@@ -391,7 +391,7 @@ select *
 from (
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1 , 2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n2 
 window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand;
@@ -399,32 +399,32 @@ select *
 from (
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1 , 2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n2 
 window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand;
 
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1 ,2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n2 
 window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and current row);
 
 -- 23. testCreateViewWithWindowingQuery
 explain vectorization detail
-create view IF NOT EXISTS mfgr_brand_price_view as 
+create view IF NOT EXISTS mfgr_brand_price_view_n0 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row);
-create view IF NOT EXISTS mfgr_brand_price_view as 
+create view IF NOT EXISTS mfgr_brand_price_view_n0 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row);
         
 explain vectorization detail
-select * from mfgr_brand_price_view;
-select * from mfgr_brand_price_view;        
+select * from mfgr_brand_price_view_n0;
+select * from mfgr_brand_price_view_n0;        
         
 -- 24. testLateralViews
 explain vectorization detail
@@ -440,7 +440,7 @@ lateral view explode(arr) part_lv as lv_col
 window w1 as (distribute by p_mfgr sort by p_size, lv_col rows between 2 preceding and current row);        
 
 -- 25. testMultipleInserts3SWQs
-CREATE TABLE part_1( 
+CREATE TABLE part_1_n0( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -448,7 +448,7 @@ r INT,
 dr INT, 
 s DOUBLE);
 
-CREATE TABLE part_2( 
+CREATE TABLE part_2_n0( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -458,7 +458,7 @@ cud INT,
 s2 DOUBLE, 
 fv1 INT);
 
-CREATE TABLE part_3( 
+CREATE TABLE part_3_n0( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -468,12 +468,12 @@ fv INT);
 
 explain vectorization detail
 from part 
-INSERT OVERWRITE TABLE part_1 
+INSERT OVERWRITE TABLE part_1_n0 
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name ) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name ) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
-INSERT OVERWRITE TABLE part_2 
+INSERT OVERWRITE TABLE part_2_n0 
 select  p_mfgr,p_name, p_size,  
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
@@ -481,19 +481,19 @@ cume_dist() over(distribute by p_mfgr sort by p_name) as cud,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2, 
 first_value(p_size) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
-INSERT OVERWRITE TABLE part_3 
+INSERT OVERWRITE TABLE part_3_n0 
 select  p_mfgr,p_name, p_size,  
 count(*) over(distribute by p_mfgr sort by p_name) as c, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as ca, 
 first_value(p_size) over w1  as fv
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 from part 
-INSERT OVERWRITE TABLE part_1 
+INSERT OVERWRITE TABLE part_1_n0 
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name ) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name ) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
-INSERT OVERWRITE TABLE part_2 
+INSERT OVERWRITE TABLE part_2_n0 
 select  p_mfgr,p_name, p_size,  
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
@@ -501,18 +501,18 @@ cume_dist() over(distribute by p_mfgr sort by p_name) as cud,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2, 
 first_value(p_size) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
-INSERT OVERWRITE TABLE part_3 
+INSERT OVERWRITE TABLE part_3_n0 
 select  p_mfgr,p_name, p_size,  
 count(*) over(distribute by p_mfgr sort by p_name) as c, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as ca, 
 first_value(p_size) over w1  as fv
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
-select * from part_1;
+select * from part_1_n0;
 
-select * from part_2;
+select * from part_2_n0;
 
-select * from part_3;
+select * from part_3_n0;
 
 -- 26. testGroupByHavingWithSWQAndAlias
 explain vectorization detail

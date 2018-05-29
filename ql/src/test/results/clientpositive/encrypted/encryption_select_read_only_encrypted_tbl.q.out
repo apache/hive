@@ -1,41 +1,41 @@
-PREHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_n4 PURGE
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_n4 PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
-PREHOOK: Output: default@encrypted_table
+PREHOOK: Output: default@encrypted_table_n4
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@encrypted_table
+POSTHOOK: Output: default@encrypted_table_n4
 Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table' using key: 'key_128'
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE encrypted_table
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE encrypted_table_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE encrypted_table
+PREHOOK: Output: default@encrypted_table_n4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE encrypted_table_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@encrypted_table
-PREHOOK: query: SELECT count(*) FROM encrypted_table
+POSTHOOK: Output: default@encrypted_table_n4
+PREHOOK: query: SELECT count(*) FROM encrypted_table_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@encrypted_table
+PREHOOK: Input: default@encrypted_table_n4
 #### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
-POSTHOOK: query: SELECT count(*) FROM encrypted_table
+POSTHOOK: query: SELECT count(*) FROM encrypted_table_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@encrypted_table
+POSTHOOK: Input: default@encrypted_table_n4
 #### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
 500
-PREHOOK: query: drop table encrypted_table PURGE
+PREHOOK: query: drop table encrypted_table_n4 PURGE
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@encrypted_table
-PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: drop table encrypted_table PURGE
+PREHOOK: Input: default@encrypted_table_n4
+PREHOOK: Output: default@encrypted_table_n4
+POSTHOOK: query: drop table encrypted_table_n4 PURGE
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@encrypted_table
-POSTHOOK: Output: default@encrypted_table
+POSTHOOK: Input: default@encrypted_table_n4
+POSTHOOK: Output: default@encrypted_table_n4

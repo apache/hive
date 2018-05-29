@@ -1,12 +1,12 @@
-PREHOOK: query: DROP TABLE parquet_types_staging
+PREHOOK: query: DROP TABLE parquet_types_staging_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE parquet_types_staging
+POSTHOOK: query: DROP TABLE parquet_types_staging_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE parquet_types
+PREHOOK: query: DROP TABLE parquet_types_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE parquet_types
+POSTHOOK: query: DROP TABLE parquet_types_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE parquet_types_staging (
+PREHOOK: query: CREATE TABLE parquet_types_staging_n2 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -27,8 +27,8 @@ COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@parquet_types_staging
-POSTHOOK: query: CREATE TABLE parquet_types_staging (
+PREHOOK: Output: default@parquet_types_staging_n2
+POSTHOOK: query: CREATE TABLE parquet_types_staging_n2 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -49,8 +49,8 @@ COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@parquet_types_staging
-PREHOOK: query: CREATE TABLE parquet_types (
+POSTHOOK: Output: default@parquet_types_staging_n2
+PREHOOK: query: CREATE TABLE parquet_types_n1 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -68,8 +68,8 @@ PREHOOK: query: CREATE TABLE parquet_types (
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@parquet_types
-POSTHOOK: query: CREATE TABLE parquet_types (
+PREHOOK: Output: default@parquet_types_n1
+POSTHOOK: query: CREATE TABLE parquet_types_n1 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -87,24 +87,24 @@ POSTHOOK: query: CREATE TABLE parquet_types (
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@parquet_types
+POSTHOOK: Output: default@parquet_types_n1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_non_dictionary_types.txt' OVERWRITE INTO TABLE
-parquet_types_staging
+parquet_types_staging_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@parquet_types_staging
+PREHOOK: Output: default@parquet_types_staging_n2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_non_dictionary_types.txt' OVERWRITE INTO TABLE
-parquet_types_staging
+parquet_types_staging_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@parquet_types_staging
-PREHOOK: query: SELECT * FROM parquet_types_staging
+POSTHOOK: Output: default@parquet_types_staging_n2
+PREHOOK: query: SELECT * FROM parquet_types_staging_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types_staging
+PREHOOK: Input: default@parquet_types_staging_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM parquet_types_staging
+POSTHOOK: query: SELECT * FROM parquet_types_staging_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types_staging
+POSTHOOK: Input: default@parquet_types_staging_n2
 #### A masked pattern was here ####
 1000	-128	0	0.0	0.3		1940-01-01 01:01:01.111111111	     			{"":""}	[1000,1001]	{"c1":1000,"c2":"b"}	1940-01-01
 1001	-127	1	0.3	1.3	b	1941-02-02 01:01:01.111111111	b    	b	b	{"b":"b"}	[1001,1002]	{"c1":1001,"c2":"c"}	1941-02-02
@@ -406,39 +406,39 @@ POSTHOOK: Input: default@parquet_types_staging
 1297	-87	297	89.1	297.3	ll	2237-10-01 01:01:01.111111111	ll   	ll	ll	{"ll":"ll"}	[1297,1298]	{"c1":1297,"c2":"l"}	2237-10-01
 1298	-86	298	89.4	298.3	lm	2238-11-02 01:01:01.111111111	lm   	lm	lm	{"lm":"lm"}	[1298,1299]	{"c1":1298,"c2":"l"}	2238-11-02
 1299	-85	299	89.7	299.3	ln	2239-12-03 01:01:01.111111111	ln   	ln	ln	{"ln":"ln"}	[1299,1300]	{"c1":1299,"c2":"l"}	2239-12-03
-PREHOOK: query: INSERT OVERWRITE TABLE parquet_types
+PREHOOK: query: INSERT OVERWRITE TABLE parquet_types_n1
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
-unhex(cbinary), m1, l1, st1, d FROM parquet_types_staging
+unhex(cbinary), m1, l1, st1, d FROM parquet_types_staging_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types_staging
-PREHOOK: Output: default@parquet_types
-POSTHOOK: query: INSERT OVERWRITE TABLE parquet_types
+PREHOOK: Input: default@parquet_types_staging_n2
+PREHOOK: Output: default@parquet_types_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE parquet_types_n1
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
-unhex(cbinary), m1, l1, st1, d FROM parquet_types_staging
+unhex(cbinary), m1, l1, st1, d FROM parquet_types_staging_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types_staging
-POSTHOOK: Output: default@parquet_types
-POSTHOOK: Lineage: parquet_types.cbinary EXPRESSION [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cbinary, type:string, comment:null), ]
-POSTHOOK: Lineage: parquet_types.cchar SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cchar, type:char(5), comment:null), ]
-POSTHOOK: Lineage: parquet_types.cdouble SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: parquet_types.cfloat SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: parquet_types.cint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_types.csmallint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: parquet_types.cstring1 SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: parquet_types.ctinyint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: parquet_types.cvarchar SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cvarchar, type:varchar(10), comment:null), ]
-POSTHOOK: Lineage: parquet_types.d SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:d, type:date, comment:null), ]
-POSTHOOK: Lineage: parquet_types.l1 SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:l1, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: parquet_types.m1 SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:m1, type:map<string,varchar(3)>, comment:null), ]
-POSTHOOK: Lineage: parquet_types.st1 SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:st1, type:struct<c1:int,c2:char(1)>, comment:null), ]
-POSTHOOK: Lineage: parquet_types.t SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:t, type:timestamp, comment:null), ]
+POSTHOOK: Input: default@parquet_types_staging_n2
+POSTHOOK: Output: default@parquet_types_n1
+POSTHOOK: Lineage: parquet_types_n1.cbinary EXPRESSION [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:cbinary, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.cchar SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:cchar, type:char(5), comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.cdouble SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.cfloat SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.cint SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.csmallint SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.cstring1 SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.ctinyint SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.cvarchar SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:cvarchar, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.d SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:d, type:date, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.l1 SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:l1, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.m1 SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:m1, type:map<string,varchar(3)>, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.st1 SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:st1, type:struct<c1:int,c2:char(1)>, comment:null), ]
+POSTHOOK: Lineage: parquet_types_n1.t SIMPLE [(parquet_types_staging_n2)parquet_types_staging_n2.FieldSchema(name:t, type:timestamp, comment:null), ]
 PREHOOK: query: EXPLAIN SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
   COUNT(cstring1),
   ROUND(AVG(cfloat), 5),
   ROUND(STDDEV_POP(cdouble),5)
-FROM parquet_types
+FROM parquet_types_n1
 GROUP BY ctinyint
 ORDER BY ctinyint
 PREHOOK: type: QUERY
@@ -448,7 +448,7 @@ POSTHOOK: query: EXPLAIN SELECT ctinyint,
   COUNT(cstring1),
   ROUND(AVG(cfloat), 5),
   ROUND(STDDEV_POP(cdouble),5)
-FROM parquet_types
+FROM parquet_types_n1
 GROUP BY ctinyint
 ORDER BY ctinyint
 POSTHOOK: type: QUERY
@@ -462,7 +462,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: parquet_types
+            alias: parquet_types_n1
             Statistics: Num rows: 300 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ctinyint (type: tinyint), cint (type: int), csmallint (type: smallint), cstring1 (type: string), cfloat (type: float), cdouble (type: double), (cdouble * cdouble) (type: double)
@@ -534,11 +534,11 @@ PREHOOK: query: SELECT ctinyint,
   COUNT(cstring1),
   ROUND(AVG(cfloat), 5),
   ROUND(STDDEV_POP(cdouble),5)
-FROM parquet_types
+FROM parquet_types_n1
 GROUP BY ctinyint
 ORDER BY ctinyint
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types
+PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT ctinyint,
   MAX(cint),
@@ -546,11 +546,11 @@ POSTHOOK: query: SELECT ctinyint,
   COUNT(cstring1),
   ROUND(AVG(cfloat), 5),
   ROUND(STDDEV_POP(cdouble),5)
-FROM parquet_types
+FROM parquet_types_n1
 GROUP BY ctinyint
 ORDER BY ctinyint
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types
+POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 -128	1256	0	2	38.4	128.0
 -127	1257	1	2	38.7	128.0
@@ -808,9 +808,9 @@ POSTHOOK: Input: default@parquet_types
 125	1253	253	1	75.9	0.0
 126	1254	254	1	76.2	0.0
 127	1255	255	1	76.5	0.0
-PREHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat
+PREHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types_n1 GROUP BY cfloat ORDER BY cfloat
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat
+POSTHOOK: query: EXPLAIN SELECT cfloat, count(*) FROM parquet_types_n1 GROUP BY cfloat ORDER BY cfloat
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -822,7 +822,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: parquet_types
+            alias: parquet_types_n1
             Statistics: Num rows: 300 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cfloat (type: float)
@@ -884,13 +884,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat
+PREHOOK: query: SELECT cfloat, count(*) FROM parquet_types_n1 GROUP BY cfloat ORDER BY cfloat
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types
+PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cfloat, count(*) FROM parquet_types GROUP BY cfloat ORDER BY cfloat
+POSTHOOK: query: SELECT cfloat, count(*) FROM parquet_types_n1 GROUP BY cfloat ORDER BY cfloat
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types
+POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 0.0	1
 0.3	1
@@ -1192,9 +1192,9 @@ POSTHOOK: Input: default@parquet_types
 89.1	1
 89.4	1
 89.7	1
-PREHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types GROUP BY cchar ORDER BY cchar
+PREHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types_n1 GROUP BY cchar ORDER BY cchar
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types GROUP BY cchar ORDER BY cchar
+POSTHOOK: query: EXPLAIN SELECT cchar, count(*) FROM parquet_types_n1 GROUP BY cchar ORDER BY cchar
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1206,7 +1206,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: parquet_types
+            alias: parquet_types_n1
             Statistics: Num rows: 300 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cchar (type: char(5))
@@ -1268,13 +1268,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cchar, count(*) FROM parquet_types GROUP BY cchar ORDER BY cchar
+PREHOOK: query: SELECT cchar, count(*) FROM parquet_types_n1 GROUP BY cchar ORDER BY cchar
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types
+PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cchar, count(*) FROM parquet_types GROUP BY cchar ORDER BY cchar
+POSTHOOK: query: SELECT cchar, count(*) FROM parquet_types_n1 GROUP BY cchar ORDER BY cchar
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types
+POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
      	1
 b    	1
@@ -1576,9 +1576,9 @@ w    	1
 x    	1
 y    	1
 z    	1
-PREHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types GROUP BY cvarchar ORDER BY cvarchar
+PREHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types_n1 GROUP BY cvarchar ORDER BY cvarchar
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types GROUP BY cvarchar ORDER BY cvarchar
+POSTHOOK: query: EXPLAIN SELECT cvarchar, count(*) FROM parquet_types_n1 GROUP BY cvarchar ORDER BY cvarchar
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1590,7 +1590,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: parquet_types
+            alias: parquet_types_n1
             Statistics: Num rows: 300 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cvarchar (type: varchar(10))
@@ -1652,13 +1652,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cvarchar, count(*) FROM parquet_types GROUP BY cvarchar ORDER BY cvarchar
+PREHOOK: query: SELECT cvarchar, count(*) FROM parquet_types_n1 GROUP BY cvarchar ORDER BY cvarchar
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types
+PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cvarchar, count(*) FROM parquet_types GROUP BY cvarchar ORDER BY cvarchar
+POSTHOOK: query: SELECT cvarchar, count(*) FROM parquet_types_n1 GROUP BY cvarchar ORDER BY cvarchar
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types
+POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 	1
 b	1
@@ -1960,9 +1960,9 @@ w	1
 x	1
 y	1
 z	1
-PREHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1
+PREHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types_n1 GROUP BY cstring1 ORDER BY cstring1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1
+POSTHOOK: query: EXPLAIN SELECT cstring1, count(*) FROM parquet_types_n1 GROUP BY cstring1 ORDER BY cstring1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1974,7 +1974,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: parquet_types
+            alias: parquet_types_n1
             Statistics: Num rows: 300 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cstring1 (type: string)
@@ -2036,13 +2036,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1
+PREHOOK: query: SELECT cstring1, count(*) FROM parquet_types_n1 GROUP BY cstring1 ORDER BY cstring1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types
+PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1
+POSTHOOK: query: SELECT cstring1, count(*) FROM parquet_types_n1 GROUP BY cstring1 ORDER BY cstring1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types
+POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 	1
 b	1
@@ -2344,9 +2344,9 @@ w	1
 x	1
 y	1
 z	1
-PREHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary
+PREHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types_n1 GROUP BY cbinary
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary
+POSTHOOK: query: EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types_n1 GROUP BY cbinary
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2357,7 +2357,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: parquet_types
+            alias: parquet_types_n1
             Statistics: Num rows: 300 Data size: 4200 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: cbinary (type: binary)
@@ -2401,13 +2401,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary
+PREHOOK: query: SELECT hex(cbinary), count(*) FROM parquet_types_n1 GROUP BY cbinary
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types
+PREHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary
+POSTHOOK: query: SELECT hex(cbinary), count(*) FROM parquet_types_n1 GROUP BY cbinary
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types
+POSTHOOK: Input: default@parquet_types_n1
 #### A masked pattern was here ####
 NULL	264
 	1

@@ -10,59 +10,59 @@ PREHOOK: query: grant role r1 to user r1user
 PREHOOK: type: GRANT_ROLE
 POSTHOOK: query: grant role r1 to user r1user
 POSTHOOK: type: GRANT_ROLE
-PREHOOK: query: CREATE TABLE  t1(i int)
+PREHOOK: query: CREATE TABLE  t1_n126(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: CREATE TABLE  t1(i int)
+PREHOOK: Output: default@t1_n126
+POSTHOOK: query: CREATE TABLE  t1_n126(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: GRANT ALL ON t1 TO ROLE r1 WITH GRANT OPTION
+POSTHOOK: Output: default@t1_n126
+PREHOOK: query: GRANT ALL ON t1_n126 TO ROLE r1 WITH GRANT OPTION
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@t1
-POSTHOOK: query: GRANT ALL ON t1 TO ROLE r1 WITH GRANT OPTION
+PREHOOK: Output: default@t1_n126
+POSTHOOK: query: GRANT ALL ON t1_n126 TO ROLE r1 WITH GRANT OPTION
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@t1
-PREHOOK: query: GRANT ALL ON t1 TO USER user3
+POSTHOOK: Output: default@t1_n126
+PREHOOK: query: GRANT ALL ON t1_n126 TO USER user3
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@t1
-POSTHOOK: query: GRANT ALL ON t1 TO USER user3
+PREHOOK: Output: default@t1_n126
+POSTHOOK: query: GRANT ALL ON t1_n126 TO USER user3
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n126
 PREHOOK: query: set role admin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: show grant on table t1
+PREHOOK: query: show grant on table t1_n126
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant on table t1
+POSTHOOK: query: show grant on table t1_n126
 POSTHOOK: type: SHOW_GRANT
-default	t1			r1	ROLE	DELETE	true	-1	user1
-default	t1			r1	ROLE	INSERT	true	-1	user1
-default	t1			r1	ROLE	SELECT	true	-1	user1
-default	t1			r1	ROLE	UPDATE	true	-1	user1
-default	t1			user1	USER	DELETE	true	-1	hive_admin_user
-default	t1			user1	USER	INSERT	true	-1	hive_admin_user
-default	t1			user1	USER	SELECT	true	-1	hive_admin_user
-default	t1			user1	USER	UPDATE	true	-1	hive_admin_user
-default	t1			user3	USER	DELETE	false	-1	r1user
-default	t1			user3	USER	INSERT	false	-1	r1user
-default	t1			user3	USER	SELECT	false	-1	r1user
-default	t1			user3	USER	UPDATE	false	-1	r1user
+default	t1_n126			r1	ROLE	DELETE	true	-1	user1
+default	t1_n126			r1	ROLE	INSERT	true	-1	user1
+default	t1_n126			r1	ROLE	SELECT	true	-1	user1
+default	t1_n126			r1	ROLE	UPDATE	true	-1	user1
+default	t1_n126			user1	USER	DELETE	true	-1	hive_admin_user
+default	t1_n126			user1	USER	INSERT	true	-1	hive_admin_user
+default	t1_n126			user1	USER	SELECT	true	-1	hive_admin_user
+default	t1_n126			user1	USER	UPDATE	true	-1	hive_admin_user
+default	t1_n126			user3	USER	DELETE	false	-1	r1user
+default	t1_n126			user3	USER	INSERT	false	-1	r1user
+default	t1_n126			user3	USER	SELECT	false	-1	r1user
+default	t1_n126			user3	USER	UPDATE	false	-1	r1user
 PREHOOK: query: drop role r1
 PREHOOK: type: DROPROLE
 POSTHOOK: query: drop role r1
 POSTHOOK: type: DROPROLE
-PREHOOK: query: show grant on table t1
+PREHOOK: query: show grant on table t1_n126
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant on table t1
+POSTHOOK: query: show grant on table t1_n126
 POSTHOOK: type: SHOW_GRANT
-default	t1			user1	USER	DELETE	true	-1	hive_admin_user
-default	t1			user1	USER	INSERT	true	-1	hive_admin_user
-default	t1			user1	USER	SELECT	true	-1	hive_admin_user
-default	t1			user1	USER	UPDATE	true	-1	hive_admin_user
-default	t1			user3	USER	DELETE	false	-1	r1user
-default	t1			user3	USER	INSERT	false	-1	r1user
-default	t1			user3	USER	SELECT	false	-1	r1user
-default	t1			user3	USER	UPDATE	false	-1	r1user
+default	t1_n126			user1	USER	DELETE	true	-1	hive_admin_user
+default	t1_n126			user1	USER	INSERT	true	-1	hive_admin_user
+default	t1_n126			user1	USER	SELECT	true	-1	hive_admin_user
+default	t1_n126			user1	USER	UPDATE	true	-1	hive_admin_user
+default	t1_n126			user3	USER	DELETE	false	-1	r1user
+default	t1_n126			user3	USER	INSERT	false	-1	r1user
+default	t1_n126			user3	USER	SELECT	false	-1	r1user
+default	t1_n126			user3	USER	UPDATE	false	-1	r1user

@@ -4,11 +4,11 @@ CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax
 
 CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax';
 
-CREATE TABLE dest1(col INT);
+CREATE TABLE dest1_n34(col INT);
 
-FROM src INSERT OVERWRITE TABLE dest1 SELECT test_max(length(src.value));
+FROM src INSERT OVERWRITE TABLE dest1_n34 SELECT test_max(length(src.value));
 
-SELECT dest1.* FROM dest1;
+SELECT dest1_n34.* FROM dest1_n34;
 
 -- cover all the other value types:
 SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src;

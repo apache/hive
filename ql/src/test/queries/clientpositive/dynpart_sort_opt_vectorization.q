@@ -10,7 +10,7 @@ set hive.vectorized.execution.enabled=true;
 
 
 
-create table over1k(
+create table over1k_n1(
            t tinyint,
            si smallint,
            i int,
@@ -25,11 +25,11 @@ create table over1k(
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../../data/files/over1k' into table over1k;
+load data local inpath '../../data/files/over1k' into table over1k_n1;
 
-create table over1k_orc like over1k;
+create table over1k_orc like over1k_n1;
 alter table over1k_orc set fileformat orc;
-insert overwrite table over1k_orc select * from over1k;
+insert overwrite table over1k_orc select * from over1k_n1;
 
 create table over1k_part_orc(
            si smallint,

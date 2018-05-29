@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -185,6 +185,10 @@
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
                         <exclude>core-default.xml</exclude>
+			<exclude>webapps/</exclude>
+			<exclude>hive-webapps/</exclude>
+			<exclude>hbase-webapps/</exclude>
+			<exclude>static/</exclude>
                       </excludes>
                     </filter>
                   </filters>

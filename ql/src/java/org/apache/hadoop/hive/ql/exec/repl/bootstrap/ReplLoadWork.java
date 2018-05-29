@@ -33,6 +33,7 @@ import java.io.Serializable;
 public class ReplLoadWork implements Serializable {
   final String dbNameToLoadIn;
   final String tableNameToLoadIn;
+  final String dumpDirectory;
   private final BootstrapEventsIterator iterator;
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
@@ -50,6 +51,7 @@ public class ReplLoadWork implements Serializable {
       throws IOException {
     this.tableNameToLoadIn = tableNameToLoadIn;
     sessionStateLineageState = lineageState;
+    this.dumpDirectory = dumpDirectory;
     this.iterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
     this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
     this.dbNameToLoadIn = dbNameToLoadIn;

@@ -1,18 +1,18 @@
-PREHOOK: query: create table s as select * from src limit 10
+PREHOOK: query: create table s_n5 as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s
-POSTHOOK: query: create table s as select * from src limit 10
+PREHOOK: Output: default@s_n5
+POSTHOOK: query: create table s_n5 as select * from src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s
-POSTHOOK: Lineage: s.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: s.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select * from s
+POSTHOOK: Output: default@s_n5
+POSTHOOK: Lineage: s_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: s_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select * from s_n5
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from s
+POSTHOOK: query: explain select * from s_n5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -23,7 +23,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: s
+          alias: s_n5
           Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -31,17 +31,17 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: alter table s update statistics set('numRows'='12')
+PREHOOK: query: alter table s_n5 update statistics set('numRows'='12')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
-PREHOOK: Input: default@s
-PREHOOK: Output: default@s
-POSTHOOK: query: alter table s update statistics set('numRows'='12')
+PREHOOK: Input: default@s_n5
+PREHOOK: Output: default@s_n5
+POSTHOOK: query: alter table s_n5 update statistics set('numRows'='12')
 POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
-POSTHOOK: Input: default@s
-POSTHOOK: Output: default@s
-PREHOOK: query: explain select * from s
+POSTHOOK: Input: default@s_n5
+POSTHOOK: Output: default@s_n5
+PREHOOK: query: explain select * from s_n5
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from s
+POSTHOOK: query: explain select * from s_n5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -52,7 +52,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: s
+          alias: s_n5
           Statistics: Num rows: 12 Data size: 104 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -60,17 +60,17 @@ STAGE PLANS:
             Statistics: Num rows: 12 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: analyze table s compute statistics
+PREHOOK: query: analyze table s_n5 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s
-PREHOOK: Output: default@s
-POSTHOOK: query: analyze table s compute statistics
+PREHOOK: Input: default@s_n5
+PREHOOK: Output: default@s_n5
+POSTHOOK: query: analyze table s_n5 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s
-POSTHOOK: Output: default@s
-PREHOOK: query: explain select * from s
+POSTHOOK: Input: default@s_n5
+POSTHOOK: Output: default@s_n5
+PREHOOK: query: explain select * from s_n5
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from s
+POSTHOOK: query: explain select * from s_n5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -81,7 +81,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: s
+          alias: s_n5
           Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -89,17 +89,17 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: alter table s update statistics set('numRows'='1212', 'rawDataSize'='500500')
+PREHOOK: query: alter table s_n5 update statistics set('numRows'='1212', 'rawDataSize'='500500')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
-PREHOOK: Input: default@s
-PREHOOK: Output: default@s
-POSTHOOK: query: alter table s update statistics set('numRows'='1212', 'rawDataSize'='500500')
+PREHOOK: Input: default@s_n5
+PREHOOK: Output: default@s_n5
+POSTHOOK: query: alter table s_n5 update statistics set('numRows'='1212', 'rawDataSize'='500500')
 POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
-POSTHOOK: Input: default@s
-POSTHOOK: Output: default@s
-PREHOOK: query: explain select * from s
+POSTHOOK: Input: default@s_n5
+POSTHOOK: Output: default@s_n5
+PREHOOK: query: explain select * from s_n5
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from s
+POSTHOOK: query: explain select * from s_n5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -110,7 +110,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: s
+          alias: s_n5
           Statistics: Num rows: 1212 Data size: 500500 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -118,26 +118,26 @@ STAGE PLANS:
             Statistics: Num rows: 1212 Data size: 500500 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: CREATE TABLE calendarp (`year` int)  partitioned by (p int)
+PREHOOK: query: CREATE TABLE calendarp_n0 (`year` int)  partitioned by (p int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@calendarp
-POSTHOOK: query: CREATE TABLE calendarp (`year` int)  partitioned by (p int)
+PREHOOK: Output: default@calendarp_n0
+POSTHOOK: query: CREATE TABLE calendarp_n0 (`year` int)  partitioned by (p int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@calendarp
-PREHOOK: query: insert into table calendarp partition (p=1) values (2010), (2011), (2012)
+POSTHOOK: Output: default@calendarp_n0
+PREHOOK: query: insert into table calendarp_n0 partition (p=1) values (2010), (2011), (2012)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@calendarp@p=1
-POSTHOOK: query: insert into table calendarp partition (p=1) values (2010), (2011), (2012)
+PREHOOK: Output: default@calendarp_n0@p=1
+POSTHOOK: query: insert into table calendarp_n0 partition (p=1) values (2010), (2011), (2012)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@calendarp@p=1
-POSTHOOK: Lineage: calendarp PARTITION(p=1).year SCRIPT []
-PREHOOK: query: explain select * from calendarp where p=1
+POSTHOOK: Output: default@calendarp_n0@p=1
+POSTHOOK: Lineage: calendarp_n0 PARTITION(p=1).year SCRIPT []
+PREHOOK: query: explain select * from calendarp_n0 where p=1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from calendarp where p=1
+POSTHOOK: query: explain select * from calendarp_n0 where p=1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -148,7 +148,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: calendarp
+          alias: calendarp_n0
           Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: year (type: int), 1 (type: int)
@@ -156,18 +156,18 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: alter table calendarp partition (p=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
+PREHOOK: query: alter table calendarp_n0 partition (p=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-PREHOOK: Input: default@calendarp
-PREHOOK: Output: default@calendarp@p=1
-POSTHOOK: query: alter table calendarp partition (p=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
+PREHOOK: Input: default@calendarp_n0
+PREHOOK: Output: default@calendarp_n0@p=1
+POSTHOOK: query: alter table calendarp_n0 partition (p=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-POSTHOOK: Input: default@calendarp
-POSTHOOK: Input: default@calendarp@p=1
-POSTHOOK: Output: default@calendarp@p=1
-PREHOOK: query: explain select * from calendarp where p=1
+POSTHOOK: Input: default@calendarp_n0
+POSTHOOK: Input: default@calendarp_n0@p=1
+POSTHOOK: Output: default@calendarp_n0@p=1
+PREHOOK: query: explain select * from calendarp_n0 where p=1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from calendarp where p=1
+POSTHOOK: query: explain select * from calendarp_n0 where p=1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -178,7 +178,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: calendarp
+          alias: calendarp_n0
           Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: year (type: int), 1 (type: int)
@@ -186,53 +186,53 @@ STAGE PLANS:
             Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: create table src_stat_part_two(key string, value string) partitioned by (px int, py string)
+PREHOOK: query: create table src_stat_part_two_n0(key string, value string) partitioned by (px int, py string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_stat_part_two
-POSTHOOK: query: create table src_stat_part_two(key string, value string) partitioned by (px int, py string)
+PREHOOK: Output: default@src_stat_part_two_n0
+POSTHOOK: query: create table src_stat_part_two_n0(key string, value string) partitioned by (px int, py string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_stat_part_two
-PREHOOK: query: insert overwrite table src_stat_part_two partition (px=1, py='a')
+POSTHOOK: Output: default@src_stat_part_two_n0
+PREHOOK: query: insert overwrite table src_stat_part_two_n0 partition (px=1, py='a')
   select * from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_stat_part_two@px=1/py=a
-POSTHOOK: query: insert overwrite table src_stat_part_two partition (px=1, py='a')
+PREHOOK: Output: default@src_stat_part_two_n0@px=1/py=a
+POSTHOOK: query: insert overwrite table src_stat_part_two_n0 partition (px=1, py='a')
   select * from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
-POSTHOOK: Lineage: src_stat_part_two PARTITION(px=1,py=a).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_stat_part_two PARTITION(px=1,py=a).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table src_stat_part_two partition (px=1, py='b')
+POSTHOOK: Output: default@src_stat_part_two_n0@px=1/py=a
+POSTHOOK: Lineage: src_stat_part_two_n0 PARTITION(px=1,py=a).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_part_two_n0 PARTITION(px=1,py=a).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table src_stat_part_two_n0 partition (px=1, py='b')
   select * from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_stat_part_two@px=1/py=b
-POSTHOOK: query: insert overwrite table src_stat_part_two partition (px=1, py='b')
+PREHOOK: Output: default@src_stat_part_two_n0@px=1/py=b
+POSTHOOK: query: insert overwrite table src_stat_part_two_n0 partition (px=1, py='b')
   select * from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_stat_part_two@px=1/py=b
-POSTHOOK: Lineage: src_stat_part_two PARTITION(px=1,py=b).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_stat_part_two PARTITION(px=1,py=b).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table src_stat_part_two partition (px=2, py='b')
+POSTHOOK: Output: default@src_stat_part_two_n0@px=1/py=b
+POSTHOOK: Lineage: src_stat_part_two_n0 PARTITION(px=1,py=b).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_part_two_n0 PARTITION(px=1,py=b).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table src_stat_part_two_n0 partition (px=2, py='b')
   select * from src limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_stat_part_two@px=2/py=b
-POSTHOOK: query: insert overwrite table src_stat_part_two partition (px=2, py='b')
+PREHOOK: Output: default@src_stat_part_two_n0@px=2/py=b
+POSTHOOK: query: insert overwrite table src_stat_part_two_n0 partition (px=2, py='b')
   select * from src limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_stat_part_two@px=2/py=b
-POSTHOOK: Lineage: src_stat_part_two PARTITION(px=2,py=b).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_stat_part_two PARTITION(px=2,py=b).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select * from src_stat_part_two where px=1 and py='a'
+POSTHOOK: Output: default@src_stat_part_two_n0@px=2/py=b
+POSTHOOK: Lineage: src_stat_part_two_n0 PARTITION(px=2,py=b).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_part_two_n0 PARTITION(px=2,py=b).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src_stat_part_two where px=1 and py='a'
+POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -243,7 +243,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_stat_part_two
+          alias: src_stat_part_two_n0
           Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
@@ -251,9 +251,9 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: explain select * from src_stat_part_two where px=1
+PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src_stat_part_two where px=1
+POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -264,7 +264,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_stat_part_two
+          alias: src_stat_part_two_n0
           Statistics: Num rows: 11 Data size: 115 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
@@ -272,18 +272,18 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 115 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: alter table src_stat_part_two partition (px=1, py='a') update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
+PREHOOK: query: alter table src_stat_part_two_n0 partition (px=1, py='a') update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-PREHOOK: Input: default@src_stat_part_two
-PREHOOK: Output: default@src_stat_part_two@px=1/py=a
-POSTHOOK: query: alter table src_stat_part_two partition (px=1, py='a') update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
+PREHOOK: Input: default@src_stat_part_two_n0
+PREHOOK: Output: default@src_stat_part_two_n0@px=1/py=a
+POSTHOOK: query: alter table src_stat_part_two_n0 partition (px=1, py='a') update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-POSTHOOK: Input: default@src_stat_part_two
-POSTHOOK: Input: default@src_stat_part_two@px=1/py=a
-POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
-PREHOOK: query: explain select * from src_stat_part_two where px=1 and py='a'
+POSTHOOK: Input: default@src_stat_part_two_n0
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+POSTHOOK: Output: default@src_stat_part_two_n0@px=1/py=a
+PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src_stat_part_two where px=1 and py='a'
+POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -294,7 +294,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_stat_part_two
+          alias: src_stat_part_two_n0
           Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
@@ -302,9 +302,9 @@ STAGE PLANS:
             Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: explain select * from src_stat_part_two where px=1
+PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src_stat_part_two where px=1
+POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -315,7 +315,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_stat_part_two
+          alias: src_stat_part_two_n0
           Statistics: Num rows: 1000020010 Data size: 300040104 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
@@ -323,21 +323,21 @@ STAGE PLANS:
             Statistics: Num rows: 1000020010 Data size: 300040104 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: alter table src_stat_part_two partition (px=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
+PREHOOK: query: alter table src_stat_part_two_n0 partition (px=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-PREHOOK: Input: default@src_stat_part_two
-PREHOOK: Output: default@src_stat_part_two@px=1/py=a
-PREHOOK: Output: default@src_stat_part_two@px=1/py=b
-POSTHOOK: query: alter table src_stat_part_two partition (px=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
+PREHOOK: Input: default@src_stat_part_two_n0
+PREHOOK: Output: default@src_stat_part_two_n0@px=1/py=a
+PREHOOK: Output: default@src_stat_part_two_n0@px=1/py=b
+POSTHOOK: query: alter table src_stat_part_two_n0 partition (px=1) update statistics set('numRows'='1000020000', 'rawDataSize'='300040000')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-POSTHOOK: Input: default@src_stat_part_two
-POSTHOOK: Input: default@src_stat_part_two@px=1/py=a
-POSTHOOK: Input: default@src_stat_part_two@px=1/py=b
-POSTHOOK: Output: default@src_stat_part_two@px=1/py=a
-POSTHOOK: Output: default@src_stat_part_two@px=1/py=b
-PREHOOK: query: explain select * from src_stat_part_two where px=1 and py='a'
+POSTHOOK: Input: default@src_stat_part_two_n0
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=a
+POSTHOOK: Input: default@src_stat_part_two_n0@px=1/py=b
+POSTHOOK: Output: default@src_stat_part_two_n0@px=1/py=a
+POSTHOOK: Output: default@src_stat_part_two_n0@px=1/py=b
+PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src_stat_part_two where px=1 and py='a'
+POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1 and py='a'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -348,7 +348,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_stat_part_two
+          alias: src_stat_part_two_n0
           Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
@@ -356,9 +356,9 @@ STAGE PLANS:
             Statistics: Num rows: 1000020000 Data size: 300040000 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: explain select * from src_stat_part_two where px=1
+PREHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src_stat_part_two where px=1
+POSTHOOK: query: explain select * from src_stat_part_two_n0 where px=1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -369,7 +369,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_stat_part_two
+          alias: src_stat_part_two_n0
           Statistics: Num rows: 2000040000 Data size: 600080000 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)

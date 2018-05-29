@@ -5,9 +5,9 @@ set hive.fetch.task.conversion=more;
 DESCRIBE FUNCTION get_json_object;
 DESCRIBE FUNCTION EXTENDED get_json_object;
 
-CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE;
+CREATE TABLE dest1_n66(c1 STRING) STORED AS TEXTFILE;
 
-FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE src.key = 86;
+FROM src INSERT OVERWRITE TABLE dest1_n66 SELECT '  abc  ' WHERE src.key = 86;
 
 set hive.fetch.task.conversion=more;
 
@@ -37,13 +37,13 @@ SELECT get_json_object(src_json.json, '$.fb:testid') FROM src_json;
 
 -- Verify that get_json_object can handle new lines in JSON values
 
-CREATE TABLE dest2(c1 STRING) STORED AS RCFILE;
+CREATE TABLE dest2_n14(c1 STRING) STORED AS RCFILE;
 
-INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows);
+INSERT OVERWRITE TABLE dest2_n14 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows);
 
-SELECT * FROM dest2;
+SELECT * FROM dest2_n14;
 
-SELECT get_json_object(c1, '$.a') FROM dest2;
+SELECT get_json_object(c1, '$.a') FROM dest2_n14;
 
 --root is array
 SELECT

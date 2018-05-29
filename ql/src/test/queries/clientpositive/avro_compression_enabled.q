@@ -1,7 +1,7 @@
 --! qt:dataset:src
 -- verify that new joins bring in correct schemas (including evolved schemas)
 
-CREATE TABLE doctors4
+CREATE TABLE doctors4_n0
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -36,7 +36,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }');
 
-LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4;
+LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4_n0;
 
 set hive.exec.compress.output=true;
 

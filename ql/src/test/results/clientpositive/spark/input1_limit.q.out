@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n12(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n12
+POSTHOOK: query: CREATE TABLE dest1_n12(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@dest1_n12
+PREHOOK: query: CREATE TABLE dest2_n2(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest2_n2
+POSTHOOK: query: CREATE TABLE dest2_n2(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest2_n2
 PREHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
+INSERT OVERWRITE TABLE dest1_n12 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
+INSERT OVERWRITE TABLE dest2_n2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
+INSERT OVERWRITE TABLE dest1_n12 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
+INSERT OVERWRITE TABLE dest2_n2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -102,7 +102,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest1
+                          name: default.dest1_n12
         Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -124,7 +124,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest2
+                          name: default.dest2_n2
 
   Stage: Stage-0
     Move Operator
@@ -134,7 +134,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n12
 
   Stage: Stage-3
     Stats Work
@@ -148,37 +148,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n2
 
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
+INSERT OVERWRITE TABLE dest1_n12 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
+INSERT OVERWRITE TABLE dest2_n2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n12
+PREHOOK: Output: default@dest2_n2
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
+INSERT OVERWRITE TABLE dest1_n12 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
+INSERT OVERWRITE TABLE dest2_n2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n12
+POSTHOOK: Output: default@dest2_n2
+POSTHOOK: Lineage: dest1_n12.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n12.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n12.* FROM dest1_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n12
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n12.* FROM dest1_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n12
 #### A masked pattern was here ####
 0	val_0
 15	val_15
@@ -190,13 +190,13 @@ POSTHOOK: Input: default@dest1
 82	val_82
 86	val_86
 98	val_98
-PREHOOK: query: SELECT dest2.* FROM dest2
+PREHOOK: query: SELECT dest2_n2.* FROM dest2_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest2.* FROM dest2
+POSTHOOK: query: SELECT dest2_n2.* FROM dest2_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n2
 #### A masked pattern was here ####
 27	val_27
 37	val_37

@@ -1,16 +1,16 @@
-PREHOOK: query: create table a (key string, value string)
+PREHOOK: query: create table a_n5 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a (key string, value string)
+PREHOOK: Output: default@a_n5
+POSTHOOK: query: create table a_n5 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
+POSTHOOK: Output: default@a_n5
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.key=c.key) left outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.key=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.key=c.key) left outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.key=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -21,7 +21,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -112,10 +112,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.key=c.key) right outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.key=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.key=c.key) right outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.key=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -126,7 +126,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -214,10 +214,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.key=c.key) left outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.key=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.key=c.key) left outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.key=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -228,7 +228,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -313,10 +313,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.key=c.key) right outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.key=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.key=c.key) right outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.key=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -327,7 +327,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -412,10 +412,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -428,7 +428,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -564,10 +564,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.value=c.key) right outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.value=c.key) right outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -580,7 +580,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -713,10 +713,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) full outer join a c on (b.value=c.key) full outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) full outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) full outer join a c on (b.value=c.key) full outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) full outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -729,7 +729,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -862,10 +862,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) right outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) right outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) right outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -878,7 +878,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1011,10 +1011,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) full outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) full outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1027,7 +1027,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1160,10 +1160,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.value=c.key) left outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.value=c.key) left outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1176,7 +1176,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1309,10 +1309,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.value=c.key) full outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) right outer join a c on (b.value=c.key) full outer join a d on (a.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) right outer join a_n5 c on (b.value=c.key) full outer join a_n5 d on (a_n5.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1325,7 +1325,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1458,10 +1458,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (c.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (c.key=d.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (c.key=d.key)
+select * from a_n5 join a_n5 b on (a_n5.key=b.key) left outer join a_n5 c on (b.value=c.key) left outer join a_n5 d on (c.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1473,7 +1473,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n5
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

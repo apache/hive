@@ -1,18 +1,18 @@
-PREHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_g2_n3(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_g2
-POSTHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_g2_n3
+POSTHOOK: query: CREATE TABLE dest_g2_n3(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_g2
+POSTHOOK: Output: default@dest_g2_n3
 PREHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value) GROUP BY substr(src.key,1,1)
+INSERT OVERWRITE TABLE dest_g2_n3 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value) GROUP BY substr(src.key,1,1)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value) GROUP BY substr(src.key,1,1)
+INSERT OVERWRITE TABLE dest_g2_n3 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value) GROUP BY substr(src.key,1,1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -61,7 +61,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest_g2
+                        name: default.dest_g2_n3
 
   Stage: Stage-0
     Move Operator
@@ -71,34 +71,34 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_g2
+              name: default.dest_g2_n3
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value) GROUP BY substr(src.key,1,1)
+INSERT OVERWRITE TABLE dest_g2_n3 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value) GROUP BY substr(src.key,1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest_g2
+PREHOOK: Output: default@dest_g2_n3
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value) GROUP BY substr(src.key,1,1)
+INSERT OVERWRITE TABLE dest_g2_n3 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value) GROUP BY substr(src.key,1,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest_g2
-POSTHOOK: Lineage: dest_g2.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_g2.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_g2.c3 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest_g2.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT dest_g2.* FROM dest_g2
+POSTHOOK: Output: default@dest_g2_n3
+POSTHOOK: Lineage: dest_g2_n3.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_g2_n3.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_g2_n3.c3 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest_g2_n3.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_g2_n3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT dest_g2_n3.* FROM dest_g2_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_g2
+PREHOOK: Input: default@dest_g2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest_g2.* FROM dest_g2
+POSTHOOK: query: SELECT dest_g2_n3.* FROM dest_g2_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_g2
+POSTHOOK: Input: default@dest_g2_n3
 #### A masked pattern was here ####
 0	1	00.0	0	3
 1	71	116414.0	10044	115

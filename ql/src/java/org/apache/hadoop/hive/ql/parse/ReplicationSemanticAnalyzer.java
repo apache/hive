@@ -23,6 +23,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -105,7 +107,11 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (ast.getToken().getType()) {
       case TOK_REPL_DUMP: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: dump");
-        initReplDump(ast);
+        try {
+          initReplDump(ast);
+        } catch (HiveException e) {
+          throw new SemanticException("repl dump failed " + e.getMessage());
+        }
         analyzeReplDump(ast);
         break;
       }
@@ -127,9 +133,22 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void initReplDump(ASTNode ast) {
+  private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
     dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
+
+    for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
+      Database database = db.getDatabase(dbName);
+      if (database != null) {
+        if (!ReplChangeManager.isSourceOfReplication(database)) {
+          throw new SemanticException("Cannot dump database " + dbNameOrPattern +
+                  " as it is not a source of replication");
+        }
+      } else {
+        throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
+      }
+    }
+
     // skip the first node, which is always required
     int currNode = 1;
     while (currNode < numChildren) {

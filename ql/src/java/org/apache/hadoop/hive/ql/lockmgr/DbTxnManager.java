@@ -18,11 +18,38 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import org.apache.curator.shaded.com.google.common.collect.Lists;
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
+import org.apache.hadoop.hive.metastore.LockRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.hooks.Entity;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
@@ -30,27 +57,9 @@ import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.LockComponentBuilder;
-import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.hooks.Entity;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.thrift.TException;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -503,60 +512,80 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         /* base this on HiveOperation instead?  this and DDL_NO_LOCK is peppered all over the code...
          Seems much cleaner if each stmt is identified as a particular HiveOperation (which I'd think
          makes sense everywhere).  This however would be problematic for merge...*/
-        case DDL_EXCLUSIVE:
+      case DDL_EXCLUSIVE:
+        compBuilder.setExclusive();
+        compBuilder.setOperationType(DataOperationType.NO_TXN);
+        break;
+      case INSERT_OVERWRITE:
+        t = getTable(output);
+        if (AcidUtils.isTransactionalTable(t)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK)) {
+            compBuilder.setExclusive();
+          } else {
+            compBuilder.setSemiShared();
+          }
+          compBuilder.setOperationType(DataOperationType.UPDATE);
+        } else {
           compBuilder.setExclusive();
           compBuilder.setOperationType(DataOperationType.NO_TXN);
-          break;
-        case INSERT_OVERWRITE:
-          t = getTable(output);
-          if (AcidUtils.isTransactionalTable(t)) {
-            if(conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK)) {
-              compBuilder.setExclusive();
-            } else {
-              compBuilder.setSemiShared();
-            }
-            compBuilder.setOperationType(DataOperationType.UPDATE);
-          } else {
+        }
+        break;
+      case INSERT:
+        assert t != null;
+        if (AcidUtils.isTransactionalTable(t)) {
+          compBuilder.setShared();
+        } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
+          final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
+              "Thought all the non native tables have an instance of storage handler"
+          );
+          LockType lockType = storageHandler.getLockType(output);
+          switch (lockType) {
+          case EXCLUSIVE:
             compBuilder.setExclusive();
-            compBuilder.setOperationType(DataOperationType.NO_TXN);
+            break;
+          case SHARED_READ:
+            compBuilder.setShared();
+            break;
+          case SHARED_WRITE:
+            compBuilder.setSemiShared();
+            break;
+          default:
+            throw new IllegalArgumentException(String
+                .format("Lock type [%s] for Database.Table [%s.%s] is unknown", lockType, t.getDbName(),
+                    t.getTableName()
+                ));
           }
-          break;
-        case INSERT:
-          assert t != null;
-          if(AcidUtils.isTransactionalTable(t)) {
+
+        } else {
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE)) {
+            compBuilder.setExclusive();
+          } else {  // this is backward compatible for non-ACID resources, w/o ACID semantics
             compBuilder.setShared();
           }
-          else {
-            if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE)) {
-              compBuilder.setExclusive();
-            } else {  // this is backward compatible for non-ACID resources, w/o ACID semantics
-              compBuilder.setShared();
-            }
-          }
-          compBuilder.setOperationType(DataOperationType.INSERT);
-          break;
-        case DDL_SHARED:
-          compBuilder.setShared();
-          compBuilder.setOperationType(DataOperationType.NO_TXN);
-          break;
+        }
+        compBuilder.setOperationType(DataOperationType.INSERT);
+        break;
+      case DDL_SHARED:
+        compBuilder.setShared();
+        compBuilder.setOperationType(DataOperationType.NO_TXN);
+        break;
 
-        case UPDATE:
-          compBuilder.setSemiShared();
-          compBuilder.setOperationType(DataOperationType.UPDATE);
-          break;
-        case DELETE:
-          compBuilder.setSemiShared();
-          compBuilder.setOperationType(DataOperationType.DELETE);
-          break;
+      case UPDATE:
+        compBuilder.setSemiShared();
+        compBuilder.setOperationType(DataOperationType.UPDATE);
+        break;
+      case DELETE:
+        compBuilder.setSemiShared();
+        compBuilder.setOperationType(DataOperationType.DELETE);
+        break;
 
-        case DDL_NO_LOCK:
-          continue; // No lock required here
+      case DDL_NO_LOCK:
+        continue; // No lock required here
 
-        default:
-          throw new RuntimeException("Unknown write type " +
-              output.getWriteType().toString());
+      default:
+        throw new RuntimeException("Unknown write type " + output.getWriteType().toString());
       }
-      if(t != null) {
+      if (t != null) {
         compBuilder.setIsTransactional(AcidUtils.isTransactionalTable(t));
       }
 

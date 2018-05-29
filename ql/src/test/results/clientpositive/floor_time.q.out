@@ -1,46 +1,46 @@
-PREHOOK: query: drop table extract_udf
+PREHOOK: query: drop table extract_udf_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table extract_udf
+POSTHOOK: query: drop table extract_udf_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table extract_udf (t timestamp)
+PREHOOK: query: create table extract_udf_n0 (t timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@extract_udf
-POSTHOOK: query: create table extract_udf (t timestamp)
+PREHOOK: Output: default@extract_udf_n0
+POSTHOOK: query: create table extract_udf_n0 (t timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@extract_udf
+POSTHOOK: Output: default@extract_udf_n0
 PREHOOK: query: from (select * from src tablesample (1 rows)) s
-  insert overwrite table extract_udf 
+  insert overwrite table extract_udf_n0 
     select '2011-05-06 07:08:09.1234567'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@extract_udf
+PREHOOK: Output: default@extract_udf_n0
 POSTHOOK: query: from (select * from src tablesample (1 rows)) s
-  insert overwrite table extract_udf 
+  insert overwrite table extract_udf_n0 
     select '2011-05-06 07:08:09.1234567'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@extract_udf
-POSTHOOK: Lineage: extract_udf.t EXPRESSION []
+POSTHOOK: Output: default@extract_udf_n0
+POSTHOOK: Lineage: extract_udf_n0.t EXPRESSION []
 PREHOOK: query: select t
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select t
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-05-06 07:08:09.1234567
 PREHOOK: query: explain
 select floor_day(t)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select floor_day(t)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -51,7 +51,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: extract_udf
+            alias: extract_udf_n0
             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: floor_day(t) (type: timestamp)
@@ -73,23 +73,23 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select floor_day(t)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select floor_day(t)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-05-06 00:00:00
 PREHOOK: query: explain
 select floor(t to day)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select floor(t to day)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -100,7 +100,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: extract_udf
+            alias: extract_udf_n0
             Statistics: Num rows: 1 Data size: 27 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: floor_day(t) (type: timestamp)
@@ -122,90 +122,90 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select floor(t to day)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select floor(t to day)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-05-06 00:00:00
 PREHOOK: query: select floor(t to second)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select floor(t to second)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-05-06 07:08:09
 PREHOOK: query: select floor(t to minute)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select floor(t to minute)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-05-06 07:08:00
 PREHOOK: query: select floor(t to hour)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select floor(t to hour)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-05-06 07:00:00
 PREHOOK: query: select floor(t to week)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select floor(t to week)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-05-02 00:00:00
 PREHOOK: query: select floor(t to month)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select floor(t to month)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-05-01 00:00:00
 PREHOOK: query: select floor(t to quarter)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select floor(t to quarter)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-04-01 00:00:00
 PREHOOK: query: select floor(t to year)
-from extract_udf
+from extract_udf_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@extract_udf
+PREHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select floor(t to year)
-from extract_udf
+from extract_udf_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@extract_udf
+POSTHOOK: Input: default@extract_udf_n0
 #### A masked pattern was here ####
 2011-01-01 00:00:00

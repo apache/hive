@@ -1,27 +1,27 @@
-PREHOOK: query: create table tmptable(key string, value string) partitioned by (part string)
+PREHOOK: query: create table tmptable_n11(key string, value string) partitioned by (part string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmptable
-POSTHOOK: query: create table tmptable(key string, value string) partitioned by (part string)
+PREHOOK: Output: default@tmptable_n11
+POSTHOOK: query: create table tmptable_n11(key string, value string) partitioned by (part string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmptable
-PREHOOK: query: insert overwrite table tmptable partition (part = '1') select * from src where key = 'no_such_value'
+POSTHOOK: Output: default@tmptable_n11
+PREHOOK: query: insert overwrite table tmptable_n11 partition (part = '1') select * from src where key = 'no_such_value'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tmptable@part=1
-POSTHOOK: query: insert overwrite table tmptable partition (part = '1') select * from src where key = 'no_such_value'
+PREHOOK: Output: default@tmptable_n11@part=1
+POSTHOOK: query: insert overwrite table tmptable_n11 partition (part = '1') select * from src where key = 'no_such_value'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tmptable@part=1
-POSTHOOK: Lineage: tmptable PARTITION(part=1).key SIMPLE []
-POSTHOOK: Lineage: tmptable PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted tmptable partition (part = '1')
+POSTHOOK: Output: default@tmptable_n11@part=1
+POSTHOOK: Lineage: tmptable_n11 PARTITION(part=1).key SIMPLE []
+POSTHOOK: Lineage: tmptable_n11 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted tmptable_n11 partition (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tmptable
-POSTHOOK: query: describe formatted tmptable partition (part = '1')
+PREHOOK: Input: default@tmptable_n11
+POSTHOOK: query: describe formatted tmptable_n11 partition (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tmptable
+POSTHOOK: Input: default@tmptable_n11
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -33,7 +33,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tmptable            	 
+Table:              	tmptable_n11        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}

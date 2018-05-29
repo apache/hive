@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n20
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n20
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n20(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n20
+POSTHOOK: query: create table over10k_n20(
            t tinyint,
            si smallint,
            i int,
@@ -35,15 +35,15 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n20
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n20
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n20
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n20
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n20
 PREHOOK: query: explain
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a
@@ -234,16 +234,16 @@ Manufacturer#3	1
 Manufacturer#4	1
 Manufacturer#5	1
 PREHOOK: query: select * 
-from (select t, f, rank() over(partition by t order by f) r from over10k) a 
+from (select t, f, rank() over(partition by t order by f) r from over10k_n20) a 
 where r < 6 and t < 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n20
 #### A masked pattern was here ####
 POSTHOOK: query: select * 
-from (select t, f, rank() over(partition by t order by f) r from over10k) a 
+from (select t, f, rank() over(partition by t order by f) r from over10k_n20) a 
 where r < 6 and t < 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n20
 #### A masked pattern was here ####
 -3	0.56	1
 -3	0.83	2
@@ -286,16 +286,16 @@ POSTHOOK: Input: default@over10k
 4	5.76	4
 4	7.26	5
 PREHOOK: query: select *
-from (select t, f, row_number() over(partition by t order by f) r from over10k) a
+from (select t, f, row_number() over(partition by t order by f) r from over10k_n20) a
 where r < 8 and t < 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n20
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-from (select t, f, row_number() over(partition by t order by f) r from over10k) a
+from (select t, f, row_number() over(partition by t order by f) r from over10k_n20) a
 where r < 8 and t < 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n20
 #### A masked pattern was here ####
 -3	0.56	1
 -3	0.83	2
@@ -388,34 +388,34 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table if exists sB
+PREHOOK: query: drop table if exists sB_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists sB
+POSTHOOK: query: drop table if exists sB_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table sB ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
+PREHOOK: query: create table sB_n0 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sB
-POSTHOOK: query: create table sB ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
+PREHOOK: Output: default@sB_n0
+POSTHOOK: query: create table sB_n0 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sB
-POSTHOOK: Lineage: sb.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: sb.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: sb.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-PREHOOK: query: select * from sB
+POSTHOOK: Output: default@sB_n0
+POSTHOOK: Lineage: sb_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: sb_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: sb_n0.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+PREHOOK: query: select * from sB_n0
 where ctinyint is null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@sb
+PREHOOK: Input: default@sb_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from sB
+POSTHOOK: query: select * from sB_n0
 where ctinyint is null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@sb
+POSTHOOK: Input: default@sb_n0
 #### A masked pattern was here ####
 NULL	NULL	1
 NULL	NULL	1
@@ -459,34 +459,34 @@ NULL	NULL	1
 NULL	NULL	1
 NULL	NULL	1
 NULL	NULL	1
-PREHOOK: query: drop table if exists sD
+PREHOOK: query: drop table if exists sD_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists sD
+POSTHOOK: query: drop table if exists sD_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table sD ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
+PREHOOK: query: create table sD_n0 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sD
-POSTHOOK: query: create table sD ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
+PREHOOK: Output: default@sD_n0
+POSTHOOK: query: create table sD_n0 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sD
-POSTHOOK: Lineage: sd.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: sd.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: sd.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-PREHOOK: query: select * from sD
+POSTHOOK: Output: default@sD_n0
+POSTHOOK: Lineage: sd_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: sd_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: sd_n0.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+PREHOOK: query: select * from sD_n0
 where ctinyint is null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@sd
+PREHOOK: Input: default@sd_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from sD
+POSTHOOK: query: select * from sD_n0
 where ctinyint is null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@sd
+POSTHOOK: Input: default@sd_n0
 #### A masked pattern was here ####
 NULL	NULL	1
 NULL	NULL	1

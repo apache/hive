@@ -73,10 +73,10 @@ POSTHOOK: Output: default@nonskewtable
 POSTHOOK: Lineage: nonskewtable.key SCRIPT []
 POSTHOOK: Lineage: nonskewtable.value SCRIPT []
 PREHOOK: query: EXPLAIN
-CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
+CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: EXPLAIN
-CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
+CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -139,7 +139,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.result
+                name: default.result_n1
 
   Stage: Stage-5
     Conditional Operator
@@ -176,7 +176,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.result
+                    name: default.result_n1
       Local Work:
         Map Reduce Local Work
 
@@ -193,31 +193,31 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.result
+          name: default.result_n1
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
+PREHOOK: query: CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@nonskewtable
 PREHOOK: Input: default@skewtable
 PREHOOK: Output: database:default
-PREHOOK: Output: default@result
-POSTHOOK: query: CREATE TABLE result AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
+PREHOOK: Output: default@result_n1
+POSTHOOK: query: CREATE TABLE result_n1 AS SELECT a.* FROM skewtable a JOIN nonskewtable b ON a.key=b.key
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@nonskewtable
 POSTHOOK: Input: default@skewtable
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@result
-POSTHOOK: Lineage: result.key SIMPLE [(skewtable)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: result.value SIMPLE [(skewtable)a.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM result
+POSTHOOK: Output: default@result_n1
+POSTHOOK: Lineage: result_n1.key SIMPLE [(skewtable)a.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: result_n1.value SIMPLE [(skewtable)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM result_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@result
+PREHOOK: Input: default@result_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM result
+POSTHOOK: query: SELECT * FROM result_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@result
+POSTHOOK: Input: default@result_n1
 #### A masked pattern was here ####

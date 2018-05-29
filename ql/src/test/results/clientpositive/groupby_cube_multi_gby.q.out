@@ -1,32 +1,32 @@
-PREHOOK: query: create table t1 like src
+PREHOOK: query: create table t1_n21 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 like src
+PREHOOK: Output: default@t1_n21
+POSTHOOK: query: create table t1_n21 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: create table t2 like src
+POSTHOOK: Output: default@t1_n21
+PREHOOK: query: create table t2_n13 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2 like src
+PREHOOK: Output: default@t2_n13
+POSTHOOK: query: create table t2_n13 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
+POSTHOOK: Output: default@t2_n13
 PREHOOK: query: explain from src
-insert into table t1 select
+insert into table t1_n21 select
 key, GROUPING__ID
 group by cube(key, value)
-insert into table t2 select
+insert into table t2_n13 select
 key, value
 group by key, value grouping sets ((key), (key, value))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain from src
-insert into table t1 select
+insert into table t1_n21 select
 key, GROUPING__ID
 group by cube(key, value)
-insert into table t2 select
+insert into table t2_n13 select
 key, value
 group by key, value grouping sets ((key), (key, value))
 POSTHOOK: type: QUERY
@@ -94,7 +94,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.t1
+                  name: default.t1_n21
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
               outputColumnNames: key, value
@@ -119,7 +119,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
+              name: default.t1_n21
 
   Stage: Stage-3
     Stats Work
@@ -127,7 +127,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.t1
+          Table: default.t1_n21
 
   Stage: Stage-4
     Map Reduce
@@ -158,7 +158,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.t2
+          Table: default.t2_n13
 
   Stage: Stage-5
     Map Reduce
@@ -184,7 +184,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.t2
+                name: default.t2_n13
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: key, value
@@ -209,7 +209,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t2
+              name: default.t2_n13
 
   Stage: Stage-7
     Map Reduce

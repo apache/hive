@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n7
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n7
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n7(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n7
+POSTHOOK: query: create table over10k_n7(
            t tinyint,
            si smallint,
            i int,
@@ -35,15 +35,15 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n7
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n7
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n7
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n7
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n7
 PREHOOK: query: explain vectorization detail
 select row_number() over()  from src where key = '238'
 PREHOOK: type: QUERY
@@ -197,10 +197,10 @@ row_number_window_0
 1
 2
 PREHOOK: query: explain vectorization detail
-select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -222,7 +222,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -346,13 +346,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+PREHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k limit 100
+POSTHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 s	row_number_window_0
 calvin miller	1
@@ -456,10 +456,10 @@ holly hernandez	2
 tom white	3
 rachel ellison	1
 PREHOOK: query: explain vectorization detail
-select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -481,7 +481,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -571,13 +571,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+PREHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100
+POSTHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 i	lead_window_0
 65773	gabriella van buren
@@ -681,10 +681,10 @@ i	lead_window_0
 65545	tom zipper
 65789	ulysses hernandez
 PREHOOK: query: explain vectorization detail
-select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -706,7 +706,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -795,13 +795,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+PREHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100
+POSTHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 i	lag_window_0
 65536	NULL
@@ -905,10 +905,10 @@ i	lag_window_0
 65538	48.61
 65538	2.03
 PREHOOK: query: explain vectorization detail
-select s, last_value(t) over (partition by d order by f) from over10k limit 100
+select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, last_value(t) over (partition by d order by f) from over10k limit 100
+select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -930,7 +930,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1054,13 +1054,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k limit 100
+PREHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k limit 100
+POSTHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 s	last_value_window_0
 calvin miller	99
@@ -1164,10 +1164,10 @@ holly hernandez	4
 david garcia	101
 rachel ellison	51
 PREHOOK: query: explain vectorization detail
-select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1189,7 +1189,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1277,13 +1277,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+PREHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k limit 100
+POSTHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n7
 #### A masked pattern was here ####
 s	first_value_window_0
 alice allen	alice allen
@@ -1388,11 +1388,11 @@ alice nixon	alice allen
 alice nixon	alice allen
 PREHOOK: query: explain vectorization detail
 select t, s, i, last_value(i) over (partition by t order by s) 
-from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+from over10k_n7 where (s = 'oscar allen' or s = 'oscar carson') and t = 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select t, s, i, last_value(i) over (partition by t order by s) 
-from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+from over10k_n7 where (s = 'oscar allen' or s = 'oscar carson') and t = 10
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1414,7 +1414,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n7
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

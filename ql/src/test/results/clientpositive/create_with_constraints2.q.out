@@ -1,47 +1,47 @@
-PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED)
+PREHOOK: query: CREATE TABLE table1_n11 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED)
+PREHOOK: Output: default@table1_n11
+POSTHOOK: query: CREATE TABLE table1_n11 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE TABLE table2 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED RELY)
+POSTHOOK: Output: default@table1_n11
+PREHOOK: query: CREATE TABLE table2_n7 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED RELY)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: CREATE TABLE table2 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED RELY)
+PREHOOK: Output: default@table2_n7
+POSTHOOK: query: CREATE TABLE table2_n7 (a STRING, b STRING, PRIMARY KEY (a) NOT ENFORCED RELY)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: DESCRIBE EXTENDED table1
+POSTHOOK: Output: default@table2_n7
+PREHOOK: query: DESCRIBE EXTENDED table1_n11
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: Input: default@table1_n11
+POSTHOOK: query: DESCRIBE EXTENDED table1_n11
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n11
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table1:[a], Constraint Name: #### A masked pattern was here ####	 
-PREHOOK: query: DESCRIBE EXTENDED table2
+Constraints	Primary Key for default.table1_n11:[a], Constraint Name: #### A masked pattern was here ####	 
+PREHOOK: query: DESCRIBE EXTENDED table2_n7
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESCRIBE EXTENDED table2
+PREHOOK: Input: default@table2_n7
+POSTHOOK: query: DESCRIBE EXTENDED table2_n7
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n7
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table2:[a], Constraint Name: #### A masked pattern was here ####	 
-PREHOOK: query: DESCRIBE FORMATTED table1
+Constraints	Primary Key for default.table2_n7:[a], Constraint Name: #### A masked pattern was here ####	 
+PREHOOK: query: DESCRIBE FORMATTED table1_n11
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE FORMATTED table1
+PREHOOK: Input: default@table1_n11
+POSTHOOK: query: DESCRIBE FORMATTED table1_n11
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n11
 # col_name            	data_type           	comment             
 a                   	string              	                    
 b                   	string              	                    
@@ -75,15 +75,15 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table1      	 
+Table:              	default.table1_n11  	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	a                   	 
-PREHOOK: query: DESCRIBE FORMATTED table2
+PREHOOK: query: DESCRIBE FORMATTED table2_n7
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESCRIBE FORMATTED table2
+PREHOOK: Input: default@table2_n7
+POSTHOOK: query: DESCRIBE FORMATTED table2_n7
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n7
 # col_name            	data_type           	comment             
 a                   	string              	                    
 b                   	string              	                    
@@ -117,6 +117,6 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table2      	 
+Table:              	default.table2_n7   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	a                   	 

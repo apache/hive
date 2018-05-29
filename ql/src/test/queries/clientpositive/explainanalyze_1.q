@@ -7,11 +7,11 @@ explain analyze select * from src a union all select * from src b limit 10;
 
 explain analyze select key from src;
 
-explain analyze create table t as select key from src;
+explain analyze create table t_n28 as select key from src;
 
-create table t as select key from src;
+create table t_n28 as select key from src;
 
-explain analyze insert overwrite table t select key from src;
+explain analyze insert overwrite table t_n28 select key from src;
 
 explain analyze select key from src limit 10;
 

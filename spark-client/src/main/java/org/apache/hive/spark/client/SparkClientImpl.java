@@ -473,9 +473,9 @@ class SparkClientImpl implements SparkClient {
     final List<String> childErrorLog = Collections.synchronizedList(new ArrayList<String>());
     final LogRedirector.LogSourceCallback callback = () -> {return isAlive;};
 
-    LogRedirector.redirect("RemoteDriver-stdout-redir-" + threadName,
+    LogRedirector.redirect("spark-submit-stdout-redir-" + threadName,
         new LogRedirector(child.getInputStream(), LOG, callback));
-    LogRedirector.redirect("RemoteDriver-stderr-redir-" + threadName,
+    LogRedirector.redirect("spark-submit-stderr-redir-" + threadName,
         new LogRedirector(child.getErrorStream(), LOG, childErrorLog, callback));
 
     runnable = new Runnable() {

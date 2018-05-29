@@ -1,33 +1,33 @@
-PREHOOK: query: CREATE TABLE table1(a INT, b STRING)
+PREHOOK: query: CREATE TABLE table1_n20(a INT, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1(a INT, b STRING)
+PREHOOK: Output: default@table1_n20
+POSTHOOK: query: CREATE TABLE table1_n20(a INT, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: ALTER TABLE table1 SET TBLPROPERTIES ('a'='1', 'b'='2', 'c'='3', 'd' = '4')
+POSTHOOK: Output: default@table1_n20
+PREHOOK: query: ALTER TABLE table1_n20 SET TBLPROPERTIES ('a'='1', 'b'='2', 'c'='3', 'd' = '4')
 PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: ALTER TABLE table1 SET TBLPROPERTIES ('a'='1', 'b'='2', 'c'='3', 'd' = '4')
+PREHOOK: Input: default@table1_n20
+PREHOOK: Output: default@table1_n20
+POSTHOOK: query: ALTER TABLE table1_n20 SET TBLPROPERTIES ('a'='1', 'b'='2', 'c'='3', 'd' = '4')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE TABLE table2 LIKE table1
+POSTHOOK: Input: default@table1_n20
+POSTHOOK: Output: default@table1_n20
+PREHOOK: query: CREATE TABLE table2_n14 LIKE table1_n20
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: CREATE TABLE table2 LIKE table1
+PREHOOK: Output: default@table2_n14
+POSTHOOK: query: CREATE TABLE table2_n14 LIKE table1_n20
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: DESC FORMATTED table2
+POSTHOOK: Output: default@table2_n14
+PREHOOK: query: DESC FORMATTED table2_n14
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESC FORMATTED table2
+PREHOOK: Input: default@table2_n14
+POSTHOOK: query: DESC FORMATTED table2_n14
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n14
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	string              	                    

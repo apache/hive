@@ -188,6 +188,7 @@ TOK_ALTERTABLE_COMPACT;
 TOK_ALTERTABLE_DROPCONSTRAINT;
 TOK_ALTERTABLE_ADDCONSTRAINT;
 TOK_ALTERTABLE_UPDATECOLUMNS;
+TOK_ALTERTABLE_OWNER;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWTABLES;
@@ -422,6 +423,7 @@ TOK_ADD_TRIGGER;
 TOK_REPLACE;
 TOK_LIKERP;
 TOK_UNMANAGED;
+TOK_INPUTFORMAT;
 }
 
 
@@ -835,8 +837,8 @@ execStatement
 loadStatement
 @init { pushMsg("load statement", state); }
 @after { popMsg(state); }
-    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tableOrPartition)
-    -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite?)
+    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tableOrPartition) inputFileFormat?
+    -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite? inputFileFormat?)
     ;
 
 replicationClause
@@ -1135,6 +1137,7 @@ alterTableStatementSuffix
     | alterStatementSuffixDropConstraint
     | alterStatementSuffixAddConstraint
     | partitionSpec? alterTblPartitionStatementSuffix -> alterTblPartitionStatementSuffix partitionSpec?
+    | alterStatementSuffixSetOwner
     ;
 
 alterTblPartitionStatementSuffix
@@ -1480,6 +1483,12 @@ alterStatementSuffixCompact
     -> ^(TOK_ALTERTABLE_COMPACT $compactType blocking? tableProperties?)
     ;
 
+alterStatementSuffixSetOwner
+@init { pushMsg("alter table set owner", state); }
+@after { popMsg(state); }
+    : KW_SET KW_OWNER principalName
+    -> ^(TOK_ALTERTABLE_OWNER principalName)
+    ;
 
 fileFormat
 @init { pushMsg("file format specification", state); }
@@ -1487,6 +1496,13 @@ fileFormat
     : KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral KW_SERDE serdeCls=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $serdeCls $inDriver? $outDriver?)
     | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
+    ;
+
+inputFileFormat
+@init { pushMsg("Load Data input file format specification", state); }
+@after { popMsg(state); }
+    : KW_INPUTFORMAT inFmt=StringLiteral KW_SERDE serdeCls=StringLiteral
+      -> ^(TOK_INPUTFORMAT $inFmt $serdeCls)
     ;
 
 tabTypeExpr
@@ -1903,11 +1919,11 @@ createMaterializedViewStatement
 }
 @after { popMsg(state); }
     : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
-        rewriteEnabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
+        rewriteDisabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
         tablePropertiesPrefixed? KW_AS selectStatementWithCTE
     -> ^(TOK_CREATE_MATERIALIZED_VIEW $name
          ifNotExists?
-         rewriteEnabled?
+         rewriteDisabled?
          tableComment?
          tableRowFormat?
          tableFileFormat?

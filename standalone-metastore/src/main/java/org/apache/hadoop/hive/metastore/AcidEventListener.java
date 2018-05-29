@@ -19,10 +19,16 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
@@ -66,6 +72,51 @@ public class AcidEventListener extends MetaStoreEventListener {
       txnHandler = getTxnHandler();
       txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, partitionEvent.getTable(),
           partitionEvent.getPartitionIterator());
+    }
+  }
+
+  @Override
+  public void onAlterTable(AlterTableEvent tableEvent) throws MetaException {
+    if (!TxnUtils.isTransactionalTable(tableEvent.getNewTable())) {
+      return;
+    }
+    Table oldTable = tableEvent.getOldTable();
+    Table newTable = tableEvent.getNewTable();
+    if(!oldTable.getCatName().equalsIgnoreCase(newTable.getCatName()) ||
+        !oldTable.getDbName().equalsIgnoreCase(newTable.getDbName()) ||
+        !oldTable.getTableName().equalsIgnoreCase(newTable.getTableName())) {
+      txnHandler = getTxnHandler();
+      txnHandler.onRename(
+          oldTable.getCatName(), oldTable.getDbName(), oldTable.getTableName(), null,
+          newTable.getCatName(), newTable.getDbName(), newTable.getTableName(), null);
+    }
+  }
+  @Override
+  public void onAlterPartition(AlterPartitionEvent partitionEvent)  throws MetaException {
+    if (!TxnUtils.isTransactionalTable(partitionEvent.getTable())) {
+      return;
+    }
+    Partition oldPart = partitionEvent.getOldPartition();
+    Partition newPart = partitionEvent.getNewPartition();
+    Table t = partitionEvent.getTable();
+    String oldPartName = Warehouse.makePartName(t.getPartitionKeys(), oldPart.getValues());
+    String newPartName = Warehouse.makePartName(t.getPartitionKeys(), newPart.getValues());
+    if(!oldPartName.equals(newPartName)) {
+      txnHandler = getTxnHandler();
+      txnHandler.onRename(t.getCatName(), t.getDbName(), t.getTableName(), oldPartName,
+          t.getCatName(), t.getDbName(), t.getTableName(), newPartName);
+    }
+  }
+  @Override
+  public void onAlterDatabase(AlterDatabaseEvent dbEvent) throws MetaException {
+    Database oldDb = dbEvent.getOldDatabase();
+    Database newDb = dbEvent.getNewDatabase();
+    if(!oldDb.getCatalogName().equalsIgnoreCase(newDb.getCatalogName()) ||
+        !oldDb.getName().equalsIgnoreCase(newDb.getName())) {
+      txnHandler = getTxnHandler();
+      txnHandler.onRename(
+          oldDb.getCatalogName(), oldDb.getName(), null, null,
+          newDb.getCatalogName(), newDb.getName(), null, null);
     }
   }
 

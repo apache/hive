@@ -1,25 +1,25 @@
-PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n55(c1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n55
+POSTHOOK: query: CREATE TABLE dest1_n55(c1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE src.key = 86
+POSTHOOK: Output: default@dest1_n55
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n55 SELECT '  abc  ' WHERE src.key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE src.key = 86
+PREHOOK: Output: default@dest1_n55
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n55 SELECT '  abc  ' WHERE src.key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
+POSTHOOK: Output: default@dest1_n55
+POSTHOOK: Lineage: dest1_n55.c1 SIMPLE []
 PREHOOK: query: EXPLAIN
-SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
+SELECT '|', trim(dest1_n55.c1), '|', rtrim(dest1_n55.c1), '|', ltrim(dest1_n55.c1), '|' FROM dest1_n55
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
+SELECT '|', trim(dest1_n55.c1), '|', rtrim(dest1_n55.c1), '|', ltrim(dest1_n55.c1), '|' FROM dest1_n55
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -30,7 +30,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: dest1
+            alias: dest1_n55
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: '|' (type: string), trim(c1) (type: string), '|' (type: string), rtrim(c1) (type: string), '|' (type: string), ltrim(c1) (type: string), '|' (type: string)
@@ -51,12 +51,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
+PREHOOK: query: SELECT '|', trim(dest1_n55.c1), '|', rtrim(dest1_n55.c1), '|', ltrim(dest1_n55.c1), '|' FROM dest1_n55
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n55
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
+POSTHOOK: query: SELECT '|', trim(dest1_n55.c1), '|', rtrim(dest1_n55.c1), '|', ltrim(dest1_n55.c1), '|' FROM dest1_n55
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n55
 #### A masked pattern was here ####
 |	abc	|	  abc	|	abc  	|

@@ -5,14 +5,14 @@ set hive.mapred.mode=nonstrict;
 -- This test is used for testing EXPLAIN DEPENDENCY command
 
 -- Create some views
-CREATE VIEW V1 AS SELECT key, value from src;
-CREATE VIEW V2 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL;
+CREATE VIEW V1_n6 AS SELECT key, value from src;
+CREATE VIEW V2_n1 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL;
 CREATE VIEW V3 AS 
-  SELECT src1.key, src2.value FROM V2 src1 
+  SELECT src1.key, src2.value FROM V2_n1 src1 
   JOIN src src2 ON src1.key = src2.key WHERE src1.ds IS NOT NULL;
 CREATE VIEW V4 AS 
   SELECT src1.key, src2.value as value1, src3.value as value2 
-  FROM V1 src1 JOIN V2 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key;
+  FROM V1_n6 src1 JOIN V2_n1 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key;
 
 -- Simple select queries, union queries and join queries
 EXPLAIN DEPENDENCY 
@@ -27,8 +27,8 @@ EXPLAIN DEPENDENCY
   SELECT S1.key, S2.value FROM src S1 JOIN srcpart S2 ON S1.key = S2.key WHERE ds IS NOT NULL;
 
 -- With views
-EXPLAIN DEPENDENCY SELECT * FROM V1;
-EXPLAIN DEPENDENCY SELECT * FROM V2;
+EXPLAIN DEPENDENCY SELECT * FROM V1_n6;
+EXPLAIN DEPENDENCY SELECT * FROM V2_n1;
 EXPLAIN DEPENDENCY SELECT * FROM V3;
 EXPLAIN DEPENDENCY SELECT * FROM V4;
 

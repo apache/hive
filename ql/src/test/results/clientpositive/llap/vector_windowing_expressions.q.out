@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n3
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n3
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n3(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n3
+POSTHOOK: query: create table over10k_n3(
            t tinyint,
            si smallint,
            i int,
@@ -35,15 +35,15 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n3
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n3
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n3
 PREHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice, p_size,
 round(sum(p_retailprice) over w1 , 2) = round(sum(lag(p_retailprice,1,0.0)) over w1 + last_value(p_retailprice) over w1 , 2), 
@@ -409,10 +409,10 @@ Manufacturer#5	1611.66	6	3	4094.24	4089.24
 Manufacturer#5	1788.73	2	4	5882.969999999999	5877.969999999999
 Manufacturer#5	1789.69	31	5	7672.66	7667.66
 PREHOOK: query: explain vectorization detail
-select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k limit 100
+select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n3 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k limit 100
+select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -434,7 +434,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n3
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -523,13 +523,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k limit 100
+PREHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n3 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k limit 100
+POSTHOOK: query: select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n3
 #### A masked pattern was here ####
 s	si	f	_c3
 alice allen	400	76.31	337.23
@@ -633,10 +633,10 @@ fred king	511	43.61	457.22
 fred polk	261	39.18	248.73
 fred young	303	49.32	221.51001
 PREHOOK: query: explain vectorization detail
-select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k limit 100
+select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n3 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k limit 100
+select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -658,7 +658,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n3
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -747,13 +747,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k limit 100
+PREHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n3 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k limit 100
+POSTHOOK: query: select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n3
 #### A masked pattern was here ####
 s	i	_c2
 wendy garcia	65540	-18
@@ -857,10 +857,10 @@ irene quirinius	65724	-28
 tom laertes	65728	-25
 yuri johnson	65734	-27
 PREHOOK: query: explain vectorization detail
-select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k limit 100
+select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n3 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k limit 100
+select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -882,7 +882,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n3
                   Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -971,13 +971,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k limit 100
+PREHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n3 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k limit 100
+POSTHOOK: query: select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n3
 #### A masked pattern was here ####
 s	si	d	_c3
 jessica ellison	262	30.41	NULL
@@ -1081,10 +1081,10 @@ gabriella thompson	268	17.15	NULL
 calvin xylophone	275	49.32	NULL
 gabriella zipper	279	30.41	229.2
 PREHOOK: query: explain vectorization detail
-select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 100
+select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n3 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 100
+select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1106,7 +1106,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n3
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1196,13 +1196,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 100
+PREHOOK: query: select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n3 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 100
+POSTHOOK: query: select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n3 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n3
 #### A masked pattern was here ####
 s	lag_window_0
 yuri thompson	fred
@@ -1630,27 +1630,27 @@ Manufacturer#5	1241.29
 Manufacturer#5	1424.0900000000001
 Manufacturer#5	1515.25
 Manufacturer#5	1534.532
-PREHOOK: query: create table t1 (a1 int, b1 string)
+PREHOOK: query: create table t1_n23 (a1 int, b1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 (a1 int, b1 string)
+PREHOOK: Output: default@t1_n23
+POSTHOOK: query: create table t1_n23 (a1 int, b1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: create table t2 (a1 int, b1 string)
+POSTHOOK: Output: default@t1_n23
+PREHOOK: query: create table t2_n15 (a1 int, b1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2 (a1 int, b1 string)
+PREHOOK: Output: default@t2_n15
+POSTHOOK: query: create table t2_n15 (a1 int, b1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
+POSTHOOK: Output: default@t2_n15
 PREHOOK: query: explain vectorization detail
-from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select *
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select *
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1676,7 +1676,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n3
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1795,7 +1795,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.t1
+                            name: default.t1_n23
                     Select Operator
                       expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
                       outputColumnNames: _col0, _col1
@@ -1814,7 +1814,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.t2
+                            name: default.t2_n15
 
   Stage: Stage-3
     Dependency Collection
@@ -1827,7 +1827,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
+              name: default.t1_n23
 
   Stage: Stage-4
     Stats Work
@@ -1841,48 +1841,48 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t2
+              name: default.t2_n15
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+PREHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select *
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
-PREHOOK: Output: default@t1
-PREHOOK: Output: default@t2
-POSTHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+PREHOOK: Input: default@over10k_n3
+PREHOOK: Output: default@t1_n23
+PREHOOK: Output: default@t2_n15
+POSTHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select *
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
-POSTHOOK: Output: default@t1
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t1.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: t1.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: t2.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Input: default@over10k_n3
+POSTHOOK: Output: default@t1_n23
+POSTHOOK: Output: default@t2_n15
+POSTHOOK: Lineage: t1_n23.a1 SCRIPT [(over10k_n3)over10k_n3.FieldSchema(name:t, type:tinyint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:si, type:smallint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:i, type:int, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:b, type:bigint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:f, type:float, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:d, type:double, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:bo, type:boolean, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:s, type:string, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:ts, type:timestamp, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k_n3)over10k_n3.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t1_n23.b1 SIMPLE [(over10k_n3)over10k_n3.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n15.a1 SCRIPT [(over10k_n3)over10k_n3.FieldSchema(name:t, type:tinyint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:si, type:smallint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:i, type:int, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:b, type:bigint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:f, type:float, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:d, type:double, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:bo, type:boolean, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:s, type:string, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:ts, type:timestamp, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k_n3)over10k_n3.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t2_n15.b1 SIMPLE [(over10k_n3)over10k_n3.FieldSchema(name:s, type:string, comment:null), ]
 _col0	_col1
-PREHOOK: query: select * from t1 limit 3
+PREHOOK: query: select * from t1_n23 limit 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n23
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 limit 3
+POSTHOOK: query: select * from t1_n23 limit 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n23
 #### A masked pattern was here ####
-t1.a1	t1.b1
+t1_n23.a1	t1_n23.b1
 65542	rachel thompson
 131088	oscar brown
 262258	wendy steinbeck
-PREHOOK: query: select * from t2 limit 3
+PREHOOK: query: select * from t2_n15 limit 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2_n15
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t2 limit 3
+POSTHOOK: query: select * from t2_n15 limit 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2_n15
 #### A masked pattern was here ####
-t2.a1	t2.b1
+t2_n15.a1	t2_n15.b1
 65542	rachel thompson
 131088	oscar brown
 262258	wendy steinbeck
@@ -2206,42 +2206,42 @@ Manufacturer#5	1241.29
 Manufacturer#5	1424.0900000000001
 Manufacturer#5	1515.25
 Manufacturer#5	1534.532
-PREHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+PREHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select *
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
-PREHOOK: Output: default@t1
-PREHOOK: Output: default@t2
-POSTHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select *
+PREHOOK: Input: default@over10k_n3
+PREHOOK: Output: default@t1_n23
+PREHOOK: Output: default@t2_n15
+POSTHOOK: query: from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select *
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
-POSTHOOK: Output: default@t1
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t1.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: t1.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: t2.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Input: default@over10k_n3
+POSTHOOK: Output: default@t1_n23
+POSTHOOK: Output: default@t2_n15
+POSTHOOK: Lineage: t1_n23.a1 SCRIPT [(over10k_n3)over10k_n3.FieldSchema(name:t, type:tinyint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:si, type:smallint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:i, type:int, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:b, type:bigint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:f, type:float, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:d, type:double, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:bo, type:boolean, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:s, type:string, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:ts, type:timestamp, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k_n3)over10k_n3.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t1_n23.b1 SIMPLE [(over10k_n3)over10k_n3.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n15.a1 SCRIPT [(over10k_n3)over10k_n3.FieldSchema(name:t, type:tinyint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:si, type:smallint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:i, type:int, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:b, type:bigint, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:f, type:float, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:d, type:double, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:bo, type:boolean, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:s, type:string, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:ts, type:timestamp, comment:null), (over10k_n3)over10k_n3.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k_n3)over10k_n3.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t2_n15.b1 SIMPLE [(over10k_n3)over10k_n3.FieldSchema(name:s, type:string, comment:null), ]
 _col0	_col1
-PREHOOK: query: select * from t1 limit 3
+PREHOOK: query: select * from t1_n23 limit 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n23
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 limit 3
+POSTHOOK: query: select * from t1_n23 limit 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n23
 #### A masked pattern was here ####
-t1.a1	t1.b1
+t1_n23.a1	t1_n23.b1
 65542	rachel thompson
 131088	oscar brown
 262258	wendy steinbeck
-PREHOOK: query: select * from t2 limit 3
+PREHOOK: query: select * from t2_n15 limit 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2_n15
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t2 limit 3
+POSTHOOK: query: select * from t2_n15 limit 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2_n15
 #### A masked pattern was here ####
-t2.a1	t2.b1
+t2_n15.a1	t2_n15.b1
 65542	rachel thompson
 131088	oscar brown
 262258	wendy steinbeck

@@ -1,9 +1,9 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
-create table union_subq_union(key int, value string);
+create table union_subq_union_n2(key int, value string);
 
 explain
-insert overwrite table union_subq_union 
+insert overwrite table union_subq_union_n2 
 select * from (
 
 select * from (
@@ -23,7 +23,7 @@ select key, value from src
 ) aa
 ;
 
-insert overwrite table union_subq_union 
+insert overwrite table union_subq_union_n2 
 select * from (
 
 select * from (
@@ -43,4 +43,4 @@ select key, value from src
 ) aa
 ;
 
-select * from union_subq_union order by key, value limit 20;
+select * from union_subq_union_n2 order by key, value limit 20;

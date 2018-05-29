@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class OctetLength extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -44,7 +45,7 @@ public class OctetLength extends VectorExpression {
 
   // Calculate the length of the UTF-8 strings in input vector and place results in output vector.
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);

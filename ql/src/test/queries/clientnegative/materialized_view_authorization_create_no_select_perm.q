@@ -11,4 +11,4 @@ insert into amvnsp_table values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonni
 
 set user.name=user2;
 
-create materialized view amvnsp_mat_view as select a, c from amvnsp_table;
+create materialized view amvnsp_mat_view disable rewrite as select a, c from amvnsp_table;

@@ -178,6 +178,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       QueryFragmentCounters counters, TypeDescription schema, Map<Path, PartitionDesc> parts)
           throws IOException {
+    assert cache != null;
     this.cache = cache;
     this.bufferManager = bufferManager;
     this.bufferFactory = new BufferObjectFactory() {
@@ -561,6 +562,23 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     @Override
     public CompressionCodec getCompressionCodec() {
       return null;
+    }
+
+    @Override
+    public long getFileBytes(int column) {
+      long size = 0L;
+      List<CacheOutputReceiver> l = this.colStreams.get(column);
+      if (l == null) {
+        return size;
+      }
+      for (CacheOutputReceiver c : l) {
+        if (c.getData() != null && !c.suppressed && c.getName().getArea() != StreamName.Area.INDEX) {
+          for (MemoryBuffer buffer : c.getData()) {
+            size += buffer.getByteBufferRaw().limit();
+          }
+        }
+      }
+      return size;
     }
   }
 

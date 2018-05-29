@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DecimalUtil;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -48,7 +49,7 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     // return immediately if batch is empty
     final int n = batch.size;

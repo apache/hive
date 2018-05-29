@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Cast a string to a decimal.
@@ -62,7 +63,7 @@ public class CastStringToDecimal extends VectorExpression {
        * making a new string.
        */
       s = new String(inputColVector.vector[i], inputColVector.start[i], inputColVector.length[i], "UTF-8");
-      outputColVector.vector[i].set(HiveDecimal.create(s));
+      outputColVector.set(i, HiveDecimal.create(s));
     } catch (Exception e) {
 
       // for any exception in conversion to decimal, produce NULL
@@ -72,7 +73,7 @@ public class CastStringToDecimal extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);

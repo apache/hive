@@ -528,14 +528,14 @@ PREHOOK: Input: database:name2
 POSTHOOK: query: use name2
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:name2
-PREHOOK: query: CREATE TABLE IF NOT EXISTS table1 (col1 int, col2 string)
+PREHOOK: query: CREATE TABLE IF NOT EXISTS table1_n18 (col1 int, col2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:name2
-PREHOOK: Output: name2@table1
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS table1 (col1 int, col2 string)
+PREHOOK: Output: name2@table1_n18
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS table1_n18 (col1 int, col2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:name2
-POSTHOOK: Output: name2@table1
+POSTHOOK: Output: name2@table1_n18
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -719,28 +719,28 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name1@name2
 name4               	string              	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"name3\":\"true\",\"name4\":\"true\"}}	 
-PREHOOK: query: DESCRIBE name2.table1
+PREHOOK: query: DESCRIBE name2.table1_n18
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: name2@table1
-POSTHOOK: query: DESCRIBE name2.table1
+PREHOOK: Input: name2@table1_n18
+POSTHOOK: query: DESCRIBE name2.table1_n18
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: name2@table1
+POSTHOOK: Input: name2@table1_n18
 col1                	int                 	                    
 col2                	string              	                    
-PREHOOK: query: DESCRIBE name2.table1 col1
+PREHOOK: query: DESCRIBE name2.table1_n18 col1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: name2@table1
-POSTHOOK: query: DESCRIBE name2.table1 col1
+PREHOOK: Input: name2@table1_n18
+POSTHOOK: query: DESCRIBE name2.table1_n18 col1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: name2@table1
+POSTHOOK: Input: name2@table1_n18
 col1                	int                 	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
-PREHOOK: query: DESCRIBE name2.table1 col2
+PREHOOK: query: DESCRIBE name2.table1_n18 col2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: name2@table1
-POSTHOOK: query: DESCRIBE name2.table1 col2
+PREHOOK: Input: name2@table1_n18
+POSTHOOK: query: DESCRIBE name2.table1_n18 col2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: name2@table1
+POSTHOOK: Input: name2@table1_n18
 col2                	string              	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
 PREHOOK: query: use name2
@@ -749,62 +749,62 @@ PREHOOK: Input: database:name2
 POSTHOOK: query: use name2
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:name2
-PREHOOK: query: DESCRIBE table1
+PREHOOK: query: DESCRIBE table1_n18
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: name2@table1
-POSTHOOK: query: DESCRIBE table1
+PREHOOK: Input: name2@table1_n18
+POSTHOOK: query: DESCRIBE table1_n18
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: name2@table1
+POSTHOOK: Input: name2@table1_n18
 col1                	int                 	                    
 col2                	string              	                    
-PREHOOK: query: DESCRIBE table1 col1
+PREHOOK: query: DESCRIBE table1_n18 col1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: name2@table1
-POSTHOOK: query: DESCRIBE table1 col1
+PREHOOK: Input: name2@table1_n18
+POSTHOOK: query: DESCRIBE table1_n18 col1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: name2@table1
+POSTHOOK: Input: name2@table1_n18
 col1                	int                 	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
-PREHOOK: query: DESCRIBE table1 col2
+PREHOOK: query: DESCRIBE table1_n18 col2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: name2@table1
-POSTHOOK: query: DESCRIBE table1 col2
+PREHOOK: Input: name2@table1_n18
+POSTHOOK: query: DESCRIBE table1_n18 col2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: name2@table1
+POSTHOOK: Input: name2@table1_n18
 col2                	string              	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
-PREHOOK: query: DESCRIBE name2.table1
+PREHOOK: query: DESCRIBE name2.table1_n18
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: name2@table1
-POSTHOOK: query: DESCRIBE name2.table1
+PREHOOK: Input: name2@table1_n18
+POSTHOOK: query: DESCRIBE name2.table1_n18
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: name2@table1
+POSTHOOK: Input: name2@table1_n18
 col1                	int                 	                    
 col2                	string              	                    
-PREHOOK: query: DESCRIBE name2.table1 col1
+PREHOOK: query: DESCRIBE name2.table1_n18 col1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: name2@table1
-POSTHOOK: query: DESCRIBE name2.table1 col1
+PREHOOK: Input: name2@table1_n18
+POSTHOOK: query: DESCRIBE name2.table1_n18 col1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: name2@table1
+POSTHOOK: Input: name2@table1_n18
 col1                	int                 	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
-PREHOOK: query: DESCRIBE name2.table1 col2
+PREHOOK: query: DESCRIBE name2.table1_n18 col2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: name2@table1
-POSTHOOK: query: DESCRIBE name2.table1 col2
+PREHOOK: Input: name2@table1_n18
+POSTHOOK: query: DESCRIBE name2.table1_n18 col2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: name2@table1
+POSTHOOK: Input: name2@table1_n18
 col2                	string              	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
-PREHOOK: query: DROP TABLE IF EXISTS table1
+PREHOOK: query: DROP TABLE IF EXISTS table1_n18
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: name2@table1
-PREHOOK: Output: name2@table1
-POSTHOOK: query: DROP TABLE IF EXISTS table1
+PREHOOK: Input: name2@table1_n18
+PREHOOK: Output: name2@table1_n18
+POSTHOOK: query: DROP TABLE IF EXISTS table1_n18
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: name2@table1
-POSTHOOK: Output: name2@table1
+POSTHOOK: Input: name2@table1_n18
+POSTHOOK: Output: name2@table1_n18
 PREHOOK: query: use name1
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:name1
@@ -833,9 +833,9 @@ PREHOOK: Input: database:name2
 POSTHOOK: query: use name2
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:name2
-PREHOOK: query: DROP TABLE IF EXISTS table1
+PREHOOK: query: DROP TABLE IF EXISTS table1_n18
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS table1
+POSTHOOK: query: DROP TABLE IF EXISTS table1_n18
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP DATABASE IF EXISTS name1
 PREHOOK: type: DROPDATABASE

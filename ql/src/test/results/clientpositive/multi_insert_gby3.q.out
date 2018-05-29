@@ -1,19 +1,19 @@
-PREHOOK: query: create table e1 (key string, keyD double)
+PREHOOK: query: create table e1_n2 (key string, keyD double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e1
-POSTHOOK: query: create table e1 (key string, keyD double)
+PREHOOK: Output: default@e1_n2
+POSTHOOK: query: create table e1_n2 (key string, keyD double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e1
-PREHOOK: query: create table e2 (key string, keyD double, value string)
+POSTHOOK: Output: default@e1_n2
+PREHOOK: query: create table e2_n3 (key string, keyD double, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e2
-POSTHOOK: query: create table e2 (key string, keyD double, value string)
+PREHOOK: Output: default@e2_n3
+POSTHOOK: query: create table e2_n3 (key string, keyD double, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e2
+POSTHOOK: Output: default@e2_n3
 PREHOOK: query: create table e3 (key string, keyD double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -24,16 +24,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e3
 PREHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -83,7 +83,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.e1
+                    name: default.e1_n2
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: double)
                 outputColumnNames: key, keyd
@@ -116,7 +116,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.e2
+                    name: default.e2_n3
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: double), _col2 (type: string)
                 outputColumnNames: key, keyd, value
@@ -141,7 +141,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
+              name: default.e1_n2
 
   Stage: Stage-3
     Stats Work
@@ -149,7 +149,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, keyd
           Column Types: string, double
-          Table: default.e1
+          Table: default.e1_n2
 
   Stage: Stage-4
     Map Reduce
@@ -180,7 +180,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, keyd, value
           Column Types: string, double, string
-          Table: default.e2
+          Table: default.e2_n3
 
   Stage: Stage-1
     Move Operator
@@ -190,7 +190,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e2
+              name: default.e2_n3
 
   Stage: Stage-6
     Map Reduce
@@ -217,16 +217,16 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -276,7 +276,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.e1
+                    name: default.e1_n2
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: double)
                 outputColumnNames: key, keyd
@@ -309,7 +309,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.e2
+                    name: default.e2_n3
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: double), _col2 (type: string)
                 outputColumnNames: key, keyd, value
@@ -334,7 +334,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
+              name: default.e1_n2
 
   Stage: Stage-3
     Stats Work
@@ -342,7 +342,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, keyd
           Column Types: string, double
-          Table: default.e1
+          Table: default.e1_n2
 
   Stage: Stage-4
     Map Reduce
@@ -373,7 +373,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, keyd, value
           Column Types: string, double, string
-          Table: default.e2
+          Table: default.e2_n3
 
   Stage: Stage-1
     Move Operator
@@ -383,7 +383,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e2
+              name: default.e2_n3
 
   Stage: Stage-6
     Map Reduce
@@ -409,35 +409,35 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@e1
-PREHOOK: Output: default@e2
+PREHOOK: Output: default@e1_n2
+PREHOOK: Output: default@e2_n3
 POSTHOOK: query: FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@e1
-POSTHOOK: Output: default@e2
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e1.keyd EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.keyd EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from e1
+POSTHOOK: Output: default@e1_n2
+POSTHOOK: Output: default@e2_n3
+POSTHOOK: Lineage: e1_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e1_n2.keyd EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n3.keyd EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e1
+PREHOOK: Input: default@e1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from e1
+POSTHOOK: query: select * from e1_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e1
+POSTHOOK: Input: default@e1_n2
 #### A masked pattern was here ####
 0	1.0
 10	1.0
@@ -748,13 +748,13 @@ POSTHOOK: Input: default@e1
 96	1.0
 97	1.0
 98	1.0
-PREHOOK: query: select * from e2
+PREHOOK: query: select * from e2_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e2
+PREHOOK: Input: default@e2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from e2
+POSTHOOK: query: select * from e2_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e2
+POSTHOOK: Input: default@e2_n3
 #### A masked pattern was here ####
 0	0.0	val_0
 10	10.0	val_10
@@ -1066,35 +1066,35 @@ POSTHOOK: Input: default@e2
 97	194.0	val_97
 98	196.0	val_98
 PREHOOK: query: FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@e1
-PREHOOK: Output: default@e2
+PREHOOK: Output: default@e1_n2
+PREHOOK: Output: default@e2_n3
 POSTHOOK: query: FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@e1
-POSTHOOK: Output: default@e2
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e1.keyd EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.keyd EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from e1
+POSTHOOK: Output: default@e1_n2
+POSTHOOK: Output: default@e2_n3
+POSTHOOK: Lineage: e1_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e1_n2.keyd EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n3.keyd EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e1
+PREHOOK: Input: default@e1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from e1
+POSTHOOK: query: select * from e1_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e1
+POSTHOOK: Input: default@e1_n2
 #### A masked pattern was here ####
 0	1.0
 10	1.0
@@ -1405,13 +1405,13 @@ POSTHOOK: Input: default@e1
 96	1.0
 97	1.0
 98	1.0
-PREHOOK: query: select * from e2
+PREHOOK: query: select * from e2_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e2
+PREHOOK: Input: default@e2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from e2
+POSTHOOK: query: select * from e2_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e2
+POSTHOOK: Input: default@e2_n3
 #### A masked pattern was here ####
 0	0.0	val_0
 10	10.0	val_10
@@ -1724,14 +1724,14 @@ POSTHOOK: Input: default@e2
 98	196.0	val_98
 PREHOOK: query: explain
 from src
-insert overwrite table e1
+insert overwrite table e1_n2
 select key, count(distinct value) group by key
 insert overwrite table e3
 select value, count(distinct key) group by value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table e1
+insert overwrite table e1_n2
 select key, count(distinct value) group by key
 insert overwrite table e3
 select value, count(distinct key) group by value
@@ -1802,7 +1802,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.e1
+                  name: default.e1_n2
             Select Operator
               expressions: _col0 (type: string), _col1 (type: double)
               outputColumnNames: key, keyd
@@ -1827,7 +1827,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
+              name: default.e1_n2
 
   Stage: Stage-3
     Stats Work
@@ -1835,7 +1835,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, keyd
           Column Types: string, double
-          Table: default.e1
+          Table: default.e1_n2
 
   Stage: Stage-4
     Map Reduce
@@ -1948,18 +1948,18 @@ STAGE PLANS:
 
 PREHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
 INSERT overwrite table e3
     SELECT key, COUNT(distinct keyD) group by key, keyD, value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n2
     SELECT key, COUNT(distinct value) group by key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n3
     SELECT key, sum(keyD), value group by key, value
 INSERT overwrite table e3
     SELECT key, COUNT(distinct keyD) group by key, keyD, value
@@ -2026,7 +2026,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.e1
+                    name: default.e1_n2
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: double)
                 outputColumnNames: key, keyd
@@ -2059,7 +2059,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.e2
+                    name: default.e2_n3
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: double), _col2 (type: string)
                 outputColumnNames: key, keyd, value
@@ -2084,7 +2084,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
+              name: default.e1_n2
 
   Stage: Stage-4
     Stats Work
@@ -2092,7 +2092,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, keyd
           Column Types: string, double
-          Table: default.e1
+          Table: default.e1_n2
 
   Stage: Stage-5
     Map Reduce
@@ -2123,7 +2123,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, keyd, value
           Column Types: string, double, string
-          Table: default.e2
+          Table: default.e2_n3
 
   Stage: Stage-9
     Stats Work
@@ -2141,7 +2141,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e2
+              name: default.e2_n3
 
   Stage: Stage-7
     Map Reduce

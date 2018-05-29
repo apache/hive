@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class TxnCommandsBaseForTests {
+  private static final Logger LOG = LoggerFactory.getLogger(TxnCommandsBaseForTests.class);
   //bucket count for test tables; set it to 1 for easier debugging
   final static int BUCKET_COUNT = 2;
   @Rule
@@ -76,6 +78,16 @@ public abstract class TxnCommandsBaseForTests {
   }
   void setUpInternal() throws Exception {
     initHiveConf();
+    Path workDir = new Path(System.getProperty("test.tmp.dir",
+        "target" + File.separator + "test" + File.separator + "tmp"));
+    hiveConf.set("mapred.local.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "local");
+    hiveConf.set("mapred.system.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "system");
+    hiveConf.set("mapreduce.jobtracker.staging.root.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "staging");
+    hiveConf.set("mapred.temp.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "temp");
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getWarehouseDir());
@@ -85,6 +97,7 @@ public abstract class TxnCommandsBaseForTests {
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolean("mapred.input.dir.recursive", true);
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.prepDb(hiveConf);
     File f = new File(getWarehouseDir());
@@ -149,6 +162,7 @@ public abstract class TxnCommandsBaseForTests {
   }
 
   List<String> runStatementOnDriver(String stmt) throws Exception {
+    LOG.info("Running the query: " + stmt);
     CommandProcessorResponse cpr = d.run(stmt);
     if(cpr.getResponseCode() != 0) {
       throw new RuntimeException(stmt + " failed: " + cpr);
@@ -207,7 +221,8 @@ public abstract class TxnCommandsBaseForTests {
   void checkExpected(List<String> rs, String[][] expected, String msg, Logger LOG, boolean checkFileName) {
     LOG.warn(testName.getMethodName() + ": read data(" + msg + "): ");
     logResult(LOG, rs);
-    Assert.assertEquals( testName.getMethodName() + ": " + msg, expected.length, rs.size());
+    Assert.assertEquals(testName.getMethodName() + ": " + msg + "; " + rs,
+        expected.length, rs.size());
     //verify data and layout
     for(int i = 0; i < expected.length; i++) {
       Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));

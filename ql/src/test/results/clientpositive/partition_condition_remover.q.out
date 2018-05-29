@@ -1,36 +1,36 @@
-PREHOOK: query: drop table foo
+PREHOOK: query: drop table foo_n5
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table foo
+POSTHOOK: query: drop table foo_n5
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table foo (i int) partitioned by (s string)
+PREHOOK: query: create table foo_n5 (i int) partitioned by (s string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@foo
-POSTHOOK: query: create table foo (i int) partitioned by (s string)
+PREHOOK: Output: default@foo_n5
+POSTHOOK: query: create table foo_n5 (i int) partitioned by (s string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@foo
-PREHOOK: query: insert overwrite table foo partition(s='foo') select cint from alltypesorc limit 10
+POSTHOOK: Output: default@foo_n5
+PREHOOK: query: insert overwrite table foo_n5 partition(s='foo_n5') select cint from alltypesorc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@foo@s=foo
-POSTHOOK: query: insert overwrite table foo partition(s='foo') select cint from alltypesorc limit 10
+PREHOOK: Output: default@foo_n5@s=foo_n5
+POSTHOOK: query: insert overwrite table foo_n5 partition(s='foo_n5') select cint from alltypesorc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@foo@s=foo
-POSTHOOK: Lineage: foo PARTITION(s=foo).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-PREHOOK: query: insert overwrite table foo partition(s='bar') select cint from alltypesorc limit 10
+POSTHOOK: Output: default@foo_n5@s=foo_n5
+POSTHOOK: Lineage: foo_n5 PARTITION(s=foo_n5).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: insert overwrite table foo_n5 partition(s='bar') select cint from alltypesorc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@foo@s=bar
-POSTHOOK: query: insert overwrite table foo partition(s='bar') select cint from alltypesorc limit 10
+PREHOOK: Output: default@foo_n5@s=bar
+POSTHOOK: query: insert overwrite table foo_n5 partition(s='bar') select cint from alltypesorc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@foo@s=bar
-POSTHOOK: Lineage: foo PARTITION(s=bar).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-PREHOOK: query: explain select * from foo where s not in ('bar')
+POSTHOOK: Output: default@foo_n5@s=bar
+POSTHOOK: Lineage: foo_n5 PARTITION(s=bar).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: explain select * from foo_n5 where s not in ('bar')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from foo where s not in ('bar')
+POSTHOOK: query: explain select * from foo_n5 where s not in ('bar')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -41,7 +41,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: foo
+          alias: foo_n5
           Statistics: Num rows: 10 Data size: 90 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: i (type: int), s (type: string)
@@ -49,31 +49,31 @@ STAGE PLANS:
             Statistics: Num rows: 10 Data size: 90 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: select * from foo where s not in ('bar')
+PREHOOK: query: select * from foo_n5 where s not in ('bar')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@foo
-PREHOOK: Input: default@foo@s=foo
+PREHOOK: Input: default@foo_n5
+PREHOOK: Input: default@foo_n5@s=foo_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from foo where s not in ('bar')
+POSTHOOK: query: select * from foo_n5 where s not in ('bar')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@foo
-POSTHOOK: Input: default@foo@s=foo
+POSTHOOK: Input: default@foo_n5
+POSTHOOK: Input: default@foo_n5@s=foo_n5
 #### A masked pattern was here ####
-528534767	foo
-528534767	foo
-528534767	foo
-528534767	foo
-528534767	foo
-528534767	foo
-528534767	foo
-528534767	foo
-528534767	foo
-528534767	foo
-PREHOOK: query: drop table foo
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+PREHOOK: query: drop table foo_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@foo
-PREHOOK: Output: default@foo
-POSTHOOK: query: drop table foo
+PREHOOK: Input: default@foo_n5
+PREHOOK: Output: default@foo_n5
+POSTHOOK: query: drop table foo_n5
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@foo
-POSTHOOK: Output: default@foo
+POSTHOOK: Input: default@foo_n5
+POSTHOOK: Output: default@foo_n5

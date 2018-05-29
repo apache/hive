@@ -2,33 +2,33 @@
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=true;
 
-create table a(key int, value int);
+create table a_n17(key int, value int);
 
-insert into table a values (1,2),(1,2),(1,3),(2,3);
+insert into table a_n17 values (1,2),(1,2),(1,3),(2,3);
 
-create table b(key int, value int);
+create table b_n13(key int, value int);
 
-insert into table b values (1,2),(2,3);
+insert into table b_n13 values (1,2),(2,3);
 
-select key, count(1) as c from a group by key intersect all select value, max(key) as c from b group by value;
+select key, count(1) as c from a_n17 group by key intersect all select value, max(key) as c from b_n13 group by value;
 
-select * from a intersect distinct select * from b;
+select * from a_n17 intersect distinct select * from b_n13;
 
-select * from b intersect distinct select * from a intersect distinct select * from b;
+select * from b_n13 intersect distinct select * from a_n17 intersect distinct select * from b_n13;
 
-select * from a intersect distinct select * from b union all select * from a intersect distinct select * from b;
+select * from a_n17 intersect distinct select * from b_n13 union all select * from a_n17 intersect distinct select * from b_n13;
 
-select * from a intersect distinct select * from b union select * from a intersect distinct select * from b;
+select * from a_n17 intersect distinct select * from b_n13 union select * from a_n17 intersect distinct select * from b_n13;
 
-select * from a intersect distinct select * from b intersect distinct select * from a intersect distinct select * from b;
+select * from a_n17 intersect distinct select * from b_n13 intersect distinct select * from a_n17 intersect distinct select * from b_n13;
 
-select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
+select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub1 
 intersect distinct 
-select * from (select a.key, b.value from a join b on a.key=b.key)sub2; 
+select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub2; 
 
-select * from (select a.key, b.value from a join b on a.key=b.key)sub1
+select * from (select a_n17.key, b_n13.value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub1
 intersect distinct
-select * from (select b.value as key, a.key as value from a join b on a.key=b.key)sub2;
+select * from (select b_n13.value as key, a_n17.key as value from a_n17 join b_n13 on a_n17.key=b_n13.key)sub2;
 
 explain select * from src intersect distinct select * from src;
 
@@ -38,6 +38,6 @@ explain select * from src intersect distinct select * from src intersect distinc
 
 select * from src intersect distinct select * from src intersect distinct select * from src intersect distinct select * from src;
 
-explain select value from a group by value intersect distinct select key from b group by key;
+explain select value from a_n17 group by value intersect distinct select key from b_n13 group by key;
 
-select value from a group by value intersect distinct select key from b group by key;
+select value from a_n17 group by value intersect distinct select key from b_n13 group by key;

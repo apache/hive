@@ -25,12 +25,12 @@
 
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-standalone-metastore</artifactId>
-  <version>3.1.0-SNAPSHOT</version>
+  <version>4.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Hive Standalone Metastore</name>
 
   <properties>
-    <hive.version.shortname>3.0.0</hive.version.shortname>
+    <hive.version.shortname>3.1.0</hive.version.shortname>
 
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -80,7 +80,7 @@
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.8.2</log4j2.version>
     <mockito-all.version>1.10.19</mockito-all.version>
-    <orc.version>1.4.3</orc.version>
+    <orc.version>1.5.0</orc.version>
     <protobuf.version>2.5.0</protobuf.version>
     <sqlline.version>1.3.0</sqlline.version>
     <storage-api.version>2.7.0-SNAPSHOT</storage-api.version>
@@ -399,6 +399,8 @@
                     <include>Partition.java</include>
                     <include>SerDeInfo.java</include>
                     <include>StorageDescriptor.java</include>
+                    <include>ColumnStatisticsDesc.java</include>
+                    <include>ColumnStatisticsObj.java</include>
                   </includes>
                   <tokenValueMap>${basedir}/src/main/resources/thrift-replacements.txt</tokenValueMap>
                   <regex>true</regex>

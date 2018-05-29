@@ -6,9 +6,9 @@ SET hive.vectorized.execution.reduce.enabled=true;
 set hive.vectorized.execution.ptf.enabled=true;
 set hive.fetch.task.conversion=none;
 
-drop table over10k;
+drop table over10k_n8;
 
-create table over10k(
+create table over10k_n8(
            t tinyint,
            si smallint,
            i int,
@@ -23,7 +23,7 @@ create table over10k(
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../../data/files/over10k' into table over10k;
+load data local inpath '../../data/files/over10k' into table over10k_n8;
 
 set hive.limit.pushdown.memory.usage=.8;
 
@@ -46,18 +46,18 @@ select *
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a 
 where r < 2;
 
--- over10k tests
+-- over10k_n8 tests
 explain vectorization detail
 select * 
-from (select t, f, rank() over(partition by t order by f) r from over10k) a 
+from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5;
 
 select * 
-from (select t, f, rank() over(partition by t order by f) r from over10k) a 
+from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5;
 
 select *
-from (select t, f, row_number() over(partition by t order by f) r from over10k) a
+from (select t, f, row_number() over(partition by t order by f) r from over10k_n8) a
 where r < 8 and t < 0;
 
 set hive.vectorized.execution.enabled=false;

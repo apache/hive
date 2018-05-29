@@ -31,50 +31,50 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TAB
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@doctors4
-PREHOOK: query: CREATE TABLE episodes (
+PREHOOK: query: CREATE TABLE episodes_n1 (
   title string COMMENT "episode title",
   air_date string COMMENT "initial date",
   doctor int COMMENT "main actor playing the Doctor in episode")
 STORED AS AVRO
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@episodes
-POSTHOOK: query: CREATE TABLE episodes (
+PREHOOK: Output: default@episodes_n1
+POSTHOOK: query: CREATE TABLE episodes_n1 (
   title string COMMENT "episode title",
   air_date string COMMENT "initial date",
   doctor int COMMENT "main actor playing the Doctor in episode")
 STORED AS AVRO
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@episodes
-PREHOOK: query: DESCRIBE episodes
+POSTHOOK: Output: default@episodes_n1
+PREHOOK: query: DESCRIBE episodes_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@episodes
-POSTHOOK: query: DESCRIBE episodes
+PREHOOK: Input: default@episodes_n1
+POSTHOOK: query: DESCRIBE episodes_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@episodes
+POSTHOOK: Input: default@episodes_n1
 title               	string              	episode title       
 air_date            	string              	initial date        
 doctor              	int                 	main actor playing the Doctor in episode
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@episodes
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
+PREHOOK: Output: default@episodes_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@episodes
+POSTHOOK: Output: default@episodes_n1
 PREHOOK: query: SELECT e.title, e.air_date, d.first_name, d.last_name, e.air_date
-FROM doctors4 d JOIN episodes e ON (d.number=e.doctor)
+FROM doctors4 d JOIN episodes_n1 e ON (d.number=e.doctor)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@doctors4
-PREHOOK: Input: default@episodes
+PREHOOK: Input: default@episodes_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT e.title, e.air_date, d.first_name, d.last_name, e.air_date
-FROM doctors4 d JOIN episodes e ON (d.number=e.doctor)
+FROM doctors4 d JOIN episodes_n1 e ON (d.number=e.doctor)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@doctors4
-POSTHOOK: Input: default@episodes
+POSTHOOK: Input: default@episodes_n1
 #### A masked pattern was here ####
 An Unearthly Child	23 November 1963	William	Hartnell	23 November 1963
 Castrolava	4 January 1982	Peter	Davison	4 January 1982

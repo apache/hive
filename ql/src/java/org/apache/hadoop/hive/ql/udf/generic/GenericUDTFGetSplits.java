@@ -128,6 +128,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   protected transient StringObjectInspector stringOI;
   protected transient IntObjectInspector intOI;
   protected transient JobConf jc;
+  private boolean orderByQuery;
   private ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
   private DataOutput dos = new DataOutputStream(bos);
 
@@ -202,8 +203,17 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     TezWork tezWork = fragment.work;
     Schema schema = fragment.schema;
 
+    if (orderByQuery) {
+      jc.setBoolean(TezSplitGrouper.TEZ_GROUPING_SPLIT_BY_LENGTH, false);
+      jc.setBoolean(TezSplitGrouper.TEZ_GROUPING_SPLIT_BY_COUNT, true);
+      jc.setInt(TezSplitGrouper.TEZ_GROUPING_SPLIT_COUNT, 1);
+    }
     try {
-      for (InputSplit s : getSplits(jc, num, tezWork, schema, applicationId)) {
+      InputSplit[] splits = getSplits(jc, num, tezWork, schema, applicationId);
+      if (orderByQuery && splits.length > 1) {
+        throw new HiveException("Got more than one split (Got: " + splits.length + ") for order by query: " + query);
+      }
+      for (InputSplit s : splits) {
         Object[] os = new Object[1];
         bos.reset();
         s.write(dos);
@@ -231,6 +241,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     conf.setBoolean(TezSplitGrouper.TEZ_GROUPING_NODE_LOCAL_ONLY, true);
     // Tez/LLAP requires RPC query plan
     HiveConf.setBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN, true);
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED, false);
 
     try {
       jc = DagUtils.getInstance().createConfiguration(conf);
@@ -255,20 +266,30 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       }
 
       QueryPlan plan = driver.getPlan();
+      if (plan.getQueryProperties().hasOuterOrderBy()) {
+        orderByQuery = true;
+      }
       List<Task<?>> roots = plan.getRootTasks();
       Schema schema = convertSchema(plan.getResultSchema());
-
+      boolean fetchTask = plan.getFetchTask() != null;
+      TezWork tezWork;
       if (roots == null || roots.size() != 1 || !(roots.get(0) instanceof TezTask)) {
-        throw new HiveException("Was expecting a single TezTask.");
+        // fetch task query
+        if (fetchTask) {
+          tezWork = null;
+        } else {
+          throw new HiveException("Was expecting a single TezTask or FetchTask.");
+        }
+      } else {
+        tezWork = ((TezTask) roots.get(0)).getWork();
       }
 
-      TezWork tezWork = ((TezTask)roots.get(0)).getWork();
-
-      if (tezWork.getAllWork().size() != 1) {
+      if (tezWork == null || tezWork.getAllWork().size() != 1) {
 
         String tableName = "table_"+UUID.randomUUID().toString().replaceAll("[^A-Za-z0-9 ]", "");
 
-        String ctas = "create temporary table " + tableName + " as " + query;
+        String storageFormatString = getTempTableStorageFormatString(conf);
+        String ctas = "create temporary table " + tableName + " " + storageFormatString + " as " + query;
         LOG.info("Materializing the query for LLAPIF; CTAS: " + ctas);
         driver.releaseResources();
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
@@ -639,6 +660,18 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     }
     Schema Schema = new Schema(colDescs);
     return Schema;
+  }
+
+  private String getTempTableStorageFormatString(HiveConf conf) {
+    String formatString = "";
+    String storageFormatOption =
+        conf.getVar(HiveConf.ConfVars.LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT).toLowerCase();
+    if (storageFormatOption.equals("text")) {
+      formatString = "stored as textfile";
+    } else if (storageFormatOption.equals("orc")) {
+      formatString = "stored as orc";
+    }
+    return formatString;
   }
 
   @Override

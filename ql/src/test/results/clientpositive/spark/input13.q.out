@@ -1,39 +1,39 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n77(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n77
+POSTHOOK: query: CREATE TABLE dest1_n77(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@dest1_n77
+PREHOOK: query: CREATE TABLE dest2_n16(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest2_n16
+POSTHOOK: query: CREATE TABLE dest2_n16(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
-PREHOOK: query: CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@dest2_n16
+PREHOOK: query: CREATE TABLE dest3_n1(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest3
-POSTHOOK: query: CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest3_n1
+POSTHOOK: query: CREATE TABLE dest3_n1(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest3
+POSTHOOK: Output: default@dest3_n1
 PREHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
-INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE TABLE dest1_n77 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2_n16 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3_n1 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
-INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE TABLE dest1_n77 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2_n16 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3_n1 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -70,7 +70,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.dest1
+                            name: default.dest1_n77
                   Filter Operator
                     predicate: ((key < 200) and (key >= 100)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -85,7 +85,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.dest2
+                            name: default.dest2_n16
                   Filter Operator
                     predicate: ((key < 300) and (key >= 200)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -100,7 +100,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.dest3
+                            name: default.dest3_n1
                   Filter Operator
                     predicate: (key >= 300) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -125,7 +125,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n77
 
   Stage: Stage-5
     Stats Work
@@ -139,7 +139,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n16
 
   Stage: Stage-6
     Stats Work
@@ -156,7 +156,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest3
+              name: default.dest3_n1
 
   Stage: Stage-7
     Stats Work
@@ -169,39 +169,39 @@ STAGE PLANS:
           destination: target/warehouse/dest4.out
 
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
-INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE TABLE dest1_n77 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2_n16 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3_n1 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
-PREHOOK: Output: default@dest3@ds=2008-04-08/hr=12
+PREHOOK: Output: default@dest1_n77
+PREHOOK: Output: default@dest2_n16
+PREHOOK: Output: default@dest3_n1@ds=2008-04-08/hr=12
 PREHOOK: Output: target/warehouse/dest4.out
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
-INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE TABLE dest1_n77 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2_n16 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3_n1 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
 INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Output: default@dest3@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest1_n77
+POSTHOOK: Output: default@dest2_n16
+POSTHOOK: Output: default@dest3_n1@ds=2008-04-08/hr=12
 POSTHOOK: Output: target/warehouse/dest4.out
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Lineage: dest1_n77.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n77.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n16.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n16.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest3_n1 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n77.* FROM dest1_n77
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n77
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n77.* FROM dest1_n77
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n77
 #### A masked pattern was here ####
 86	val_86
 27	val_27
@@ -287,13 +287,13 @@ POSTHOOK: Input: default@dest1
 37	val_37
 90	val_90
 97	val_97
-PREHOOK: query: SELECT dest2.* FROM dest2
+PREHOOK: query: SELECT dest2_n16.* FROM dest2_n16
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n16
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest2.* FROM dest2
+POSTHOOK: query: SELECT dest2_n16.* FROM dest2_n16
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n16
 #### A masked pattern was here ####
 165	val_165
 193	val_193
@@ -400,15 +400,15 @@ POSTHOOK: Input: default@dest2
 194	val_194
 126	val_126
 169	val_169
-PREHOOK: query: SELECT dest3.* FROM dest3
+PREHOOK: query: SELECT dest3_n1.* FROM dest3_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest3
-PREHOOK: Input: default@dest3@ds=2008-04-08/hr=12
+PREHOOK: Input: default@dest3_n1
+PREHOOK: Input: default@dest3_n1@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest3.* FROM dest3
+POSTHOOK: query: SELECT dest3_n1.* FROM dest3_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest3
-POSTHOOK: Input: default@dest3@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@dest3_n1
+POSTHOOK: Input: default@dest3_n1@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 238	2008-04-08	12
 255	2008-04-08	12

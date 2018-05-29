@@ -1,65 +1,65 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1_n5(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl1_n5
+POSTHOOK: query: CREATE TABLE tbl1_n5(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@tbl1_n5
+PREHOOK: query: CREATE TABLE tbl2_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl2_n4
+POSTHOOK: query: CREATE TABLE tbl2_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
-PREHOOK: query: insert overwrite table tbl1
+POSTHOOK: Output: default@tbl2_n4
+PREHOOK: query: insert overwrite table tbl1_n5
 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert overwrite table tbl1
+PREHOOK: Output: default@tbl1_n5
+POSTHOOK: query: insert overwrite table tbl1_n5
 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table tbl2
+POSTHOOK: Output: default@tbl1_n5
+POSTHOOK: Lineage: tbl1_n5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2_n4
 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: insert overwrite table tbl2
+PREHOOK: Output: default@tbl2_n4
+POSTHOOK: query: insert overwrite table tbl2_n4
 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@tbl2_n4
+POSTHOOK: Lineage: tbl2_n4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select count(*) from 
   (
   select * from
-  (select a.key as key, a.value as value from tbl1 a where key < 6
+  (select a.key as key, a.value as value from tbl1_n5 a where key < 6
      union all
-   select a.key as key, a.value as value from tbl1 a where key < 6
+   select a.key as key, a.value as value from tbl1_n5 a where key < 6
   ) usubq1 ) subq1
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*) from 
   (
   select * from
-  (select a.key as key, a.value as value from tbl1 a where key < 6
+  (select a.key as key, a.value as value from tbl1_n5 a where key < 6
      union all
-   select a.key as key, a.value as value from tbl1 a where key < 6
+   select a.key as key, a.value as value from tbl1_n5 a where key < 6
   ) usubq1 ) subq1
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -180,44 +180,44 @@ STAGE PLANS:
 PREHOOK: query: select count(*) from 
   (
   select * from
-  (select a.key as key, a.value as value from tbl1 a where key < 6
+  (select a.key as key, a.value as value from tbl1_n5 a where key < 6
      union all
-   select a.key as key, a.value as value from tbl1 a where key < 6
+   select a.key as key, a.value as value from tbl1_n5 a where key < 6
   ) usubq1 ) subq1
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n5
+PREHOOK: Input: default@tbl2_n4
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from 
   (
   select * from
-  (select a.key as key, a.value as value from tbl1 a where key < 6
+  (select a.key as key, a.value as value from tbl1_n5 a where key < 6
      union all
-   select a.key as key, a.value as value from tbl1 a where key < 6
+   select a.key as key, a.value as value from tbl1_n5 a where key < 6
   ) usubq1 ) subq1
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n5
+POSTHOOK: Input: default@tbl2_n4
 #### A masked pattern was here ####
 40
 PREHOOK: query: explain
 select count(*) from 
-  (select a.key as key, count(*) as value from tbl1 a where key < 6 group by a.key) subq1 
+  (select a.key as key, count(*) as value from tbl1_n5 a where key < 6 group by a.key) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(*) from 
-  (select a.key as key, count(*) as value from tbl1 a where key < 6 group by a.key) subq1 
+  (select a.key as key, count(*) as value from tbl1_n5 a where key < 6 group by a.key) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -296,21 +296,21 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*) from 
-  (select a.key as key, count(*) as value from tbl1 a where key < 6 group by a.key) subq1 
+  (select a.key as key, count(*) as value from tbl1_n5 a where key < 6 group by a.key) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n5
+PREHOOK: Input: default@tbl2_n4
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from 
-  (select a.key as key, count(*) as value from tbl1 a where key < 6 group by a.key) subq1 
+  (select a.key as key, count(*) as value from tbl1_n5 a where key < 6 group by a.key) subq1 
     join
-  (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
+  (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n5
+POSTHOOK: Input: default@tbl2_n4
 #### A masked pattern was here ####
 8

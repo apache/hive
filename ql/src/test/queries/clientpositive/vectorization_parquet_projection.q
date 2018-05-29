@@ -11,9 +11,9 @@ set hive.vectorized.complex.types.enabled=false;
 
 -- SORT_QUERY_RESULTS
 
-DROP TABLE IF EXISTS parquet_types_staging;
+DROP TABLE IF EXISTS parquet_types_staging_n0;
 
-CREATE TABLE parquet_types_staging (
+CREATE TABLE parquet_types_staging_n0 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -33,7 +33,7 @@ FIELDS TERMINATED BY '|'
 COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':';
 
-LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging;
+LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging_n0;
 
 -- test various number of projected columns
 
@@ -45,15 +45,15 @@ m1 map<string, string>
 ) STORED AS PARQUET;
 
 insert into parquet_project_test
-select ctinyint, map("color","red") from parquet_types_staging
+select ctinyint, map("color","red") from parquet_types_staging_n0
 where ctinyint = 1;
 
 insert into parquet_project_test
-select ctinyint, map("color","green") from parquet_types_staging
+select ctinyint, map("color","green") from parquet_types_staging_n0
 where ctinyint = 2;
 
 insert into parquet_project_test
-select ctinyint, map("color","blue") from parquet_types_staging
+select ctinyint, map("color","blue") from parquet_types_staging_n0
 where ctinyint = 3;
 
 -- no columns in the projection
@@ -93,4 +93,4 @@ select count(*) from parquet_nullsplit where len = '99';
 
 drop table parquet_nullsplit;
 drop table parquet_project_test;
-drop table parquet_types_staging;
+drop table parquet_types_staging_n0;

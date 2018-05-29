@@ -1,38 +1,38 @@
-PREHOOK: query: CREATE TABLE DEST1(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST1_n163(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: CREATE TABLE DEST1(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST1_n163
+POSTHOOK: query: CREATE TABLE DEST1_n163(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
-PREHOOK: query: CREATE TABLE DEST2(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
+POSTHOOK: Output: default@DEST1_n163
+PREHOOK: query: CREATE TABLE DEST2_n41(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2
-POSTHOOK: query: CREATE TABLE DEST2(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST2_n41
+POSTHOOK: query: CREATE TABLE DEST2_n41(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2
-PREHOOK: query: CREATE TABLE DEST3(key STRUCT<col1:STRING, col2:STRING>, value BIGINT) STORED AS TEXTFILE
+POSTHOOK: Output: default@DEST2_n41
+PREHOOK: query: CREATE TABLE DEST3_n7(key STRUCT<col1:STRING, col2:STRING>, value BIGINT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST3
-POSTHOOK: query: CREATE TABLE DEST3(key STRUCT<col1:STRING, col2:STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST3_n7
+POSTHOOK: query: CREATE TABLE DEST3_n7(key STRUCT<col1:STRING, col2:STRING>, value BIGINT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST3
+POSTHOOK: Output: default@DEST3_n7
 PREHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
-INSERT OVERWRITE TABLE DEST2 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
-INSERT OVERWRITE TABLE DEST3 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST1_n163 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
+INSERT OVERWRITE TABLE DEST2_n41 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST3_n7 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
-INSERT OVERWRITE TABLE DEST2 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
-INSERT OVERWRITE TABLE DEST3 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST1_n163 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
+INSERT OVERWRITE TABLE DEST2_n41 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST3_n7 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -130,7 +130,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n163
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -146,7 +146,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest2
+                      name: default.dest2_n41
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -162,7 +162,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest3
+                      name: default.dest3_n7
 
   Stage: Stage-0
     Move Operator
@@ -172,7 +172,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n163
 
   Stage: Stage-4
     Stats Work
@@ -186,7 +186,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n41
 
   Stage: Stage-5
     Stats Work
@@ -200,43 +200,43 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest3
+              name: default.dest3_n7
 
   Stage: Stage-6
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
-INSERT OVERWRITE TABLE DEST2 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
-INSERT OVERWRITE TABLE DEST3 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST1_n163 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
+INSERT OVERWRITE TABLE DEST2_n41 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST3_n7 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
-PREHOOK: Output: default@dest3
+PREHOOK: Output: default@dest1_n163
+PREHOOK: Output: default@dest2_n41
+PREHOOK: Output: default@dest3_n7
 POSTHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
-INSERT OVERWRITE TABLE DEST2 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
-INSERT OVERWRITE TABLE DEST3 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST1_n163 SELECT ARRAY(SRC.key), COUNT(1) GROUP BY ARRAY(SRC.key)
+INSERT OVERWRITE TABLE DEST2_n41 SELECT MAP(SRC.key, SRC.value), COUNT(1) GROUP BY MAP(SRC.key, SRC.value)
+INSERT OVERWRITE TABLE DEST3_n7 SELECT STRUCT(SRC.key, SRC.value), COUNT(1) GROUP BY STRUCT(SRC.key, SRC.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Output: default@dest3
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest3.value EXPRESSION [(src)src.null, ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: Output: default@dest1_n163
+POSTHOOK: Output: default@dest2_n41
+POSTHOOK: Output: default@dest3_n7
+POSTHOOK: Lineage: dest1_n163.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n163.value EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest2_n41.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n41.value EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest3_n7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest3_n7.value EXPRESSION [(src)src.null, ]
+PREHOOK: query: SELECT DEST1_n163.* FROM DEST1_n163
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n163
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: query: SELECT DEST1_n163.* FROM DEST1_n163
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n163
 #### A masked pattern was here ####
 ["0"]	3
 ["10"]	1
@@ -547,13 +547,13 @@ POSTHOOK: Input: default@dest1
 ["96"]	1
 ["97"]	2
 ["98"]	2
-PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: query: SELECT DEST2_n41.* FROM DEST2_n41
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n41
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: query: SELECT DEST2_n41.* FROM DEST2_n41
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n41
 #### A masked pattern was here ####
 {"0":"val_0"}	3
 {"10":"val_10"}	1
@@ -864,13 +864,13 @@ POSTHOOK: Input: default@dest2
 {"96":"val_96"}	1
 {"97":"val_97"}	2
 {"98":"val_98"}	2
-PREHOOK: query: SELECT DEST3.* FROM DEST3
+PREHOOK: query: SELECT DEST3_n7.* FROM DEST3_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest3
+PREHOOK: Input: default@dest3_n7
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST3.* FROM DEST3
+POSTHOOK: query: SELECT DEST3_n7.* FROM DEST3_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest3
+POSTHOOK: Input: default@dest3_n7
 #### A masked pattern was here ####
 {"col1":"0","col2":"val_0"}	3
 {"col1":"10","col2":"val_10"}	1

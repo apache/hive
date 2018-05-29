@@ -17,12 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.thrift.TException;
 import org.junit.After;
 
@@ -30,7 +28,7 @@ import org.junit.After;
  * This tests metastore client calls that do not specify a catalog but with the config on the
  * server set to go to a non-default catalog.
  */
-public class TestCatalogNonDefaultSvr extends TestNonCatCallsWithCatalog {
+public class TestCatalogNonDefaultSvr extends NonCatCallsWithCatalog {
 
   final private String catName = "non_default_svr_catalog";
   private String catLocation;

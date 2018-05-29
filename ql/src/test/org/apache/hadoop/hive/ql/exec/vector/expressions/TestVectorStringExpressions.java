@@ -3222,7 +3222,7 @@ public class TestVectorStringExpressions {
 
   @Test
   // Test string column to string literal comparison
-  public void testStringColCompareStringScalarFilter() {
+  public void testStringColCompareStringScalarFilter() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
     expr = new FilterStringGroupColEqualStringScalar(0, red2);
@@ -3252,7 +3252,7 @@ public class TestVectorStringExpressions {
 
   @Test
   // Test string column to CHAR literal comparison
-  public void testStringColCompareCharScalarFilter() {
+  public void testStringColCompareCharScalarFilter() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
     expr = new FilterStringGroupColEqualCharScalar(0, new HiveChar(new String(red2), 10));
@@ -3282,7 +3282,7 @@ public class TestVectorStringExpressions {
 
   @Test
   // Test string column to VARCHAR literal comparison
-  public void testStringColCompareVarCharScalarFilter() {
+  public void testStringColCompareVarCharScalarFilter() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
     expr = new FilterStringGroupColEqualVarCharScalar(0, new HiveVarchar(new String(red2), 10));
@@ -3311,7 +3311,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testStringColCompareStringScalarProjection() {
+  public void testStringColCompareStringScalarProjection() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
 
@@ -3334,7 +3334,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testStringColCompareCharScalarProjection() {
+  public void testStringColCompareCharScalarProjection() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
 
@@ -3357,7 +3357,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testStringColCompareVarCharScalarProjection() {
+  public void testStringColCompareVarCharScalarProjection() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
 
@@ -3381,7 +3381,7 @@ public class TestVectorStringExpressions {
 
   @Test
   // Test string literal to string column comparison
-  public void testStringScalarCompareStringCol() {
+  public void testStringScalarCompareStringCol() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
     expr = new FilterStringScalarEqualStringGroupColumn(red2, 0);
@@ -3411,7 +3411,7 @@ public class TestVectorStringExpressions {
 
   @Test
   // Test CHAR literal to string column comparison
-  public void testCharScalarCompareStringCol() {
+  public void testCharScalarCompareStringCol() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
     expr = new FilterCharScalarEqualStringGroupColumn(new HiveChar(new String(red2), 8), 0);
@@ -3441,7 +3441,7 @@ public class TestVectorStringExpressions {
 
   @Test
   // Test VARCHAR literal to string column comparison
-  public void testVarCharScalarCompareStringCol() {
+  public void testVarCharScalarCompareStringCol() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
     expr = new FilterVarCharScalarEqualStringGroupColumn(new HiveVarchar(new String(red2), 8), 0);
@@ -3470,7 +3470,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testStringScalarCompareStringColProjection() {
+  public void testStringScalarCompareStringColProjection() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
 
@@ -3493,7 +3493,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testCharScalarCompareStringColProjection() {
+  public void testCharScalarCompareStringColProjection() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
 
@@ -3516,7 +3516,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testVarCharScalarCompareStringColProjection() {
+  public void testVarCharScalarCompareStringColProjection() throws HiveException {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
 
@@ -3538,7 +3538,7 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(0, outVector.vector[2]);
   }
   @Test
-  public void testStringColCompareStringColFilter() {
+  public void testStringColCompareStringColFilter() throws HiveException {
     VectorizedRowBatch batch;
     VectorExpression expr;
 
@@ -3690,7 +3690,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testStringColCompareStringColProjection() {
+  public void testStringColCompareStringColProjection() throws HiveException {
     VectorizedRowBatch batch;
     VectorExpression expr;
     long [] outVector;
@@ -4029,7 +4029,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testColLower() {
+  public void testColLower() throws HiveException {
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatchMixedCase();
     StringLower expr = new StringLower(0, 1);
@@ -4077,7 +4077,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testColUpper() {
+  public void testColUpper() throws HiveException {
 
     // no nulls, not repeating
 
@@ -4096,7 +4096,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testStringLength() {
+  public void testStringLength() throws HiveException {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatchMixedCharSize();
@@ -4435,7 +4435,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testColConcatStringScalar() {
+  public void testColConcatStringScalar() throws HiveException {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
@@ -4497,7 +4497,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testColConcatCharScalar() {
+  public void testColConcatCharScalar() throws HiveException {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
@@ -4559,7 +4559,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testColConcatVarCharScalar() {
+  public void testColConcatVarCharScalar() throws HiveException {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
@@ -4621,7 +4621,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testStringScalarConcatCol() {
+  public void testStringScalarConcatCol() throws HiveException {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
@@ -4683,7 +4683,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testCharScalarConcatCol() {
+  public void testCharScalarConcatCol() throws HiveException {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
@@ -4745,7 +4745,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testVarCharScalarConcatCol() {
+  public void testVarCharScalarConcatCol() throws HiveException {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
@@ -4807,7 +4807,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testColConcatCol() {
+  public void testColConcatCol() throws HiveException {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch2In1Out();
@@ -4949,7 +4949,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testSubstrStart() throws UnsupportedEncodingException {
+  public void testSubstrStart() throws HiveException, UnsupportedEncodingException {
     // Testing no nulls and no repeating
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     BytesColumnVector v = new BytesColumnVector();
@@ -5148,7 +5148,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testSubstrStartLen() throws UnsupportedEncodingException {
+  public void testSubstrStartLen() throws HiveException, UnsupportedEncodingException {
     // Testing no nulls and no repeating
 
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
@@ -5403,7 +5403,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testVectorLTrim() {
+  public void testVectorLTrim() throws HiveException {
     VectorizedRowBatch b = makeTrimBatch();
     VectorExpression expr = new StringLTrim(0, 1);
     expr.evaluate(b);
@@ -5423,7 +5423,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testVectorRTrim() {
+  public void testVectorRTrim() throws HiveException {
     VectorizedRowBatch b = makeTrimBatch();
     VectorExpression expr = new StringRTrim(0, 1);
     expr.evaluate(b);
@@ -5443,7 +5443,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testVectorTrim() {
+  public void testVectorTrim() throws HiveException {
     VectorizedRowBatch b = makeTrimBatch();
     VectorExpression expr = new StringTrim(0, 1);
     expr.evaluate(b);
@@ -5481,7 +5481,7 @@ public class TestVectorStringExpressions {
 
   // Test boolean-valued (non-filter) IN expression for strings
   @Test
-  public void testStringInExpr() {
+  public void testStringInExpr() throws HiveException {
 
     // test basic operation
     VectorizedRowBatch b = makeStringBatch();

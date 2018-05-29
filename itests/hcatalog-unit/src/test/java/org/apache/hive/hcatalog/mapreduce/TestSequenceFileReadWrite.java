@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import org.junit.Ignore;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
@@ -160,6 +161,7 @@ public class TestSequenceFileReadWrite {
     assertEquals(input.length, numTuplesRead);
   }
 
+  @Ignore("Disabling this test. Check HIVE-19506 for more details")
   @Test
   public void testSequenceTableWriteReadMR() throws Exception {
     String createTable = "CREATE TABLE demo_table_2(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
@@ -206,6 +208,7 @@ public class TestSequenceFileReadWrite {
     assertEquals(input.length, numTuplesRead);
   }
 
+  @Ignore("Disabling this test. Check HIVE-19506 for more details")
   @Test
   public void testTextTableWriteReadMR() throws Exception {
     String createTable = "CREATE TABLE demo_table_3(a0 int, a1 String, a2 String) STORED AS TEXTFILE";

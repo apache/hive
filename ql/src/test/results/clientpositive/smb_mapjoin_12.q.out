@@ -1,62 +1,62 @@
-PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1_n6 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+PREHOOK: Output: default@test_table1_n6
+POSTHOOK: query: CREATE TABLE test_table1_n6 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+POSTHOOK: Output: default@test_table1_n6
+PREHOOK: query: CREATE TABLE test_table2_n6 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+PREHOOK: Output: default@test_table2_n6
+POSTHOOK: query: CREATE TABLE test_table2_n6 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n6
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *
+INSERT OVERWRITE TABLE test_table1_n6 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2_n6 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2_n6 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2_n6 PARTITION (ds = '3') SELECT *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1@ds=1
-PREHOOK: Output: default@test_table2@ds=1
-PREHOOK: Output: default@test_table2@ds=2
-PREHOOK: Output: default@test_table2@ds=3
+PREHOOK: Output: default@test_table1_n6@ds=1
+PREHOOK: Output: default@test_table2_n6@ds=1
+PREHOOK: Output: default@test_table2_n6@ds=2
+PREHOOK: Output: default@test_table2_n6@ds=3
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *
+INSERT OVERWRITE TABLE test_table1_n6 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2_n6 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2_n6 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2_n6 PARTITION (ds = '3') SELECT *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1@ds=1
-POSTHOOK: Output: default@test_table2@ds=1
-POSTHOOK: Output: default@test_table2@ds=2
-POSTHOOK: Output: default@test_table2@ds=3
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+POSTHOOK: Output: default@test_table1_n6@ds=1
+POSTHOOK: Output: default@test_table2_n6@ds=1
+POSTHOOK: Output: default@test_table2_n6@ds=2
+POSTHOOK: Output: default@test_table2_n6@ds=3
+POSTHOOK: Lineage: test_table1_n6 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n6 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n6 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n6 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n6 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n6 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n6 PARTITION(ds=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n6 PARTITION(ds=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE test_table3_n4 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table3
-POSTHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+PREHOOK: Output: default@test_table3_n4
+POSTHOOK: query: CREATE TABLE test_table3_n4 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table3
+POSTHOOK: Output: default@test_table3_n4
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1_n6 a JOIN test_table2_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1_n6 a JOIN test_table2_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -107,15 +107,15 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:string
 #### A masked pattern was here ####
-                          name default.test_table3
+                          name default.test_table3_n4
                           partition_columns ds
                           partition_columns.types string
-                          serialization.ddl struct test_table3 { i32 key, string value}
+                          serialization.ddl struct test_table3_n4 { i32 key, string value}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test_table3
+                        name: default.test_table3_n4
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -138,13 +138,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.test_table1
+              name default.test_table1_n6
               numFiles 16
               numRows 500
               partition_columns ds
               partition_columns.types string
               rawDataSize 5312
-              serialization.ddl struct test_table1 { i32 key, string value}
+              serialization.ddl struct test_table1_n6 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 5812
@@ -163,18 +163,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.test_table1
+                name default.test_table1_n6
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct test_table1 { i32 key, string value}
+                serialization.ddl struct test_table1_n6 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table1
-            name: default.test_table1
+              name: default.test_table1_n6
+            name: default.test_table1_n6
       Truncated Path -> Alias:
-        /test_table1/ds=1 [a]
+        /test_table1_n6/ds=1 [a]
 
   Stage: Stage-0
     Move Operator
@@ -196,15 +196,15 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.test_table3
+                name default.test_table3_n4
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct test_table3 { i32 key, string value}
+                serialization.ddl struct test_table3_n4 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n4
 
   Stage: Stage-2
     Stats Work
@@ -213,51 +213,51 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.test_table3
+          Table: default.test_table3_n4
           Is Table Level Stats: false
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1_n6 a JOIN test_table2_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
-PREHOOK: Input: default@test_table2@ds=2
-PREHOOK: Input: default@test_table2@ds=3
-PREHOOK: Output: default@test_table3@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+PREHOOK: Input: default@test_table1_n6
+PREHOOK: Input: default@test_table1_n6@ds=1
+PREHOOK: Input: default@test_table2_n6
+PREHOOK: Input: default@test_table2_n6@ds=1
+PREHOOK: Input: default@test_table2_n6@ds=2
+PREHOOK: Input: default@test_table2_n6@ds=3
+PREHOOK: Output: default@test_table3_n4@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1_n6 a JOIN test_table2_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
-POSTHOOK: Input: default@test_table2@ds=2
-POSTHOOK: Input: default@test_table2@ds=3
-POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+POSTHOOK: Input: default@test_table1_n6
+POSTHOOK: Input: default@test_table1_n6@ds=1
+POSTHOOK: Input: default@test_table2_n6
+POSTHOOK: Input: default@test_table2_n6@ds=1
+POSTHOOK: Input: default@test_table2_n6@ds=2
+POSTHOOK: Input: default@test_table2_n6@ds=3
+POSTHOOK: Output: default@test_table3_n4@ds=1
+POSTHOOK: Lineage: test_table3_n4 PARTITION(ds=1).key SIMPLE [(test_table1_n6)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n4 PARTITION(ds=1).value SIMPLE [(test_table2_n6)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT COUNT(*) FROM test_table3_n4 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1_n6 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Input: default@test_table1_n6
+PREHOOK: Input: default@test_table1_n6@ds=1
+PREHOOK: Input: default@test_table3_n4
+PREHOOK: Input: default@test_table3_n4@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+POSTHOOK: query: SELECT COUNT(*) FROM test_table3_n4 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1_n6 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Input: default@test_table1_n6
+POSTHOOK: Input: default@test_table1_n6@ds=1
+POSTHOOK: Input: default@test_table3_n4
+POSTHOOK: Input: default@test_table3_n4@ds=1
 #### A masked pattern was here ####
 420
 PREHOOK: query: explain extended
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
-SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3_n4 a JOIN test_table1_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
-SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3_n4 a JOIN test_table1_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -316,13 +316,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.test_table3
+              name default.test_table3_n4
               numFiles 16
               numRows 3084
               partition_columns ds
               partition_columns.types string
               rawDataSize 32904
-              serialization.ddl struct test_table3 { i32 key, string value}
+              serialization.ddl struct test_table3_n4 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 35988
@@ -341,18 +341,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.test_table3
+                name default.test_table3_n4
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct test_table3 { i32 key, string value}
+                serialization.ddl struct test_table3_n4 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
-            name: default.test_table3
+              name: default.test_table3_n4
+            name: default.test_table3_n4
       Truncated Path -> Alias:
-        /test_table3/ds=1 [a]
+        /test_table3_n4/ds=1 [a]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -378,15 +378,15 @@ STAGE PLANS:
                   columns.comments 
                   columns.types int:string
 #### A masked pattern was here ####
-                  name default.test_table3
+                  name default.test_table3_n4
                   partition_columns ds
                   partition_columns.types string
-                  serialization.ddl struct test_table3 { i32 key, string value}
+                  serialization.ddl struct test_table3_n4 { i32 key, string value}
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.test_table3
+                name: default.test_table3_n4
             TotalFiles: 16
             GatherStats: true
             MultiFileSpray: true
@@ -437,15 +437,15 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.test_table3
+                name default.test_table3_n4
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct test_table3 { i32 key, string value}
+                serialization.ddl struct test_table3_n4 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n4
 
   Stage: Stage-2
     Stats Work
@@ -454,7 +454,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.test_table3
+          Table: default.test_table3_n4
           Is Table Level Stats: false
 
   Stage: Stage-3
@@ -530,32 +530,32 @@ STAGE PLANS:
               GatherStats: false
               MultiFileSpray: false
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
-SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3_n4 a JOIN test_table1_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
-PREHOOK: Output: default@test_table3@ds=2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
-SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+PREHOOK: Input: default@test_table1_n6
+PREHOOK: Input: default@test_table1_n6@ds=1
+PREHOOK: Input: default@test_table3_n4
+PREHOOK: Input: default@test_table3_n4@ds=1
+PREHOOK: Output: default@test_table3_n4@ds=2
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3_n4 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3_n4 a JOIN test_table1_n6 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
-POSTHOOK: Output: default@test_table3@ds=2
-POSTHOOK: Lineage: test_table3 PARTITION(ds=2).key SIMPLE [(test_table3)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=2).value EXPRESSION [(test_table3)a.FieldSchema(name:value, type:string, comment:null), (test_table1)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
+POSTHOOK: Input: default@test_table1_n6
+POSTHOOK: Input: default@test_table1_n6@ds=1
+POSTHOOK: Input: default@test_table3_n4
+POSTHOOK: Input: default@test_table3_n4@ds=1
+POSTHOOK: Output: default@test_table3_n4@ds=2
+POSTHOOK: Lineage: test_table3_n4 PARTITION(ds=2).key SIMPLE [(test_table3_n4)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n4 PARTITION(ds=2).value EXPRESSION [(test_table3_n4)a.FieldSchema(name:value, type:string, comment:null), (test_table1_n6)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT count(*) from test_table3_n4 tablesample (bucket 2 out of 16) a where ds = '2'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=2
+PREHOOK: Input: default@test_table3_n4
+PREHOOK: Input: default@test_table3_n4@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
+POSTHOOK: query: SELECT count(*) from test_table3_n4 tablesample (bucket 2 out of 16) a where ds = '2'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=2
+POSTHOOK: Input: default@test_table3_n4
+POSTHOOK: Input: default@test_table3_n4@ds=2
 #### A masked pattern was here ####
 420

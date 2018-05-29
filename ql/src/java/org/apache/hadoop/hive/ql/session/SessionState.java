@@ -135,7 +135,7 @@ public class SessionState {
   /**
    * current configuration.
    */
-  private final HiveConf sessionConf;
+  private HiveConf sessionConf;
 
   /**
    * silent mode.
@@ -241,6 +241,11 @@ public class SessionState {
    */
   private Map<URI, HadoopShims.HdfsEncryptionShim> hdfsEncryptionShims = Maps.newHashMap();
 
+  /**
+   * Cache for Erasure Coding shims.
+   */
+  private Map<URI, HadoopShims.HdfsErasureCodingShim> erasureCodingShims;
+
   private final String userName;
 
   /**
@@ -308,6 +313,9 @@ public class SessionState {
     return sessionConf;
   }
 
+  public void setConf(HiveConf conf) {
+    this.sessionConf = conf;
+  }
 
   public File getTmpOutputFile() {
     return tmpOutputFile;
@@ -1257,6 +1265,13 @@ public class SessionState {
   public static String getUserFromAuthenticator() {
     if (SessionState.get() != null && SessionState.get().getAuthenticator() != null) {
       return SessionState.get().getAuthenticator().getUserName();
+    }
+    return null;
+  }
+
+  public static List<String> getGroupsFromAuthenticator() {
+    if (SessionState.get() != null && SessionState.get().getAuthenticator() != null) {
+      return SessionState.get().getAuthenticator().getGroupNames();
     }
     return null;
   }

@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n8
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n8
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n8(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n8
+POSTHOOK: query: create table over10k_n8(
            t tinyint,
            si smallint,
            i int,
@@ -35,15 +35,15 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n8
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n8
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n8
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n8
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n8
 PREHOOK: query: explain vectorization detail
 select * 
 from ( select p_mfgr, rank() over(partition by p_mfgr order by p_name) r from part) a
@@ -393,12 +393,12 @@ Manufacturer#4	1
 Manufacturer#5	1
 PREHOOK: query: explain vectorization detail
 select * 
-from (select t, f, rank() over(partition by t order by f) r from over10k) a 
+from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select * 
-from (select t, f, rank() over(partition by t order by f) r from over10k) a 
+from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5
 POSTHOOK: type: QUERY
 Explain
@@ -421,7 +421,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n8
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -553,16 +553,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select * 
-from (select t, f, rank() over(partition by t order by f) r from over10k) a 
+from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n8
 #### A masked pattern was here ####
 POSTHOOK: query: select * 
-from (select t, f, rank() over(partition by t order by f) r from over10k) a 
+from (select t, f, rank() over(partition by t order by f) r from over10k_n8) a 
 where r < 6 and t < 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n8
 #### A masked pattern was here ####
 a.t	a.f	a.r
 -3	0.56	1
@@ -606,16 +606,16 @@ a.t	a.f	a.r
 4	5.76	4
 4	7.26	5
 PREHOOK: query: select *
-from (select t, f, row_number() over(partition by t order by f) r from over10k) a
+from (select t, f, row_number() over(partition by t order by f) r from over10k_n8) a
 where r < 8 and t < 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n8
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-from (select t, f, row_number() over(partition by t order by f) r from over10k) a
+from (select t, f, row_number() over(partition by t order by f) r from over10k_n8) a
 where r < 8 and t < 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n8
 #### A masked pattern was here ####
 a.t	a.f	a.r
 -3	0.56	1

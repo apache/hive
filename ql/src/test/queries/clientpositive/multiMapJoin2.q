@@ -179,18 +179,18 @@ GROUP BY tmp1.key
 ORDER BY key, cnt;
 
 -- Check if we can correctly handle partitioned table.
-CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int);
-INSERT OVERWRITE TABLE part_table PARTITION (partitionId=1)
+CREATE TABLE part_table_n0(key string, value string) PARTITIONED BY (partitionId int);
+INSERT OVERWRITE TABLE part_table_n0 PARTITION (partitionId=1)
   SELECT key, value FROM src ORDER BY key, value LIMIT 100;
-INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
+INSERT OVERWRITE TABLE part_table_n0 PARTITION (partitionId=2)
   SELECT key, value FROM src1 ORDER BY key, value;
 
 EXPLAIN
 SELECT count(*)
-FROM part_table x JOIN src1 y ON (x.key = y.key);
+FROM part_table_n0 x JOIN src1 y ON (x.key = y.key);
 
 SELECT count(*)
-FROM part_table x JOIN src1 y ON (x.key = y.key);
+FROM part_table_n0 x JOIN src1 y ON (x.key = y.key);
 
 set hive.auto.convert.join.noconditionaltask.size=10000000;
 set hive.optimize.correlation=false;

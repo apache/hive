@@ -43,7 +43,7 @@ public class QOutProcessor {
   public static final String PATH_HDFS_WITH_DATE_USER_GROUP_REGEX =
       "([a-z]+) ([a-z]+)([ ]+)([0-9]+) ([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}) "
           + PATH_HDFS_REGEX;
-  
+
   public static final String HDFS_MASK = "### HDFS PATH ###";
   public static final String HDFS_DATE_MASK = "### HDFS DATE ###";
   public static final String HDFS_USER_MASK = "### USER ###";
@@ -51,6 +51,16 @@ public class QOutProcessor {
   
   public static final String MASK_PATTERN = "#### A masked pattern was here ####";
   public static final String PARTIAL_MASK_PATTERN = "#### A PARTIAL masked pattern was here ####";
+
+  private static final PatternReplacementPair MASK_STATS = new PatternReplacementPair(
+      Pattern.compile(" Num rows: [1-9][0-9]* Data size: [1-9][0-9]*"),
+      " Num rows: ###Masked### Data size: ###Masked###");
+  private static final PatternReplacementPair MASK_DATA_SIZE = new PatternReplacementPair(
+      Pattern.compile(" Data size: [1-9][0-9]*"),
+      " Data size: ###Masked###");
+  private static final PatternReplacementPair MASK_LINEAGE = new PatternReplacementPair(
+      Pattern.compile("POSTHOOK: Lineage: .*"),
+      "POSTHOOK: Lineage: ###Masked###");
 
   private FsType fsType = FsType.local;
 
@@ -130,7 +140,7 @@ public class QOutProcessor {
     return patterns;
   }
 
-  public void maskPatterns(String fname) throws Exception {
+  public void maskPatterns(String fname, boolean maskStats, boolean maskDataSize, boolean maskLineage) throws Exception {
     String line;
     BufferedReader in;
     BufferedWriter out;
@@ -145,7 +155,7 @@ public class QOutProcessor {
     boolean lastWasMasked = false;
 
     while (null != (line = in.readLine())) {
-      LineProcessingResult result = processLine(line);
+      LineProcessingResult result = processLine(line, maskStats, maskDataSize, maskLineage);
 
       if (result.line.equals(MASK_PATTERN)) {
         // We're folding multiple masked lines into one.
@@ -167,7 +177,7 @@ public class QOutProcessor {
     out.close();
   }
 
-  public LineProcessingResult processLine(String line) {
+  public LineProcessingResult processLine(String line, boolean maskStats, boolean maskDataSize, boolean maskLineage) {
     LineProcessingResult result = new LineProcessingResult(line);
     
     Matcher matcher = null;
@@ -202,6 +212,30 @@ public class QOutProcessor {
           result.line = matcher.replaceAll(maskComment);
           result.partialMaskWasMatched = true;
           break;
+        }
+      }
+
+      if (!result.partialMaskWasMatched && maskStats) {
+        matcher = MASK_STATS.pattern.matcher(result.line);
+        if (matcher.find()) {
+          result.line = result.line.replaceAll(MASK_STATS.pattern.pattern(), MASK_STATS.replacement);
+          result.partialMaskWasMatched = true;
+        }
+      }
+
+      if (!result.partialMaskWasMatched && maskDataSize) {
+        matcher = MASK_DATA_SIZE.pattern.matcher(result.line);
+        if (matcher.find()) {
+          result.line = result.line.replaceAll(MASK_DATA_SIZE.pattern.pattern(), MASK_DATA_SIZE.replacement);
+          result.partialMaskWasMatched = true;
+        }
+      }
+
+      if (!result.partialMaskWasMatched && maskLineage) {
+        matcher = MASK_LINEAGE.pattern.matcher(result.line);
+        if (matcher.find()) {
+          result.line = result.line.replaceAll(MASK_LINEAGE.pattern.pattern(), MASK_LINEAGE.replacement);
+          result.partialMaskWasMatched = true;
         }
       }
 

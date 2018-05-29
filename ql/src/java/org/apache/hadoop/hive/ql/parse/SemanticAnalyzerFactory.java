@@ -94,6 +94,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERVIEW_DROPPROPERTIES, HiveOperation.ALTERVIEW_PROPERTIES);
     commandType.put(HiveParser.TOK_ALTERVIEW_ADDPARTS, HiveOperation.ALTERTABLE_ADDPARTS);
     commandType.put(HiveParser.TOK_ALTERVIEW_DROPPARTS, HiveOperation.ALTERTABLE_DROPPARTS);
+    commandType.put(HiveParser.TOK_ALTERTABLE_OWNER, HiveOperation.ALTERTABLE_OWNER);
     commandType.put(HiveParser.TOK_ALTERVIEW_RENAME, HiveOperation.ALTERVIEW_RENAME);
     commandType.put(HiveParser.TOK_ALTERVIEW, HiveOperation.ALTERVIEW_AS);
     commandType.put(HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REWRITE,
@@ -215,7 +216,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_LOAD:
         return new LoadSemanticAnalyzer(queryState);
       case HiveParser.TOK_EXPORT:
-        if(UpdateDeleteSemanticAnalyzer.isAcidExport(tree)) {
+        if (UpdateDeleteSemanticAnalyzer.isAcidExport(tree)) {
           return new UpdateDeleteSemanticAnalyzer(queryState);
         }
         return new ExportSemanticAnalyzer(queryState);
@@ -244,6 +245,7 @@ public final class SemanticAnalyzerFactory {
           case HiveParser.TOK_ALTERTABLE_DROPPROPERTIES:
           case HiveParser.TOK_ALTERTABLE_EXCHANGEPARTITION:
           case HiveParser.TOK_ALTERTABLE_SKEWED:
+          case HiveParser.TOK_ALTERTABLE_OWNER:
           case HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT:
           case HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT:
           case HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS:

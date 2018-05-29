@@ -23,11 +23,16 @@ import java.util.Arrays;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.MathExpr;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class CastTimestampToLong extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int colNum;
+
+  private transient PrimitiveCategory integerPrimitiveCategory;
 
   public CastTimestampToLong(int colNum, int outputColumnNum) {
     super(outputColumnNum);
@@ -39,7 +44,42 @@ public class CastTimestampToLong extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void transientInit() throws HiveException {
+    integerPrimitiveCategory = ((PrimitiveTypeInfo) outputTypeInfo).getPrimitiveCategory();
+  }
+
+  private void setIntegerFromTimestamp(TimestampColumnVector inputColVector,
+      LongColumnVector outputColVector, int batchIndex) {
+
+    final long longValue = inputColVector.getTimestampAsLong(batchIndex);
+
+    boolean isInRange;
+    switch (integerPrimitiveCategory) {
+    case BYTE:
+      isInRange = ((byte) longValue) == longValue;
+      break;
+    case SHORT:
+      isInRange = ((short) longValue) == longValue;
+      break;
+    case INT:
+      isInRange = ((int) longValue) == longValue;
+      break;
+    case LONG:
+      isInRange = true;
+      break;
+    default:
+      throw new RuntimeException("Unexpected integer primitive category " + integerPrimitiveCategory);
+    }
+    if (isInRange) {
+      outputColVector.vector[batchIndex] = longValue;
+    } else {
+      outputColVector.isNull[batchIndex] = true;
+      outputColVector.noNulls = false;
+    }
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       this.evaluateChildren(batch);
@@ -51,7 +91,6 @@ public class CastTimestampToLong extends VectorExpression {
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
     int n = batch.size;
-    long[] outputVector = outputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -64,7 +103,7 @@ public class CastTimestampToLong extends VectorExpression {
     if (inputColVector.isRepeating) {
       if (inputColVector.noNulls || !inputIsNull[0]) {
         outputIsNull[0] = false;
-        outputVector[0] = inputColVector.getTimestampAsLong(0);
+        setIntegerFromTimestamp(inputColVector, outputColVector, 0);
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
@@ -83,12 +122,12 @@ public class CastTimestampToLong extends VectorExpression {
            final int i = sel[j];
            // Set isNull before call in case it changes it mind.
            outputIsNull[i] = false;
-           outputVector[i] =  inputColVector.getTimestampAsLong(i);
+           setIntegerFromTimestamp(inputColVector, outputColVector, i);
          }
         } else {
           for(int j = 0; j != n; j++) {
             final int i = sel[j];
-            outputVector[i] =  inputColVector.getTimestampAsLong(i);
+            setIntegerFromTimestamp(inputColVector, outputColVector, i);
           }
         }
       } else {
@@ -100,7 +139,7 @@ public class CastTimestampToLong extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          outputVector[i] =  inputColVector.getTimestampAsLong(i);
+          setIntegerFromTimestamp(inputColVector, outputColVector, i);
         }
       }
     } else /* there are NULLs in the inputColVector */ {
@@ -113,20 +152,20 @@ public class CastTimestampToLong extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           if (!inputIsNull[i]) {
-            inputIsNull[i] = false;
-            outputVector[i] =  inputColVector.getTimestampAsLong(i);
+            outputIsNull[i] = false;
+            setIntegerFromTimestamp(inputColVector, outputColVector, i);
           } else {
-            inputIsNull[i] = true;
+            outputIsNull[i] = true;
             outputColVector.noNulls = false;
           }
         }
       } else {
         for(int i = 0; i != n; i++) {
           if (!inputIsNull[i]) {
-            inputIsNull[i] = false;
-            outputVector[i] =  inputColVector.getTimestampAsLong(i);
+            outputIsNull[i] = false;
+            setIntegerFromTimestamp(inputColVector, outputColVector, i);
           } else {
-            inputIsNull[i] = true;
+            outputIsNull[i] = true;
             outputColVector.noNulls = false;
           }
         }

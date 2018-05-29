@@ -34,51 +34,51 @@ If applied to a set with a single element: NULL is returned.
 Otherwise it computes: sqrt(var_samp(x))
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample
 Function type:BUILTIN
-PREHOOK: query: drop table if exists t
+PREHOOK: query: drop table if exists t_n23
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists t
+POSTHOOK: query: drop table if exists t_n23
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table t (a int)
+PREHOOK: query: create table t_n23 (a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (a int)
+PREHOOK: Output: default@t_n23
+POSTHOOK: query: create table t_n23 (a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values (1),(-1),(0)
+POSTHOOK: Output: default@t_n23
+PREHOOK: query: insert into t_n23 values (1),(-1),(0)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (1),(-1),(0)
+PREHOOK: Output: default@t_n23
+POSTHOOK: query: insert into t_n23 values (1),(-1),(0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a SCRIPT []
-PREHOOK: query: select stddev_samp(a) from t
+POSTHOOK: Output: default@t_n23
+POSTHOOK: Lineage: t_n23.a SCRIPT []
+PREHOOK: query: select stddev_samp(a) from t_n23
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n23
 #### A masked pattern was here ####
-POSTHOOK: query: select stddev_samp(a) from t
+POSTHOOK: query: select stddev_samp(a) from t_n23
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n23
 #### A masked pattern was here ####
 1.0
-PREHOOK: query: select stddev_samp(a) from t where a=0
+PREHOOK: query: select stddev_samp(a) from t_n23 where a=0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n23
 #### A masked pattern was here ####
-POSTHOOK: query: select stddev_samp(a) from t where a=0
+POSTHOOK: query: select stddev_samp(a) from t_n23 where a=0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n23
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: select round(stddev_samp(a),5) from t where a>=0
+PREHOOK: query: select round(stddev_samp(a),5) from t_n23 where a>=0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n23
 #### A masked pattern was here ####
-POSTHOOK: query: select round(stddev_samp(a),5) from t where a>=0
+POSTHOOK: query: select round(stddev_samp(a),5) from t_n23 where a>=0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n23
 #### A masked pattern was here ####
 0.70711

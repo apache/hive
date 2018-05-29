@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -108,6 +109,7 @@ import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
 import org.apache.hadoop.hive.ql.dataset.DatasetParser;
 import org.apache.hadoop.hive.ql.dataset.Dataset;
 import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.HadoopShims.HdfsErasureCodingShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.StreamPrinter;
 import org.apache.hive.druid.MiniDruidCluster;
@@ -142,13 +144,18 @@ public class QTestUtil {
   static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
   private final static String defaultInitScript = "q_test_init.sql";
   private final static String defaultCleanupScript = "q_test_cleanup.sql";
-  private final String[] testOnlyCommands = new String[]{"crypto"};
+  private final String[] testOnlyCommands = new String[]{"crypto", "erasure"};
 
   public static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
 
   public static final String TEST_SRC_TABLES_PROPERTY = "test.src.tables";
   public static final String TEST_HIVE_USER_PROPERTY = "test.hive.user";
+
+  /**
+   * The Erasure Coding Policy to use in TestErasureCodingHDFSCliDriver.
+   */
+  private static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
 
   private String testWarehouse;
   private final String testFiles;
@@ -163,6 +170,9 @@ public class QTestUtil {
   private final Set<String> qHashQuerySet;
   private final Set<String> qSortNHashQuerySet;
   private final Set<String> qNoSessionReuseQuerySet;
+  private final Set<String> qMaskStatsQuerySet;
+  private final Set<String> qMaskDataSizeQuerySet;
+  private final Set<String> qMaskLineageQuerySet;
   private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
   private static Set<String> srcTables;
@@ -475,6 +485,7 @@ public class QTestUtil {
     local,
     hdfs,
     encrypted_hdfs,
+    erasure_coded_hdfs,
   }
 
   public enum MiniClusterType {
@@ -589,6 +600,9 @@ public class QTestUtil {
     qHashQuerySet = new HashSet<String>();
     qSortNHashQuerySet = new HashSet<String>();
     qNoSessionReuseQuerySet = new HashSet<String>();
+    qMaskStatsQuerySet = new HashSet<String>();
+    qMaskDataSizeQuerySet = new HashSet<String>();
+    qMaskLineageQuerySet = new HashSet<String>();
     qJavaVersionSpecificOutput = new HashSet<String>();
     this.clusterType = clusterType;
 
@@ -643,25 +657,47 @@ public class QTestUtil {
 
     if (fsType == FsType.local) {
       fs = FileSystem.getLocal(conf);
-    } else if (fsType == FsType.hdfs || fsType == FsType.encrypted_hdfs) {
+    } else if (fsType == FsType.hdfs || fsType == FsType.encrypted_hdfs|| fsType == FsType.erasure_coded_hdfs) {
       int numDataNodes = 4;
 
-      if (fsType == FsType.encrypted_hdfs) {
+      // Setup before getting dfs
+      switch (fsType) {
+      case encrypted_hdfs:
         // Set the security key provider so that the MiniDFS cluster is initialized
         // with encryption
         conf.set(SECURITY_KEY_PROVIDER_URI_NAME, getKeyProviderURI());
         conf.setInt("fs.trash.interval", 50);
+        break;
+      case erasure_coded_hdfs:
+        // We need more NameNodes for EC.
+        // To fully exercise hdfs code paths we need 5 NameNodes for the RS-3-2-1024k policy.
+        // With 6 NameNodes we can also run the RS-6-3-1024k policy.
+        numDataNodes = 6;
+        break;
+      default:
+        break;
+      }
 
-        dfs = shims.getMiniDfs(conf, numDataNodes, true, null);
-        fs = dfs.getFileSystem();
+      dfs = shims.getMiniDfs(conf, numDataNodes, true, null);
+      fs = dfs.getFileSystem();
 
+      // Setup after getting dfs
+      switch (fsType) {
+      case encrypted_hdfs:
         // set up the java key provider for encrypted hdfs cluster
         hes = shims.createHdfsEncryptionShim(fs, conf);
-
         LOG.info("key provider is initialized");
-      } else {
-        dfs = shims.getMiniDfs(conf, numDataNodes, true, null);
-        fs = dfs.getFileSystem();
+        break;
+      case erasure_coded_hdfs:
+        // The Erasure policy can't be set in a q_test_init script as QTestUtil runs that code in
+        // a mode that disallows test-only CommandProcessors.
+        // Set the default policy on the root of the file system here.
+        HdfsErasureCodingShim erasureCodingShim = shims.createHdfsErasureCodingShim(fs, conf);
+        erasureCodingShim.enableErasureCodingPolicy(DEFAULT_TEST_EC_POLICY);
+        erasureCodingShim.setErasureCodingPolicy(new Path("hdfs:///"), DEFAULT_TEST_EC_POLICY);
+        break;
+      default:
+        break;
       }
     } else {
       throw new IllegalArgumentException("Unknown or unhandled fsType [" + fsType + "]");
@@ -823,6 +859,16 @@ public class QTestUtil {
     if (matches(NO_SESSION_REUSE, query)) {
       qNoSessionReuseQuerySet.add(qf.getName());
     }
+
+    if (matches(MASK_STATS, query)) {
+      qMaskStatsQuerySet.add(qf.getName());
+    }
+    if (matches(MASK_DATA_SIZE, query)) {
+      qMaskDataSizeQuerySet.add(qf.getName());
+    }
+    if (matches(MASK_LINEAGE, query)) {
+      qMaskLineageQuerySet.add(qf.getName());
+    }
   }
 
   private static final Pattern SORT_BEFORE_DIFF = Pattern.compile("-- SORT_BEFORE_DIFF");
@@ -830,6 +876,9 @@ public class QTestUtil {
   private static final Pattern HASH_QUERY_RESULTS = Pattern.compile("-- HASH_QUERY_RESULTS");
   private static final Pattern SORT_AND_HASH_QUERY_RESULTS = Pattern.compile("-- SORT_AND_HASH_QUERY_RESULTS");
   private static final Pattern NO_SESSION_REUSE = Pattern.compile("-- NO_SESSION_REUSE");
+  private static final Pattern MASK_STATS = Pattern.compile("-- MASK_STATS");
+  private static final Pattern MASK_DATA_SIZE = Pattern.compile("-- MASK_DATA_SIZE");
+  private static final Pattern MASK_LINEAGE = Pattern.compile("-- MASK_LINEAGE");
 
   private boolean matches(Pattern pattern, String query) {
     Matcher matcher = pattern.matcher(query);
@@ -1010,7 +1059,7 @@ public class QTestUtil {
             LOG.warn("Trying to drop table " + e.getTableName() + ". But it does not exist.");
             continue;
           }
-          db.dropTable(dbName, tblName, true, true, fsType == FsType.encrypted_hdfs);
+          db.dropTable(dbName, tblName, true, true, fsNeedsPurge(fsType));
         }
       }
       if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
@@ -1204,11 +1253,13 @@ public class QTestUtil {
 
     DatasetCollection datasets = parser.getDatasets();
     for (String table : datasets.getTables()){
-      initDataset(table);
+      synchronized (QTestUtil.class){
+        initDataset(table);
+      }
     }
   }
 
-  protected synchronized void initDataset(String table) {
+  protected void initDataset(String table) {
     if (getSrcTables().contains(table)){
       return;
     }
@@ -1275,7 +1326,7 @@ public class QTestUtil {
     initDataSetForTest(file);
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
-    "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
+        "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
     Utilities.clearWorkMap(conf);
     CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
@@ -1292,6 +1343,30 @@ public class QTestUtil {
     }
 
     File outf = new File(logDir, stdoutName);
+
+    setSessionOutputs(fileName, ss, outf);
+
+    SessionState oldSs = SessionState.get();
+
+    boolean canReuseSession = !qNoSessionReuseQuerySet.contains(fileName);
+    restartSessions(canReuseSession, ss, oldSs);
+
+    closeSession(oldSs);
+
+    SessionState.start(ss);
+
+    cliDriver = new CliDriver();
+
+    if (fileName.equals("init_file.q")) {
+      ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
+    }
+    cliDriver.processInitFiles(ss);
+
+    return outf.getAbsolutePath();
+  }
+
+  private void setSessionOutputs(String fileName, CliSessionState ss, File outf)
+      throws FileNotFoundException, Exception, UnsupportedEncodingException {
     OutputStream fo = new BufferedOutputStream(new FileOutputStream(outf));
     if (qSortQuerySet.contains(fileName)) {
       ss.out = new SortPrintStream(fo, "UTF-8");
@@ -1304,10 +1379,12 @@ public class QTestUtil {
     }
     ss.err = new CachingPrintStream(fo, true, "UTF-8");
     ss.setIsSilent(true);
-    SessionState oldSs = SessionState.get();
+  }
 
-    boolean canReuseSession = !qNoSessionReuseQuerySet.contains(fileName);
-    if (oldSs != null && canReuseSession && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
+  private void restartSessions(boolean canReuseSession, CliSessionState ss, SessionState oldSs)
+      throws IOException {
+    if (oldSs != null && canReuseSession
+        && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       // Copy the tezSessionState from the old CliSessionState.
       TezSessionState tezSessionState = oldSs.getTezSession();
       oldSs.setTezSession(null);
@@ -1321,27 +1398,9 @@ public class QTestUtil {
       oldSs.setSparkSession(null);
       oldSs.close();
     }
-
-    if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
-      oldSs.out.close();
-    }
-    if (oldSs != null) {
-      oldSs.close();
-    }
-    SessionState.start(ss);
-
-    cliDriver = new CliDriver();
-
-    if (fileName.equals("init_file.q")) {
-      ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
-    }
-    cliDriver.processInitFiles(ss);
-
-    return outf.getAbsolutePath();
   }
 
-  private CliSessionState startSessionState(boolean canReuseSession)
-      throws IOException {
+  private CliSessionState startSessionState(boolean canReuseSession) throws IOException {
 
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
         "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
@@ -1355,32 +1414,25 @@ public class QTestUtil {
     ss.err = System.out;
 
     SessionState oldSs = SessionState.get();
-    if (oldSs != null && canReuseSession && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
-      // Copy the tezSessionState from the old CliSessionState.
-      TezSessionState tezSessionState = oldSs.getTezSession();
-      ss.setTezSession(tezSessionState);
-      oldSs.setTezSession(null);
-      oldSs.close();
-    }
 
-    if (oldSs != null && clusterType.getCoreClusterType() == CoreClusterType.SPARK) {
-      sparkSession = oldSs.getSparkSession();
-      ss.setSparkSession(sparkSession);
-      oldSs.setSparkSession(null);
-      oldSs.close();
-    }
-    if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
-      oldSs.out.close();
-    }
-    if (oldSs != null) {
-      oldSs.close();
-    }
+    restartSessions(canReuseSession, ss, oldSs);
+
+    closeSession(oldSs);
     SessionState.start(ss);
 
     isSessionStateStarted = true;
 
     conf.set("hive.execution.engine", execEngine);
     return ss;
+  }
+
+  private void closeSession(SessionState oldSs) throws IOException {
+    if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
+      oldSs.out.close();
+    }
+    if (oldSs != null) {
+      oldSs.close();
+    }
   }
 
   public int executeAdhocCommand(String q) {
@@ -1721,7 +1773,8 @@ public class QTestUtil {
 
     File f = new File(logDir, tname + outFileExtension);
 
-    qOutProcessor.maskPatterns(f.getPath());
+    qOutProcessor.maskPatterns(f.getPath(),
+        qMaskStatsQuerySet.contains(tname), qMaskDataSizeQuerySet.contains(tname), qMaskLineageQuerySet.contains(tname));
     QTestProcessExecResult exitVal = executeDiffCommand(f.getPath(),
                                      outFileName, false,
                                      qSortSet.contains(tname));
@@ -1738,9 +1791,11 @@ public class QTestUtil {
   public QTestProcessExecResult checkCompareCliDriverResults(String tname, List<String> outputs)
       throws Exception {
     assert outputs.size() > 1;
-    qOutProcessor.maskPatterns(outputs.get(0));
+    qOutProcessor.maskPatterns(outputs.get(0),
+        qMaskStatsQuerySet.contains(tname), qMaskDataSizeQuerySet.contains(tname), qMaskLineageQuerySet.contains(tname));
     for (int i = 1; i < outputs.size(); ++i) {
-      qOutProcessor.maskPatterns(outputs.get(i));
+      qOutProcessor.maskPatterns(outputs.get(i),
+          qMaskStatsQuerySet.contains(tname), qMaskDataSizeQuerySet.contains(tname), qMaskLineageQuerySet.contains(tname));
       QTestProcessExecResult result = executeDiffCommand(
           outputs.get(i - 1), outputs.get(i), false, qSortSet.contains(tname));
       if (result.getReturnCode() != 0) {
@@ -1991,6 +2046,7 @@ public class QTestUtil {
     @Override
     public void run() {
       try {
+        qt.startSessionState(false);
         // assumption is that environment has already been cleaned once globally
         // hence each thread does not call cleanUp() and createSources() again
         qt.cliInit(file, false);
@@ -2269,5 +2325,16 @@ public class QTestUtil {
 
   public static void initEventNotificationPoll() throws Exception {
     NotificationEventPoll.initialize(SessionState.get().getConf());
+  }
+
+  /**
+   * Should deleted test tables have their data purged.
+   * @return true if data should be purged
+   */
+  private static boolean fsNeedsPurge(FsType type) {
+    if (type == FsType.encrypted_hdfs || type == FsType.erasure_coded_hdfs) {
+      return true;
+    }
+    return false;
   }
 }

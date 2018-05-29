@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -78,6 +79,8 @@ import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hive.common.util.Retry;
+import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.streaming.DelimitedInputWriter;
 import org.apache.hive.hcatalog.streaming.HiveEndPoint;
@@ -121,6 +124,10 @@ public class TestCompactor {
 
   @Rule
   public TemporaryFolder stagingFolder = new TemporaryFolder();
+
+  @Rule
+  public Retry retry = new Retry(2);
+
   private HiveConf conf;
   IMetaStoreClient msClient;
   private IDriver driver;
@@ -148,6 +155,7 @@ public class TestCompactor {
     TxnDbUtil.prepDb(hiveConf);
 
     conf = hiveConf;
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS, true);
     msClient = new HiveMetaStoreClient(conf);
     driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
@@ -978,6 +986,96 @@ public class TestCompactor {
   }
 
   @Test
+  public void mmTableOriginalsOrc() throws Exception {
+    mmTableOriginals("ORC");
+  }
+
+  @Test
+  public void mmTableOriginalsText() throws Exception {
+    mmTableOriginals("TEXTFILE");
+  }
+
+  private void mmTableOriginals(String format) throws Exception {
+    // Originals split won't work due to MAPREDUCE-7086 issue in FileInputFormat.
+    boolean isBrokenUntilMapreduce7086 = "TEXTFILE".equals(format);
+    String dbName = "default";
+    String tblName = "mm_nonpart";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " +
+        format + " TBLPROPERTIES ('transactional'='false')", driver);
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) VALUES(1, 'foo')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName +" (a,b) VALUES(2, 'bar')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM "
+        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
+
+    verifyFooBarResult(tblName, 3);
+
+    FileSystem fs = FileSystem.get(conf);
+    executeStatementOnDriver("ALTER TABLE " + tblName + " SET TBLPROPERTIES "
+       + "('transactional'='true', 'transactional_properties'='insert_only')", driver);
+
+    verifyFooBarResult(tblName, 3);
+
+    runMajorCompaction(dbName, tblName);
+    verifyFooBarResult(tblName, 3);
+    verifyHasBase(table.getSd(), fs, "base_0000001");
+
+    // Try with an extra delta.
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " +
+        format + " TBLPROPERTIES ('transactional'='false')", driver);
+    table = msClient.getTable(dbName, tblName);
+
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) VALUES(1, 'foo')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName +" (a,b) VALUES(2, 'bar')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM "
+        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
+    verifyFooBarResult(tblName, 3);
+
+    executeStatementOnDriver("ALTER TABLE " + tblName + " SET TBLPROPERTIES "
+       + "('transactional'='true', 'transactional_properties'='insert_only')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM "
+        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
+
+    // Neither select nor compaction (which is a select) wil work after this.
+    if (isBrokenUntilMapreduce7086) return;
+
+    verifyFooBarResult(tblName, 9);
+
+    runMajorCompaction(dbName, tblName);
+    verifyFooBarResult(tblName, 9);
+    verifyHasBase(table.getSd(), fs, "base_0000002");
+
+    // Try with an extra base.
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS " +
+        format + " TBLPROPERTIES ('transactional'='false')", driver);
+    table = msClient.getTable(dbName, tblName);
+
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) VALUES(1, 'foo')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName +" (a,b) VALUES(2, 'bar')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + "(a,b) SELECT a,b FROM "
+        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
+    verifyFooBarResult(tblName, 3);
+
+    executeStatementOnDriver("ALTER TABLE " + tblName + " SET TBLPROPERTIES "
+       + "('transactional'='true', 'transactional_properties'='insert_only')", driver);
+    executeStatementOnDriver("INSERT OVERWRITE TABLE " + tblName + " SELECT a,b FROM "
+        + tblName + " UNION ALL SELECT a,b FROM " + tblName, driver);
+    verifyFooBarResult(tblName, 6);
+
+    runMajorCompaction(dbName, tblName);
+    verifyFooBarResult(tblName, 6);
+    verifyHasBase(table.getSd(), fs, "base_0000002");
+
+    msClient.close();
+  }
+
+
+  @Test
   public void mmTableBucketed() throws Exception {
     String dbName = "default";
     String tblName = "mm_nonpart";
@@ -1048,7 +1146,7 @@ public class TestCompactor {
     msClient.abortTxns(Lists.newArrayList(openTxnId)); // Now abort 3.
     runMajorCompaction(dbName, tblName); // Compact 4 and 5.
     verifyFooBarResult(tblName, 2);
-    verifyHasBase(table.getSd(), fs, "base_0000005"); 
+    verifyHasBase(table.getSd(), fs, "base_0000005");
     runCleaner(conf);
     verifyDeltaCount(table.getSd(), fs, 0);
   }
@@ -1102,7 +1200,7 @@ public class TestCompactor {
         p2 = msClient.getPartition(dbName, tblName, "ds=2"),
         p3 = msClient.getPartition(dbName, tblName, "ds=3");
     msClient.close();
- 
+
     FileSystem fs = FileSystem.get(conf);
     verifyDeltaCount(p1.getSd(), fs, 3);
     verifyDeltaCount(p2.getSd(), fs, 2);

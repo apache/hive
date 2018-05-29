@@ -53,11 +53,14 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
 import org.apache.hadoop.hive.ql.wm.WmContext;
+import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@RunWith(RetryTestRunner.class)
 public class TestWorkloadManager {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TestWorkloadManager.class);

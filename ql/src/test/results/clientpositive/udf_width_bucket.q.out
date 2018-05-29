@@ -262,7 +262,7 @@ POSTHOOK: Input: default@alldecimaltypes
 2	11	1	11
 3	11	0	8
 5	11	0	4
-PREHOOK: query: create table alltypes(
+PREHOOK: query: create table alltypes_n3(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -271,8 +271,8 @@ PREHOOK: query: create table alltypes(
     cdouble DOUBLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypes
-POSTHOOK: query: create table alltypes(
+PREHOOK: Output: default@alltypes_n3
+POSTHOOK: query: create table alltypes_n3(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -281,8 +281,8 @@ POSTHOOK: query: create table alltypes(
     cdouble DOUBLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypes
-PREHOOK: query: insert into table alltypes values
+POSTHOOK: Output: default@alltypes_n3
+PREHOOK: query: insert into table alltypes_n3 values
 (0, 0, 0, 0, 0.0, 0.0),
 (1, 1, 1, 1, 1.0, 1.0),
 (25, 25, 25, 25, 25.0, 25.0),
@@ -291,8 +291,8 @@ PREHOOK: query: insert into table alltypes values
 (100, 100, 100, 100, 100.0, 100.0)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@alltypes
-POSTHOOK: query: insert into table alltypes values
+PREHOOK: Output: default@alltypes_n3
+POSTHOOK: query: insert into table alltypes_n3 values
 (0, 0, 0, 0, 0.0, 0.0),
 (1, 1, 1, 1, 1.0, 1.0),
 (25, 25, 25, 25, 25.0, 25.0),
@@ -301,13 +301,13 @@ POSTHOOK: query: insert into table alltypes values
 (100, 100, 100, 100, 100.0, 100.0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@alltypes
-POSTHOOK: Lineage: alltypes.cbigint SCRIPT []
-POSTHOOK: Lineage: alltypes.cdouble SCRIPT []
-POSTHOOK: Lineage: alltypes.cfloat SCRIPT []
-POSTHOOK: Lineage: alltypes.cint SCRIPT []
-POSTHOOK: Lineage: alltypes.csmallint SCRIPT []
-POSTHOOK: Lineage: alltypes.ctinyint SCRIPT []
+POSTHOOK: Output: default@alltypes_n3
+POSTHOOK: Lineage: alltypes_n3.cbigint SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.cdouble SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.cfloat SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.cint SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.csmallint SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.ctinyint SCRIPT []
 PREHOOK: query: select
 width_bucket(ctinyint, 0, 100, 10),
 width_bucket(csmallint, 0, 100, 10),
@@ -315,9 +315,9 @@ width_bucket(cint, 0, 100, 10),
 width_bucket(cbigint, 0, 100, 10),
 width_bucket(cfloat, 0, 100, 10),
 width_bucket(cdouble, 0, 100, 10)
-from alltypes
+from alltypes_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes
+PREHOOK: Input: default@alltypes_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select
 width_bucket(ctinyint, 0, 100, 10),
@@ -326,9 +326,9 @@ width_bucket(cint, 0, 100, 10),
 width_bucket(cbigint, 0, 100, 10),
 width_bucket(cfloat, 0, 100, 10),
 width_bucket(cdouble, 0, 100, 10)
-from alltypes
+from alltypes_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes
+POSTHOOK: Input: default@alltypes_n3
 #### A masked pattern was here ####
 1	1	1	1	1	1
 1	1	1	1	1	1
@@ -336,43 +336,43 @@ POSTHOOK: Input: default@alltypes
 7	7	7	7	7	7
 8	8	8	8	8	8
 11	11	11	11	11	11
-PREHOOK: query: truncate table alltypes
+PREHOOK: query: truncate table alltypes_n3
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@alltypes
-POSTHOOK: query: truncate table alltypes
+PREHOOK: Output: default@alltypes_n3
+POSTHOOK: query: truncate table alltypes_n3
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@alltypes
-PREHOOK: query: insert into table alltypes values (5, 5, 5, 10, 4.5, 7.25)
+POSTHOOK: Output: default@alltypes_n3
+PREHOOK: query: insert into table alltypes_n3 values (5, 5, 5, 10, 4.5, 7.25)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@alltypes
-POSTHOOK: query: insert into table alltypes values (5, 5, 5, 10, 4.5, 7.25)
+PREHOOK: Output: default@alltypes_n3
+POSTHOOK: query: insert into table alltypes_n3 values (5, 5, 5, 10, 4.5, 7.25)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@alltypes
-POSTHOOK: Lineage: alltypes.cbigint SCRIPT []
-POSTHOOK: Lineage: alltypes.cdouble SCRIPT []
-POSTHOOK: Lineage: alltypes.cfloat SCRIPT []
-POSTHOOK: Lineage: alltypes.cint SCRIPT []
-POSTHOOK: Lineage: alltypes.csmallint SCRIPT []
-POSTHOOK: Lineage: alltypes.ctinyint SCRIPT []
+POSTHOOK: Output: default@alltypes_n3
+POSTHOOK: Lineage: alltypes_n3.cbigint SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.cdouble SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.cfloat SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.cint SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.csmallint SCRIPT []
+POSTHOOK: Lineage: alltypes_n3.ctinyint SCRIPT []
 PREHOOK: query: select
 width_bucket(cdouble, ctinyint, cbigint, 10),
 width_bucket(cdouble, csmallint, cbigint, 10),
 width_bucket(cdouble, cint, cbigint, 10),
 width_bucket(cdouble, cfloat, cbigint, 10)
-from alltypes
+from alltypes_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes
+PREHOOK: Input: default@alltypes_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select
 width_bucket(cdouble, ctinyint, cbigint, 10),
 width_bucket(cdouble, csmallint, cbigint, 10),
 width_bucket(cdouble, cint, cbigint, 10),
 width_bucket(cdouble, cfloat, cbigint, 10)
-from alltypes
+from alltypes_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes
+POSTHOOK: Input: default@alltypes_n3
 #### A masked pattern was here ####
 5	5	5	6
 PREHOOK: query: create table alltinyints (
@@ -634,14 +634,14 @@ PREHOOK: query: drop table alldecimaltype
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table alldecimaltype
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table alltypes
+PREHOOK: query: drop table alltypes_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@alltypes
-PREHOOK: Output: default@alltypes
-POSTHOOK: query: drop table alltypes
+PREHOOK: Input: default@alltypes_n3
+PREHOOK: Output: default@alltypes_n3
+POSTHOOK: query: drop table alltypes_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@alltypes
-POSTHOOK: Output: default@alltypes
+POSTHOOK: Input: default@alltypes_n3
+POSTHOOK: Output: default@alltypes_n3
 PREHOOK: query: drop table alltinyints
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alltinyints

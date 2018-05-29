@@ -26,40 +26,40 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_1
 POSTHOOK: Lineage: dest_1.key SIMPLE []
 POSTHOOK: Lineage: dest_1.value SIMPLE []
-PREHOOK: query: create table dest_2 (key STRING, value STRING) stored as textfile
+PREHOOK: query: create table dest_2_n0 (key STRING, value STRING) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_2
-POSTHOOK: query: create table dest_2 (key STRING, value STRING) stored as textfile
+PREHOOK: Output: default@dest_2_n0
+POSTHOOK: query: create table dest_2_n0 (key STRING, value STRING) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_2
-PREHOOK: query: insert into table dest_2 select * from dest_1
+POSTHOOK: Output: default@dest_2_n0
+PREHOOK: query: insert into table dest_2_n0 select * from dest_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_1
-PREHOOK: Output: default@dest_2
-POSTHOOK: query: insert into table dest_2 select * from dest_1
+PREHOOK: Output: default@dest_2_n0
+POSTHOOK: query: insert into table dest_2_n0 select * from dest_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_1
-POSTHOOK: Output: default@dest_2
-POSTHOOK: Lineage: dest_2.key SIMPLE [(dest_1)dest_1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest_2.value SIMPLE [(dest_1)dest_1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Output: default@dest_2_n0
+POSTHOOK: Lineage: dest_2_n0.key SIMPLE [(dest_1)dest_1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest_2_n0.value SIMPLE [(dest_1)dest_1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_1
-PREHOOK: Input: default@dest_2
+PREHOOK: Input: default@dest_2_n0
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_1
-POSTHOOK: Input: default@dest_2
+POSTHOOK: Input: default@dest_2_n0
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 					
@@ -230,13 +230,13 @@ NULL	NULL	333444	555666	333444	555666
 PREHOOK: query: explain
 SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -334,20 +334,20 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_1
-PREHOOK: Input: default@dest_2
+PREHOOK: Input: default@dest_2_n0
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_1
-POSTHOOK: Input: default@dest_2
+POSTHOOK: Input: default@dest_2_n0
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 					
@@ -517,20 +517,20 @@ POSTHOOK: Input: default@src1
 NULL	NULL	333444	555666	333444	555666
 PREHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src1.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src1.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_1
-PREHOOK: Input: default@dest_2
+PREHOOK: Input: default@dest_2_n0
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src1.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src1.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_1
-POSTHOOK: Input: default@dest_2
+POSTHOOK: Input: default@dest_2_n0
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 					
@@ -699,20 +699,20 @@ POSTHOOK: Input: default@src1
 369		369		369	
 PREHOOK: query: SELECT * FROM src1
   LEFT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src1.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src1.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_1
-PREHOOK: Input: default@dest_2
+PREHOOK: Input: default@dest_2_n0
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src1
   LEFT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src1.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src1.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_1
-POSTHOOK: Input: default@dest_2
+POSTHOOK: Input: default@dest_2_n0
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 					
@@ -881,20 +881,20 @@ POSTHOOK: Input: default@src1
 369		369		369	
 PREHOOK: query: SELECT * FROM src1
   LEFT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_1
-PREHOOK: Input: default@dest_2
+PREHOOK: Input: default@dest_2_n0
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src1
   LEFT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_1
-POSTHOOK: Input: default@dest_2
+POSTHOOK: Input: default@dest_2_n0
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 					
@@ -1064,13 +1064,13 @@ POSTHOOK: Input: default@src1
 PREHOOK: query: explain
 SELECT * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1168,20 +1168,20 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_1
-PREHOOK: Input: default@dest_2
+PREHOOK: Input: default@dest_2_n0
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN dest_1 src2 ON (src1.key = src2.key)
-  JOIN dest_2 src3 ON (src2.key = src3.key)
+  JOIN dest_2_n0 src3 ON (src2.key = src3.key)
   SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_1
-POSTHOOK: Input: default@dest_2
+POSTHOOK: Input: default@dest_2_n0
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 					

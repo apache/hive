@@ -1,60 +1,60 @@
-PREHOOK: query: CREATE TABLE tmpT1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tmpT1_n1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmpT1
-POSTHOOK: query: CREATE TABLE tmpT1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@tmpT1_n1
+POSTHOOK: query: CREATE TABLE tmpT1_n1(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmpT1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE tmpT1
+POSTHOOK: Output: default@tmpT1_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE tmpT1_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@tmpt1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE tmpT1
+PREHOOK: Output: default@tmpt1_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE tmpT1_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tmpt1
-PREHOOK: query: CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
+POSTHOOK: Output: default@tmpt1_n1
+PREHOOK: query: CREATE TABLE T1_n160(key INT, val STRING) SKEWED BY (key) ON ((2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
+PREHOOK: Output: default@T1_n160
+POSTHOOK: query: CREATE TABLE T1_n160(key INT, val STRING) SKEWED BY (key) ON ((2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: INSERT OVERWRITE TABLE T1 SELECT key, val FROM tmpT1
+POSTHOOK: Output: default@T1_n160
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n160 SELECT key, val FROM tmpT1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmpt1
-PREHOOK: Output: default@t1
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 SELECT key, val FROM tmpT1
+PREHOOK: Input: default@tmpt1_n1
+PREHOOK: Output: default@t1_n160
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n160 SELECT key, val FROM tmpT1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmpt1
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key EXPRESSION [(tmpt1)tmpt1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(tmpt1)tmpt1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+POSTHOOK: Input: default@tmpt1_n1
+POSTHOOK: Output: default@t1_n160
+POSTHOOK: Lineage: t1_n160.key EXPRESSION [(tmpt1_n1)tmpt1_n1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n160.val SIMPLE [(tmpt1_n1)tmpt1_n1.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE T2_n94(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+PREHOOK: Output: default@T2_n94
+POSTHOOK: query: CREATE TABLE T2_n94(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@T2_n94
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n94
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n94
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n94
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
+POSTHOOK: Output: default@t2_n94
 PREHOOK: query: EXPLAIN
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+SELECT a.*, b.* FROM T1_n160 a JOIN T2_n94 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+SELECT a.*, b.* FROM T1_n160 a JOIN T2_n94 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -119,17 +119,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+PREHOOK: query: SELECT a.*, b.* FROM T1_n160 a JOIN T2_n94 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n160
+PREHOOK: Input: default@t2_n94
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+POSTHOOK: query: SELECT a.*, b.* FROM T1_n160 a JOIN T2_n94 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n160
+POSTHOOK: Input: default@t2_n94
 #### A masked pattern was here ####
 2	12	2	22
 3	13	3	13

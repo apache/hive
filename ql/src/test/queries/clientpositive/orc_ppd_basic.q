@@ -8,7 +8,7 @@ SET hive.cbo.enable=false;
 SET hive.map.aggr=false;
 -- disabling map side aggregation as that can lead to different intermediate record counts
 
-CREATE TABLE staging(t tinyint,
+CREATE TABLE staging_n7(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -22,10 +22,10 @@ CREATE TABLE staging(t tinyint,
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging;
-LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE staging;
+LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n7;
+LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE staging_n7;
 
-CREATE TABLE orc_ppd_staging(t tinyint,
+CREATE TABLE orc_ppd_staging_n1(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -40,14 +40,14 @@ CREATE TABLE orc_ppd_staging(t tinyint,
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*");
 
-insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging order by t, s;
+insert overwrite table orc_ppd_staging_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging_n7 order by t, s;
 
 -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
 -- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1;
-insert into orc_ppd_staging select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging limit 1;
+insert into orc_ppd_staging_n1 select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging_n7 limit 1;
+insert into orc_ppd_staging_n1 select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging_n7 limit 1;
 
-CREATE TABLE orc_ppd(t tinyint,
+CREATE TABLE orc_ppd_n2(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -62,7 +62,7 @@ CREATE TABLE orc_ppd(t tinyint,
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*");
 
-insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging order by t, s;
+insert overwrite table orc_ppd_n2 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging_n1 order by t, s;
 
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 
@@ -72,50 +72,50 @@ SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrint
 -- Entry 2: count: 100 hasNull: false min: 118 max: 127 sum: 12151 positions: 0,4,119,0,0,244,19
 
 -- INPUT_RECORDS: 2100 (all row groups)
-select count(*) from orc_ppd;
+select count(*) from orc_ppd_n2;
 
 -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127;
+select count(*) from orc_ppd_n2 where t > 127;
 
 -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55;
-select count(*) from orc_ppd where t <=> 50;
-select count(*) from orc_ppd where t <=> 100;
+select count(*) from orc_ppd_n2 where t = 55;
+select count(*) from orc_ppd_n2 where t <=> 50;
+select count(*) from orc_ppd_n2 where t <=> 100;
 
 -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = "54";
+select count(*) from orc_ppd_n2 where t = "54";
 
 -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = -10.0;
+select count(*) from orc_ppd_n2 where t = -10.0;
 
 -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = cast(53 as float);
-select count(*) from orc_ppd where t = cast(53 as double);
+select count(*) from orc_ppd_n2 where t = cast(53 as float);
+select count(*) from orc_ppd_n2 where t = cast(53 as double);
 
 -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t < 100;
+select count(*) from orc_ppd_n2 where t < 100;
 
 -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t < 100 and t > 98;
+select count(*) from orc_ppd_n2 where t < 100 and t > 98;
 
 -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t <= 100;
+select count(*) from orc_ppd_n2 where t <= 100;
 
 -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t is null;
+select count(*) from orc_ppd_n2 where t is null;
 
 -- INPUT_RECORDS: 1100 (2 row groups)
-select count(*) from orc_ppd where t in (5, 120);
+select count(*) from orc_ppd_n2 where t in (5, 120);
 
 -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t between 60 and 80;
+select count(*) from orc_ppd_n2 where t between 60 and 80;
 
 -- bloom filter tests
 -- INPUT_RECORDS: 0
-select count(*) from orc_ppd where t = -100;
-select count(*) from orc_ppd where t <=> -100;
-select count(*) from orc_ppd where t = 125;
-select count(*) from orc_ppd where t IN (-100, 125, 200);
+select count(*) from orc_ppd_n2 where t = -100;
+select count(*) from orc_ppd_n2 where t <=> -100;
+select count(*) from orc_ppd_n2 where t = 125;
+select count(*) from orc_ppd_n2 where t IN (-100, 125, 200);
 
 -- Row group statistics for column s:
 -- Entry 0: count: 1000 hasNull: false min:  max: zach young sum: 12907 positions: 0,0,0
@@ -123,79 +123,79 @@ select count(*) from orc_ppd where t IN (-100, 125, 200);
 -- Entry 2: count: 100 hasNull: false min: bob davidson max: zzz sum: 1281 positions: 0,3246,373
 
 -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where s > "zzz";
+select count(*) from orc_ppd_n2 where s > "zzz";
 
 -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where s = "zach young";
-select count(*) from orc_ppd where s <=> "zach zipper";
-select count(*) from orc_ppd where s <=> "";
+select count(*) from orc_ppd_n2 where s = "zach young";
+select count(*) from orc_ppd_n2 where s <=> "zach zipper";
+select count(*) from orc_ppd_n2 where s <=> "";
 
 -- INPUT_RECORDS: 0
-select count(*) from orc_ppd where s is null;
+select count(*) from orc_ppd_n2 where s is null;
 
 -- INPUT_RECORDS: 2100
-select count(*) from orc_ppd where s is not null;
+select count(*) from orc_ppd_n2 where s is not null;
 
 -- INPUT_RECORDS: 0
-select count(*) from orc_ppd where s = cast("zach young" as char(50));
+select count(*) from orc_ppd_n2 where s = cast("zach young" as char(50));
 
 -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where s = cast("zach young" as char(10));
-select count(*) from orc_ppd where s = cast("zach young" as varchar(10));
-select count(*) from orc_ppd where s = cast("zach young" as varchar(50));
+select count(*) from orc_ppd_n2 where s = cast("zach young" as char(10));
+select count(*) from orc_ppd_n2 where s = cast("zach young" as varchar(10));
+select count(*) from orc_ppd_n2 where s = cast("zach young" as varchar(50));
 
 -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where s < "b";
+select count(*) from orc_ppd_n2 where s < "b";
 
 -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where s > "alice" and s < "bob";
+select count(*) from orc_ppd_n2 where s > "alice" and s < "bob";
 
 -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where s in ("alice allen", "");
+select count(*) from orc_ppd_n2 where s in ("alice allen", "");
 
 -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where s between "" and "alice allen";
+select count(*) from orc_ppd_n2 where s between "" and "alice allen";
 
 -- INPUT_RECORDS: 100 (1 row group)
-select count(*) from orc_ppd where s between "zz" and "zzz";
+select count(*) from orc_ppd_n2 where s between "zz" and "zzz";
 
 -- INPUT_RECORDS: 1100 (2 row groups)
-select count(*) from orc_ppd where s between "zach zipper" and "zzz";
+select count(*) from orc_ppd_n2 where s between "zach zipper" and "zzz";
 
 -- bloom filter tests
 -- INPUT_RECORDS: 0
-select count(*) from orc_ppd where s = "hello world";
-select count(*) from orc_ppd where s <=> "apache hive";
-select count(*) from orc_ppd where s IN ("a", "z");
+select count(*) from orc_ppd_n2 where s = "hello world";
+select count(*) from orc_ppd_n2 where s <=> "apache hive";
+select count(*) from orc_ppd_n2 where s IN ("a", "z");
 
 -- INPUT_RECORDS: 100
-select count(*) from orc_ppd where s = "sarah ovid";
+select count(*) from orc_ppd_n2 where s = "sarah ovid";
 
 -- INPUT_RECORDS: 1100
-select count(*) from orc_ppd where s = "wendy king";
+select count(*) from orc_ppd_n2 where s = "wendy king";
 
 -- INPUT_RECORDS: 1000
-select count(*) from orc_ppd where s = "wendy king" and t < 0;
+select count(*) from orc_ppd_n2 where s = "wendy king" and t < 0;
 
 -- INPUT_RECORDS: 100
-select count(*) from orc_ppd where s = "wendy king" and t > 100;
+select count(*) from orc_ppd_n2 where s = "wendy king" and t > 100;
 
 set hive.cbo.enable=false;
 set hive.optimize.index.filter=false;
 -- when cbo is disabled constant gets converted to HiveDecimal
 --  74.72f + 0.0 = 74.72000122070312
-select count(*) from orc_ppd where f=74.72;
+select count(*) from orc_ppd_n2 where f=74.72;
 set hive.optimize.index.filter=true;
-select count(*) from orc_ppd where f=74.72;
+select count(*) from orc_ppd_n2 where f=74.72;
 
 set hive.cbo.enable=true;
 set hive.optimize.index.filter=false;
-select count(*) from orc_ppd where f=74.72;
+select count(*) from orc_ppd_n2 where f=74.72;
 set hive.optimize.index.filter=true;
-select count(*) from orc_ppd where f=74.72;
+select count(*) from orc_ppd_n2 where f=74.72;
 
 -- 42.47f + 0.0 == 42.470001220703125
-create temporary table orc_ppd_1 stored as orc as select * from orc_ppd_staging where d = 42.47;
+create temporary table orc_ppd_1 stored as orc as select * from orc_ppd_staging_n1 where d = 42.47;
 
 set hive.cbo.enable=false;
 set hive.optimize.index.filter=false;
@@ -256,7 +256,7 @@ drop table if exists tmp_orcppd;
 create temporary table tmp_orcppd
                     stored as orc
                     as select ts, cast(ts as date)
-                    from staging ;
+                    from staging_n7 ;
 insert into table tmp_orcppd
                     values(null, null);
 

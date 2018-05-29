@@ -11,9 +11,9 @@ ALTER TABLE test_orc SET SERDEPROPERTIES ('orc.row.index.stride' = '1000');
 -- this produces the effect that the number of non-null rows between the last and second
 -- to last index stride are the same (there's only two index strides)
 
-CREATE TABLE src_null(a STRING) STORED AS TEXTFILE;
-LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null;
+CREATE TABLE src_null_n0(a STRING) STORED AS TEXTFILE;
+LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null_n0;
 
-INSERT OVERWRITE TABLE test_orc SELECT a FROM src_null;
+INSERT OVERWRITE TABLE test_orc SELECT a FROM src_null_n0;
 
 SELECT * FROM test_orc LIMIT 5;

@@ -406,7 +406,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   }
   private final Pattern ORIGINAL_PATTERN = Pattern.compile("[0-9]+_[0-9]+");
   /**
-   * @see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
+   * see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
    */
   private static final Pattern ORIGINAL_PATTERN_COPY =
     Pattern.compile("[0-9]+_[0-9]+" + "_copy_" + "[0-9]+");
@@ -423,8 +423,10 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     try {
       Warehouse wh = hmsHandler.getWh();
       if (table.getSd().getLocation() == null || table.getSd().getLocation().isEmpty()) {
+        String catName = table.isSetCatName() ? table.getCatName() :
+            MetaStoreUtils.getDefaultCatalog(getConf());
         tablePath = wh.getDefaultTablePath(hmsHandler.getMS().getDatabase(
-            MetaStoreUtils.getDefaultCatalog(getConf()), table.getDbName()), table.getTableName());
+            catName, table.getDbName()), table.getTableName());
       } else {
         tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
       }

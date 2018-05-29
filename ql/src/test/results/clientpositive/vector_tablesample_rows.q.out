@@ -76,20 +76,20 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 _c0	_c1
 key1	value1
-PREHOOK: query: create table decimal_2 (t decimal(18,9)) stored as orc
+PREHOOK: query: create table decimal_2_n0 (t decimal(18,9)) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@decimal_2
-POSTHOOK: query: create table decimal_2 (t decimal(18,9)) stored as orc
+PREHOOK: Output: default@decimal_2_n0
+POSTHOOK: query: create table decimal_2_n0 (t decimal(18,9)) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@decimal_2
+POSTHOOK: Output: default@decimal_2_n0
 PREHOOK: query: explain vectorization detail
-insert overwrite table decimal_2
+insert overwrite table decimal_2_n0
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-insert overwrite table decimal_2
+insert overwrite table decimal_2_n0
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
 Explain
@@ -137,7 +137,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.decimal_2
+                    name: default.decimal_2_n0
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -172,7 +172,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.decimal_2
+              name: default.decimal_2_n0
 
   Stage: Stage-2
     Stats Work
@@ -198,36 +198,36 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert overwrite table decimal_2
+PREHOOK: query: insert overwrite table decimal_2_n0
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@decimal_2
-POSTHOOK: query: insert overwrite table decimal_2
+PREHOOK: Output: default@decimal_2_n0
+POSTHOOK: query: insert overwrite table decimal_2_n0
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@decimal_2
-POSTHOOK: Lineage: decimal_2.t EXPRESSION []
+POSTHOOK: Output: default@decimal_2_n0
+POSTHOOK: Lineage: decimal_2_n0.t EXPRESSION []
 _col0
-PREHOOK: query: select count(*) from decimal_2
+PREHOOK: query: select count(*) from decimal_2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_2
+PREHOOK: Input: default@decimal_2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from decimal_2
+POSTHOOK: query: select count(*) from decimal_2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n0
 #### A masked pattern was here ####
 _c0
 1
-PREHOOK: query: drop table decimal_2
+PREHOOK: query: drop table decimal_2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@decimal_2
-PREHOOK: Output: default@decimal_2
-POSTHOOK: query: drop table decimal_2
+PREHOOK: Input: default@decimal_2_n0
+PREHOOK: Output: default@decimal_2_n0
+POSTHOOK: query: drop table decimal_2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@decimal_2
-POSTHOOK: Output: default@decimal_2
+POSTHOOK: Input: default@decimal_2_n0
+POSTHOOK: Output: default@decimal_2_n0
 PREHOOK: query: explain vectorization detail
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 PREHOOK: type: QUERY

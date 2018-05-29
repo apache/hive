@@ -1622,11 +1622,12 @@ inline std::ostream& operator<<(std::ostream& out, const PrivilegeGrantInfo& obj
 }
 
 typedef struct _HiveObjectPrivilege__isset {
-  _HiveObjectPrivilege__isset() : hiveObject(false), principalName(false), principalType(false), grantInfo(false) {}
+  _HiveObjectPrivilege__isset() : hiveObject(false), principalName(false), principalType(false), grantInfo(false), authorizer(false) {}
   bool hiveObject :1;
   bool principalName :1;
   bool principalType :1;
   bool grantInfo :1;
+  bool authorizer :1;
 } _HiveObjectPrivilege__isset;
 
 class HiveObjectPrivilege {
@@ -1634,7 +1635,7 @@ class HiveObjectPrivilege {
 
   HiveObjectPrivilege(const HiveObjectPrivilege&);
   HiveObjectPrivilege& operator=(const HiveObjectPrivilege&);
-  HiveObjectPrivilege() : principalName(), principalType((PrincipalType::type)0) {
+  HiveObjectPrivilege() : principalName(), principalType((PrincipalType::type)0), authorizer() {
   }
 
   virtual ~HiveObjectPrivilege() throw();
@@ -1642,6 +1643,7 @@ class HiveObjectPrivilege {
   std::string principalName;
   PrincipalType::type principalType;
   PrivilegeGrantInfo grantInfo;
+  std::string authorizer;
 
   _HiveObjectPrivilege__isset __isset;
 
@@ -1653,6 +1655,8 @@ class HiveObjectPrivilege {
 
   void __set_grantInfo(const PrivilegeGrantInfo& val);
 
+  void __set_authorizer(const std::string& val);
+
   bool operator == (const HiveObjectPrivilege & rhs) const
   {
     if (!(hiveObject == rhs.hiveObject))
@@ -1662,6 +1666,8 @@ class HiveObjectPrivilege {
     if (!(principalType == rhs.principalType))
       return false;
     if (!(grantInfo == rhs.grantInfo))
+      return false;
+    if (!(authorizer == rhs.authorizer))
       return false;
     return true;
   }

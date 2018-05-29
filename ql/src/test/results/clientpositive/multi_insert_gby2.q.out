@@ -6,26 +6,26 @@ POSTHOOK: query: create table e1 (count int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e1
-PREHOOK: query: create table e2 (percentile double)
+PREHOOK: query: create table e2_n0 (percentile double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e2
-POSTHOOK: query: create table e2 (percentile double)
+PREHOOK: Output: default@e2_n0
+POSTHOOK: query: create table e2_n0 (percentile double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e2
+POSTHOOK: Output: default@e2_n0
 PREHOOK: query: explain
 FROM (select key, cast(key as double) as value from src order by key) a
 INSERT OVERWRITE TABLE e1
     SELECT COUNT(*)
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n0
     SELECT percentile_approx(value, 0.5)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM (select key, cast(key as double) as value from src order by key) a
 INSERT OVERWRITE TABLE e1
     SELECT COUNT(*)
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n0
     SELECT percentile_approx(value, 0.5)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -103,7 +103,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.e2
+                  name: default.e2_n0
             Select Operator
               expressions: _col0 (type: double)
               outputColumnNames: percentile
@@ -151,7 +151,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e2
+              name: default.e2_n0
 
   Stage: Stage-4
     Stats Work
@@ -159,28 +159,28 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: percentile
           Column Types: double
-          Table: default.e2
+          Table: default.e2_n0
 
 PREHOOK: query: FROM (select key, cast(key as double) as value from src order by key) a
 INSERT OVERWRITE TABLE e1
     SELECT COUNT(*)
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n0
     SELECT percentile_approx(value, 0.5)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@e1
-PREHOOK: Output: default@e2
+PREHOOK: Output: default@e2_n0
 POSTHOOK: query: FROM (select key, cast(key as double) as value from src order by key) a
 INSERT OVERWRITE TABLE e1
     SELECT COUNT(*)
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n0
     SELECT percentile_approx(value, 0.5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@e1
-POSTHOOK: Output: default@e2
+POSTHOOK: Output: default@e2_n0
 POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e2.percentile EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n0.percentile EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
@@ -190,12 +190,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
 #### A masked pattern was here ####
 500
-PREHOOK: query: select * from e2
+PREHOOK: query: select * from e2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e2
+PREHOOK: Input: default@e2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from e2
+POSTHOOK: query: select * from e2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e2
+POSTHOOK: Input: default@e2_n0
 #### A masked pattern was here ####
 255.5

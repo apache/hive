@@ -23,19 +23,19 @@ select 1 is not distinct from 1,
                null is not distinct from null
          from part;
 
-create table test(x string, y string);
-insert into test values ('q', 'q'), ('q', 'w'), (NULL, 'q'), ('q', NULL), (NULL, NULL);
-select *, x is not distinct from y, not (x is not distinct from y), (x is distinct from y) = true from test;
+create table test_n5(x string, y string);
+insert into test_n5 values ('q', 'q'), ('q', 'w'), (NULL, 'q'), ('q', NULL), (NULL, NULL);
+select *, x is not distinct from y, not (x is not distinct from y), (x is distinct from y) = true from test_n5;
 
-select *, x||y is not distinct from y||x, not (x||y||x is not distinct from y||x||x) from test;
+select *, x||y is not distinct from y||x, not (x||y||x is not distinct from y||x||x) from test_n5;
 
 -- where
-explain select * from test where y is distinct from null;
-select * from test where y is distinct from null;
+explain select * from test_n5 where y is distinct from null;
+select * from test_n5 where y is distinct from null;
 
-explain select * from test where y is not distinct from null;
-select * from test where y is not distinct from null;
-drop table test;
+explain select * from test_n5 where y is not distinct from null;
+select * from test_n5 where y is not distinct from null;
+drop table test_n5;
 
 -- where
 explain select * from part where p_size is distinct from 2;

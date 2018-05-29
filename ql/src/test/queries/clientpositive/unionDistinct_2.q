@@ -53,9 +53,9 @@ union all
 select key as key, value from u3
 ) tab;
 
-drop view if exists v;
+drop view if exists v_n12;
 
-create view v as select distinct * from 
+create view v_n12 as select distinct * from 
 (
 select distinct * from u1
 union  
@@ -64,35 +64,35 @@ union all
 select key as key, value from u3
 ) tab;
 
-describe extended v;
+describe extended v_n12;
 
-select * from v;
+select * from v_n12;
 
-drop view if exists v;
+drop view if exists v_n12;
 
-create view v as select tab.* from 
+create view v_n12 as select tab.* from 
 (
 select distinct * from u1
 union  
 select distinct * from u2
 ) tab;
 
-describe extended v;
+describe extended v_n12;
 
-select * from v;
+select * from v_n12;
 
-drop view if exists v;
+drop view if exists v_n12;
 
-create view v as select * from 
+create view v_n12 as select * from 
 (
 select distinct u1.* from u1
 union all 
 select distinct * from u2
 ) tab;
 
-describe extended v;
+describe extended v_n12;
 
-select * from v;
+select * from v_n12;
 
 select distinct * from 
 (

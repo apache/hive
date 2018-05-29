@@ -1,56 +1,56 @@
-PREHOOK: query: CREATE TABLE test_table1 (key STRING, value STRING)
+PREHOOK: query: CREATE TABLE test_table1_n14 (key STRING, value STRING)
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key STRING, value STRING)
+PREHOOK: Output: default@test_table1_n14
+POSTHOOK: query: CREATE TABLE test_table1_n14 (key STRING, value STRING)
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key STRING, value STRING)
+POSTHOOK: Output: default@test_table1_n14
+PREHOOK: query: CREATE TABLE test_table2_n13 (key STRING, value STRING)
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key STRING, value STRING)
+PREHOOK: Output: default@test_table2_n13
+POSTHOOK: query: CREATE TABLE test_table2_n13 (key STRING, value STRING)
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: INSERT OVERWRITE TABLE test_table1 SELECT key, value FROM src
+POSTHOOK: Output: default@test_table2_n13
+PREHOOK: query: INSERT OVERWRITE TABLE test_table1_n14 SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table1 SELECT key, value FROM src
+PREHOOK: Output: default@test_table1_n14
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table1_n14 SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1
-POSTHOOK: Lineage: test_table1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE test_table2 SELECT key, value FROM src
+POSTHOOK: Output: default@test_table1_n14
+POSTHOOK: Lineage: test_table1_n14.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n14.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table2_n13 SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table2 SELECT key, value FROM src
+PREHOOK: Output: default@test_table2_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table2_n13 SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE TABLE test_table_out (key STRING, value STRING) PARTITIONED BY (part STRING)
+POSTHOOK: Output: default@test_table2_n13
+POSTHOOK: Lineage: test_table2_n13.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n13.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE test_table_out_n0 (key STRING, value STRING) PARTITIONED BY (part STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table_out
-POSTHOOK: query: CREATE TABLE test_table_out (key STRING, value STRING) PARTITIONED BY (part STRING)
+PREHOOK: Output: default@test_table_out_n0
+POSTHOOK: query: CREATE TABLE test_table_out_n0 (key STRING, value STRING) PARTITIONED BY (part STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table_out
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
-SELECT key, count(*) FROM test_table1 GROUP BY key
+POSTHOOK: Output: default@test_table_out_n0
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
+SELECT key, count(*) FROM test_table1_n14 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
-SELECT key, count(*) FROM test_table1 GROUP BY key
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
+SELECT key, count(*) FROM test_table1_n14 GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -67,7 +67,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_table1
+            alias: test_table1_n14
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
@@ -90,7 +90,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test_table_out
+                        name: default.test_table_out_n0
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), '1' (type: string)
                     outputColumnNames: key, value, part
@@ -145,7 +145,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table_out
+              name: default.test_table_out_n0
 
   Stage: Stage-2
     Stats Work
@@ -153,7 +153,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.test_table_out
+          Table: default.test_table_out_n0
 
   Stage: Stage-3
     Map Reduce
@@ -165,7 +165,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.test_table_out
+                  name: default.test_table_out_n0
 
   Stage: Stage-5
     Map Reduce
@@ -177,7 +177,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.test_table_out
+                  name: default.test_table_out_n0
 
   Stage: Stage-6
     Move Operator
@@ -185,24 +185,24 @@ STAGE PLANS:
           hdfs directory: true
           destination: hdfs://### HDFS PATH ###
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
-SELECT key, count(*) FROM test_table1 GROUP BY key
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
+SELECT key, count(*) FROM test_table1_n14 GROUP BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Output: default@test_table_out@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
-SELECT key, count(*) FROM test_table1 GROUP BY key
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Output: default@test_table_out_n0@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
+SELECT key, count(*) FROM test_table1_n14 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Output: default@test_table_out@part=1
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
-PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Output: default@test_table_out_n0@part=1
+POSTHOOK: Lineage: test_table_out_n0 PARTITION(part=1).key SIMPLE [(test_table1_n14)test_table1_n14.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table_out_n0 PARTITION(part=1).value EXPRESSION [(test_table1_n14)test_table1_n14.null, ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_out_n0 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table_out
-POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
+PREHOOK: Input: default@test_table_out_n0
+POSTHOOK: query: DESCRIBE FORMATTED test_table_out_n0 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table_out
+POSTHOOK: Input: default@test_table_out_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -214,7 +214,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table_out      	 
+Table:              	test_table_out_n0   	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -235,17 +235,17 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 WARNING: Comparing a bigint and a string may result in a loss of precision.
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT a.key, a.value FROM (
-	SELECT key, count(*) AS value FROM test_table1 GROUP BY key
+	SELECT key, count(*) AS value FROM test_table1_n14 GROUP BY key
 ) a JOIN (
  	SELECT key, value FROM src
 ) b
 ON (a.value = b.value)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT a.key, a.value FROM (
-	SELECT key, count(*) AS value FROM test_table1 GROUP BY key
+	SELECT key, count(*) AS value FROM test_table1_n14 GROUP BY key
 ) a JOIN (
  	SELECT key, value FROM src
 ) b
@@ -262,7 +262,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_table1
+            alias: test_table1_n14
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
@@ -318,7 +318,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.test_table_out
+                  name: default.test_table_out_n0
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), '1' (type: string)
               outputColumnNames: key, value, part
@@ -346,7 +346,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table_out
+              name: default.test_table_out_n0
 
   Stage: Stage-2
     Stats Work
@@ -354,7 +354,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.test_table_out
+          Table: default.test_table_out_n0
 
   Stage: Stage-3
     Map Reduce
@@ -386,36 +386,36 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT a.key, a.value FROM (
-	SELECT key, cast(count(*) AS STRING) AS value FROM test_table1 GROUP BY key
+	SELECT key, cast(count(*) AS STRING) AS value FROM test_table1_n14 GROUP BY key
 ) a JOIN (
  	SELECT key, value FROM src
 ) b
 ON (a.value = b.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@test_table1
-PREHOOK: Output: default@test_table_out@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Output: default@test_table_out_n0@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT a.key, a.value FROM (
-	SELECT key, cast(count(*) AS STRING) AS value FROM test_table1 GROUP BY key
+	SELECT key, cast(count(*) AS STRING) AS value FROM test_table1_n14 GROUP BY key
 ) a JOIN (
  	SELECT key, value FROM src
 ) b
 ON (a.value = b.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Output: default@test_table_out@part=1
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)test_table1.null, ]
-PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Output: default@test_table_out_n0@part=1
+POSTHOOK: Lineage: test_table_out_n0 PARTITION(part=1).key SIMPLE [(test_table1_n14)test_table1_n14.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table_out_n0 PARTITION(part=1).value EXPRESSION [(test_table1_n14)test_table1_n14.null, ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_out_n0 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table_out
-POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
+PREHOOK: Input: default@test_table_out_n0
+POSTHOOK: query: DESCRIBE FORMATTED test_table_out_n0 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table_out
+POSTHOOK: Input: default@test_table_out_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -427,7 +427,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table_out      	 
+Table:              	test_table_out_n0   	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -447,11 +447,11 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
-SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
+SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
-SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
+SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -489,7 +489,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test_table_out
+                        name: default.test_table_out_n0
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
@@ -538,7 +538,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table_out
+              name: default.test_table_out_n0
 
   Stage: Stage-3
     Stats Work
@@ -546,7 +546,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.test_table_out
+          Table: default.test_table_out_n0
 
   Stage: Stage-4
     Map Reduce
@@ -558,7 +558,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.test_table_out
+                  name: default.test_table_out_n0
 
   Stage: Stage-6
     Map Reduce
@@ -570,7 +570,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.test_table_out
+                  name: default.test_table_out_n0
 
   Stage: Stage-7
     Move Operator
@@ -578,26 +578,26 @@ STAGE PLANS:
           hdfs directory: true
           destination: hdfs://### HDFS PATH ###
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
-SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
+SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table2
-PREHOOK: Output: default@test_table_out@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
-SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Input: default@test_table2_n13
+PREHOOK: Output: default@test_table_out_n0@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
+SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Output: default@test_table_out@part=1
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Input: default@test_table2_n13
+POSTHOOK: Output: default@test_table_out_n0@part=1
+POSTHOOK: Lineage: test_table_out_n0 PARTITION(part=1).key SIMPLE [(test_table1_n14)a.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table_out_n0 PARTITION(part=1).value SIMPLE [(test_table2_n13)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_out_n0 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table_out
-POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
+PREHOOK: Input: default@test_table_out_n0
+POSTHOOK: query: DESCRIBE FORMATTED test_table_out_n0 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table_out
+POSTHOOK: Input: default@test_table_out_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -609,7 +609,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table_out      	 
+Table:              	test_table_out_n0   	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -629,12 +629,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
-SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
+SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
-SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
+SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -685,7 +685,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.test_table_out
+                  name: default.test_table_out_n0
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
               outputColumnNames: key, value
@@ -711,7 +711,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table_out
+              name: default.test_table_out_n0
 
   Stage: Stage-3
     Stats Work
@@ -719,7 +719,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.test_table_out
+          Table: default.test_table_out_n0
 
   Stage: Stage-4
     Map Reduce
@@ -747,28 +747,28 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
-SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
+SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table2
-PREHOOK: Output: default@test_table_out@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')
-SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+PREHOOK: Input: default@test_table1_n14
+PREHOOK: Input: default@test_table2_n13
+PREHOOK: Output: default@test_table_out_n0@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
+SELECT /*+ MAPJOIN(a) */ b.value, count(*) FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key
 GROUP BY b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Output: default@test_table_out@part=1
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).key SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table_out PARTITION(part=1).value EXPRESSION [(test_table1)a.null, (test_table2)b.null, ]
-PREHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
+POSTHOOK: Input: default@test_table1_n14
+POSTHOOK: Input: default@test_table2_n13
+POSTHOOK: Output: default@test_table_out_n0@part=1
+POSTHOOK: Lineage: test_table_out_n0 PARTITION(part=1).key SIMPLE [(test_table2_n13)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table_out_n0 PARTITION(part=1).value EXPRESSION [(test_table1_n14)a.null, (test_table2_n13)b.null, ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_out_n0 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table_out
-POSTHOOK: query: DESCRIBE FORMATTED test_table_out PARTITION (part = '1')
+PREHOOK: Input: default@test_table_out_n0
+POSTHOOK: query: DESCRIBE FORMATTED test_table_out_n0 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table_out
+POSTHOOK: Input: default@test_table_out_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -780,7 +780,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table_out      	 
+Table:              	test_table_out_n0   	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}

@@ -163,7 +163,8 @@ public class VectorPTFGroupBatches {
     spillRowBytesContainer = null;
   }
 
-  public void evaluateStreamingGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateStreamingGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+      throws HiveException {
 
     // Streaming evaluators fill in their results during the evaluate call.
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
@@ -171,7 +172,9 @@ public class VectorPTFGroupBatches {
     }
   }
 
-  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
+  public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch)
+      throws HiveException {
+
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
       evaluator.evaluateGroupBatch(batch, isLastGroupBatch);
     }
@@ -203,7 +206,7 @@ public class VectorPTFGroupBatches {
           ((DoubleColumnVector) outputColVector).vector[0] = evaluator.getDoubleGroupResult();
           break;
         case DECIMAL:
-          ((DecimalColumnVector) outputColVector).vector[0].set(evaluator.getDecimalGroupResult());
+          ((DecimalColumnVector) outputColVector).set(0, evaluator.getDecimalGroupResult());
           break;
         default:
           throw new RuntimeException("Unexpected column vector type " + evaluator.getResultColumnVectorType());

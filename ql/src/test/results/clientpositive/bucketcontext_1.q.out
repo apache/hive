@@ -1,105 +1,105 @@
-PREHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE bucket_small_n14 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@bucket_small
-POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@bucket_small_n14
+POSTHOOK: query: CREATE TABLE bucket_small_n14 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small partition(ds='2008-04-08')
+POSTHOOK: Output: default@bucket_small_n14
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small partition(ds='2008-04-08')
+PREHOOK: Output: default@bucket_small_n14
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_small
-POSTHOOK: Output: default@bucket_small@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small partition(ds='2008-04-08')
+POSTHOOK: Output: default@bucket_small_n14
+POSTHOOK: Output: default@bucket_small_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_small@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small partition(ds='2008-04-08')
+PREHOOK: Output: default@bucket_small_n14@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_small@ds=2008-04-08
-PREHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@bucket_small_n14@ds=2008-04-08
+PREHOOK: query: CREATE TABLE bucket_big_n14 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@bucket_big
-POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@bucket_big_n14
+POSTHOOK: query: CREATE TABLE bucket_big_n14 (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@bucket_big
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: Output: default@bucket_big_n14
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: Output: default@bucket_big_n14
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big
-POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: Output: default@bucket_big_n14
+POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: Output: default@bucket_big_n14@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: Output: default@bucket_big_n14@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-08')
+POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-08')
+PREHOOK: Output: default@bucket_big_n14@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-09')
+POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big partition(ds='2008-04-09')
+PREHOOK: Output: default@bucket_big_n14
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big
-POSTHOOK: Output: default@bucket_big@ds=2008-04-09
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-09')
+POSTHOOK: Output: default@bucket_big_n14
+POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-09
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big@ds=2008-04-09
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big partition(ds='2008-04-09')
+PREHOOK: Output: default@bucket_big_n14@ds=2008-04-09
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big@ds=2008-04-09
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-09')
+POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-09
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big@ds=2008-04-09
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big partition(ds='2008-04-09')
+PREHOOK: Output: default@bucket_big_n14@ds=2008-04-09
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big@ds=2008-04-09
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-09')
+POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-09
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big@ds=2008-04-09
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big partition(ds='2008-04-09')
+PREHOOK: Output: default@bucket_big_n14@ds=2008-04-09
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_big_n14 partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big@ds=2008-04-09
-PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: Output: default@bucket_big_n14@ds=2008-04-09
+PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -127,13 +127,13 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.bucket_small
+                    name default.bucket_small_n14
                     numFiles 2
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct bucket_small { string key, string value}
+                    serialization.ddl struct bucket_small_n14 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 2750
@@ -152,16 +152,16 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.bucket_small
+                      name default.bucket_small_n14
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct bucket_small { string key, string value}
+                      serialization.ddl struct bucket_small_n14 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_small
-                  name: default.bucket_small
+                    name: default.bucket_small_n14
+                  name: default.bucket_small_n14
       Alias -> Map Local Operator Tree:
         a 
           TableScan
@@ -238,13 +238,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.bucket_big
+              name default.bucket_big_n14
               numFiles 4
               numRows 0
               partition_columns ds
               partition_columns.types string
               rawDataSize 0
-              serialization.ddl struct bucket_big { string key, string value}
+              serialization.ddl struct bucket_big_n14 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 5812
@@ -263,16 +263,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.bucket_big
+                name default.bucket_big_n14
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct bucket_big { string key, string value}
+                serialization.ddl struct bucket_big_n14 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.bucket_big
-            name: default.bucket_big
+              name: default.bucket_big_n14
+            name: default.bucket_big_n14
 #### A masked pattern was here ####
           Partition
             base file name: ds=2008-04-09
@@ -288,13 +288,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.bucket_big
+              name default.bucket_big_n14
               numFiles 4
               numRows 0
               partition_columns ds
               partition_columns.types string
               rawDataSize 0
-              serialization.ddl struct bucket_big { string key, string value}
+              serialization.ddl struct bucket_big_n14 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 5812
@@ -313,19 +313,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.bucket_big
+                name default.bucket_big_n14
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct bucket_big { string key, string value}
+                serialization.ddl struct bucket_big_n14 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.bucket_big
-            name: default.bucket_big
+              name: default.bucket_big_n14
+            name: default.bucket_big_n14
       Truncated Path -> Alias:
-        /bucket_big/ds=2008-04-08 [b]
-        /bucket_big/ds=2008-04-09 [b]
+        /bucket_big_n14/ds=2008-04-08 [b]
+        /bucket_big_n14/ds=2008-04-09 [b]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -362,26 +362,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+PREHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket_big
-PREHOOK: Input: default@bucket_big@ds=2008-04-08
-PREHOOK: Input: default@bucket_big@ds=2008-04-09
-PREHOOK: Input: default@bucket_small
-PREHOOK: Input: default@bucket_small@ds=2008-04-08
+PREHOOK: Input: default@bucket_big_n14
+PREHOOK: Input: default@bucket_big_n14@ds=2008-04-08
+PREHOOK: Input: default@bucket_big_n14@ds=2008-04-09
+PREHOOK: Input: default@bucket_small_n14
+PREHOOK: Input: default@bucket_small_n14@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket_big
-POSTHOOK: Input: default@bucket_big@ds=2008-04-08
-POSTHOOK: Input: default@bucket_big@ds=2008-04-09
-POSTHOOK: Input: default@bucket_small
-POSTHOOK: Input: default@bucket_small@ds=2008-04-08
+POSTHOOK: Input: default@bucket_big_n14
+POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-08
+POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-09
+POSTHOOK: Input: default@bucket_small_n14
+POSTHOOK: Input: default@bucket_small_n14@ds=2008-04-08
 #### A masked pattern was here ####
 928
-PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -435,13 +435,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.bucket_big
+              name default.bucket_big_n14
               numFiles 4
               numRows 0
               partition_columns ds
               partition_columns.types string
               rawDataSize 0
-              serialization.ddl struct bucket_big { string key, string value}
+              serialization.ddl struct bucket_big_n14 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 5812
@@ -460,16 +460,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.bucket_big
+                name default.bucket_big_n14
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct bucket_big { string key, string value}
+                serialization.ddl struct bucket_big_n14 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.bucket_big
-            name: default.bucket_big
+              name: default.bucket_big_n14
+            name: default.bucket_big_n14
 #### A masked pattern was here ####
           Partition
             base file name: ds=2008-04-09
@@ -485,13 +485,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.bucket_big
+              name default.bucket_big_n14
               numFiles 4
               numRows 0
               partition_columns ds
               partition_columns.types string
               rawDataSize 0
-              serialization.ddl struct bucket_big { string key, string value}
+              serialization.ddl struct bucket_big_n14 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 5812
@@ -510,19 +510,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.bucket_big
+                name default.bucket_big_n14
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct bucket_big { string key, string value}
+                serialization.ddl struct bucket_big_n14 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.bucket_big
-            name: default.bucket_big
+              name: default.bucket_big_n14
+            name: default.bucket_big_n14
       Truncated Path -> Alias:
-        /bucket_big/ds=2008-04-08 [b]
-        /bucket_big/ds=2008-04-09 [b]
+        /bucket_big_n14/ds=2008-04-08 [b]
+        /bucket_big_n14/ds=2008-04-09 [b]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -557,20 +557,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+PREHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket_big
-PREHOOK: Input: default@bucket_big@ds=2008-04-08
-PREHOOK: Input: default@bucket_big@ds=2008-04-09
-PREHOOK: Input: default@bucket_small
-PREHOOK: Input: default@bucket_small@ds=2008-04-08
+PREHOOK: Input: default@bucket_big_n14
+PREHOOK: Input: default@bucket_big_n14@ds=2008-04-08
+PREHOOK: Input: default@bucket_big_n14@ds=2008-04-09
+PREHOOK: Input: default@bucket_small_n14
+PREHOOK: Input: default@bucket_small_n14@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n14 a JOIN bucket_big_n14 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket_big
-POSTHOOK: Input: default@bucket_big@ds=2008-04-08
-POSTHOOK: Input: default@bucket_big@ds=2008-04-09
-POSTHOOK: Input: default@bucket_small
-POSTHOOK: Input: default@bucket_small@ds=2008-04-08
+POSTHOOK: Input: default@bucket_big_n14
+POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-08
+POSTHOOK: Input: default@bucket_big_n14@ds=2008-04-09
+POSTHOOK: Input: default@bucket_small_n14
+POSTHOOK: Input: default@bucket_small_n14@ds=2008-04-08
 #### A masked pattern was here ####
 928

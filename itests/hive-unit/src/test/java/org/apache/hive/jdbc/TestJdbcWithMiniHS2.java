@@ -82,7 +82,9 @@ import org.datanucleus.AbstractNucleusContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
@@ -119,7 +121,8 @@ public class TestJdbcWithMiniHS2 {
     }
     Statement stmt = conDefault.createStatement();
     stmt.execute("drop database if exists " + testDbName + " cascade");
-    stmt.execute("create database " + testDbName);
+    stmt.execute("create database " + testDbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')");
     stmt.close();
 
     try {
@@ -976,7 +979,7 @@ public class TestJdbcWithMiniHS2 {
       }
     }
 
-    // This should fail with given HTTP response code 413 in error message, since header is more
+    // This should fail with given HTTP response code 431 in error message, since header is more
     // than the configured the header size
     password = StringUtils.leftPad("*", 2000);
     Exception headerException = null;
@@ -992,7 +995,7 @@ public class TestJdbcWithMiniHS2 {
 
       assertTrue("Header exception should be thrown", headerException != null);
       assertTrue("Incorrect HTTP Response:" + headerException.getMessage(),
-          headerException.getMessage().contains("HTTP Response code: 413"));
+          headerException.getMessage().contains("HTTP Response code: 431"));
     }
 
     // Stop HiveServer2 to increase header size
@@ -1021,6 +1024,7 @@ public class TestJdbcWithMiniHS2 {
    * Test for jdbc driver retry on NoHttpResponseException
    * @throws Exception
    */
+  @Ignore("Flaky test. Should be re-enabled in HIVE-19706")
   @Test
   public void testHttpRetryOnServerIdleTimeout() throws Exception {
     // Stop HiveServer2

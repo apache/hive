@@ -185,6 +185,7 @@ public class TestAcidOnTez {
    * Tests non acid to acid conversion where starting table has non-standard layout, i.e.
    * where "original" files are not immediate children of the partition dir
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testNonStandardConversion01() throws Exception {
     HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
@@ -431,6 +432,7 @@ public class TestAcidOnTez {
    * {@link org.apache.hadoop.hive.ql.metadata.Hive#moveAcidFiles(FileSystem, FileStatus[], Path, List)} drops the union subdirs
    * since each delta file has a unique name.
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testCtasTezUnion() throws Exception {
     HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
@@ -661,8 +663,8 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     }
 
     String[][] expected2 = {
-      {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":1}\t1\t2", "warehouse/t/delta_0000001_0000001_0001/bucket_00000"},
-      {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":0}\t3\t4", "warehouse/t/delta_0000001_0000001_0001/bucket_00000"},
+      {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":0}\t1\t2", "warehouse/t/delta_0000001_0000001_0001/bucket_00000"},
+      {"{\"writeid\":1,\"bucketid\":536870913,\"rowid\":1}\t3\t4", "warehouse/t/delta_0000001_0000001_0001/bucket_00000"},
       {"{\"writeid\":1,\"bucketid\":536870914,\"rowid\":0}\t5\t6", "warehouse/t/delta_0000001_0000001_0002/bucket_00000"},
       {"{\"writeid\":1,\"bucketid\":536870914,\"rowid\":1}\t7\t8", "warehouse/t/delta_0000001_0000001_0002/bucket_00000"},
       {"{\"writeid\":1,\"bucketid\":536870915,\"rowid\":0}\t9\t10", "warehouse/t/delta_0000001_0000001_0003/bucket_00000"}

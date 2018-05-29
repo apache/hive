@@ -19,27 +19,27 @@ POSTHOOK: Output: default@aux1
 POSTHOOK: Lineage: aux1.col_1 SCRIPT []
 POSTHOOK: Lineage: aux1.key SCRIPT []
 POSTHOOK: Lineage: aux1.value SCRIPT []
-PREHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE test1_n5 (key INT, value INT, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test1
-POSTHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: Output: default@test1_n5
+POSTHOOK: query: CREATE TABLE test1_n5 (key INT, value INT, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test1
-PREHOOK: query: INSERT OVERWRITE TABLE test1
+POSTHOOK: Output: default@test1_n5
+PREHOOK: query: INSERT OVERWRITE TABLE test1_n5
 SELECT * FROM aux1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@aux1
-PREHOOK: Output: default@test1
-POSTHOOK: query: INSERT OVERWRITE TABLE test1
+PREHOOK: Output: default@test1_n5
+POSTHOOK: query: INSERT OVERWRITE TABLE test1_n5
 SELECT * FROM aux1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@aux1
-POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.col_1 SIMPLE [(aux1)aux1.FieldSchema(name:col_1, type:string, comment:null), ]
-POSTHOOK: Lineage: test1.key SIMPLE [(aux1)aux1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test1.value SIMPLE [(aux1)aux1.FieldSchema(name:value, type:int, comment:null), ]
+POSTHOOK: Output: default@test1_n5
+POSTHOOK: Lineage: test1_n5.col_1 SIMPLE [(aux1)aux1.FieldSchema(name:col_1, type:string, comment:null), ]
+POSTHOOK: Lineage: test1_n5.key SIMPLE [(aux1)aux1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test1_n5.value SIMPLE [(aux1)aux1.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: CREATE TABLE aux2 (key INT, value INT, col_2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -61,36 +61,36 @@ POSTHOOK: Output: default@aux2
 POSTHOOK: Lineage: aux2.col_2 SCRIPT []
 POSTHOOK: Lineage: aux2.key SCRIPT []
 POSTHOOK: Lineage: aux2.value SCRIPT []
-PREHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE test2_n3 (key INT, value INT, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test2
-POSTHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: Output: default@test2_n3
+POSTHOOK: query: CREATE TABLE test2_n3 (key INT, value INT, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test2
-PREHOOK: query: INSERT OVERWRITE TABLE test2
+POSTHOOK: Output: default@test2_n3
+PREHOOK: query: INSERT OVERWRITE TABLE test2_n3
 SELECT * FROM aux2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@aux2
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT OVERWRITE TABLE test2
+PREHOOK: Output: default@test2_n3
+POSTHOOK: query: INSERT OVERWRITE TABLE test2_n3
 SELECT * FROM aux2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@aux2
-POSTHOOK: Output: default@test2
-POSTHOOK: Lineage: test2.col_2 SIMPLE [(aux2)aux2.FieldSchema(name:col_2, type:string, comment:null), ]
-POSTHOOK: Lineage: test2.key SIMPLE [(aux2)aux2.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test2.value SIMPLE [(aux2)aux2.FieldSchema(name:value, type:int, comment:null), ]
+POSTHOOK: Output: default@test2_n3
+POSTHOOK: Lineage: test2_n3.col_2 SIMPLE [(aux2)aux2.FieldSchema(name:col_2, type:string, comment:null), ]
+POSTHOOK: Lineage: test2_n3.key SIMPLE [(aux2)aux2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test2_n3.value SIMPLE [(aux2)aux2.FieldSchema(name:value, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -101,7 +101,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -128,18 +128,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
@@ -151,17 +151,17 @@ NULL	NULL	None	NULL	NULL	NULL
 100	1	Bob	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND test1.key between 100 and 102
-  AND test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND test1_n5.key between 100 and 102
+  AND test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND test1.key between 100 and 102
-  AND test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND test1_n5.key between 100 and 102
+  AND test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -172,7 +172,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -202,22 +202,22 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND test1.key between 100 and 102
-  AND test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND test1_n5.key between 100 and 102
+  AND test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND test1.key between 100 and 102
-  AND test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND test1_n5.key between 100 and 102
+  AND test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
@@ -228,15 +228,15 @@ NULL	NULL	None	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102
-  AND test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.key between 100 and 102
+  AND test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102
-  AND test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.key between 100 and 102
+  AND test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -247,13 +247,13 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key BETWEEN 100 AND 102 (type: boolean)
@@ -274,7 +274,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -310,20 +310,20 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102
-  AND test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.key between 100 and 102
+  AND test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102
-  AND test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.key between 100 and 102
+  AND test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
@@ -333,13 +333,13 @@ NULL	NULL	None	NULL	NULL	NULL
 100	1	Bob	102	2	Del
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value AND true)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value AND true)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value AND true)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value AND true)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -350,7 +350,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -377,18 +377,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value AND true)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value AND true)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value AND true)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value AND true)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 NULL	NULL	NULL	105	NULL	None
 101	2	Car	103	2	Ema
@@ -399,13 +399,13 @@ NULL	NULL	NULL	104	3	Fli
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -416,13 +416,13 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -440,7 +440,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -476,18 +476,18 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
@@ -504,17 +504,17 @@ NULL	NULL	None	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -525,13 +525,13 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -546,7 +546,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -579,22 +579,22 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 98	NULL	None	102	2	Del
 NULL	NULL	None	102	2	Del
@@ -612,15 +612,15 @@ NULL	NULL	None	102	2	Del
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -631,13 +631,13 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -652,7 +652,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -685,20 +685,20 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
@@ -716,15 +716,15 @@ NULL	NULL	None	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -735,13 +735,13 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:test2 
+        $hdt$_1:test2_n3 
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -756,7 +756,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -789,20 +789,20 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 98	NULL	None	102	2	Del
 NULL	NULL	None	102	2	Del
@@ -814,17 +814,17 @@ NULL	NULL	None	102	2	Del
 100	1	Bob	102	2	Del
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -835,7 +835,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -863,22 +863,22 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 LEFT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
@@ -890,17 +890,17 @@ NULL	NULL	None	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -911,13 +911,13 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:test1 
+        $hdt$_0:test1_n5 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:test1 
+        $hdt$_0:test1_n5 
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -932,7 +932,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -965,22 +965,22 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 101	2	Car	105	NULL	None
 100	1	Bob	105	NULL	None
@@ -998,15 +998,15 @@ NULL	NULL	None	102	2	Del
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -1017,13 +1017,13 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:test1 
+        $hdt$_0:test1_n5 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:test1 
+        $hdt$_0:test1_n5 
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -1038,7 +1038,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -1071,20 +1071,20 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 101	2	Car	105	NULL	None
 100	1	Bob	105	NULL	None
@@ -1099,15 +1099,15 @@ POSTHOOK: Input: default@test2
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -1118,13 +1118,13 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:test1 
+        $hdt$_0:test1_n5 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:test1 
+        $hdt$_0:test1_n5 
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -1139,7 +1139,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -1172,20 +1172,20 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 NULL	NULL	NULL	105	NULL	None
 101	2	Car	103	2	Ema
@@ -1199,17 +1199,17 @@ NULL	NULL	None	102	2	Del
 NULL	NULL	NULL	104	3	Fli
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1220,7 +1220,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -1248,22 +1248,22 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 RIGHT OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 RIGHT OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 NULL	NULL	NULL	105	NULL	None
 101	2	Car	103	2	Ema
@@ -1273,17 +1273,17 @@ NULL	NULL	NULL	104	3	Fli
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1294,7 +1294,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -1305,7 +1305,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -1341,22 +1341,22 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102
-  OR test2.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 100	1	Bob	104	3	Fli
 100	1	Bob	102	2	Del
@@ -1374,15 +1374,15 @@ NULL	NULL	None	102	2	Del
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1393,7 +1393,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -1404,7 +1404,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -1440,20 +1440,20 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test1.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test1_n5.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 100	1	Bob	104	3	Fli
 100	1	Bob	102	2	Del
@@ -1471,15 +1471,15 @@ NULL	NULL	None	NULL	NULL	NULL
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1490,7 +1490,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -1501,7 +1501,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -1537,20 +1537,20 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  OR test2.key between 100 and 102)
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  OR test2_n3.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 100	1	Bob	102	2	Del
 99	0	Alice	102	2	Del
@@ -1564,17 +1564,17 @@ NULL	NULL	NULL	104	3	Fli
 NULL	NULL	NULL	105	NULL	None
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1585,7 +1585,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n5
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -1598,7 +1598,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col2 (type: string)
           TableScan
-            alias: test2
+            alias: test2_n3
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -1635,22 +1635,22 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n5
+PREHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 FULL OUTER JOIN test2
-ON (test1.value=test2.value
-  AND (test1.key between 100 and 102
-    OR test2.key between 100 and 102))
+FROM test1_n5 FULL OUTER JOIN test2_n3
+ON (test1_n5.value=test2_n3.value
+  AND (test1_n5.key between 100 and 102
+    OR test2_n3.key between 100 and 102))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n5
+POSTHOOK: Input: default@test2_n3
 #### A masked pattern was here ####
 NULL	NULL	None	NULL	NULL	NULL
 98	NULL	None	NULL	NULL	NULL

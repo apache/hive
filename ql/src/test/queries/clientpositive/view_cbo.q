@@ -7,14 +7,14 @@ select key, value, avg(key + 1) from src
 group by value, key with rollup
 order by key, value limit 20;
 
-drop view v;
-create view v as
+drop view v_n13;
+create view v_n13 as
 with q1 as ( select key from src where key = '5')
 select * from q1;
-desc formatted v;
+desc formatted v_n13;
 
-drop view v;
-create view v as
+drop view v_n13;
+create view v_n13 as
 select b.key, count(*) as c
 from src b
 group by b.key
@@ -24,10 +24,10 @@ having exists
   where a.key = b.key and a.value > 'val_9'
   )
 ;
-desc formatted v;
+desc formatted v_n13;
 
-drop view v;
-create view v as
+drop view v_n13;
+create view v_n13 as
 select *
 from src b
 where not exists
@@ -36,38 +36,38 @@ where not exists
   where b.value = a.value and a.value > 'val_2'
   )
 ;
-desc formatted v;
+desc formatted v_n13;
 
-drop view v;
-create view v as select a.key from src a join src b on a.key=b.key;
-desc formatted v;
+drop view v_n13;
+create view v_n13 as select a.key from src a join src b on a.key=b.key;
+desc formatted v_n13;
 
-CREATE VIEW view15 AS
+CREATE VIEW view15_n0 AS
 SELECT key,COUNT(value) AS value_count
 FROM src
 GROUP BY key;
-desc formatted view15;
+desc formatted view15_n0;
 
-CREATE VIEW view16 AS
+CREATE VIEW view16_n0 AS
 SELECT DISTINCT value
 FROM src;
 
-desc formatted view16;
+desc formatted view16_n0;
 
-drop view v;
-create view v as select key from src;
-desc formatted v;
+drop view v_n13;
+create view v_n13 as select key from src;
+desc formatted v_n13;
 
-drop view v;
-create view v as select * from src;
-desc formatted v;
+drop view v_n13;
+create view v_n13 as select * from src;
+desc formatted v_n13;
 
-drop view v;
-create view v as select * from src intersect select * from src;
-desc formatted v;
+drop view v_n13;
+create view v_n13 as select * from src intersect select * from src;
+desc formatted v_n13;
 
-drop view v;
-create view v as select * from src except select * from src;
-desc formatted v;
+drop view v_n13;
+create view v_n13 as select * from src except select * from src;
+desc formatted v_n13;
 
-explain select * from v;
+explain select * from v_n13;

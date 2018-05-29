@@ -79,17 +79,18 @@ public final class TxnDbUtil {
           "  TXN_STARTED bigint NOT NULL," +
           "  TXN_LAST_HEARTBEAT bigint NOT NULL," +
           "  TXN_USER varchar(128) NOT NULL," +
+          "  TXN_TYPE integer," +
           "  TXN_HOST varchar(128) NOT NULL)");
 
       stmt.execute("CREATE TABLE TXN_COMPONENTS (" +
-          "  TC_TXNID bigint REFERENCES TXNS (TXN_ID)," +
+          "  TC_TXNID bigint NOT NULL REFERENCES TXNS (TXN_ID)," +
           "  TC_DATABASE varchar(128) NOT NULL," +
           "  TC_TABLE varchar(128)," +
           "  TC_PARTITION varchar(767)," +
           "  TC_OPERATION_TYPE char(1) NOT NULL," +
           "  TC_WRITEID bigint)");
       stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" +
-          "  CTC_TXNID bigint," +
+          "  CTC_TXNID bigint NOT NULL," +
           "  CTC_DATABASE varchar(128) NOT NULL," +
           "  CTC_TABLE varchar(128)," +
           "  CTC_PARTITION varchar(767)," +

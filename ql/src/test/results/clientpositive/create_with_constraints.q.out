@@ -1,63 +1,63 @@
-PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING, PRIMARY KEY (a) DISABLE)
+PREHOOK: query: CREATE TABLE table1_n13 (a STRING, b STRING, PRIMARY KEY (a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING, PRIMARY KEY (a) DISABLE)
+PREHOOK: Output: default@table1_n13
+POSTHOOK: query: CREATE TABLE table1_n13 (a STRING, b STRING, PRIMARY KEY (a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE TABLE table2 (a STRING, b STRING, CONSTRAINT pk1 PRIMARY KEY (a) DISABLE)
+POSTHOOK: Output: default@table1_n13
+PREHOOK: query: CREATE TABLE table2_n8 (a STRING, b STRING, CONSTRAINT pk1 PRIMARY KEY (a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: CREATE TABLE table2 (a STRING, b STRING, CONSTRAINT pk1 PRIMARY KEY (a) DISABLE)
+PREHOOK: Output: default@table2_n8
+POSTHOOK: query: CREATE TABLE table2_n8 (a STRING, b STRING, CONSTRAINT pk1 PRIMARY KEY (a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: CREATE TABLE table3 (x string NOT NULL DISABLE, PRIMARY KEY (x) DISABLE, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a) DISABLE)
+POSTHOOK: Output: default@table2_n8
+PREHOOK: query: CREATE TABLE table3_n1 (x string NOT NULL DISABLE, PRIMARY KEY (x) DISABLE, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table3
-POSTHOOK: query: CREATE TABLE table3 (x string NOT NULL DISABLE, PRIMARY KEY (x) DISABLE, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a) DISABLE)
+PREHOOK: Output: default@table3_n1
+POSTHOOK: query: CREATE TABLE table3_n1 (x string NOT NULL DISABLE, PRIMARY KEY (x) DISABLE, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table3
-PREHOOK: query: CREATE TABLE table4 (x string CONSTRAINT nn4_1 NOT NULL DISABLE, y string CONSTRAINT nn4_2 NOT NULL DISABLE, UNIQUE (x) DISABLE, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2(a) DISABLE, 
-CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2(a) DISABLE)
+POSTHOOK: Output: default@table3_n1
+PREHOOK: query: CREATE TABLE table4_n0 (x string CONSTRAINT nn4_1 NOT NULL DISABLE, y string CONSTRAINT nn4_2 NOT NULL DISABLE, UNIQUE (x) DISABLE, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE, 
+CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2_n8(a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table4
-POSTHOOK: query: CREATE TABLE table4 (x string CONSTRAINT nn4_1 NOT NULL DISABLE, y string CONSTRAINT nn4_2 NOT NULL DISABLE, UNIQUE (x) DISABLE, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2(a) DISABLE, 
-CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2(a) DISABLE)
+PREHOOK: Output: default@table4_n0
+POSTHOOK: query: CREATE TABLE table4_n0 (x string CONSTRAINT nn4_1 NOT NULL DISABLE, y string CONSTRAINT nn4_2 NOT NULL DISABLE, UNIQUE (x) DISABLE, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE, 
+CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2_n8(a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table4
-PREHOOK: query: CREATE TABLE table5 (x string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2(a) DISABLE)
+POSTHOOK: Output: default@table4_n0
+PREHOOK: query: CREATE TABLE table5_n4 (x string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table5
-POSTHOOK: query: CREATE TABLE table5 (x string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2(a) DISABLE)
+PREHOOK: Output: default@table5_n4
+POSTHOOK: query: CREATE TABLE table5_n4 (x string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table5
-PREHOOK: query: CREATE TABLE table6 (x string, y string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2(a) DISABLE,
-CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a) DISABLE)
+POSTHOOK: Output: default@table5_n4
+PREHOOK: query: CREATE TABLE table6_n3 (x string, y string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE,
+CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table6
-POSTHOOK: query: CREATE TABLE table6 (x string, y string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2(a) DISABLE,
-CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a) DISABLE)
+PREHOOK: Output: default@table6_n3
+POSTHOOK: query: CREATE TABLE table6_n3 (x string, y string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE,
+CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table6
-PREHOOK: query: CREATE TABLE table7 (a STRING, b STRING, PRIMARY KEY (a) DISABLE RELY)
+POSTHOOK: Output: default@table6_n3
+PREHOOK: query: CREATE TABLE table7_n3 (a STRING, b STRING, PRIMARY KEY (a) DISABLE RELY)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table7
-POSTHOOK: query: CREATE TABLE table7 (a STRING, b STRING, PRIMARY KEY (a) DISABLE RELY)
+PREHOOK: Output: default@table7_n3
+POSTHOOK: query: CREATE TABLE table7_n3 (a STRING, b STRING, PRIMARY KEY (a) DISABLE RELY)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table7
+POSTHOOK: Output: default@table7_n3
 PREHOOK: query: CREATE TABLE table8 (a STRING, b STRING, CONSTRAINT pk8 PRIMARY KEY (a) DISABLE NORELY)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -83,12 +83,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table10
 PREHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, CONSTRAINT pk11 PRIMARY KEY (a) DISABLE RELY, CONSTRAINT fk11_1 FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE,
-CONSTRAINT fk11_2 FOREIGN KEY (c) REFERENCES table4(x) DISABLE)
+CONSTRAINT fk11_2 FOREIGN KEY (c) REFERENCES table4_n0(x) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table11
 POSTHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, CONSTRAINT pk11 PRIMARY KEY (a) DISABLE RELY, CONSTRAINT fk11_1 FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE,
-CONSTRAINT fk11_2 FOREIGN KEY (c) REFERENCES table4(x) DISABLE)
+CONSTRAINT fk11_2 FOREIGN KEY (c) REFERENCES table4_n0(x) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table11
@@ -116,19 +116,19 @@ POSTHOOK: query: CREATE TABLE table14 (a STRING CONSTRAINT nn14_1 NOT NULL DISAB
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table14
-PREHOOK: query: CREATE TABLE table15 (a STRING REFERENCES table4(x) DISABLE, b STRING)
+PREHOOK: query: CREATE TABLE table15 (a STRING REFERENCES table4_n0(x) DISABLE, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table15
-POSTHOOK: query: CREATE TABLE table15 (a STRING REFERENCES table4(x) DISABLE, b STRING)
+POSTHOOK: query: CREATE TABLE table15 (a STRING REFERENCES table4_n0(x) DISABLE, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table15
-PREHOOK: query: CREATE TABLE table16 (a STRING CONSTRAINT nn16_1 REFERENCES table4(x) DISABLE RELY, b STRING)
+PREHOOK: query: CREATE TABLE table16 (a STRING CONSTRAINT nn16_1 REFERENCES table4_n0(x) DISABLE RELY, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table16
-POSTHOOK: query: CREATE TABLE table16 (a STRING CONSTRAINT nn16_1 REFERENCES table4(x) DISABLE RELY, b STRING)
+POSTHOOK: query: CREATE TABLE table16 (a STRING CONSTRAINT nn16_1 REFERENCES table4_n0(x) DISABLE RELY, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table16
@@ -180,87 +180,87 @@ POSTHOOK: query: CREATE TABLE table22 (a STRING, b STRING, CONSTRAINT fk22_1 FOR
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table22
-PREHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: query: DESCRIBE EXTENDED table1_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: Input: default@table1_n13
+POSTHOOK: query: DESCRIBE EXTENDED table1_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n13
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table1:[a], Constraint Name: #### A masked pattern was here ####	 
-PREHOOK: query: DESCRIBE EXTENDED table2
+Constraints	Primary Key for default.table1_n13:[a], Constraint Name: #### A masked pattern was here ####	 
+PREHOOK: query: DESCRIBE EXTENDED table2_n8
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESCRIBE EXTENDED table2
+PREHOOK: Input: default@table2_n8
+POSTHOOK: query: DESCRIBE EXTENDED table2_n8
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n8
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table2:[a], Constraint Name: pk1	 
-PREHOOK: query: DESCRIBE EXTENDED table3
+Constraints	Primary Key for default.table2_n8:[a], Constraint Name: pk1	 
+PREHOOK: query: DESCRIBE EXTENDED table3_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table3
-POSTHOOK: query: DESCRIBE EXTENDED table3
+PREHOOK: Input: default@table3_n1
+POSTHOOK: query: DESCRIBE EXTENDED table3_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table3_n1
 x                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table3:[x], Constraint Name: #### A masked pattern was here ####	 
-Foreign Keys for default.table3:[ {Constraint Name: fk1, (Parent Column Name: default.table2.a, Column Name: x, Key Sequence: 1)}]	 	 
-Not Null Constraints for default.table3:[ {Constraint Name: #### A masked pattern was here ####, Column Name: x}]	 	 
-PREHOOK: query: DESCRIBE EXTENDED table4
+Constraints	Primary Key for default.table3_n1:[x], Constraint Name: #### A masked pattern was here ####	 
+Foreign Keys for default.table3_n1:[ {Constraint Name: fk1, (Parent Column Name: default.table2_n8.a, Column Name: x, Key Sequence: 1)}]	 	 
+Not Null Constraints for default.table3_n1:[ {Constraint Name: #### A masked pattern was here ####, Column Name: x}]	 	 
+PREHOOK: query: DESCRIBE EXTENDED table4_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table4
-POSTHOOK: query: DESCRIBE EXTENDED table4
+PREHOOK: Input: default@table4_n0
+POSTHOOK: query: DESCRIBE EXTENDED table4_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table4
+POSTHOOK: Input: default@table4_n0
 x                   	string              	                    
 y                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Foreign Keys for default.table4:[ {Constraint Name: fk2, (Parent Column Name: default.table2.a, Column Name: x, Key Sequence: 1)}, {Constraint Name: fk3, (Parent Column Name: default.table2.a, Column Name: y, Key Sequence: 1)}]	 
-Unique Constraints for default.table4:[ {Constraint Name: #### A masked pattern was here ####, (Column Name: x, Key Sequence: 1)}]	 	 
-Not Null Constraints for default.table4:[ {Constraint Name: nn4_1, Column Name: x}, {Constraint Name: nn4_2, Column Name: y}]	 	 
-PREHOOK: query: DESCRIBE EXTENDED table5
+Constraints	Foreign Keys for default.table4_n0:[ {Constraint Name: fk2, (Parent Column Name: default.table2_n8.a, Column Name: x, Key Sequence: 1)}, {Constraint Name: fk3, (Parent Column Name: default.table2_n8.a, Column Name: y, Key Sequence: 1)}]	 
+Unique Constraints for default.table4_n0:[ {Constraint Name: #### A masked pattern was here ####, (Column Name: x, Key Sequence: 1)}]	 	 
+Not Null Constraints for default.table4_n0:[ {Constraint Name: nn4_1, Column Name: x}, {Constraint Name: nn4_2, Column Name: y}]	 	 
+PREHOOK: query: DESCRIBE EXTENDED table5_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table5
-POSTHOOK: query: DESCRIBE EXTENDED table5
+PREHOOK: Input: default@table5_n4
+POSTHOOK: query: DESCRIBE EXTENDED table5_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table5
+POSTHOOK: Input: default@table5_n4
 x                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table5:[x], Constraint Name: #### A masked pattern was here ####	 
-Foreign Keys for default.table5:[ {Constraint Name: #### A masked pattern was here ####, (Parent Column Name: default.table2.a, Column Name: x, Key Sequence: 1)}]	 	 
-PREHOOK: query: DESCRIBE EXTENDED table6
+Constraints	Primary Key for default.table5_n4:[x], Constraint Name: #### A masked pattern was here ####	 
+Foreign Keys for default.table5_n4:[ {Constraint Name: #### A masked pattern was here ####, (Parent Column Name: default.table2_n8.a, Column Name: x, Key Sequence: 1)}]	 	 
+PREHOOK: query: DESCRIBE EXTENDED table6_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table6
-POSTHOOK: query: DESCRIBE EXTENDED table6
+PREHOOK: Input: default@table6_n3
+POSTHOOK: query: DESCRIBE EXTENDED table6_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table6
+POSTHOOK: Input: default@table6_n3
 x                   	string              	                    
 y                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table6:[x], Constraint Name: #### A masked pattern was here ####	 
-Foreign Keys for default.table6:[ {Constraint Name: fk4, (Parent Column Name: default.table1.a, Column Name: y, Key Sequence: 1)}, {Constraint Name: #### A masked pattern was here ####, (Parent Column Name: default.table2.a, Column Name: x, Key Sequence: 1)}]	 	 
-PREHOOK: query: DESCRIBE EXTENDED table7
+Constraints	Primary Key for default.table6_n3:[x], Constraint Name: #### A masked pattern was here ####	 
+Foreign Keys for default.table6_n3:[ {Constraint Name: fk4, (Parent Column Name: default.table1_n13.a, Column Name: y, Key Sequence: 1)}, {Constraint Name: #### A masked pattern was here ####, (Parent Column Name: default.table2_n8.a, Column Name: x, Key Sequence: 1)}]	 	 
+PREHOOK: query: DESCRIBE EXTENDED table7_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table7
-POSTHOOK: query: DESCRIBE EXTENDED table7
+PREHOOK: Input: default@table7_n3
+POSTHOOK: query: DESCRIBE EXTENDED table7_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table7
+POSTHOOK: Input: default@table7_n3
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table7:[a], Constraint Name: #### A masked pattern was here ####	 
+Constraints	Primary Key for default.table7_n3:[a], Constraint Name: #### A masked pattern was here ####	 
 PREHOOK: query: DESCRIBE EXTENDED table8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table8
@@ -439,12 +439,12 @@ a                   	string
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: DESCRIBE FORMATTED table1
+PREHOOK: query: DESCRIBE FORMATTED table1_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE FORMATTED table1
+PREHOOK: Input: default@table1_n13
+POSTHOOK: query: DESCRIBE FORMATTED table1_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n13
 # col_name            	data_type           	comment             
 a                   	string              	                    
 b                   	string              	                    
@@ -478,15 +478,15 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table1      	 
+Table:              	default.table1_n13  	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	a                   	 
-PREHOOK: query: DESCRIBE FORMATTED table2
+PREHOOK: query: DESCRIBE FORMATTED table2_n8
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESCRIBE FORMATTED table2
+PREHOOK: Input: default@table2_n8
+POSTHOOK: query: DESCRIBE FORMATTED table2_n8
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n8
 # col_name            	data_type           	comment             
 a                   	string              	                    
 b                   	string              	                    
@@ -520,15 +520,15 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table2      	 
+Table:              	default.table2_n8   	 
 Constraint Name:    	pk1                 	 
 Column Names:       	a                   	 
-PREHOOK: query: DESCRIBE FORMATTED table3
+PREHOOK: query: DESCRIBE FORMATTED table3_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table3
-POSTHOOK: query: DESCRIBE FORMATTED table3
+PREHOOK: Input: default@table3_n1
+POSTHOOK: query: DESCRIBE FORMATTED table3_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table3_n1
 # col_name            	data_type           	comment             
 x                   	string              	                    
 	 	 
@@ -561,27 +561,27 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table3      	 
+Table:              	default.table3_n1   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
-Table:              	default.table3      	 
+Table:              	default.table3_n1   	 
 Constraint Name:    	fk1                 	 
-Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
+Parent Column Name:default.table2_n8.a	Column Name:x       	Key Sequence:1      
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.table3      	 
+Table:              	default.table3_n1   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:        	x                   	 
 	 	 
-PREHOOK: query: DESCRIBE FORMATTED table4
+PREHOOK: query: DESCRIBE FORMATTED table4_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table4
-POSTHOOK: query: DESCRIBE FORMATTED table4
+PREHOOK: Input: default@table4_n0
+POSTHOOK: query: DESCRIBE FORMATTED table4_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table4
+POSTHOOK: Input: default@table4_n0
 # col_name            	data_type           	comment             
 x                   	string              	                    
 y                   	string              	                    
@@ -615,34 +615,34 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Foreign Keys	 	 
-Table:              	default.table4      	 
+Table:              	default.table4_n0   	 
 Constraint Name:    	fk2                 	 
-Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
+Parent Column Name:default.table2_n8.a	Column Name:x       	Key Sequence:1      
 	 	 
 Constraint Name:    	fk3                 	 
-Parent Column Name:default.table2.a	Column Name:y       	Key Sequence:1      
+Parent Column Name:default.table2_n8.a	Column Name:y       	Key Sequence:1      
 	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.table4      	 
+Table:              	default.table4_n0   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:x       	Key Sequence:1      	 
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.table4      	 
+Table:              	default.table4_n0   	 
 Constraint Name:    	nn4_1               	 
 Column Name:        	x                   	 
 	 	 
 Constraint Name:    	nn4_2               	 
 Column Name:        	y                   	 
 	 	 
-PREHOOK: query: DESCRIBE FORMATTED table5
+PREHOOK: query: DESCRIBE FORMATTED table5_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table5
-POSTHOOK: query: DESCRIBE FORMATTED table5
+PREHOOK: Input: default@table5_n4
+POSTHOOK: query: DESCRIBE FORMATTED table5_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table5
+POSTHOOK: Input: default@table5_n4
 # col_name            	data_type           	comment             
 x                   	string              	                    
 	 	 
@@ -675,21 +675,21 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table5      	 
+Table:              	default.table5_n4   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
-Table:              	default.table5      	 
+Table:              	default.table5_n4   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
+Parent Column Name:default.table2_n8.a	Column Name:x       	Key Sequence:1      
 	 	 
-PREHOOK: query: DESCRIBE FORMATTED table6
+PREHOOK: query: DESCRIBE FORMATTED table6_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table6
-POSTHOOK: query: DESCRIBE FORMATTED table6
+PREHOOK: Input: default@table6_n3
+POSTHOOK: query: DESCRIBE FORMATTED table6_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table6
+POSTHOOK: Input: default@table6_n3
 # col_name            	data_type           	comment             
 x                   	string              	                    
 y                   	string              	                    
@@ -723,24 +723,24 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table6      	 
+Table:              	default.table6_n3   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
-Table:              	default.table6      	 
+Table:              	default.table6_n3   	 
 Constraint Name:    	fk4                 	 
-Parent Column Name:default.table1.a	Column Name:y       	Key Sequence:1      
+Parent Column Name:default.table1_n13.a	Column Name:y       	Key Sequence:1      
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
+Parent Column Name:default.table2_n8.a	Column Name:x       	Key Sequence:1      
 	 	 
-PREHOOK: query: DESCRIBE FORMATTED table7
+PREHOOK: query: DESCRIBE FORMATTED table7_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table7
-POSTHOOK: query: DESCRIBE FORMATTED table7
+PREHOOK: Input: default@table7_n3
+POSTHOOK: query: DESCRIBE FORMATTED table7_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table7
+POSTHOOK: Input: default@table7_n3
 # col_name            	data_type           	comment             
 a                   	string              	                    
 b                   	string              	                    
@@ -774,7 +774,7 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table7      	 
+Table:              	default.table7_n3   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	a                   	 
 PREHOOK: query: DESCRIBE FORMATTED table8
@@ -1427,21 +1427,21 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE table2 DROP CONSTRAINT pk1
+PREHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
-POSTHOOK: query: ALTER TABLE table2 DROP CONSTRAINT pk1
+POSTHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
-PREHOOK: query: ALTER TABLE table3 DROP CONSTRAINT fk1
+PREHOOK: query: ALTER TABLE table3_n1 DROP CONSTRAINT fk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
-POSTHOOK: query: ALTER TABLE table3 DROP CONSTRAINT fk1
+POSTHOOK: query: ALTER TABLE table3_n1 DROP CONSTRAINT fk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
-PREHOOK: query: ALTER TABLE table4 DROP CONSTRAINT nn4_1
+PREHOOK: query: ALTER TABLE table4_n0 DROP CONSTRAINT nn4_1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
-POSTHOOK: query: ALTER TABLE table4 DROP CONSTRAINT nn4_1
+POSTHOOK: query: ALTER TABLE table4_n0 DROP CONSTRAINT nn4_1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
-PREHOOK: query: ALTER TABLE table6 DROP CONSTRAINT fk4
+PREHOOK: query: ALTER TABLE table6_n3 DROP CONSTRAINT fk4
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
-POSTHOOK: query: ALTER TABLE table6 DROP CONSTRAINT fk4
+POSTHOOK: query: ALTER TABLE table6_n3 DROP CONSTRAINT fk4
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
 PREHOOK: query: ALTER TABLE table8 DROP CONSTRAINT pk8
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
@@ -1455,50 +1455,50 @@ PREHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
-PREHOOK: query: DESCRIBE EXTENDED table2
+PREHOOK: query: DESCRIBE EXTENDED table2_n8
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESCRIBE EXTENDED table2
+PREHOOK: Input: default@table2_n8
+POSTHOOK: query: DESCRIBE EXTENDED table2_n8
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n8
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: DESCRIBE EXTENDED table3
+PREHOOK: query: DESCRIBE EXTENDED table3_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table3
-POSTHOOK: query: DESCRIBE EXTENDED table3
+PREHOOK: Input: default@table3_n1
+POSTHOOK: query: DESCRIBE EXTENDED table3_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table3_n1
 x                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table3:[x], Constraint Name: #### A masked pattern was here ####	 
-Not Null Constraints for default.table3:[ {Constraint Name: #### A masked pattern was here ####, Column Name: x}]	 	 
-PREHOOK: query: DESCRIBE EXTENDED table4
+Constraints	Primary Key for default.table3_n1:[x], Constraint Name: #### A masked pattern was here ####	 
+Not Null Constraints for default.table3_n1:[ {Constraint Name: #### A masked pattern was here ####, Column Name: x}]	 	 
+PREHOOK: query: DESCRIBE EXTENDED table4_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table4
-POSTHOOK: query: DESCRIBE EXTENDED table4
+PREHOOK: Input: default@table4_n0
+POSTHOOK: query: DESCRIBE EXTENDED table4_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table4
-x                   	string              	                    
-y                   	string              	                    
-	 	 
-#### A masked pattern was here ####
-Constraints	Unique Constraints for default.table4:[ {Constraint Name: #### A masked pattern was here ####, (Column Name: x, Key Sequence: 1)}]	 
-Not Null Constraints for default.table4:[ {Constraint Name: nn4_2, Column Name: y}]	 	 
-PREHOOK: query: DESCRIBE EXTENDED table6
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table6
-POSTHOOK: query: DESCRIBE EXTENDED table6
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table6
+POSTHOOK: Input: default@table4_n0
 x                   	string              	                    
 y                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table6:[x], Constraint Name: #### A masked pattern was here ####	 
+Constraints	Unique Constraints for default.table4_n0:[ {Constraint Name: #### A masked pattern was here ####, (Column Name: x, Key Sequence: 1)}]	 
+Not Null Constraints for default.table4_n0:[ {Constraint Name: nn4_2, Column Name: y}]	 	 
+PREHOOK: query: DESCRIBE EXTENDED table6_n3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table6_n3
+POSTHOOK: query: DESCRIBE EXTENDED table6_n3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table6_n3
+x                   	string              	                    
+y                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+Constraints	Primary Key for default.table6_n3:[x], Constraint Name: #### A masked pattern was here ####	 
 PREHOOK: query: DESCRIBE EXTENDED table8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table8
@@ -1533,12 +1533,12 @@ b                   	string
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: DESCRIBE FORMATTED table2
+PREHOOK: query: DESCRIBE FORMATTED table2_n8
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESCRIBE FORMATTED table2
+PREHOOK: Input: default@table2_n8
+POSTHOOK: query: DESCRIBE FORMATTED table2_n8
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n8
 # col_name            	data_type           	comment             
 a                   	string              	                    
 b                   	string              	                    
@@ -1568,12 +1568,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: DESCRIBE FORMATTED table3
+PREHOOK: query: DESCRIBE FORMATTED table3_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table3
-POSTHOOK: query: DESCRIBE FORMATTED table3
+PREHOOK: Input: default@table3_n1
+POSTHOOK: query: DESCRIBE FORMATTED table3_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table3_n1
 # col_name            	data_type           	comment             
 x                   	string              	                    
 	 	 
@@ -1606,21 +1606,21 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table3      	 
+Table:              	default.table3_n1   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	x                   	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.table3      	 
+Table:              	default.table3_n1   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:        	x                   	 
 	 	 
-PREHOOK: query: DESCRIBE FORMATTED table4
+PREHOOK: query: DESCRIBE FORMATTED table4_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table4
-POSTHOOK: query: DESCRIBE FORMATTED table4
+PREHOOK: Input: default@table4_n0
+POSTHOOK: query: DESCRIBE FORMATTED table4_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table4
+POSTHOOK: Input: default@table4_n0
 # col_name            	data_type           	comment             
 x                   	string              	                    
 y                   	string              	                    
@@ -1654,22 +1654,22 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.table4      	 
+Table:              	default.table4_n0   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:x       	Key Sequence:1      	 
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.table4      	 
+Table:              	default.table4_n0   	 
 Constraint Name:    	nn4_2               	 
 Column Name:        	y                   	 
 	 	 
-PREHOOK: query: DESCRIBE FORMATTED table6
+PREHOOK: query: DESCRIBE FORMATTED table6_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table6
-POSTHOOK: query: DESCRIBE FORMATTED table6
+PREHOOK: Input: default@table6_n3
+POSTHOOK: query: DESCRIBE FORMATTED table6_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table6
+POSTHOOK: Input: default@table6_n3
 # col_name            	data_type           	comment             
 x                   	string              	                    
 y                   	string              	                    
@@ -1703,7 +1703,7 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table6      	 
+Table:              	default.table6_n3   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	x                   	 
 PREHOOK: query: DESCRIBE FORMATTED table8
@@ -1815,27 +1815,27 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE table2 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
+PREHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE table2 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: ALTER TABLE table3 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a) DISABLE NOVALIDATE RELY
+PREHOOK: query: ALTER TABLE table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE table3 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a) DISABLE NOVALIDATE RELY
+POSTHOOK: query: ALTER TABLE table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: ALTER TABLE table6 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a) DISABLE NOVALIDATE
+PREHOOK: query: ALTER TABLE table6_n3 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE table6 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a) DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE table6_n3 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 PREHOOK: query: ALTER TABLE table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a, b) DISABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: ALTER TABLE table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a, b) DISABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4(x) DISABLE NOVALIDATE
+PREHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4_n0(x) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@table16
 PREHOOK: Output: default@table16
-POSTHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4(x) DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4_n0(x) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@table16
 POSTHOOK: Output: default@table16
@@ -1843,12 +1843,12 @@ PREHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE 
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: DESCRIBE FORMATTED table2
+PREHOOK: query: DESCRIBE FORMATTED table2_n8
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESCRIBE FORMATTED table2
+PREHOOK: Input: default@table2_n8
+POSTHOOK: query: DESCRIBE FORMATTED table2_n8
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n8
 # col_name            	data_type           	comment             
 a                   	string              	                    
 b                   	string              	                    
@@ -1882,15 +1882,15 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table2      	 
+Table:              	default.table2_n8   	 
 Constraint Name:    	pkt2                	 
 Column Names:       	a                   	 
-PREHOOK: query: DESCRIBE FORMATTED table3
+PREHOOK: query: DESCRIBE FORMATTED table3_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table3
-POSTHOOK: query: DESCRIBE FORMATTED table3
+PREHOOK: Input: default@table3_n1
+POSTHOOK: query: DESCRIBE FORMATTED table3_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table3
+POSTHOOK: Input: default@table3_n1
 # col_name            	data_type           	comment             
 x                   	string              	                    
 	 	 
@@ -1923,27 +1923,27 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table3      	 
+Table:              	default.table3_n1   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
-Table:              	default.table3      	 
+Table:              	default.table3_n1   	 
 Constraint Name:    	fk1                 	 
-Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
+Parent Column Name:default.table2_n8.a	Column Name:x       	Key Sequence:1      
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.table3      	 
+Table:              	default.table3_n1   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:        	x                   	 
 	 	 
-PREHOOK: query: DESCRIBE FORMATTED table6
+PREHOOK: query: DESCRIBE FORMATTED table6_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table6
-POSTHOOK: query: DESCRIBE FORMATTED table6
+PREHOOK: Input: default@table6_n3
+POSTHOOK: query: DESCRIBE FORMATTED table6_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table6
+POSTHOOK: Input: default@table6_n3
 # col_name            	data_type           	comment             
 x                   	string              	                    
 y                   	string              	                    
@@ -1977,17 +1977,17 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Primary Key	 	 
-Table:              	default.table6      	 
+Table:              	default.table6_n3   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	x                   	 
 	 	 
 # Foreign Keys	 	 
-Table:              	default.table6      	 
+Table:              	default.table6_n3   	 
 Constraint Name:    	fk4                 	 
-Parent Column Name:default.table1.a	Column Name:y       	Key Sequence:1      
+Parent Column Name:default.table1_n13.a	Column Name:y       	Key Sequence:1      
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
+Parent Column Name:default.table2_n8.a	Column Name:x       	Key Sequence:1      
 	 	 
 PREHOOK: query: DESCRIBE FORMATTED table8
 PREHOOK: type: DESCTABLE
@@ -2473,9 +2473,9 @@ Table:              	dbconstraint.table2
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:        	b                   	 
 	 	 
-PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a) DISABLE NOVALIDATE
+PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a) DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
@@ -2523,7 +2523,7 @@ Column Names:       	a
 # Foreign Keys	 	 
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	fkx                 	 
-Parent Column Name:default.table1.a	Column Name:b       	Key Sequence:1      
+Parent Column Name:default.table1_n13.a	Column Name:b       	Key Sequence:1      
 	 	 
 	 	 
 # Not Null Constraints	 	 
@@ -2593,40 +2593,40 @@ Storage Desc Params:
 Table:              	default.table23     	 
 Constraint Name:    	pk23_1              	 
 Column Names:       	b                   	 
-PREHOOK: query: CREATE TABLE numericDataType(a TINYINT, b SMALLINT NOT NULL ENABLE, c INT,
+PREHOOK: query: CREATE TABLE numericDataType_n0(a TINYINT, b SMALLINT NOT NULL ENABLE, c INT,
  d BIGINT , e DOUBLE , f DECIMAL(9,2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@numericDataType
-POSTHOOK: query: CREATE TABLE numericDataType(a TINYINT, b SMALLINT NOT NULL ENABLE, c INT,
+PREHOOK: Output: default@numericDataType_n0
+POSTHOOK: query: CREATE TABLE numericDataType_n0(a TINYINT, b SMALLINT NOT NULL ENABLE, c INT,
  d BIGINT , e DOUBLE , f DECIMAL(9,2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@numericDataType
-PREHOOK: query: INSERT INTO numericDataType values(2,45,5667,67890,5.6,678.5)
+POSTHOOK: Output: default@numericDataType_n0
+PREHOOK: query: INSERT INTO numericDataType_n0 values(2,45,5667,67890,5.6,678.5)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: INSERT INTO numericDataType values(2,45,5667,67890,5.6,678.5)
+PREHOOK: Output: default@numericdatatype_n0
+POSTHOOK: query: INSERT INTO numericDataType_n0 values(2,45,5667,67890,5.6,678.5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@numericdatatype
-POSTHOOK: Lineage: numericdatatype.a SCRIPT []
-POSTHOOK: Lineage: numericdatatype.b SCRIPT []
-POSTHOOK: Lineage: numericdatatype.c SCRIPT []
-POSTHOOK: Lineage: numericdatatype.d SCRIPT []
-POSTHOOK: Lineage: numericdatatype.e SCRIPT []
-POSTHOOK: Lineage: numericdatatype.f SCRIPT []
-PREHOOK: query: ALTER TABLE numericDataType ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
+POSTHOOK: Output: default@numericdatatype_n0
+POSTHOOK: Lineage: numericdatatype_n0.a SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n0.b SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n0.c SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n0.d SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n0.e SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n0.f SCRIPT []
+PREHOOK: query: ALTER TABLE numericDataType_n0 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE numericDataType ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE numericDataType_n0 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: query: DESC FORMATTED numericDataType_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n0
+POSTHOOK: query: DESC FORMATTED numericDataType_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n0
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -2664,22 +2664,22 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n0	 
 Constraint Name:    	uk1                 	 
 Column Name:a       	Key Sequence:1      	 
 Column Name:b       	Key Sequence:2      	 
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n0	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:        	b                   	 
 	 	 
-PREHOOK: query: DROP TABLE numericDataType
+PREHOOK: query: DROP TABLE numericDataType_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@numericdatatype
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: DROP TABLE numericDataType
+PREHOOK: Input: default@numericdatatype_n0
+PREHOOK: Output: default@numericdatatype_n0
+POSTHOOK: query: DROP TABLE numericDataType_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@numericdatatype
-POSTHOOK: Output: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n0
+POSTHOOK: Output: default@numericdatatype_n0

@@ -4,10 +4,10 @@ CREATE TEMPORARY FUNCTION test_translate AS 'org.apache.hadoop.hive.ql.udf.gener
 
 CREATE TEMPORARY FUNCTION test_translate AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate';
 
-CREATE TABLE dest1(c1 STRING, c2 STRING, c3 STRING, c4 STRING, c5 STRING, c6 STRING, c7 STRING);
+CREATE TABLE dest1_n113(c1 STRING, c2 STRING, c3 STRING, c4 STRING, c5 STRING, c6 STRING, c7 STRING);
 
 FROM src 
-INSERT OVERWRITE TABLE dest1 
+INSERT OVERWRITE TABLE dest1_n113 
 SELECT 
     test_translate('abc', 'a', 'b'),
     test_translate('abc', 'ab', 'bc'),
@@ -17,6 +17,6 @@ SELECT
     test_translate('abc', 'ab', 'b'),
     test_translate('abc', 'a', 'ab');
 
-SELECT dest1.* FROM dest1 LIMIT 1;
+SELECT dest1_n113.* FROM dest1_n113 LIMIT 1;
 
 DROP TEMPORARY FUNCTION test_translate;

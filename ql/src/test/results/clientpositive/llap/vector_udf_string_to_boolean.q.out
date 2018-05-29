@@ -1,122 +1,122 @@
-PREHOOK: query: create table t (s string) stored as orc
+PREHOOK: query: create table t_n17 (s string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (s string) stored as orc
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: create table t_n17 (s string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values ('false')
+POSTHOOK: Output: default@t_n17
+PREHOOK: query: insert into t_n17 values ('false')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('false')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('false')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('FALSE')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('FALSE')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('FALSE')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('FALSE')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('FaLsE')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('FaLsE')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('FaLsE')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('FaLsE')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('true')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('true')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('true')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('true')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('TRUE')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('TRUE')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('TRUE')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('TRUE')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('TrUe')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('TrUe')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('TrUe')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('TrUe')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('Other')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('Other')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('Other')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('Other')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('Off')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('Off')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('Off')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('Off')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('No')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('No')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('No')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('No')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('0')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('0')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('0')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('0')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: insert into t values ('1')
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: insert into t_n17 values ('1')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('1')
+PREHOOK: Output: default@t_n17
+POSTHOOK: query: insert into t_n17 values ('1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.s SCRIPT []
-PREHOOK: query: explain select s,cast(s as boolean) from t order by s
+POSTHOOK: Output: default@t_n17
+POSTHOOK: Lineage: t_n17.s SCRIPT []
+PREHOOK: query: explain select s,cast(s as boolean) from t_n17 order by s
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s,cast(s as boolean) from t order by s
+POSTHOOK: query: explain select s,cast(s as boolean) from t_n17 order by s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -133,7 +133,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n17
                   Statistics: Num rows: 12 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: s (type: string), UDFToBoolean(s) (type: boolean)
@@ -167,13 +167,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s,cast(s as boolean) from t order by s
+PREHOOK: query: select s,cast(s as boolean) from t_n17 order by s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n17
 #### A masked pattern was here ####
-POSTHOOK: query: select s,cast(s as boolean) from t order by s
+POSTHOOK: query: select s,cast(s as boolean) from t_n17 order by s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n17
 #### A masked pattern was here ####
 	false
 0	false

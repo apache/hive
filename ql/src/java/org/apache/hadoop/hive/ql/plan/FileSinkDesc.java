@@ -103,9 +103,9 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   /**
    * Whether is a HiveServer query, and the destination table is
-   * indeed written using ThriftJDBCBinarySerDe
+   * indeed written using a row batching SerDe
    */
-  private boolean isUsingThriftJDBCBinarySerDe = false;
+  private boolean isUsingBatchingSerDe = false;
 
   private boolean isInsertOverwrite = false;
 
@@ -183,12 +183,12 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 	  this.isHiveServerQuery = isHiveServerQuery;
   }
 
-  public boolean isUsingThriftJDBCBinarySerDe() {
-	  return this.isUsingThriftJDBCBinarySerDe;
+  public boolean isUsingBatchingSerDe() {
+    return this.isUsingBatchingSerDe;
   }
 
-  public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
-	  this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
+  public void setIsUsingBatchingSerDe(boolean isUsingBatchingSerDe) {
+    this.isUsingBatchingSerDe = isUsingBatchingSerDe;
   }
 
   @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })

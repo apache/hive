@@ -1,19 +1,19 @@
-PREHOOK: query: create table inputTbl1(key string, val string) stored as textfile
+PREHOOK: query: create table inputTbl1_n0(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputTbl1
-POSTHOOK: query: create table inputTbl1(key string, val string) stored as textfile
+PREHOOK: Output: default@inputTbl1_n0
+POSTHOOK: query: create table inputTbl1_n0(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputTbl1
-PREHOOK: query: create table outputTbl1(key string, `values` bigint) stored as textfile
+POSTHOOK: Output: default@inputTbl1_n0
+PREHOOK: query: create table outputTbl1_n0(key string, `values` bigint) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl1
-POSTHOOK: query: create table outputTbl1(key string, `values` bigint) stored as textfile
+PREHOOK: Output: default@outputTbl1_n0
+POSTHOOK: query: create table outputTbl1_n0(key string, `values` bigint) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl1
+POSTHOOK: Output: default@outputTbl1_n0
 PREHOOK: query: create table outputTbl2(key string, `values` bigint) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -22,34 +22,34 @@ POSTHOOK: query: create table outputTbl2(key string, `values` bigint) stored as 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl2
-PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@inputtbl1
-POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
+PREHOOK: Output: default@inputtbl1_n0
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@inputtbl1
+POSTHOOK: Output: default@inputtbl1_n0
 PREHOOK: query: explain
 FROM (
   select * from(
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   )subq
 ) a
-insert overwrite table outputTbl1 select *
+insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM (
   select * from(
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   )subq
 ) a
-insert overwrite table outputTbl1 select *
+insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -68,7 +68,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: inputtbl1
+                  alias: inputtbl1_n0
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -103,7 +103,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.outputtbl1
+                      name: default.outputtbl1_n0
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
@@ -128,7 +128,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.outputtbl1
+                      name: default.outputtbl1_n0
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 2 Data size: 600 Basic stats: COMPLETE Column stats: NONE
@@ -146,7 +146,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n0
 
   Stage: Stage-1
     Move Operator
@@ -160,41 +160,41 @@ STAGE PLANS:
 
 PREHOOK: query: FROM (
   select * from(
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   )subq
 ) a
-insert overwrite table outputTbl1 select *
+insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
-PREHOOK: Output: default@outputtbl1
+PREHOOK: Input: default@inputtbl1_n0
+PREHOOK: Output: default@outputtbl1_n0
 PREHOOK: Output: default@outputtbl2
 POSTHOOK: query: FROM (
   select * from(
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   UNION ALL
-  SELECT key, count(1) as `values` from inputTbl1 group by key
+  SELECT key, count(1) as `values` from inputTbl1_n0 group by key
   )subq
 ) a
-insert overwrite table outputTbl1 select *
+insert overwrite table outputTbl1_n0 select *
 insert overwrite table outputTbl2 select *
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
-POSTHOOK: Output: default@outputtbl1
+POSTHOOK: Input: default@inputtbl1_n0
+POSTHOOK: Output: default@outputtbl1_n0
 POSTHOOK: Output: default@outputtbl2
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl2.key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl2.values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-PREHOOK: query: select * from outputTbl1
+POSTHOOK: Lineage: outputtbl1_n0.key EXPRESSION [(inputtbl1_n0)inputtbl1_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n0.values EXPRESSION [(inputtbl1_n0)inputtbl1_n0.null, ]
+POSTHOOK: Lineage: outputtbl2.key EXPRESSION [(inputtbl1_n0)inputtbl1_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl2.values EXPRESSION [(inputtbl1_n0)inputtbl1_n0.null, ]
+PREHOOK: query: select * from outputTbl1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1
+POSTHOOK: query: select * from outputTbl1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n0
 #### A masked pattern was here ####
 1	1
 1	1

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -76,6 +77,8 @@ public class TestJdbcWithLocalClusterSpark {
     // Spark requires Hive to support Hadoop3 first then Spark can start
     // working on Hadoop3 support. Remove this after Spark supports Hadoop3.
     conf.set("dfs.client.datanode-restart.timeout", "30");
+    conf.set("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
+            "TestJdbcWithLocalClusterSpark-local-dir").toString());
     return conf;
   }
 

@@ -1,23 +1,23 @@
-PREHOOK: query: create table test_1 (`id` string, `lineid` string) stored as orc
+PREHOOK: query: create table test_1_n1 (`id` string, `lineid` string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_1
-POSTHOOK: query: create table test_1 (`id` string, `lineid` string) stored as orc
+PREHOOK: Output: default@test_1_n1
+POSTHOOK: query: create table test_1_n1 (`id` string, `lineid` string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_1
-PREHOOK: query: insert into table test_1 values ('one','1'), ('seven','1')
+POSTHOOK: Output: default@test_1_n1
+PREHOOK: query: insert into table test_1_n1 values ('one','1'), ('seven','1')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_1
-POSTHOOK: query: insert into table test_1 values ('one','1'), ('seven','1')
+PREHOOK: Output: default@test_1_n1
+POSTHOOK: query: insert into table test_1_n1 values ('one','1'), ('seven','1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.id SCRIPT []
-POSTHOOK: Lineage: test_1.lineid SCRIPT []
+POSTHOOK: Output: default@test_1_n1
+POSTHOOK: Lineage: test_1_n1.id SCRIPT []
+POSTHOOK: Lineage: test_1_n1.lineid SCRIPT []
 PREHOOK: query: explain vectorization expression
-select * from test_1 where struct(`id`, `lineid`)
+select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -31,7 +31,7 @@ struct('ten','1')
 )
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select * from test_1 where struct(`id`, `lineid`)
+select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -57,7 +57,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
+            alias: test_1_n1
             Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -103,7 +103,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from test_1 where struct(`id`, `lineid`)
+PREHOOK: query: select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -116,9 +116,9 @@ struct('nine','1'),
 struct('ten','1')
 )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_1 where struct(`id`, `lineid`)
+POSTHOOK: query: select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -131,7 +131,7 @@ struct('nine','1'),
 struct('ten','1')
 )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n1
 #### A masked pattern was here ####
 one	1
 seven	1
@@ -147,7 +147,7 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1
+) as b from test_1_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select `id`, `lineid`, struct(`id`, `lineid`)
@@ -161,7 +161,7 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1
+) as b from test_1_n1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -176,7 +176,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
+            alias: test_1_n1
             Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -227,9 +227,9 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1
+) as b from test_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -242,32 +242,32 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1
+) as b from test_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n1
 #### A masked pattern was here ####
 one	1	true
 seven	1	true
-PREHOOK: query: create table test_2 (`id` int, `lineid` int) stored as orc
+PREHOOK: query: create table test_2_n1 (`id` int, `lineid` int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_2
-POSTHOOK: query: create table test_2 (`id` int, `lineid` int) stored as orc
+PREHOOK: Output: default@test_2_n1
+POSTHOOK: query: create table test_2_n1 (`id` int, `lineid` int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_2
-PREHOOK: query: insert into table test_2 values (1,1), (7,1)
+POSTHOOK: Output: default@test_2_n1
+PREHOOK: query: insert into table test_2_n1 values (1,1), (7,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_2
-POSTHOOK: query: insert into table test_2 values (1,1), (7,1)
+PREHOOK: Output: default@test_2_n1
+POSTHOOK: query: insert into table test_2_n1 values (1,1), (7,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_2
-POSTHOOK: Lineage: test_2.id SCRIPT []
-POSTHOOK: Lineage: test_2.lineid SCRIPT []
+POSTHOOK: Output: default@test_2_n1
+POSTHOOK: Lineage: test_2_n1.id SCRIPT []
+POSTHOOK: Lineage: test_2_n1.lineid SCRIPT []
 PREHOOK: query: explain vectorization expression
-select * from test_2 where struct(`id`, `lineid`)
+select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -281,7 +281,7 @@ struct(10,1)
 )
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select * from test_2 where struct(`id`, `lineid`)
+select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -307,7 +307,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_2
+            alias: test_2_n1
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -353,7 +353,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from test_2 where struct(`id`, `lineid`)
+PREHOOK: query: select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -366,9 +366,9 @@ struct(9,1),
 struct(10,1)
 )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_2
+PREHOOK: Input: default@test_2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_2 where struct(`id`, `lineid`)
+POSTHOOK: query: select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -381,7 +381,7 @@ struct(9,1),
 struct(10,1)
 )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_2
+POSTHOOK: Input: default@test_2_n1
 #### A masked pattern was here ####
 1	1
 7	1
@@ -397,7 +397,7 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2
+) as b from test_2_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select `id`, `lineid`, struct(`id`, `lineid`)
@@ -411,7 +411,7 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2
+) as b from test_2_n1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -426,7 +426,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_2
+            alias: test_2_n1
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -477,9 +477,9 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2
+) as b from test_2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_2
+PREHOOK: Input: default@test_2_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -492,9 +492,9 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2
+) as b from test_2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_2
+POSTHOOK: Input: default@test_2_n1
 #### A masked pattern was here ####
 1	1	true
 7	1	true

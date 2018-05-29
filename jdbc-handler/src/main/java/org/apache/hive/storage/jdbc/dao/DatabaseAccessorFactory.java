@@ -39,6 +39,18 @@ public class DatabaseAccessorFactory {
       accessor = new JethroDatabaseAccessor();
       break;
 
+    case POSTGRES:
+      accessor = new PostgresDatabaseAccessor();
+      break;
+
+    case ORACLE:
+      accessor = new OracleDatabaseAccessor();
+      break;
+
+    case MSSQL:
+      accessor = new MsSqlDatabaseAccessor();
+      break;
+
     default:
       accessor = new GenericJdbcDatabaseAccessor();
       break;
@@ -49,7 +61,8 @@ public class DatabaseAccessorFactory {
 
 
   public static DatabaseAccessor getAccessor(Configuration conf) {
-    DatabaseType dbType = DatabaseType.valueOf(conf.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
+    DatabaseType dbType = DatabaseType.valueOf(
+        conf.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()).toUpperCase());
     return getAccessor(dbType);
   }
 

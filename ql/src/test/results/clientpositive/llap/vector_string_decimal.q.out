@@ -2,9 +2,9 @@ PREHOOK: query: drop table orc_decimal
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table orc_decimal
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table staging
+PREHOOK: query: drop table staging_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table staging
+POSTHOOK: query: drop table staging_n1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table orc_decimal (id decimal(18,0)) stored as orc
 PREHOOK: type: CREATETABLE
@@ -14,32 +14,32 @@ POSTHOOK: query: create table orc_decimal (id decimal(18,0)) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_decimal
-PREHOOK: query: create table staging (id decimal(18,0))
+PREHOOK: query: create table staging_n1 (id decimal(18,0))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@staging
-POSTHOOK: query: create table staging (id decimal(18,0))
+PREHOOK: Output: default@staging_n1
+POSTHOOK: query: create table staging_n1 (id decimal(18,0))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@staging
-PREHOOK: query: insert into staging values (34324.0), (100000000.0), (200000000.0), (300000000.0)
+POSTHOOK: Output: default@staging_n1
+PREHOOK: query: insert into staging_n1 values (34324.0), (100000000.0), (200000000.0), (300000000.0)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@staging
-POSTHOOK: query: insert into staging values (34324.0), (100000000.0), (200000000.0), (300000000.0)
+PREHOOK: Output: default@staging_n1
+POSTHOOK: query: insert into staging_n1 values (34324.0), (100000000.0), (200000000.0), (300000000.0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@staging
-POSTHOOK: Lineage: staging.id SCRIPT []
-PREHOOK: query: insert overwrite table orc_decimal select id from staging
+POSTHOOK: Output: default@staging_n1
+POSTHOOK: Lineage: staging_n1.id SCRIPT []
+PREHOOK: query: insert overwrite table orc_decimal select id from staging_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n1
 PREHOOK: Output: default@orc_decimal
-POSTHOOK: query: insert overwrite table orc_decimal select id from staging
+POSTHOOK: query: insert overwrite table orc_decimal select id from staging_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n1
 POSTHOOK: Output: default@orc_decimal
-POSTHOOK: Lineage: orc_decimal.id SIMPLE [(staging)staging.FieldSchema(name:id, type:decimal(18,0), comment:null), ]
+POSTHOOK: Lineage: orc_decimal.id SIMPLE [(staging_n1)staging_n1.FieldSchema(name:id, type:decimal(18,0), comment:null), ]
 PREHOOK: query: explain vectorization expression
 select * from orc_decimal where id in ('100000000', '200000000')
 PREHOOK: type: QUERY
@@ -127,11 +127,11 @@ POSTHOOK: query: drop table orc_decimal
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_decimal
 POSTHOOK: Output: default@orc_decimal
-PREHOOK: query: drop table staging
+PREHOOK: query: drop table staging_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@staging
-PREHOOK: Output: default@staging
-POSTHOOK: query: drop table staging
+PREHOOK: Input: default@staging_n1
+PREHOOK: Output: default@staging_n1
+POSTHOOK: query: drop table staging_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@staging
-POSTHOOK: Output: default@staging
+POSTHOOK: Input: default@staging_n1
+POSTHOOK: Output: default@staging_n1

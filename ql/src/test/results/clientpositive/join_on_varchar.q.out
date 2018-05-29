@@ -1,62 +1,62 @@
-PREHOOK: query: create table tbl1(c1 varchar(10), intcol int)
+PREHOOK: query: create table tbl1_n3(c1 varchar(10), intcol int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: create table tbl1(c1 varchar(10), intcol int)
+PREHOOK: Output: default@tbl1_n3
+POSTHOOK: query: create table tbl1_n3(c1 varchar(10), intcol int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: create table tbl2(c2 varchar(30))
+POSTHOOK: Output: default@tbl1_n3
+PREHOOK: query: create table tbl2_n2(c2 varchar(30))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: create table tbl2(c2 varchar(30))
+PREHOOK: Output: default@tbl2_n2
+POSTHOOK: query: create table tbl2_n2(c2 varchar(30))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
-PREHOOK: query: insert into table tbl1 select repeat('t', 10), 11 from src limit 1
+POSTHOOK: Output: default@tbl2_n2
+PREHOOK: query: insert into table tbl1_n3 select repeat('t', 10), 11 from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert into table tbl1 select repeat('t', 10), 11 from src limit 1
+PREHOOK: Output: default@tbl1_n3
+POSTHOOK: query: insert into table tbl1_n3 select repeat('t', 10), 11 from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.c1 EXPRESSION []
-POSTHOOK: Lineage: tbl1.intcol SIMPLE []
-PREHOOK: query: insert into table tbl1 select repeat('s', 10), 22 from src limit 1
+POSTHOOK: Output: default@tbl1_n3
+POSTHOOK: Lineage: tbl1_n3.c1 EXPRESSION []
+POSTHOOK: Lineage: tbl1_n3.intcol SIMPLE []
+PREHOOK: query: insert into table tbl1_n3 select repeat('s', 10), 22 from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert into table tbl1 select repeat('s', 10), 22 from src limit 1
+PREHOOK: Output: default@tbl1_n3
+POSTHOOK: query: insert into table tbl1_n3 select repeat('s', 10), 22 from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.c1 EXPRESSION []
-POSTHOOK: Lineage: tbl1.intcol SIMPLE []
-PREHOOK: query: insert into table tbl2 select concat(repeat('t', 10), 'ppp') from src limit 1
+POSTHOOK: Output: default@tbl1_n3
+POSTHOOK: Lineage: tbl1_n3.c1 EXPRESSION []
+POSTHOOK: Lineage: tbl1_n3.intcol SIMPLE []
+PREHOOK: query: insert into table tbl2_n2 select concat(repeat('t', 10), 'ppp') from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: insert into table tbl2 select concat(repeat('t', 10), 'ppp') from src limit 1
+PREHOOK: Output: default@tbl2_n2
+POSTHOOK: query: insert into table tbl2_n2 select concat(repeat('t', 10), 'ppp') from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.c2 EXPRESSION []
-PREHOOK: query: insert into table tbl2 select repeat('s', 10) from src limit 1
+POSTHOOK: Output: default@tbl2_n2
+POSTHOOK: Lineage: tbl2_n2.c2 EXPRESSION []
+PREHOOK: query: insert into table tbl2_n2 select repeat('s', 10) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: insert into table tbl2 select repeat('s', 10) from src limit 1
+PREHOOK: Output: default@tbl2_n2
+POSTHOOK: query: insert into table tbl2_n2 select repeat('s', 10) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.c2 EXPRESSION []
+POSTHOOK: Output: default@tbl2_n2
+POSTHOOK: Lineage: tbl2_n2.c2 EXPRESSION []
 PREHOOK: query: explain
-select /*+ MAPJOIN(tbl2) */ c1,c2 from tbl1 join tbl2 on (c1 = c2) order by c1,c2
+select /*+ MAPJOIN(tbl2_n2) */ c1,c2 from tbl1_n3 join tbl2_n2 on (c1 = c2) order by c1,c2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+ MAPJOIN(tbl2) */ c1,c2 from tbl1 join tbl2 on (c1 = c2) order by c1,c2
+select /*+ MAPJOIN(tbl2_n2) */ c1,c2 from tbl1_n3 join tbl2_n2 on (c1 = c2) order by c1,c2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -67,13 +67,13 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:tbl2 
+        $hdt$_1:tbl2_n2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:tbl2 
+        $hdt$_1:tbl2_n2 
           TableScan
-            alias: tbl2
+            alias: tbl2_n2
             Statistics: Num rows: 2 Data size: 23 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c2 is not null (type: boolean)
@@ -91,7 +91,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tbl1
+            alias: tbl1_n3
             Statistics: Num rows: 2 Data size: 26 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
@@ -134,14 +134,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+ MAPJOIN(tbl2) */ c1,c2 from tbl1 join tbl2 on (c1 = c2) order by c1,c2
+PREHOOK: query: select /*+ MAPJOIN(tbl2_n2) */ c1,c2 from tbl1_n3 join tbl2_n2 on (c1 = c2) order by c1,c2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n3
+PREHOOK: Input: default@tbl2_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ MAPJOIN(tbl2) */ c1,c2 from tbl1 join tbl2 on (c1 = c2) order by c1,c2
+POSTHOOK: query: select /*+ MAPJOIN(tbl2_n2) */ c1,c2 from tbl1_n3 join tbl2_n2 on (c1 = c2) order by c1,c2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n3
+POSTHOOK: Input: default@tbl2_n2
 #### A masked pattern was here ####
 ssssssssss	ssssssssss

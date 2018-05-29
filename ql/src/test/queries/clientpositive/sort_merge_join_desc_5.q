@@ -4,15 +4,15 @@
 set hive.cbo.enable=false;
 
 
-CREATE TABLE srcbucket_mapjoin_part_1 (key INT, value STRING) PARTITIONED BY (part STRING) 
+CREATE TABLE srcbucket_mapjoin_part_1_n7 (key INT, value STRING) PARTITIONED BY (part STRING) 
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 1 BUCKETS;
-INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1') SELECT * FROM src;
+INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1_n7 PARTITION (part='1') SELECT * FROM src;
 
-CREATE TABLE srcbucket_mapjoin_part_2 (key INT, value STRING) PARTITIONED BY (part STRING) 
+CREATE TABLE srcbucket_mapjoin_part_2_n17 (key INT, value STRING) PARTITIONED BY (part STRING) 
 CLUSTERED BY (key) SORTED BY (key DESC) INTO 1 BUCKETS;
-INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1') SELECT * FROM src;
+INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2_n17 PARTITION (part='1') SELECT * FROM src;
 
-ALTER TABLE srcbucket_mapjoin_part_2 CLUSTERED BY (key) SORTED BY (value DESC) INTO 1 BUCKETS;
+ALTER TABLE srcbucket_mapjoin_part_2_n17 CLUSTERED BY (key) SORTED BY (value DESC) INTO 1 BUCKETS;
 
 set hive.optimize.bucketmapjoin=true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
@@ -21,9 +21,9 @@ set hive.optimize.bucketmapjoin.sortedmerge = true;
 
 EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
-FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
+FROM srcbucket_mapjoin_part_1_n7 a JOIN srcbucket_mapjoin_part_2_n17 b
 ON a.key = b.key AND a.part = '1' AND b.part = '1';
 
 SELECT /*+ MAPJOIN(b) */ count(*)
-FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
+FROM srcbucket_mapjoin_part_1_n7 a JOIN srcbucket_mapjoin_part_2_n17 b
 ON a.key = b.key AND a.part = '1' AND b.part = '1';

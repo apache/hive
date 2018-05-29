@@ -17,26 +17,17 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import io.druid.query.Druids;
+import io.druid.query.Druids.SegmentMetadataQueryBuilder;
+import io.druid.query.metadata.metadata.ColumnAnalysis;
+import io.druid.query.metadata.metadata.SegmentAnalysis;
+import io.druid.query.metadata.metadata.SegmentMetadataQuery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.Constants;
@@ -53,7 +44,6 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
@@ -67,7 +57,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
@@ -92,15 +81,21 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-
-import io.druid.query.Druids;
-import io.druid.query.Druids.SegmentMetadataQueryBuilder;
-import io.druid.query.metadata.metadata.ColumnAnalysis;
-import io.druid.query.metadata.metadata.SegmentAnalysis;
-import io.druid.query.metadata.metadata.SegmentMetadataQuery;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * DruidSerDe that is used to  deserialize objects from a Druid data source.
@@ -350,10 +345,6 @@ public class DruidSerDe extends AbstractSerDe {
           res = ((DoubleObjectInspector) fields.get(i).getFieldObjectInspector())
                   .get(values.get(i));
           break;
-        case DECIMAL:
-          res = ((HiveDecimalObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .getPrimitiveJavaObject(values.get(i)).doubleValue();
-          break;
         case CHAR:
           res = ((HiveCharObjectInspector) fields.get(i).getFieldObjectInspector())
                   .getPrimitiveJavaObject(values.get(i)).getValue();
@@ -371,7 +362,7 @@ public class DruidSerDe extends AbstractSerDe {
                   .get(values.get(i));
           break;
         default:
-          throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());
+          throw new SerDeException("Unsupported type: " + types[i].getPrimitiveCategory());
       }
       value.put(columns[i], res);
     }
@@ -451,9 +442,6 @@ public class DruidSerDe extends AbstractSerDe {
           break;
         case DOUBLE:
           output.add(new DoubleWritable(((Number) value).doubleValue()));
-          break;
-        case DECIMAL:
-          output.add(new HiveDecimalWritable(HiveDecimal.create(((Number) value).doubleValue())));
           break;
         case CHAR:
           output.add(

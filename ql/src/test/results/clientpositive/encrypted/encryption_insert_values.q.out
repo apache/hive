@@ -1,36 +1,36 @@
-PREHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_n3 PURGE
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_n3 PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
-PREHOOK: Output: default@encrypted_table
+PREHOOK: Output: default@encrypted_table_n3
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@encrypted_table
+POSTHOOK: Output: default@encrypted_table_n3
 Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table' using key: 'key_128'
-PREHOOK: query: INSERT INTO encrypted_table values(1,'foo'),(2,'bar')
+PREHOOK: query: INSERT INTO encrypted_table_n3 values(1,'foo'),(2,'bar')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: INSERT INTO encrypted_table values(1,'foo'),(2,'bar')
+PREHOOK: Output: default@encrypted_table_n3
+POSTHOOK: query: INSERT INTO encrypted_table_n3 values(1,'foo'),(2,'bar')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@encrypted_table
-POSTHOOK: Lineage: encrypted_table.key SCRIPT []
-POSTHOOK: Lineage: encrypted_table.value SCRIPT []
-PREHOOK: query: select * from encrypted_table
+POSTHOOK: Output: default@encrypted_table_n3
+POSTHOOK: Lineage: encrypted_table_n3.key SCRIPT []
+POSTHOOK: Lineage: encrypted_table_n3.value SCRIPT []
+PREHOOK: query: select * from encrypted_table_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@encrypted_table
+PREHOOK: Input: default@encrypted_table_n3
 #### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
-POSTHOOK: query: select * from encrypted_table
+POSTHOOK: query: select * from encrypted_table_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@encrypted_table
+POSTHOOK: Input: default@encrypted_table_n3
 #### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
 1	foo
 2	bar

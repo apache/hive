@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +133,8 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo)
+      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo,
+      StorageHandlerInfo storageHandlerInfo)
         throws HiveException {
     try {
       List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
@@ -252,6 +254,13 @@ class TextMetaDataFormatter implements MetaDataFormatter {
               outStream.write(terminator);
             }
           }
+
+          if (storageHandlerInfo!= null) {
+            outStream.write(("StorageHandlerInfo").getBytes("UTF-8"));
+            outStream.write(terminator);
+            outStream.write(storageHandlerInfo.formatAsText().getBytes("UTF-8"));
+            outStream.write(terminator);
+          }
         }
       }
     } catch (IOException e) {
@@ -282,15 +291,15 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             if (par.getLocation() != null) {
               tblLoc = par.getDataLocation().toString();
             }
-            inputFormattCls = par.getInputFormatClass().getName();
-            outputFormattCls = par.getOutputFormatClass().getName();
+            inputFormattCls = par.getInputFormatClass() == null ? null : par.getInputFormatClass().getName();
+            outputFormattCls = par.getOutputFormatClass() == null ? null : par.getOutputFormatClass().getName();
           }
         } else {
           if (tbl.getPath() != null) {
             tblLoc = tbl.getDataLocation().toString();
           }
-          inputFormattCls = tbl.getInputFormatClass().getName();
-          outputFormattCls = tbl.getOutputFormatClass().getName();
+          inputFormattCls = tbl.getInputFormatClass() == null ? null : tbl.getInputFormatClass().getName();
+          outputFormattCls = tbl.getOutputFormatClass() == null ? null : tbl.getOutputFormatClass().getName();
         }
 
         String owner = tbl.getOwner();

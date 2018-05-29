@@ -58,6 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.jdo.JDODataStoreException;
 
 import com.google.common.collect.ImmutableList;
@@ -95,7 +96,6 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
@@ -1737,8 +1738,10 @@ public class Hive {
           //for fullAcid tables we don't delete files for commands with OVERWRITE - we create a new
           // base_x.  (there is Insert Overwrite and Load Data Overwrite)
           boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
+          boolean needRecycle = !tbl.isTemporary()
+                  && ReplChangeManager.isSourceOfReplication(Hive.get().getDatabase(tbl.getDbName()));
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(), isSrcLocal,
-              isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, !tbl.isTemporary());
+              isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle);
         } else {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
@@ -2304,8 +2307,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (loadFileType == LoadFileType.REPLACE_ALL && !isTxnTable) {
         //for fullAcid we don't want to delete any files even for OVERWRITE see HIVE-14988/HIVE-17361
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
+        boolean needRecycle = !tbl.isTemporary()
+                && ReplChangeManager.isSourceOfReplication(Hive.get().getDatabase(tbl.getDbName()));
         replaceFiles(tblPath, loadPath, destPath, tblPath, conf, isSrcLocal, isAutopurge,
-            newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, !tbl.isTemporary());
+            newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle);
       } else {
         try {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
@@ -4168,35 +4173,36 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private IMetaStoreClient createMetaStoreClient(boolean allowEmbedded) throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
-        @Override
-        public HiveMetaHook getHook(
-          org.apache.hadoop.hive.metastore.api.Table tbl)
-          throws MetaException {
-
-          try {
-            if (tbl == null) {
-              return null;
-            }
-            HiveStorageHandler storageHandler =
-              HiveUtils.getStorageHandler(conf,
-                tbl.getParameters().get(META_TABLE_STORAGE));
-            if (storageHandler == null) {
-              return null;
-            }
-            return storageHandler.getMetaHook();
-          } catch (HiveException ex) {
-            LOG.error(StringUtils.stringifyException(ex));
-            throw new MetaException(
-              "Failed to load storage handler:  " + ex.getMessage());
-          }
-        }
-      };
+      @Override
+      public HiveMetaHook getHook(
+              org.apache.hadoop.hive.metastore.api.Table tbl)
+              throws MetaException {
+        HiveStorageHandler storageHandler = createStorageHandler(tbl);
+        return storageHandler == null ? null : storageHandler.getMetaHook();
+      }
+    };
 
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
       return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
     } else {
       return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
           SessionHiveMetaStoreClient.class.getName(), allowEmbedded);
+    }
+  }
+
+  @Nullable
+  private HiveStorageHandler createStorageHandler(org.apache.hadoop.hive.metastore.api.Table tbl) throws MetaException {
+    try {
+      if (tbl == null) {
+        return null;
+      }
+      HiveStorageHandler storageHandler =
+              HiveUtils.getStorageHandler(conf, tbl.getParameters().get(META_TABLE_STORAGE));
+      return storageHandler;
+    } catch (HiveException ex) {
+      LOG.error(StringUtils.stringifyException(ex));
+      throw new MetaException(
+              "Failed to load storage handler:  " + ex.getMessage());
     }
   }
 
@@ -4407,9 +4413,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
     try {
       CompactionType cr = null;
-      if ("major".equals(compactType)) {
+      if ("major".equalsIgnoreCase(compactType)) {
         cr = CompactionType.MAJOR;
-      } else if ("minor".equals(compactType)) {
+      } else if ("minor".equalsIgnoreCase(compactType)) {
         cr = CompactionType.MINOR;
       } else {
         throw new RuntimeException("Unknown compaction type " + compactType);
@@ -5117,4 +5123,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
-};
+
+  @Nullable
+  public StorageHandlerInfo getStorageHandlerInfo(Table table)
+      throws HiveException {
+    try {
+      HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
+      return storageHandler == null ? null : storageHandler.getStorageHandlerInfo(table.getTTable());
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+}

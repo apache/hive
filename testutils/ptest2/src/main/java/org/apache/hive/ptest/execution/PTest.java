@@ -26,8 +26,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -74,6 +76,7 @@ public class PTest {
       .getLogger(PTest.class);
 
 
+  // dummy patch
   private final TestConfiguration mConfiguration;
   private final ListeningExecutorService mExecutor;
   private final Set<String> mAddedTests;
@@ -156,7 +159,8 @@ public class PTest {
     }
     mHostExecutors = new CopyOnWriteArrayList<HostExecutor>(hostExecutors);
     mPhases = Lists.newArrayList();
-    mPhases.add(new TestCheckPhase(mHostExecutors, localCommandFactory, templateDefaults, patchFile, logger, mAddedTests));
+    mPhases.add(new TestCheckPhase(mHostExecutors, localCommandFactory, templateDefaults,
+            configuration.getPatch(), patchFile, logger, mAddedTests));
     mPhases.add(new PrepPhase(mHostExecutors, localCommandFactory, templateDefaults, scratchDir, patchFile, logger));
     mPhases.add(new YetusPhase(configuration, mHostExecutors, localCommandFactory, templateDefaults,
         mExecutionContext.getLocalWorkingDirectory(), scratchDir, logger, logDir, patchFile));
@@ -182,6 +186,14 @@ public class PTest {
         } finally {
           long elapsedTime = TimeUnit.MINUTES.convert((System.currentTimeMillis() - start),
               TimeUnit.MILLISECONDS);
+          Map<String, Long> perfMetrics = phase.getPerfMetrics();
+          if (!perfMetrics.isEmpty()) {
+            mLogger.info("Adding perf metrics for " + phase.getClass().getSimpleName() + " phase");
+            for (Entry<String, Long> perfEntry : perfMetrics.entrySet()) {
+              elapsedTimes.put(phase.getClass().getSimpleName() + "." + perfEntry.getKey(),
+                  TimeUnit.MINUTES.convert(perfEntry.getValue(), TimeUnit.MILLISECONDS));
+            }
+          }
           elapsedTimes.put(phase.getClass().getSimpleName(), elapsedTime);
         }
       }
@@ -223,7 +235,7 @@ public class PTest {
       }
       mLogger.info("Executed " + mExecutedTests.size() + " tests");
       for(Map.Entry<String, Long> entry : elapsedTimes.entrySet()) {
-        mLogger.info(String.format("PERF: Phase %s took %d minutes", entry.getKey(), entry.getValue()));
+        mLogger.info(String.format("PERF: %s took %d minutes", entry.getKey(), entry.getValue()));
       }
       publishJiraComment(error, messages, failedTests, mAddedTests);
       if(error || !mFailedTests.isEmpty()) {

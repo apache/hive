@@ -1,16 +1,16 @@
-PREHOOK: query: create table list_bucketing_static_part (key String, value String) partitioned by (ds String, hr String) skewed by (key) on ("484") stored as DIRECTORIES
+PREHOOK: query: create table list_bucketing_static_part_n1 (key String, value String) partitioned by (ds String, hr String) skewed by (key) on ("484") stored as DIRECTORIES
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@list_bucketing_static_part
-POSTHOOK: query: create table list_bucketing_static_part (key String, value String) partitioned by (ds String, hr String) skewed by (key) on ("484") stored as DIRECTORIES
+PREHOOK: Output: default@list_bucketing_static_part_n1
+POSTHOOK: query: create table list_bucketing_static_part_n1 (key String, value String) partitioned by (ds String, hr String) skewed by (key) on ("484") stored as DIRECTORIES
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@list_bucketing_static_part
+POSTHOOK: Output: default@list_bucketing_static_part_n1
 PREHOOK: query: explain extended
-insert overwrite table list_bucketing_static_part partition (ds='2008-04-08', hr='11') select key, value from srcpart where ds='2008-04-08'
+insert overwrite table list_bucketing_static_part_n1 partition (ds='2008-04-08', hr='11') select key, value from srcpart where ds='2008-04-08'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-insert overwrite table list_bucketing_static_part partition (ds='2008-04-08', hr='11') select key, value from srcpart where ds='2008-04-08'
+insert overwrite table list_bucketing_static_part_n1 partition (ds='2008-04-08', hr='11') select key, value from srcpart where ds='2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -48,15 +48,15 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.list_bucketing_static_part
+                      name default.list_bucketing_static_part_n1
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct list_bucketing_static_part { string key, string value}
+                      serialization.ddl struct list_bucketing_static_part_n1 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.list_bucketing_static_part
+                    name: default.list_bucketing_static_part_n1
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
@@ -237,15 +237,15 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.list_bucketing_static_part
+                name default.list_bucketing_static_part_n1
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct list_bucketing_static_part { string key, string value}
+                serialization.ddl struct list_bucketing_static_part_n1 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.list_bucketing_static_part
+              name: default.list_bucketing_static_part_n1
 
   Stage: Stage-2
     Stats Work
@@ -254,29 +254,29 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.list_bucketing_static_part
+          Table: default.list_bucketing_static_part_n1
           Is Table Level Stats: false
 
-PREHOOK: query: insert overwrite table list_bucketing_static_part partition (ds='2008-04-08', hr='11') select key, value from srcpart where ds='2008-04-08'
+PREHOOK: query: insert overwrite table list_bucketing_static_part_n1 partition (ds='2008-04-08', hr='11') select key, value from srcpart where ds='2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
-POSTHOOK: query: insert overwrite table list_bucketing_static_part partition (ds='2008-04-08', hr='11') select key, value from srcpart where ds='2008-04-08'
+PREHOOK: Output: default@list_bucketing_static_part_n1@ds=2008-04-08/hr=11
+POSTHOOK: query: insert overwrite table list_bucketing_static_part_n1 partition (ds='2008-04-08', hr='11') select key, value from srcpart where ds='2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted list_bucketing_static_part partition (ds='2008-04-08', hr='11')
+POSTHOOK: Output: default@list_bucketing_static_part_n1@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: list_bucketing_static_part_n1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: list_bucketing_static_part_n1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted list_bucketing_static_part_n1 partition (ds='2008-04-08', hr='11')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@list_bucketing_static_part
-POSTHOOK: query: desc formatted list_bucketing_static_part partition (ds='2008-04-08', hr='11')
+PREHOOK: Input: default@list_bucketing_static_part_n1
+POSTHOOK: query: desc formatted list_bucketing_static_part_n1 partition (ds='2008-04-08', hr='11')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@list_bucketing_static_part
+POSTHOOK: Input: default@list_bucketing_static_part_n1
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -289,7 +289,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 11]    	 
 Database:           	default             	 
-Table:              	list_bucketing_static_part	 
+Table:              	list_bucketing_static_part_n1	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -311,7 +311,7 @@ Stored As SubDirectories:	Yes
 Skewed Columns:     	[key]               	 
 Skewed Values:      	[[484]]             	 
 #### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[484]=/list_bucketing_static_part/ds=2008-04-08/hr=11/key=484}	 
+Skewed Value to Truncated Path:	{[484]=/list_bucketing_static_part_n1/ds=2008-04-08/hr=11/key=484}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: select count(1) from srcpart where ds='2008-04-08'
@@ -323,13 +323,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 1000
-PREHOOK: query: select count(1) from list_bucketing_static_part where ds='2008-04-08'
+PREHOOK: query: select count(1) from list_bucketing_static_part_n1 where ds='2008-04-08'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@list_bucketing_static_part
+PREHOOK: Input: default@list_bucketing_static_part_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from list_bucketing_static_part where ds='2008-04-08'
+POSTHOOK: query: select count(1) from list_bucketing_static_part_n1 where ds='2008-04-08'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@list_bucketing_static_part
+POSTHOOK: Input: default@list_bucketing_static_part_n1
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select key, value from srcpart where ds='2008-04-08' and hr='11' and key = "484"
@@ -344,10 +344,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 484	val_484
 PREHOOK: query: explain extended
-select key, value from list_bucketing_static_part where ds='2008-04-08' and hr='11' and key = "484"
+select key, value from list_bucketing_static_part_n1 where ds='2008-04-08' and hr='11' and key = "484"
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select key, value from list_bucketing_static_part where ds='2008-04-08' and hr='11' and key = "484"
+select key, value from list_bucketing_static_part_n1 where ds='2008-04-08' and hr='11' and key = "484"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -371,13 +371,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.list_bucketing_static_part
+              name default.list_bucketing_static_part_n1
               numFiles 4
               numRows 1000
               partition_columns ds/hr
               partition_columns.types string:string
               rawDataSize 10624
-              serialization.ddl struct list_bucketing_static_part { string key, string value}
+              serialization.ddl struct list_bucketing_static_part_n1 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 11624
@@ -394,19 +394,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.list_bucketing_static_part
+                name default.list_bucketing_static_part_n1
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct list_bucketing_static_part { string key, string value}
+                serialization.ddl struct list_bucketing_static_part_n1 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.list_bucketing_static_part
-            name: default.list_bucketing_static_part
+              name: default.list_bucketing_static_part_n1
+            name: default.list_bucketing_static_part_n1
       Processor Tree:
         TableScan
-          alias: list_bucketing_static_part
+          alias: list_bucketing_static_part_n1
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -419,23 +419,23 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: select key, value from list_bucketing_static_part where ds='2008-04-08' and hr='11' and key = "484"
+PREHOOK: query: select key, value from list_bucketing_static_part_n1 where ds='2008-04-08' and hr='11' and key = "484"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@list_bucketing_static_part
-PREHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
+PREHOOK: Input: default@list_bucketing_static_part_n1
+PREHOOK: Input: default@list_bucketing_static_part_n1@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select key, value from list_bucketing_static_part where ds='2008-04-08' and hr='11' and key = "484"
+POSTHOOK: query: select key, value from list_bucketing_static_part_n1 where ds='2008-04-08' and hr='11' and key = "484"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@list_bucketing_static_part
-POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@list_bucketing_static_part_n1
+POSTHOOK: Input: default@list_bucketing_static_part_n1@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 484	val_484
 484	val_484
-PREHOOK: query: drop table list_bucketing_static_part
+PREHOOK: query: drop table list_bucketing_static_part_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@list_bucketing_static_part
-PREHOOK: Output: default@list_bucketing_static_part
-POSTHOOK: query: drop table list_bucketing_static_part
+PREHOOK: Input: default@list_bucketing_static_part_n1
+PREHOOK: Output: default@list_bucketing_static_part_n1
+POSTHOOK: query: drop table list_bucketing_static_part_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@list_bucketing_static_part
-POSTHOOK: Output: default@list_bucketing_static_part
+POSTHOOK: Input: default@list_bucketing_static_part_n1
+POSTHOOK: Output: default@list_bucketing_static_part_n1

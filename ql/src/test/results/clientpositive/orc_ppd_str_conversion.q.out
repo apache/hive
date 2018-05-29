@@ -1,11 +1,11 @@
-PREHOOK: query: create table orc_test( col1 varchar(15), col2 char(10)) stored as orc
+PREHOOK: query: create table orc_test_n0( col1 varchar(15), col2 char(10)) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_test
-POSTHOOK: query: create table orc_test( col1 varchar(15), col2 char(10)) stored as orc
+PREHOOK: Output: default@orc_test_n0
+POSTHOOK: query: create table orc_test_n0( col1 varchar(15), col2 char(10)) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_test
+POSTHOOK: Output: default@orc_test_n0
 PREHOOK: query: create table text_test( col1 varchar(15), col2 char(10))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -14,26 +14,26 @@ POSTHOOK: query: create table text_test( col1 varchar(15), col2 char(10))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@text_test
-PREHOOK: query: insert into orc_test values ('val1', '1')
+PREHOOK: query: insert into orc_test_n0 values ('val1', '1')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@orc_test
-POSTHOOK: query: insert into orc_test values ('val1', '1')
+PREHOOK: Output: default@orc_test_n0
+POSTHOOK: query: insert into orc_test_n0 values ('val1', '1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@orc_test
-POSTHOOK: Lineage: orc_test.col1 SCRIPT []
-POSTHOOK: Lineage: orc_test.col2 SCRIPT []
-PREHOOK: query: insert overwrite table text_test select * from orc_test
+POSTHOOK: Output: default@orc_test_n0
+POSTHOOK: Lineage: orc_test_n0.col1 SCRIPT []
+POSTHOOK: Lineage: orc_test_n0.col2 SCRIPT []
+PREHOOK: query: insert overwrite table text_test select * from orc_test_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_test
+PREHOOK: Input: default@orc_test_n0
 PREHOOK: Output: default@text_test
-POSTHOOK: query: insert overwrite table text_test select * from orc_test
+POSTHOOK: query: insert overwrite table text_test select * from orc_test_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_test
+POSTHOOK: Input: default@orc_test_n0
 POSTHOOK: Output: default@text_test
-POSTHOOK: Lineage: text_test.col1 SIMPLE [(orc_test)orc_test.FieldSchema(name:col1, type:varchar(15), comment:null), ]
-POSTHOOK: Lineage: text_test.col2 SIMPLE [(orc_test)orc_test.FieldSchema(name:col2, type:char(10), comment:null), ]
+POSTHOOK: Lineage: text_test.col1 SIMPLE [(orc_test_n0)orc_test_n0.FieldSchema(name:col1, type:varchar(15), comment:null), ]
+POSTHOOK: Lineage: text_test.col2 SIMPLE [(orc_test_n0)orc_test_n0.FieldSchema(name:col2, type:char(10), comment:null), ]
 PREHOOK: query: explain select * from text_test where col2='1'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from text_test where col2='1'
@@ -79,21 +79,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@text_test
 #### A masked pattern was here ####
 val1	1         
-PREHOOK: query: select * from orc_test where col2='1'
+PREHOOK: query: select * from orc_test_n0 where col2='1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_test
+PREHOOK: Input: default@orc_test_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_test where col2='1'
+POSTHOOK: query: select * from orc_test_n0 where col2='1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_test
+POSTHOOK: Input: default@orc_test_n0
 #### A masked pattern was here ####
 val1	1         
-PREHOOK: query: select * from orc_test where col2='1'
+PREHOOK: query: select * from orc_test_n0 where col2='1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_test
+PREHOOK: Input: default@orc_test_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_test where col2='1'
+POSTHOOK: query: select * from orc_test_n0 where col2='1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_test
+POSTHOOK: Input: default@orc_test_n0
 #### A masked pattern was here ####
 val1	1         

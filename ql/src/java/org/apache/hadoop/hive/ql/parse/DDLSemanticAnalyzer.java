@@ -365,6 +365,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           analyzeAlterTableAddConstraint(ast, tableName);
       } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS) {
         analyzeAlterTableUpdateColumns(ast, tableName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_OWNER) {
+        analyzeAlterTableOwner(ast, tableName);
       }
       break;
     }
@@ -1928,6 +1930,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private void analyzeAlterTableOwner(ASTNode ast, String tableName) throws SemanticException {
+    PrincipalDesc ownerPrincipal = AuthorizationParseUtils.getPrincipalDesc((ASTNode) ast.getChild(0));
+
+    if (ownerPrincipal.getType() == null) {
+      throw new SemanticException("Owner type can't be null in alter table set owner command");
+    }
+
+    if (ownerPrincipal.getName() == null) {
+      throw new SemanticException("Owner name can't be null in alter table set owner command");
+    }
+
+    AlterTableDesc alterTblDesc  = new AlterTableDesc(tableName, ownerPrincipal);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+  }
+
   private void analyzeAlterTableLocation(ASTNode ast, String tableName,
       HashMap<String, String> partSpec) throws SemanticException {
 
@@ -1964,9 +1981,19 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       tblObj = getTable(tableName);
-      // TODO: we should probably block all ACID tables here.
-      if (AcidUtils.isInsertOnlyTable(tblObj.getParameters())) {
-        throw new SemanticException("Merge is not supported for MM tables");
+      if(AcidUtils.isTransactionalTable(tblObj)) {
+        LinkedHashMap<String, String> newPartSpec = null;
+        if (partSpec != null) {
+          newPartSpec = new LinkedHashMap<>(partSpec);
+        }
+
+        boolean isBlocking = !HiveConf.getBoolVar(conf,
+            ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, false);
+        AlterTableSimpleDesc desc = new AlterTableSimpleDesc(
+            tableName, newPartSpec, "MAJOR", isBlocking);
+
+        rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+        return;
       }
       mergeDesc.setTableDesc(Utilities.getTableDesc(tblObj));
 
@@ -2039,11 +2066,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
       }
 
-      // transactional tables are compacted and no longer needs to be bucketed, so not safe for merge/concatenation
-      boolean isAcid = AcidUtils.isTransactionalTable(tblObj);
-      if (isAcid) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL.getMsg());
-      }
       inputDir.add(oldTblPartLoc);
 
       mergeDesc.setInputDir(inputDir);

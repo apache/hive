@@ -1,46 +1,46 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: query: CREATE TABLE T1_n6(key STRING, val STRING)
 CLUSTERED BY (val) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: Output: default@T1_n6
+POSTHOOK: query: CREATE TABLE T1_n6(key STRING, val STRING)
 CLUSTERED BY (val) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1
+POSTHOOK: Output: default@T1_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1
+PREHOOK: Output: default@t1_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
+POSTHOOK: Output: default@t1_n6
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n6 select key, val from T1_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
+PREHOOK: Input: default@t1_n6
+PREHOOK: Output: default@t1_n6
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n6 select key, val from T1_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE outputTbl1(key STRING, val STRING, cnt INT)
+POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: default@t1_n6
+POSTHOOK: Lineage: t1_n6.key SIMPLE [(t1_n6)t1_n6.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n6.val SIMPLE [(t1_n6)t1_n6.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE outputTbl1_n5(key STRING, val STRING, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl1
-POSTHOOK: query: CREATE TABLE outputTbl1(key STRING, val STRING, cnt INT)
+PREHOOK: Output: default@outputTbl1_n5
+POSTHOOK: query: CREATE TABLE outputTbl1_n5(key STRING, val STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl1
+POSTHOOK: Output: default@outputTbl1_n5
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+INSERT OVERWRITE TABLE outputTbl1_n5
+SELECT key, val, count(1) FROM T1_n6 GROUP BY key, val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+INSERT OVERWRITE TABLE outputTbl1_n5
+SELECT key, val, count(1) FROM T1_n6 GROUP BY key, val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -57,7 +57,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n6
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), val (type: string)
@@ -80,7 +80,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n5
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                     outputColumnNames: key, val, cnt
@@ -125,7 +125,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n5
 
   Stage: Stage-2
     Stats Work
@@ -133,7 +133,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val, cnt
           Column Types: string, string, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n5
 
   Stage: Stage-3
     Map Reduce
@@ -145,7 +145,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n5
 
   Stage: Stage-5
     Map Reduce
@@ -157,7 +157,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n5
 
   Stage: Stage-6
     Move Operator
@@ -165,26 +165,26 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n5
+SELECT key, val, count(1) FROM T1_n6 GROUP BY key, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+PREHOOK: Input: default@t1_n6
+PREHOOK: Output: default@outputtbl1_n5
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n5
+SELECT key, val, count(1) FROM T1_n6 GROUP BY key, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: default@outputtbl1_n5
+POSTHOOK: Lineage: outputtbl1_n5.cnt EXPRESSION [(t1_n6)t1_n6.null, ]
+POSTHOOK: Lineage: outputtbl1_n5.key SIMPLE [(t1_n6)t1_n6.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n5.val SIMPLE [(t1_n6)t1_n6.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n5
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n5
 #### A masked pattern was here ####
 1	11	1
 2	12	1
@@ -192,49 +192,49 @@ POSTHOOK: Input: default@outputtbl1
 7	17	1
 8	18	1
 8	28	1
-PREHOOK: query: DROP TABLE T1
+PREHOOK: query: DROP TABLE T1_n6
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: DROP TABLE T1
+PREHOOK: Input: default@t1_n6
+PREHOOK: Output: default@t1_n6
+POSTHOOK: query: DROP TABLE T1_n6
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: default@t1_n6
+PREHOOK: query: CREATE TABLE T1_n6(key STRING, val STRING)
 CLUSTERED BY (val, key) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: Output: default@T1_n6
+POSTHOOK: query: CREATE TABLE T1_n6(key STRING, val STRING)
 CLUSTERED BY (val, key) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1
+POSTHOOK: Output: default@T1_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1
+PREHOOK: Output: default@t1_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
+POSTHOOK: Output: default@t1_n6
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n6 select key, val from T1_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
+PREHOOK: Input: default@t1_n6
+PREHOOK: Output: default@t1_n6
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n6 select key, val from T1_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: default@t1_n6
+POSTHOOK: Lineage: t1_n6.key SIMPLE [(t1_n6)t1_n6.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n6.val SIMPLE [(t1_n6)t1_n6.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+INSERT OVERWRITE TABLE outputTbl1_n5
+SELECT key, val, count(1) FROM T1_n6 GROUP BY key, val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+INSERT OVERWRITE TABLE outputTbl1_n5
+SELECT key, val, count(1) FROM T1_n6 GROUP BY key, val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -251,7 +251,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n6
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), val (type: string)
@@ -274,7 +274,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n5
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                     outputColumnNames: key, val, cnt
@@ -319,7 +319,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n5
 
   Stage: Stage-2
     Stats Work
@@ -327,7 +327,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val, cnt
           Column Types: string, string, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n5
 
   Stage: Stage-3
     Map Reduce
@@ -339,7 +339,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n5
 
   Stage: Stage-5
     Map Reduce
@@ -351,7 +351,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n5
 
   Stage: Stage-6
     Move Operator
@@ -359,26 +359,26 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n5
+SELECT key, val, count(1) FROM T1_n6 GROUP BY key, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+PREHOOK: Input: default@t1_n6
+PREHOOK: Output: default@outputtbl1_n5
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n5
+SELECT key, val, count(1) FROM T1_n6 GROUP BY key, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: default@outputtbl1_n5
+POSTHOOK: Lineage: outputtbl1_n5.cnt EXPRESSION [(t1_n6)t1_n6.null, ]
+POSTHOOK: Lineage: outputtbl1_n5.key SIMPLE [(t1_n6)t1_n6.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n5.val SIMPLE [(t1_n6)t1_n6.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n5
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n5
 #### A masked pattern was here ####
 1	11	1
 2	12	1
@@ -386,57 +386,57 @@ POSTHOOK: Input: default@outputtbl1
 7	17	1
 8	18	1
 8	28	1
-PREHOOK: query: DROP TABLE T1
+PREHOOK: query: DROP TABLE T1_n6
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: DROP TABLE T1
+PREHOOK: Input: default@t1_n6
+PREHOOK: Output: default@t1_n6
+POSTHOOK: query: DROP TABLE T1_n6
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: default@t1_n6
+PREHOOK: query: CREATE TABLE T1_n6(key STRING, val STRING)
 CLUSTERED BY (val) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: Output: default@T1_n6
+POSTHOOK: query: CREATE TABLE T1_n6(key STRING, val STRING)
 CLUSTERED BY (val) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1
+POSTHOOK: Output: default@T1_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1
+PREHOOK: Output: default@t1_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
+POSTHOOK: Output: default@t1_n6
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n6 select key, val from T1_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
+PREHOOK: Input: default@t1_n6
+PREHOOK: Output: default@t1_n6
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n6 select key, val from T1_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE outputTbl2(key STRING, cnt INT)
+POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: default@t1_n6
+POSTHOOK: Lineage: t1_n6.key SIMPLE [(t1_n6)t1_n6.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n6.val SIMPLE [(t1_n6)t1_n6.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE outputTbl2_n1(key STRING, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl2
-POSTHOOK: query: CREATE TABLE outputTbl2(key STRING, cnt INT)
+PREHOOK: Output: default@outputTbl2_n1
+POSTHOOK: query: CREATE TABLE outputTbl2_n1(key STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl2
+POSTHOOK: Output: default@outputTbl2_n1
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE outputTbl2
-SELECT key, count(1) FROM T1 GROUP BY key
+INSERT OVERWRITE TABLE outputTbl2_n1
+SELECT key, count(1) FROM T1_n6 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE outputTbl2
-SELECT key, count(1) FROM T1 GROUP BY key
+INSERT OVERWRITE TABLE outputTbl2_n1
+SELECT key, count(1) FROM T1_n6 GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -449,7 +449,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n6
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
@@ -487,7 +487,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl2
+                  name: default.outputtbl2_n1
             Select Operator
               expressions: _col0 (type: string), _col1 (type: int)
               outputColumnNames: key, cnt
@@ -512,7 +512,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl2
+              name: default.outputtbl2_n1
 
   Stage: Stage-2
     Stats Work
@@ -520,7 +520,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: string, int
-          Table: default.outputtbl2
+          Table: default.outputtbl2_n1
 
   Stage: Stage-3
     Map Reduce
@@ -545,36 +545,36 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl2
-SELECT key, count(1) FROM T1 GROUP BY key
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl2_n1
+SELECT key, count(1) FROM T1_n6 GROUP BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl2
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl2
-SELECT key, count(1) FROM T1 GROUP BY key
+PREHOOK: Input: default@t1_n6
+PREHOOK: Output: default@outputtbl2_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl2_n1
+SELECT key, count(1) FROM T1_n6 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl2
-POSTHOOK: Lineage: outputtbl2.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl2
+POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: default@outputtbl2_n1
+POSTHOOK: Lineage: outputtbl2_n1.cnt EXPRESSION [(t1_n6)t1_n6.null, ]
+POSTHOOK: Lineage: outputtbl2_n1.key SIMPLE [(t1_n6)t1_n6.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl2
+PREHOOK: Input: default@outputtbl2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl2
+POSTHOOK: query: SELECT * FROM outputTbl2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl2
+POSTHOOK: Input: default@outputtbl2_n1
 #### A masked pattern was here ####
 1	1
 2	1
 3	1
 7	1
 8	2
-PREHOOK: query: DROP TABLE T1
+PREHOOK: query: DROP TABLE T1_n6
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: DROP TABLE T1
+PREHOOK: Input: default@t1_n6
+PREHOOK: Output: default@t1_n6
+POSTHOOK: query: DROP TABLE T1_n6
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n6
+POSTHOOK: Output: default@t1_n6

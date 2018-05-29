@@ -1,4 +1,4 @@
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n23(
            t tinyint,
            si smallint,
            i int,
@@ -14,8 +14,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n23
+POSTHOOK: query: create table over10k_n23(
            t tinyint,
            si smallint,
            i int,
@@ -31,16 +31,16 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n23
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n23
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n23
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n23
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
-PREHOOK: query: create table stats_tbl_part(
+POSTHOOK: Output: default@over10k_n23
+PREHOOK: query: create table stats_tbl_part_n0(
            t tinyint,
            si smallint,
            i int,
@@ -54,8 +54,8 @@ PREHOOK: query: create table stats_tbl_part(
            bin binary) partitioned by (dt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@stats_tbl_part
-POSTHOOK: query: create table stats_tbl_part(
+PREHOOK: Output: default@stats_tbl_part_n0
+POSTHOOK: query: create table stats_tbl_part_n0(
            t tinyint,
            si smallint,
            i int,
@@ -69,92 +69,92 @@ POSTHOOK: query: create table stats_tbl_part(
            bin binary) partitioned by (dt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@stats_tbl_part
-PREHOOK: query: from over10k 
-insert overwrite table stats_tbl_part partition (dt=2010) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t>0 and t<30 
-insert overwrite table stats_tbl_part partition (dt=2014) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t > 30 and t<60
+POSTHOOK: Output: default@stats_tbl_part_n0
+PREHOOK: query: from over10k_n23 
+insert overwrite table stats_tbl_part_n0 partition (dt=2010) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t>0 and t<30 
+insert overwrite table stats_tbl_part_n0 partition (dt=2014) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t > 30 and t<60
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
-PREHOOK: Output: default@stats_tbl_part@dt=2010
-PREHOOK: Output: default@stats_tbl_part@dt=2014
-POSTHOOK: query: from over10k 
-insert overwrite table stats_tbl_part partition (dt=2010) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t>0 and t<30 
-insert overwrite table stats_tbl_part partition (dt=2014) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t > 30 and t<60
+PREHOOK: Input: default@over10k_n23
+PREHOOK: Output: default@stats_tbl_part_n0@dt=2010
+PREHOOK: Output: default@stats_tbl_part_n0@dt=2014
+POSTHOOK: query: from over10k_n23 
+insert overwrite table stats_tbl_part_n0 partition (dt=2010) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t>0 and t<30 
+insert overwrite table stats_tbl_part_n0 partition (dt=2014) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t > 30 and t<60
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
-POSTHOOK: Output: default@stats_tbl_part@dt=2010
-POSTHOOK: Output: default@stats_tbl_part@dt=2014
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2014).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: analyze table stats_tbl_part partition(dt) compute statistics
+POSTHOOK: Input: default@over10k_n23
+POSTHOOK: Output: default@stats_tbl_part_n0@dt=2010
+POSTHOOK: Output: default@stats_tbl_part_n0@dt=2014
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).b SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).bin SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).bo SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).d SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).dec SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).f SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).i SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).s SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).si SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).t SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2010).ts SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).b SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).bin SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).bo SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).d SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).dec SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).f SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).i SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).s SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).si SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).t SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part_n0 PARTITION(dt=2014).ts SIMPLE [(over10k_n23)over10k_n23.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: analyze table stats_tbl_part_n0 partition(dt) compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@stats_tbl_part
-PREHOOK: Input: default@stats_tbl_part@dt=2010
-PREHOOK: Input: default@stats_tbl_part@dt=2014
-PREHOOK: Output: default@stats_tbl_part
-PREHOOK: Output: default@stats_tbl_part@dt=2010
-PREHOOK: Output: default@stats_tbl_part@dt=2014
-POSTHOOK: query: analyze table stats_tbl_part partition(dt) compute statistics
+PREHOOK: Input: default@stats_tbl_part_n0
+PREHOOK: Input: default@stats_tbl_part_n0@dt=2010
+PREHOOK: Input: default@stats_tbl_part_n0@dt=2014
+PREHOOK: Output: default@stats_tbl_part_n0
+PREHOOK: Output: default@stats_tbl_part_n0@dt=2010
+PREHOOK: Output: default@stats_tbl_part_n0@dt=2014
+POSTHOOK: query: analyze table stats_tbl_part_n0 partition(dt) compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@stats_tbl_part
-POSTHOOK: Input: default@stats_tbl_part@dt=2010
-POSTHOOK: Input: default@stats_tbl_part@dt=2014
-POSTHOOK: Output: default@stats_tbl_part
-POSTHOOK: Output: default@stats_tbl_part@dt=2010
-POSTHOOK: Output: default@stats_tbl_part@dt=2014
-PREHOOK: query: analyze table stats_tbl_part partition(dt=2010) compute statistics for columns t,si,i,b,f,d,bo,s,bin
+POSTHOOK: Input: default@stats_tbl_part_n0
+POSTHOOK: Input: default@stats_tbl_part_n0@dt=2010
+POSTHOOK: Input: default@stats_tbl_part_n0@dt=2014
+POSTHOOK: Output: default@stats_tbl_part_n0
+POSTHOOK: Output: default@stats_tbl_part_n0@dt=2010
+POSTHOOK: Output: default@stats_tbl_part_n0@dt=2014
+PREHOOK: query: analyze table stats_tbl_part_n0 partition(dt=2010) compute statistics for columns t,si,i,b,f,d,bo,s,bin
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@stats_tbl_part
-PREHOOK: Input: default@stats_tbl_part@dt=2010
-PREHOOK: Output: default@stats_tbl_part
-PREHOOK: Output: default@stats_tbl_part@dt=2010
+PREHOOK: Input: default@stats_tbl_part_n0
+PREHOOK: Input: default@stats_tbl_part_n0@dt=2010
+PREHOOK: Output: default@stats_tbl_part_n0
+PREHOOK: Output: default@stats_tbl_part_n0@dt=2010
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table stats_tbl_part partition(dt=2010) compute statistics for columns t,si,i,b,f,d,bo,s,bin
+POSTHOOK: query: analyze table stats_tbl_part_n0 partition(dt=2010) compute statistics for columns t,si,i,b,f,d,bo,s,bin
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@stats_tbl_part
-POSTHOOK: Input: default@stats_tbl_part@dt=2010
-POSTHOOK: Output: default@stats_tbl_part
-POSTHOOK: Output: default@stats_tbl_part@dt=2010
+POSTHOOK: Input: default@stats_tbl_part_n0
+POSTHOOK: Input: default@stats_tbl_part_n0@dt=2010
+POSTHOOK: Output: default@stats_tbl_part_n0
+POSTHOOK: Output: default@stats_tbl_part_n0@dt=2010
 #### A masked pattern was here ####
-PREHOOK: query: analyze table stats_tbl_part partition(dt=2014) compute statistics for columns t,si,i,b,f,d,bo,s,bin
+PREHOOK: query: analyze table stats_tbl_part_n0 partition(dt=2014) compute statistics for columns t,si,i,b,f,d,bo,s,bin
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@stats_tbl_part
-PREHOOK: Input: default@stats_tbl_part@dt=2014
-PREHOOK: Output: default@stats_tbl_part
-PREHOOK: Output: default@stats_tbl_part@dt=2014
+PREHOOK: Input: default@stats_tbl_part_n0
+PREHOOK: Input: default@stats_tbl_part_n0@dt=2014
+PREHOOK: Output: default@stats_tbl_part_n0
+PREHOOK: Output: default@stats_tbl_part_n0@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table stats_tbl_part partition(dt=2014) compute statistics for columns t,si,i,b,f,d,bo,s,bin
+POSTHOOK: query: analyze table stats_tbl_part_n0 partition(dt=2014) compute statistics for columns t,si,i,b,f,d,bo,s,bin
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@stats_tbl_part
-POSTHOOK: Input: default@stats_tbl_part@dt=2014
-POSTHOOK: Output: default@stats_tbl_part
-POSTHOOK: Output: default@stats_tbl_part@dt=2014
+POSTHOOK: Input: default@stats_tbl_part_n0
+POSTHOOK: Input: default@stats_tbl_part_n0@dt=2014
+POSTHOOK: Output: default@stats_tbl_part_n0
+POSTHOOK: Output: default@stats_tbl_part_n0@dt=2014
 #### A masked pattern was here ####
 PREHOOK: query: explain 
-select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt = 2010
+select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt = 2010
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt = 2010
+select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt = 2010
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -166,20 +166,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt = 2010
+PREHOOK: query: select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt = 2010
 PREHOOK: type: QUERY
-PREHOOK: Input: default@stats_tbl_part
+PREHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt = 2010
+POSTHOOK: query: select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt = 2010
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@stats_tbl_part
+POSTHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
 2322	2322	2322	2322	2322	2322	2322	65791	4294967296	99.98	0.03
 PREHOOK: query: explain 
-select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt > 2010
+select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt > 2010
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt > 2010
+select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt > 2010
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -191,42 +191,42 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt > 2010
+PREHOOK: query: select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt > 2010
 PREHOOK: type: QUERY
-PREHOOK: Input: default@stats_tbl_part
+PREHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt > 2010
+POSTHOOK: query: select count(*), count(1), sum(1), sum(2), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part_n0 where dt > 2010
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@stats_tbl_part
+POSTHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
 2219	2219	2219	4438	2219	2219	2219	2219	65791	4294967296	99.96	0.04
-PREHOOK: query: select count(*) from stats_tbl_part
+PREHOOK: query: select count(*) from stats_tbl_part_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@stats_tbl_part
+PREHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from stats_tbl_part
+POSTHOOK: query: select count(*) from stats_tbl_part_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@stats_tbl_part
+POSTHOOK: Input: default@stats_tbl_part_n0
 #### A masked pattern was here ####
 4541
-PREHOOK: query: select count(*)/2 from stats_tbl_part
+PREHOOK: query: select count(*)/2 from stats_tbl_part_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@stats_tbl_part
-PREHOOK: Input: default@stats_tbl_part@dt=2010
-PREHOOK: Input: default@stats_tbl_part@dt=2014
+PREHOOK: Input: default@stats_tbl_part_n0
+PREHOOK: Input: default@stats_tbl_part_n0@dt=2010
+PREHOOK: Input: default@stats_tbl_part_n0@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*)/2 from stats_tbl_part
+POSTHOOK: query: select count(*)/2 from stats_tbl_part_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@stats_tbl_part
-POSTHOOK: Input: default@stats_tbl_part@dt=2010
-POSTHOOK: Input: default@stats_tbl_part@dt=2014
+POSTHOOK: Input: default@stats_tbl_part_n0
+POSTHOOK: Input: default@stats_tbl_part_n0@dt=2010
+POSTHOOK: Input: default@stats_tbl_part_n0@dt=2014
 #### A masked pattern was here ####
 2270.5
-PREHOOK: query: drop table stats_tbl_part
+PREHOOK: query: drop table stats_tbl_part_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@stats_tbl_part
-PREHOOK: Output: default@stats_tbl_part
-POSTHOOK: query: drop table stats_tbl_part
+PREHOOK: Input: default@stats_tbl_part_n0
+PREHOOK: Output: default@stats_tbl_part_n0
+POSTHOOK: query: drop table stats_tbl_part_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@stats_tbl_part
-POSTHOOK: Output: default@stats_tbl_part
+POSTHOOK: Input: default@stats_tbl_part_n0
+POSTHOOK: Output: default@stats_tbl_part_n0

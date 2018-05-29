@@ -1,122 +1,122 @@
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n13(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n13
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n13(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@srcbucket_mapjoin_n13
+PREHOOK: query: CREATE TABLE tab_part_n8 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_part_n8
+POSTHOOK: query: CREATE TABLE tab_part_n8 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@tab_part_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n14 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n14
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n14 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n14
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n13 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n13
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n13 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n13
+POSTHOOK: Output: default@srcbucket_mapjoin_n13@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n13 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n13@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n13 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n13@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n14
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n14
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n14@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n14@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n14@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n14 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n14@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n14 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n14@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part_n8 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n14
+PREHOOK: Input: default@srcbucket_mapjoin_part_n14@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n8@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part_n8 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n14
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n14@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n8@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n14)srcbucket_mapjoin_part_n14.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n14)srcbucket_mapjoin_part_n14.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab_n7(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_n7
+POSTHOOK: query: CREATE TABLE tab_n7(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n7
+PREHOOK: query: insert overwrite table tab_n7 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n13
+PREHOOK: Input: default@srcbucket_mapjoin_n13@ds=2008-04-08
+PREHOOK: Output: default@tab_n7@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n7 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Input: default@srcbucket_mapjoin_n13
+POSTHOOK: Input: default@srcbucket_mapjoin_n13@ds=2008-04-08
+POSTHOOK: Output: default@tab_n7@ds=2008-04-08
+POSTHOOK: Lineage: tab_n7 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n13)srcbucket_mapjoin_n13.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n7 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n13)srcbucket_mapjoin_n13.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain vectorization detail
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key
+from tab_n7 a join tab_part_n8 b on a.key = b.key
 order by a.key, a.value, b.value
 limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key
+from tab_n7 a join tab_part_n8 b on a.key = b.key
 order by a.key, a.value, b.value
 limit 10
 POSTHOOK: type: QUERY
@@ -320,24 +320,24 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key
+from tab_n7 a join tab_part_n8 b on a.key = b.key
 order by a.key, a.value, b.value
 limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n7
+PREHOOK: Input: default@tab_n7@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n8
+PREHOOK: Input: default@tab_part_n8@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key
+from tab_n7 a join tab_part_n8 b on a.key = b.key
 order by a.key, a.value, b.value
 limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n7
+POSTHOOK: Input: default@tab_n7@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n8
+POSTHOOK: Input: default@tab_part_n8@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	val_0
 0	val_0	val_0

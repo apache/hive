@@ -3,7 +3,7 @@ set hive.mapred.mode=nonstrict;
 set hive.stats.column.autogather=false;
 
 drop table if exists test_txt;
-drop table if exists test_orc;
+drop table if exists test_orc_n1;
 create table test_txt(
 	c1 varchar(64),
 	c2 int,
@@ -2007,10 +2007,10 @@ create table test_txt(
 	c2000 boolean
 ) row format delimited fields terminated by ',';
 load data local inpath '../../data/files/2000_cols_data.csv' overwrite into table test_txt;
-create table test_orc like test_txt;
-alter table test_orc set fileformat orc;
-insert into table test_orc select * from test_txt;
+create table test_orc_n1 like test_txt;
+alter table test_orc_n1 set fileformat orc;
+insert into table test_orc_n1 select * from test_txt;
 
 select c1, c2, c1999 from test_txt order by c1;
-select c1, c2, c1999 from test_orc order by c1;
+select c1, c2, c1999 from test_orc_n1 order by c1;
 

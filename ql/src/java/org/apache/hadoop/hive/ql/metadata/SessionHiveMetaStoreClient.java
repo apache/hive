@@ -135,7 +135,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         deleteTempTableColumnStatsForTable(dbname, name);
       } catch (NoSuchObjectException err){
         // No stats to delete, forgivable error.
-        LOG.info("Object not found in metastore", err);
+        LOG.info(err.getMessage());
       }
       dropTempTable(table, deleteData, envContext);
       return;
@@ -166,7 +166,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return deepCopy(table);  // Original method used deepCopy(), do the same here.
     }
     // Try underlying client
-    return super.getTable(DEFAULT_CATALOG_NAME, dbname, name);
+    return super.getTable(MetaStoreUtils.getDefaultCatalog(conf), dbname, name);
   }
 
   // Need to override this one too or dropTable breaks because it doesn't find the table when checks
@@ -548,7 +548,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         deleteTempTableColumnStatsForTable(dbname, tbl_name);
       } catch (NoSuchObjectException err){
         // No stats to delete, forgivable error.
-        LOG.info("Object not found in metastore",err);
+        LOG.info(err.getMessage());
       }
     }
   }
@@ -709,7 +709,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   private static Map<String, Map<String, Table>> getTempTables(String msg) {
     SessionState ss = SessionState.get();
     if (ss == null) {
-      LOG.warn("No current SessionState, skipping temp tables for " + msg);
+      LOG.debug("No current SessionState, skipping temp tables for " + msg);
       return Collections.emptyMap();
     }
     return ss.getTempTables();

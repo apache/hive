@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -53,7 +54,7 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   private Map<String, String> tableParams;
   private boolean rewriteEnabled, temporary;
   private Set<String> mvReferencedTables;
-
+  private PrincipalType ownerType;
 
   public TableBuilder() {
     // Set some reasonable defaults
@@ -91,6 +92,11 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
 
   public TableBuilder setOwner(String owner) {
     this.owner = owner;
+    return this;
+  }
+
+  public TableBuilder setOwnerType(PrincipalType ownerType) {
+    this.ownerType = ownerType;
     return this;
   }
 
@@ -184,6 +190,9 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   public Table build(Configuration conf) throws MetaException {
     if (tableName == null) {
       throw new MetaException("You must set the table name");
+    }
+    if (ownerType == null) {
+      ownerType = PrincipalType.USER;
     }
     if (owner == null) {
       try {

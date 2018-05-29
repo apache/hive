@@ -1,41 +1,41 @@
-PREHOOK: query: drop table if exists tb1
+PREHOOK: query: drop table if exists tb1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists tb1
+POSTHOOK: query: drop table if exists tb1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tb1 (id int)
+PREHOOK: query: create table tb1_n0 (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tb1
-POSTHOOK: query: create table tb1 (id int)
+PREHOOK: Output: default@tb1_n0
+POSTHOOK: query: create table tb1_n0 (id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tb1
-PREHOOK: query: drop table if exists tb2
+POSTHOOK: Output: default@tb1_n0
+PREHOOK: query: drop table if exists tb2_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists tb2
+POSTHOOK: query: drop table if exists tb2_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tb2 (id smallint)
+PREHOOK: query: create table tb2_n0 (id smallint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tb2
-POSTHOOK: query: create table tb2 (id smallint)
+PREHOOK: Output: default@tb2_n0
+POSTHOOK: query: create table tb2_n0 (id smallint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tb2
+POSTHOOK: Output: default@tb2_n0
 PREHOOK: query: explain
-select a.id from tb1 a
+select a.id from tb1_n0 a
 left outer join
-(select id from tb2
+(select id from tb2_n0
 union all
-select 2 as id from tb2 limit 1) b
+select 2 as id from tb2_n0 limit 1) b
 on a.id=b.id
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select a.id from tb1 a
+select a.id from tb1_n0 a
 left outer join
-(select id from tb2
+(select id from tb2_n0
 union all
-select 2 as id from tb2 limit 1) b
+select 2 as id from tb2_n0 limit 1) b
 on a.id=b.id
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -68,7 +68,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tb2
+                  alias: tb2_n0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: UDFToInteger(id) (type: int)
@@ -86,7 +86,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: tb2
+                  alias: tb2_n0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     expressions: 2 (type: int)

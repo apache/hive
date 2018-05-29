@@ -6,13 +6,13 @@ create database newdb;
 
 use newdb;
 
-create table masking_test as select cast(key as int) as key, value from default.src;
+create table masking_test_n12 as select cast(key as int) as key, value from default.src;
 
 use default;
 
-explain select * from newdb.masking_test;
-select * from newdb.masking_test;
+explain select * from newdb.masking_test_n12;
+select * from newdb.masking_test_n12;
 
-explain select * from newdb.masking_test where key > 0;
-select * from newdb.masking_test where key > 0;
+explain select * from newdb.masking_test_n12 where key > 0;
+select * from newdb.masking_test_n12 where key > 0;
 

@@ -216,7 +216,8 @@ public class OrcEncodedDataConsumer
       ConsumerStripeMetadata stripeMetadata, TypeDescription fileSchema) throws IOException {
     TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
             .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
-            .writerTimeZone(stripeMetadata.getWriterTimezone());
+            .writerTimeZone(stripeMetadata.getWriterTimezone())
+        ;
     this.batchSchemas = includes.getBatchReaderTypes(fileSchema);
     StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
         batchSchemas, stripeMetadata.getEncodings(), batch, codec, context);
@@ -296,6 +297,9 @@ public class OrcEncodedDataConsumer
       ConsumerStripeMetadata stripeMetadata) throws IOException {
     PositionProvider[] pps = createPositionProviders(
         columnReaders, batch.getBatchKey(), stripeMetadata);
+    if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+      LlapIoImpl.ORC_LOGGER.trace("Created pps {}", Arrays.toString(pps));
+    }
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
       TreeReader reader = columnReaders[i];

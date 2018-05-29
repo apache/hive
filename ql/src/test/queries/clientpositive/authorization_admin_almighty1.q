@@ -5,13 +5,13 @@ set user.name=hive_test_user;
 
 -- actions from admin should work as if admin has all privileges
 
-create table t1(i int);
+create table t1_n76(i int);
 set user.name=hive_admin_user;
 
 show current roles;
 set role ADMIN;
 show current roles;
-select * from t1;
-grant all on table t1 to user user1;
-show grant user user1 on table t1;
-drop table t1;
+select * from t1_n76;
+grant all on table t1_n76 to user user1;
+show grant user user1 on table t1_n76;
+drop table t1_n76;

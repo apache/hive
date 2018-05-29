@@ -1,36 +1,36 @@
-PREHOOK: query: drop table pokes
+PREHOOK: query: drop table pokes_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table pokes
+POSTHOOK: query: drop table pokes_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table pokes2
+PREHOOK: query: drop table pokes2_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table pokes2
+POSTHOOK: query: drop table pokes2_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table pokes (foo int, bar int, blah int)
+PREHOOK: query: create table pokes_n0 (foo int, bar int, blah int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@pokes
-POSTHOOK: query: create table pokes (foo int, bar int, blah int)
+PREHOOK: Output: default@pokes_n0
+POSTHOOK: query: create table pokes_n0 (foo int, bar int, blah int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@pokes
-PREHOOK: query: create table pokes2 (foo int, bar int, blah int)
+POSTHOOK: Output: default@pokes_n0
+PREHOOK: query: create table pokes2_n0 (foo int, bar int, blah int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@pokes2
-POSTHOOK: query: create table pokes2 (foo int, bar int, blah int)
+PREHOOK: Output: default@pokes2_n0
+POSTHOOK: query: create table pokes2_n0 (foo int, bar int, blah int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@pokes2
+POSTHOOK: Output: default@pokes2_n0
 PREHOOK: query: explain
 SELECT a.foo as foo1, b.foo as foo2, b.bar
-FROM pokes a LEFT OUTER JOIN pokes2 b
+FROM pokes_n0 a LEFT OUTER JOIN pokes2_n0 b
 ON a.foo=b.foo
 WHERE b.bar=3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT a.foo as foo1, b.foo as foo2, b.bar
-FROM pokes a LEFT OUTER JOIN pokes2 b
+FROM pokes_n0 a LEFT OUTER JOIN pokes2_n0 b
 ON a.foo=b.foo
 WHERE b.bar=3
 POSTHOOK: type: QUERY
@@ -102,14 +102,14 @@ STAGE PLANS:
 PREHOOK: query: explain
 SELECT * FROM
     (SELECT a.foo as foo1, b.foo as foo2, b.bar
-    FROM pokes a LEFT OUTER JOIN pokes2 b
+    FROM pokes_n0 a LEFT OUTER JOIN pokes2_n0 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT * FROM
     (SELECT a.foo as foo1, b.foo as foo2, b.bar
-    FROM pokes a LEFT OUTER JOIN pokes2 b
+    FROM pokes_n0 a LEFT OUTER JOIN pokes2_n0 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
 POSTHOOK: type: QUERY
@@ -181,14 +181,14 @@ STAGE PLANS:
 PREHOOK: query: explain
 SELECT * FROM
     (SELECT a.foo as foo1, b.foo as foo2, a.bar
-    FROM pokes a JOIN pokes2 b
+    FROM pokes_n0 a JOIN pokes2_n0 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT * FROM
     (SELECT a.foo as foo1, b.foo as foo2, a.bar
-    FROM pokes a JOIN pokes2 b
+    FROM pokes_n0 a JOIN pokes2_n0 b
     ON a.foo=b.foo) a
 WHERE a.bar=3
 POSTHOOK: type: QUERY
@@ -258,9 +258,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
+PREHOOK: query: explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes_n0 c left outer join pokes_n0 b on c.foo=b.foo) c left outer join pokes_n0 d where d.foo=1 and c.bar=2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
+POSTHOOK: query: explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes_n0 c left outer join pokes_n0 b on c.foo=b.foo) c left outer join pokes_n0 d where d.foo=1 and c.bar=2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -370,19 +370,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table pokes
+PREHOOK: query: drop table pokes_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@pokes
-PREHOOK: Output: default@pokes
-POSTHOOK: query: drop table pokes
+PREHOOK: Input: default@pokes_n0
+PREHOOK: Output: default@pokes_n0
+POSTHOOK: query: drop table pokes_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@pokes
-POSTHOOK: Output: default@pokes
-PREHOOK: query: drop table pokes2
+POSTHOOK: Input: default@pokes_n0
+POSTHOOK: Output: default@pokes_n0
+PREHOOK: query: drop table pokes2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@pokes2
-PREHOOK: Output: default@pokes2
-POSTHOOK: query: drop table pokes2
+PREHOOK: Input: default@pokes2_n0
+PREHOOK: Output: default@pokes2_n0
+POSTHOOK: query: drop table pokes2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@pokes2
-POSTHOOK: Output: default@pokes2
+POSTHOOK: Input: default@pokes2_n0
+POSTHOOK: Output: default@pokes2_n0

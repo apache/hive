@@ -74,54 +74,54 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n3
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table a
+POSTHOOK: query: drop table a_n3
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table b
+PREHOOK: query: drop table b_n3
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table b
+POSTHOOK: query: drop table b_n3
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table a like src
+PREHOOK: query: create table a_n3 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a like src
+PREHOOK: Output: default@a_n3
+POSTHOOK: query: create table a_n3 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: create table b like src
+POSTHOOK: Output: default@a_n3
+PREHOOK: query: create table b_n3 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b like src
+PREHOOK: Output: default@b_n3
+POSTHOOK: query: create table b_n3 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
+POSTHOOK: Output: default@b_n3
 PREHOOK: query: from src
-insert into table a select *
-insert into table b select *
+insert into table a_n3 select *
+insert into table b_n3 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@a
-PREHOOK: Output: default@b
+PREHOOK: Output: default@a_n3
+PREHOOK: Output: default@b_n3
 POSTHOOK: query: from src
-insert into table a select *
-insert into table b select *
+insert into table a_n3 select *
+insert into table b_n3 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@a
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted a key
+POSTHOOK: Output: default@a_n3
+POSTHOOK: Output: default@b_n3
+POSTHOOK: Lineage: a_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted a_n3 key
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@a
-POSTHOOK: query: describe formatted a key
+PREHOOK: Input: default@a_n3
+POSTHOOK: query: describe formatted a_n3 key
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n3
 col_name            	key                 	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -135,12 +135,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted b key
+PREHOOK: query: describe formatted b_n3 key
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b key
+PREHOOK: Input: default@b_n3
+POSTHOOK: query: describe formatted b_n3 key
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n3
 col_name            	key                 	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -155,29 +155,29 @@ bitVector           	HL
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: from src
-insert overwrite table a select *
-insert into table b select *
+insert overwrite table a_n3 select *
+insert into table b_n3 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@a
-PREHOOK: Output: default@b
+PREHOOK: Output: default@a_n3
+PREHOOK: Output: default@b_n3
 POSTHOOK: query: from src
-insert overwrite table a select *
-insert into table b select *
+insert overwrite table a_n3 select *
+insert into table b_n3 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@a
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted a
+POSTHOOK: Output: default@a_n3
+POSTHOOK: Output: default@b_n3
+POSTHOOK: Lineage: a_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted a_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@a
-POSTHOOK: query: describe formatted a
+PREHOOK: Input: default@a_n3
+POSTHOOK: query: describe formatted a_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n3
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -206,12 +206,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted b
+PREHOOK: query: describe formatted b_n3
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b
+PREHOOK: Input: default@b_n3
+POSTHOOK: query: describe formatted b_n3
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n3
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -240,12 +240,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted b key
+PREHOOK: query: describe formatted b_n3 key
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b key
+PREHOOK: Input: default@b_n3
+POSTHOOK: query: describe formatted b_n3 key
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n3
 col_name            	key                 	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -259,12 +259,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted b value
+PREHOOK: query: describe formatted b_n3 value
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b value
+PREHOOK: Input: default@b_n3
+POSTHOOK: query: describe formatted b_n3 value
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n3
 col_name            	value               	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -278,22 +278,22 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: insert into table b select NULL, NULL from src limit 10
+PREHOOK: query: insert into table b_n3 select NULL, NULL from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@b
-POSTHOOK: query: insert into table b select NULL, NULL from src limit 10
+PREHOOK: Output: default@b_n3
+POSTHOOK: query: insert into table b_n3 select NULL, NULL from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key EXPRESSION []
-POSTHOOK: Lineage: b.value EXPRESSION []
-PREHOOK: query: describe formatted b key
+POSTHOOK: Output: default@b_n3
+POSTHOOK: Lineage: b_n3.key EXPRESSION []
+POSTHOOK: Lineage: b_n3.value EXPRESSION []
+PREHOOK: query: describe formatted b_n3 key
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b key
+PREHOOK: Input: default@b_n3
+POSTHOOK: query: describe formatted b_n3 key
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n3
 col_name            	key                 	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -307,12 +307,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted b value
+PREHOOK: query: describe formatted b_n3 value
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b value
+PREHOOK: Input: default@b_n3
+POSTHOOK: query: describe formatted b_n3 value
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n3
 col_name            	value               	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -326,22 +326,22 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: insert into table b(value) select key+100000 from src limit 10
+PREHOOK: query: insert into table b_n3(value) select key+100000 from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@b
-POSTHOOK: query: insert into table b(value) select key+100000 from src limit 10
+PREHOOK: Output: default@b_n3
+POSTHOOK: query: insert into table b_n3(value) select key+100000 from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key SIMPLE []
-POSTHOOK: Lineage: b.value EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: describe formatted b key
+POSTHOOK: Output: default@b_n3
+POSTHOOK: Lineage: b_n3.key SIMPLE []
+POSTHOOK: Lineage: b_n3.value EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: describe formatted b_n3 key
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b key
+PREHOOK: Input: default@b_n3
+POSTHOOK: query: describe formatted b_n3 key
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n3
 col_name            	key                 	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -355,12 +355,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted b value
+PREHOOK: query: describe formatted b_n3 value
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b value
+PREHOOK: Input: default@b_n3
+POSTHOOK: query: describe formatted b_n3 value
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n3
 col_name            	value               	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -448,22 +448,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part14
 PREHOOK: query: insert into table nzhang_part14 partition(value) 
 select key, value from (
-  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a_n3 
   union all
-  select * from (select 'k2' as key, '' as value from src limit 2)b
+  select * from (select 'k2' as key, '' as value from src limit 2)b_n3
   union all 
-  select * from (select 'k3' as key, ' ' as value from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value from src limit 2)c_n1
 ) T
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_part14
 POSTHOOK: query: insert into table nzhang_part14 partition(value) 
 select key, value from (
-  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a_n3 
   union all
-  select * from (select 'k2' as key, '' as value from src limit 2)b
+  select * from (select 'k2' as key, '' as value from src limit 2)b_n3
   union all 
-  select * from (select 'k3' as key, ' ' as value from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value from src limit 2)c_n1
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -890,112 +890,112 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table srcbucket_mapjoin
+POSTHOOK: query: drop table srcbucket_mapjoin_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n2(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n2
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n2(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: drop table tab_part
+POSTHOOK: Output: default@srcbucket_mapjoin_n2
+PREHOOK: query: drop table tab_part_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tab_part
+POSTHOOK: query: drop table tab_part_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tab_part_n1 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_part_n1
+POSTHOOK: query: CREATE TABLE tab_part_n1 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: drop table srcbucket_mapjoin_part
+POSTHOOK: Output: default@tab_part_n1
+PREHOOK: query: drop table srcbucket_mapjoin_part_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table srcbucket_mapjoin_part
+POSTHOOK: query: drop table srcbucket_mapjoin_part_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n2
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n2
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n2
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n2
+POSTHOOK: Output: default@srcbucket_mapjoin_n2@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n2@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n2@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n2
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n2
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n2@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n2@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n2@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n2@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n2@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n2@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert into table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n2@ds=2008-04-08
+PREHOOK: query: insert into table tab_part_n1 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert into table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n2
+PREHOOK: Input: default@srcbucket_mapjoin_part_n2@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n1@ds=2008-04-08
+POSTHOOK: query: insert into table tab_part_n1 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe formatted tab_part partition (ds='2008-04-08')
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n2@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n1@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n1 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n2)srcbucket_mapjoin_part_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n1 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n2)srcbucket_mapjoin_part_n2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe formatted tab_part_n1 partition (ds='2008-04-08')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tab_part
-POSTHOOK: query: describe formatted tab_part partition (ds='2008-04-08')
+PREHOOK: Input: default@tab_part_n1
+POSTHOOK: query: describe formatted tab_part_n1 partition (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tab_part
+POSTHOOK: Input: default@tab_part_n1
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -1007,7 +1007,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08]        	 
 Database:           	default             	 
-Table:              	tab_part            	 
+Table:              	tab_part_n1         	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -1027,34 +1027,34 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tab_n0(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_n0
+POSTHOOK: query: CREATE TABLE tab_n0(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert into table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n0
+PREHOOK: query: insert into table tab_n0 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert into table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n2
+PREHOOK: Input: default@srcbucket_mapjoin_n2@ds=2008-04-08
+PREHOOK: Output: default@tab_n0@ds=2008-04-08
+POSTHOOK: query: insert into table tab_n0 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe formatted tab partition (ds='2008-04-08')
+POSTHOOK: Input: default@srcbucket_mapjoin_n2
+POSTHOOK: Input: default@srcbucket_mapjoin_n2@ds=2008-04-08
+POSTHOOK: Output: default@tab_n0@ds=2008-04-08
+POSTHOOK: Lineage: tab_n0 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n2)srcbucket_mapjoin_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n0 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n2)srcbucket_mapjoin_n2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe formatted tab_n0 partition (ds='2008-04-08')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tab
-POSTHOOK: query: describe formatted tab partition (ds='2008-04-08')
+PREHOOK: Input: default@tab_n0
+POSTHOOK: query: describe formatted tab_n0 partition (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tab
+POSTHOOK: Input: default@tab_n0
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -1066,7 +1066,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08]        	 
 Database:           	default             	 
-Table:              	tab                 	 
+Table:              	tab_n0              	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -1147,22 +1147,22 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: insert into table nzhang_part14 partition(ds, hr) 
 select key, value, ds, hr from (
-  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a_n3 
   union all
-  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b
+  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b_n3
   union all 
-  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c_n1
 ) T
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_part14
 POSTHOOK: query: insert into table nzhang_part14 partition(ds, hr) 
 select key, value, ds, hr from (
-  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a_n3 
   union all
-  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b
+  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b_n3
   union all 
-  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c_n1
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -1353,97 +1353,97 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@a
-PREHOOK: Output: default@a
-POSTHOOK: query: drop table a
+PREHOOK: Input: default@a_n3
+PREHOOK: Output: default@a_n3
+POSTHOOK: query: drop table a_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@a
-POSTHOOK: Output: default@a
-PREHOOK: query: create table a (key string, value string)
+POSTHOOK: Input: default@a_n3
+POSTHOOK: Output: default@a_n3
+PREHOOK: query: create table a_n3 (key string, value string)
 partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a (key string, value string)
+PREHOOK: Output: default@a_n3
+POSTHOOK: query: create table a_n3 (key string, value string)
 partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: drop table b
+POSTHOOK: Output: default@a_n3
+PREHOOK: query: drop table b_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@b
-PREHOOK: Output: default@b
-POSTHOOK: query: drop table b
+PREHOOK: Input: default@b_n3
+PREHOOK: Output: default@b_n3
+POSTHOOK: query: drop table b_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@b
-POSTHOOK: Output: default@b
-PREHOOK: query: create table b (key string, value string)
+POSTHOOK: Input: default@b_n3
+POSTHOOK: Output: default@b_n3
+PREHOOK: query: create table b_n3 (key string, value string)
 partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b (key string, value string)
+PREHOOK: Output: default@b_n3
+POSTHOOK: query: create table b_n3 (key string, value string)
 partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: drop table c
+POSTHOOK: Output: default@b_n3
+PREHOOK: query: drop table c_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table c
+POSTHOOK: query: drop table c_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table c (key string, value string)
+PREHOOK: query: create table c_n1 (key string, value string)
 partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@c
-POSTHOOK: query: create table c (key string, value string)
+PREHOOK: Output: default@c_n1
+POSTHOOK: query: create table c_n1 (key string, value string)
 partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@c
+POSTHOOK: Output: default@c_n1
 PREHOOK: query: FROM srcpart 
-INSERT into TABLE a PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
-INSERT into TABLE b PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
-INSERT into TABLE c PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0
+INSERT into TABLE a_n3 PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
+INSERT into TABLE b_n3 PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
+INSERT into TABLE c_n1 PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@a@ds=2010-03-11
-PREHOOK: Output: default@b@ds=2010-04-11
-PREHOOK: Output: default@c@ds=2010-05-11
+PREHOOK: Output: default@a_n3@ds=2010-03-11
+PREHOOK: Output: default@b_n3@ds=2010-04-11
+PREHOOK: Output: default@c_n1@ds=2010-05-11
 POSTHOOK: query: FROM srcpart 
-INSERT into TABLE a PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
-INSERT into TABLE b PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
-INSERT into TABLE c PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0
+INSERT into TABLE a_n3 PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
+INSERT into TABLE b_n3 PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
+INSERT into TABLE c_n1 PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@a@ds=2010-03-11/hr=11
-POSTHOOK: Output: default@a@ds=2010-03-11/hr=12
-POSTHOOK: Output: default@b@ds=2010-04-11/hr=12
-POSTHOOK: Output: default@c@ds=2010-05-11/hr=11
-POSTHOOK: Output: default@c@ds=2010-05-11/hr=12
-POSTHOOK: Lineage: a PARTITION(ds=2010-03-11,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a PARTITION(ds=2010-03-11,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: a PARTITION(ds=2010-03-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a PARTITION(ds=2010-03-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: b PARTITION(ds=2010-04-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b PARTITION(ds=2010-04-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: c PARTITION(ds=2010-05-11,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: c PARTITION(ds=2010-05-11,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: c PARTITION(ds=2010-05-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: c PARTITION(ds=2010-05-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select key from a
+POSTHOOK: Output: default@a_n3@ds=2010-03-11/hr=11
+POSTHOOK: Output: default@a_n3@ds=2010-03-11/hr=12
+POSTHOOK: Output: default@b_n3@ds=2010-04-11/hr=12
+POSTHOOK: Output: default@c_n1@ds=2010-05-11/hr=11
+POSTHOOK: Output: default@c_n1@ds=2010-05-11/hr=12
+POSTHOOK: Lineage: a_n3 PARTITION(ds=2010-03-11,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n3 PARTITION(ds=2010-03-11,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n3 PARTITION(ds=2010-03-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n3 PARTITION(ds=2010-03-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n3 PARTITION(ds=2010-04-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n3 PARTITION(ds=2010-04-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: c_n1 PARTITION(ds=2010-05-11,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: c_n1 PARTITION(ds=2010-05-11,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: c_n1 PARTITION(ds=2010-05-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: c_n1 PARTITION(ds=2010-05-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select key from a_n3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key from a
+POSTHOOK: query: explain select key from a_n3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1454,15 +1454,15 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: a
+          alias: a_n3
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: explain select value from b
+PREHOOK: query: explain select value from b_n3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select value from b
+POSTHOOK: query: explain select value from b_n3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1473,15 +1473,15 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: b
+          alias: b_n3
           Select Operator
             expressions: value (type: string)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: explain select key from b
+PREHOOK: query: explain select key from b_n3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key from b
+POSTHOOK: query: explain select key from b_n3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1492,15 +1492,15 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: b
+          alias: b_n3
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: explain select value from c
+PREHOOK: query: explain select value from c_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select value from c
+POSTHOOK: query: explain select value from c_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1511,15 +1511,15 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: c
+          alias: c_n1
           Select Operator
             expressions: value (type: string)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: explain select key from c
+PREHOOK: query: explain select key from c_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key from c
+POSTHOOK: query: explain select key from c_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1530,7 +1530,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: c
+          alias: c_n1
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0

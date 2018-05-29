@@ -476,29 +476,29 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 248718130534	1995744891643
-PREHOOK: query: CREATE TABLE test_1 (member DECIMAL , attr DECIMAL) STORED AS ORC
+PREHOOK: query: CREATE TABLE test_1_n3 (member DECIMAL , attr DECIMAL) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_1
-POSTHOOK: query: CREATE TABLE test_1 (member DECIMAL , attr DECIMAL) STORED AS ORC
+PREHOOK: Output: default@test_1_n3
+POSTHOOK: query: CREATE TABLE test_1_n3 (member DECIMAL , attr DECIMAL) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_1
-PREHOOK: query: INSERT INTO test_1 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0)
+POSTHOOK: Output: default@test_1_n3
+PREHOOK: query: INSERT INTO test_1_n3 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_1
-POSTHOOK: query: INSERT INTO test_1 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0)
+PREHOOK: Output: default@test_1_n3
+POSTHOOK: query: INSERT INTO test_1_n3 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.attr SCRIPT []
-POSTHOOK: Lineage: test_1.member SCRIPT []
+POSTHOOK: Output: default@test_1_n3
+POSTHOOK: Lineage: test_1_n3.attr SCRIPT []
+POSTHOOK: Lineage: test_1_n3.member SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -513,7 +513,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
+            alias: test_1_n3
             Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -560,22 +560,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
+PREHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
+POSTHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
 3
 4
 4
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
+SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
+SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -590,7 +590,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
+            alias: test_1_n3
             Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -637,22 +637,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
+PREHOOK: query: SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
+POSTHOOK: query: SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
 3
 4
 1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -667,7 +667,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_1
+            alias: test_1_n3
             Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -714,40 +714,40 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
+PREHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
+POSTHOOK: query: SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_1_n3
 #### A masked pattern was here ####
 2
 2
 4
-PREHOOK: query: CREATE TABLE test_2 (member BIGINT, attr BIGINT) STORED AS ORC
+PREHOOK: query: CREATE TABLE test_2_n3 (member BIGINT, attr BIGINT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_2
-POSTHOOK: query: CREATE TABLE test_2 (member BIGINT, attr BIGINT) STORED AS ORC
+PREHOOK: Output: default@test_2_n3
+POSTHOOK: query: CREATE TABLE test_2_n3 (member BIGINT, attr BIGINT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_2
-PREHOOK: query: INSERT INTO test_2 VALUES (3,1),(2,2),(1,3)
+POSTHOOK: Output: default@test_2_n3
+PREHOOK: query: INSERT INTO test_2_n3 VALUES (3,1),(2,2),(1,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_2
-POSTHOOK: query: INSERT INTO test_2 VALUES (3,1),(2,2),(1,3)
+PREHOOK: Output: default@test_2_n3
+POSTHOOK: query: INSERT INTO test_2_n3 VALUES (3,1),(2,2),(1,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_2
-POSTHOOK: Lineage: test_2.attr SCRIPT []
-POSTHOOK: Lineage: test_2.member SCRIPT []
+POSTHOOK: Output: default@test_2_n3
+POSTHOOK: Lineage: test_2_n3.attr SCRIPT []
+POSTHOOK: Lineage: test_2_n3.member SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
+SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
+SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -762,7 +762,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_2
+            alias: test_2_n3
             Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -809,22 +809,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
+PREHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_2
+PREHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
+POSTHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_2
+POSTHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
 3
 4
 4
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
+SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
+SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -839,7 +839,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_2
+            alias: test_2_n3
             Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -886,22 +886,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
+PREHOOK: query: SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_2
+PREHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
+POSTHOOK: query: SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_2
+POSTHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
 3
 4
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
+SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
+SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -916,7 +916,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test_2
+            alias: test_2_n3
             Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -963,13 +963,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
+PREHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_2
+PREHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
+POSTHOOK: query: SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_2
+POSTHOOK: Input: default@test_2_n3
 #### A masked pattern was here ####
 NULL
 NULL

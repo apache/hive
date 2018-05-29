@@ -16,7 +16,7 @@ drop database if exists test_repldump_adminpriv cascade;
 set user.name=ruser1;
 show role grant user ruser1;
 
-create database test_repldump_adminpriv;
+create database test_repldump_adminpriv with DBPROPERTIES ('repl.source.for' = '1,2,3');
 create table test_repldump_adminpriv.dummy_tbl(a int) partitioned by (b string);
 show tables test_repldump_adminpriv;
 

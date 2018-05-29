@@ -268,12 +268,12 @@ explain extended select count(*),cstring1 from alltypesorc where cstring1='biolo
                                                     or cstring1='topology' group by cstring1 order by cstring1;
 
 
-drop table if exists cast_string_to_int_1;
-drop table if exists cast_string_to_int_2;
+drop table if exists cast_string_to_int_1_n0;
+drop table if exists cast_string_to_int_2_n0;
 
-create table cast_string_to_int_1 as select CAST(CAST(key as float) as string),value from srcbucket;
-create table cast_string_to_int_2(i int,s string);
-insert overwrite table cast_string_to_int_2 select * from cast_string_to_int_1;
+create table cast_string_to_int_1_n0 as select CAST(CAST(key as float) as string),value from srcbucket;
+create table cast_string_to_int_2_n0(i int,s string);
+insert overwrite table cast_string_to_int_2_n0 select * from cast_string_to_int_1_n0;
 
 --moving ALL_1 system test here
 select all key from src;

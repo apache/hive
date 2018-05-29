@@ -118,6 +118,8 @@ import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.tez.dag.history.logging.proto.DatePartitionedLogger;
+import org.apache.tez.dag.history.logging.proto.ProtoMessageWriter;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -279,14 +281,30 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       }
     }
 
+    private static final int MAX_RETRIES = 2;
     private void writeEvent(HiveHookEventProto event) {
-      try (ProtoMessageWriter<HiveHookEventProto> writer = logger.getWriter(logFileName)) {
-        writer.writeProto(event);
-        // This does not work hence, opening and closing file for every event.
-        // writer.hflush();
-      } catch (IOException e) {
-        LOG.error("Error writing proto message for query {}, eventType: {}: ",
-            event.getHiveQueryId(), event.getEventType(), e);
+      for (int retryCount = 0; retryCount <= MAX_RETRIES; ++retryCount) {
+        try (ProtoMessageWriter<HiveHookEventProto> writer = logger.getWriter(logFileName)) {
+          writer.writeProto(event);
+          // This does not work hence, opening and closing file for every event.
+          // writer.hflush();
+          return;
+        } catch (IOException e) {
+          if (retryCount < MAX_RETRIES) {
+            LOG.warn("Error writing proto message for query {}, eventType: {}, retryCount: {}," +
+                " error: {} ", event.getHiveQueryId(), event.getEventType(), retryCount,
+                e.getMessage());
+          } else {
+            LOG.error("Error writing proto message for query {}, eventType: {}: ",
+                event.getHiveQueryId(), event.getEventType(), e);
+          }
+          try {
+            // 0 seconds, for first retry assuming fs object was closed and open will fix it.
+            Thread.sleep(1000 * retryCount * retryCount);
+          } catch (InterruptedException e1) {
+            LOG.warn("Got interrupted in retry sleep.", e1);
+          }
+        }
       }
     }
 

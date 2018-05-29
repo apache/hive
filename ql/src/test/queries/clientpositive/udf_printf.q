@@ -31,8 +31,8 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '9'
 STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../../data/files/string.txt' INTO TABLE binay_udf;
-create table dest1 (key binary, value int);
-insert overwrite table dest1 select transform(*) using 'cat' as key binary, value int from binay_udf;
-select value, printf("format key: %s", key) from dest1;
-drop table dest1;
+create table dest1_n110 (key binary, value int);
+insert overwrite table dest1_n110 select transform(*) using 'cat' as key binary, value int from binay_udf;
+select value, printf("format key: %s", key) from dest1_n110;
+drop table dest1_n110;
 drop table binary_udf;

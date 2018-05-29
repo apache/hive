@@ -1,14 +1,14 @@
-PREHOOK: query: create table t1(ts_field timestamp, date_field date)
+PREHOOK: query: create table t1_n138(ts_field timestamp, date_field date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(ts_field timestamp, date_field date)
+PREHOOK: Output: default@t1_n138
+POSTHOOK: query: create table t1_n138(ts_field timestamp, date_field date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: explain select * from t1 where ts_field = "2016-01-23 00:00:00"
+POSTHOOK: Output: default@t1_n138
+PREHOOK: query: explain select * from t1_n138 where ts_field = "2016-01-23 00:00:00"
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where ts_field = "2016-01-23 00:00:00"
+POSTHOOK: query: explain select * from t1_n138 where ts_field = "2016-01-23 00:00:00"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -19,7 +19,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n138
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00.0') (type: boolean)
@@ -43,9 +43,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from t1 where date_field = "2016-01-23"
+PREHOOK: query: explain select * from t1_n138 where date_field = "2016-01-23"
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where date_field = "2016-01-23"
+POSTHOOK: query: explain select * from t1_n138 where date_field = "2016-01-23"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -56,7 +56,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n138
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (date_field = DATE'2016-01-23') (type: boolean)
@@ -80,9 +80,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from t1 where ts_field = timestamp '2016-01-23 00:00:00'
+PREHOOK: query: explain select * from t1_n138 where ts_field = timestamp '2016-01-23 00:00:00'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where ts_field = timestamp '2016-01-23 00:00:00'
+POSTHOOK: query: explain select * from t1_n138 where ts_field = timestamp '2016-01-23 00:00:00'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -93,7 +93,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n138
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00.0') (type: boolean)
@@ -117,9 +117,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from t1 where date_field = date '2016-01-23'
+PREHOOK: query: explain select * from t1_n138 where date_field = date '2016-01-23'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where date_field = date '2016-01-23'
+POSTHOOK: query: explain select * from t1_n138 where date_field = date '2016-01-23'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -130,7 +130,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n138
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (date_field = DATE'2016-01-23') (type: boolean)
@@ -154,9 +154,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from t1 where date_field = ts_field
+PREHOOK: query: explain select * from t1_n138 where date_field = ts_field
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where date_field = ts_field
+POSTHOOK: query: explain select * from t1_n138 where date_field = ts_field
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -167,7 +167,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n138
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (CAST( date_field AS TIMESTAMP) = ts_field) (type: boolean)
@@ -191,11 +191,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n138
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n138
+PREHOOK: Output: default@t1_n138
+POSTHOOK: query: drop table t1_n138
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n138
+POSTHOOK: Output: default@t1_n138

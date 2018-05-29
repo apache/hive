@@ -7,18 +7,18 @@ set hive.groupby.skewindata=true;
 SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
-CREATE TABLE srcorc STORED AS ORC AS SELECT * FROM src;
+CREATE TABLE srcorc_n1 STORED AS ORC AS SELECT * FROM src;
 
 -- SORT_QUERY_RESULTS
 
-CREATE TABLE dest1(c1 STRING) STORED AS ORC;
+CREATE TABLE dest1_n154(c1 STRING) STORED AS ORC;
 
 EXPLAIN VECTORIZATION EXPRESSION
-FROM srcorc
-INSERT OVERWRITE TABLE dest1 SELECT substr(srcorc.key,1,1) GROUP BY substr(srcorc.key,1,1);
+FROM srcorc_n1
+INSERT OVERWRITE TABLE dest1_n154 SELECT substr(srcorc_n1.key,1,1) GROUP BY substr(srcorc_n1.key,1,1);
 
-FROM srcorc
-INSERT OVERWRITE TABLE dest1 SELECT substr(srcorc.key,1,1) GROUP BY substr(srcorc.key,1,1);
+FROM srcorc_n1
+INSERT OVERWRITE TABLE dest1_n154 SELECT substr(srcorc_n1.key,1,1) GROUP BY substr(srcorc_n1.key,1,1);
 
-SELECT dest1.* FROM dest1;
+SELECT dest1_n154.* FROM dest1_n154;
 

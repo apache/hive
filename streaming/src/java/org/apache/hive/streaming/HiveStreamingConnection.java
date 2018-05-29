@@ -19,6 +19,7 @@
 package org.apache.hive.streaming;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -89,7 +90,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
  *                                      .withFieldDelimiter(',')
  *                                      .build();
- *
  * // create and open streaming connection (default.src table has to exist already)
  * StreamingConnection connection = HiveStreamingConnection.newBuilder()
  *                                    .withDatabase("default")
@@ -98,19 +98,16 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  *                                    .withRecordWriter(writer)
  *                                    .withHiveConf(hiveConf)
  *                                    .connect();
- *
  * // begin a transaction, write records and commit 1st transaction
  * connection.beginTransaction();
  * connection.write("key1,val1".getBytes());
  * connection.write("key2,val2".getBytes());
  * connection.commitTransaction();
- *
  * // begin another transaction, write more records and commit 2nd transaction
  * connection.beginTransaction();
  * connection.write("key3,val3".getBytes());
  * connection.write("key4,val4".getBytes());
  * connection.commitTransaction();
- *
  * // close the streaming connection
  * connection.close();
  * }
@@ -376,7 +373,7 @@ public class HiveStreamingConnection implements StreamingConnection {
       exists = true;
     } catch (HiveException | TException e) {
       throw new StreamingException("Unable to creation partition for values: " + partitionValues + " connection: " +
-        toConnectionInfoString());
+        toConnectionInfoString(), e);
     }
     return new PartitionInfo(partName, partLocation, exists);
   }
@@ -463,7 +460,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     }
 
     if (currentTransactionBatch.isClosed()) {
-      throw new IllegalStateException("Cannot begin next transaction on a closed streaming connection");
+      throw new StreamingException("Cannot begin next transaction on a closed streaming connection");
     }
 
     if (currentTransactionBatch.remainingTransactions() == 0) {
@@ -497,14 +494,6 @@ public class HiveStreamingConnection implements StreamingConnection {
   }
 
   @Override
-  public void write(final byte[] record) throws StreamingException {
-    checkState();
-    currentTransactionBatch.write(record);
-    connectionStats.incrementRecordsWritten();
-    connectionStats.incrementRecordsSize(record.length);
-  }
-
-  @Override
   public void beginTransaction() throws StreamingException {
     checkClosedState();
     beginNextTransaction();
@@ -524,6 +513,21 @@ public class HiveStreamingConnection implements StreamingConnection {
     connectionStats.incrementAbortedTransactions();
   }
 
+  @Override
+  public void write(final byte[] record) throws StreamingException {
+    checkState();
+    currentTransactionBatch.write(record);
+  }
+
+  @Override
+  public void write(final InputStream inputStream) throws StreamingException {
+    checkState();
+    currentTransactionBatch.write(inputStream);
+  }
+
+  /**
+   * Close connection
+   */
   @Override
   public void close() {
     if (isConnectionClosed.get()) {
@@ -777,6 +781,24 @@ public class HiveStreamingConnection implements StreamingConnection {
         //this exception indicates that a {@code record} could not be parsed and the
         //caller can decide whether to drop it or send it to dead letter queue.
         //rolling back the txn and retrying won't help since the tuple will be exactly the same
+        //when it's replayed.
+        success = true;
+        throw ex;
+      } finally {
+        markDead(success);
+      }
+    }
+
+    public void write(final InputStream inputStream) throws StreamingException {
+      checkIsClosed();
+      boolean success = false;
+      try {
+        recordWriter.write(getCurrentWriteId(), inputStream);
+        success = true;
+      } catch (SerializationError ex) {
+        //this exception indicates that a {@code record} could not be parsed and the
+        //caller can decide whether to drop it or send it to dead letter queue.
+        //rolling back the txn and retrying won'table help since the tuple will be exactly the same
         //when it's replayed.
         success = true;
         throw ex;

@@ -1,34 +1,34 @@
-PREHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tstparttbl_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tstparttbl
-POSTHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+PREHOOK: Output: default@tstparttbl_n0
+POSTHOOK: query: CREATE TABLE tstparttbl_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tstparttbl
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
+POSTHOOK: Output: default@tstparttbl_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE tstparttbl_n0 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@tstparttbl
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
+PREHOOK: Output: default@tstparttbl_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE tstparttbl_n0 PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tstparttbl
-POSTHOOK: Output: default@tstparttbl@ds=2008-04-09
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
+POSTHOOK: Output: default@tstparttbl_n0
+POSTHOOK: Output: default@tstparttbl_n0@ds=2008-04-09
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl_n0 PARTITION (ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@tstparttbl
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
+PREHOOK: Output: default@tstparttbl_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl_n0 PARTITION (ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tstparttbl
-POSTHOOK: Output: default@tstparttbl@ds=2008-04-08
+POSTHOOK: Output: default@tstparttbl_n0
+POSTHOOK: Output: default@tstparttbl_n0@ds=2008-04-08
 PREHOOK: query: explain
-select count(1) from tstparttbl
+select count(1) from tstparttbl_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(1) from tstparttbl
+select count(1) from tstparttbl_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -39,7 +39,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tstparttbl
+            alias: tstparttbl_n0
             Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
@@ -73,50 +73,50 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1) from tstparttbl
+PREHOOK: query: select count(1) from tstparttbl_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstparttbl
-PREHOOK: Input: default@tstparttbl@ds=2008-04-08
-PREHOOK: Input: default@tstparttbl@ds=2008-04-09
+PREHOOK: Input: default@tstparttbl_n0
+PREHOOK: Input: default@tstparttbl_n0@ds=2008-04-08
+PREHOOK: Input: default@tstparttbl_n0@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from tstparttbl
+POSTHOOK: query: select count(1) from tstparttbl_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstparttbl
-POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
-POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
+POSTHOOK: Input: default@tstparttbl_n0
+POSTHOOK: Input: default@tstparttbl_n0@ds=2008-04-08
+POSTHOOK: Input: default@tstparttbl_n0@ds=2008-04-09
 #### A masked pattern was here ####
 500
-PREHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tstparttbl2_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tstparttbl2
-POSTHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+PREHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: query: CREATE TABLE tstparttbl2_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tstparttbl2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
+POSTHOOK: Output: default@tstparttbl2_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2_n0 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@tstparttbl2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
+PREHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2_n0 PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tstparttbl2
-POSTHOOK: Output: default@tstparttbl2@ds=2008-04-09
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
+POSTHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: Output: default@tstparttbl2_n0@ds=2008-04-09
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2_n0 PARTITION (ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@tstparttbl2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
+PREHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2_n0 PARTITION (ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tstparttbl2
-POSTHOOK: Output: default@tstparttbl2@ds=2008-04-08
+POSTHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: Output: default@tstparttbl2_n0@ds=2008-04-08
 PREHOOK: query: explain
-select count(1) from tstparttbl2
+select count(1) from tstparttbl2_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(1) from tstparttbl2
+select count(1) from tstparttbl2_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -127,7 +127,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tstparttbl2
+            alias: tstparttbl2_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -161,58 +161,58 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1) from tstparttbl2
+PREHOOK: query: select count(1) from tstparttbl2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstparttbl2
-PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
-PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
+PREHOOK: Input: default@tstparttbl2_n0
+PREHOOK: Input: default@tstparttbl2_n0@ds=2008-04-08
+PREHOOK: Input: default@tstparttbl2_n0@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from tstparttbl2
+POSTHOOK: query: select count(1) from tstparttbl2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstparttbl2
-POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
-POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
+POSTHOOK: Input: default@tstparttbl2_n0
+POSTHOOK: Input: default@tstparttbl2_n0@ds=2008-04-08
+POSTHOOK: Input: default@tstparttbl2_n0@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: DROP TABLE tstparttbl
+PREHOOK: query: DROP TABLE tstparttbl_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tstparttbl
-PREHOOK: Output: default@tstparttbl
-POSTHOOK: query: DROP TABLE tstparttbl
+PREHOOK: Input: default@tstparttbl_n0
+PREHOOK: Output: default@tstparttbl_n0
+POSTHOOK: query: DROP TABLE tstparttbl_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tstparttbl
-POSTHOOK: Output: default@tstparttbl
-PREHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+POSTHOOK: Input: default@tstparttbl_n0
+POSTHOOK: Output: default@tstparttbl_n0
+PREHOOK: query: CREATE TABLE tstparttbl_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tstparttbl
-POSTHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+PREHOOK: Output: default@tstparttbl_n0
+POSTHOOK: query: CREATE TABLE tstparttbl_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tstparttbl
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
+POSTHOOK: Output: default@tstparttbl_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE tstparttbl_n0 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@tstparttbl
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
+PREHOOK: Output: default@tstparttbl_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE tstparttbl_n0 PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tstparttbl
-POSTHOOK: Output: default@tstparttbl@ds=2008-04-09
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
+POSTHOOK: Output: default@tstparttbl_n0
+POSTHOOK: Output: default@tstparttbl_n0@ds=2008-04-09
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl_n0 PARTITION (ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@tstparttbl
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
+PREHOOK: Output: default@tstparttbl_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl_n0 PARTITION (ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tstparttbl
-POSTHOOK: Output: default@tstparttbl@ds=2008-04-08
+POSTHOOK: Output: default@tstparttbl_n0
+POSTHOOK: Output: default@tstparttbl_n0@ds=2008-04-08
 PREHOOK: query: explain
-select count(1) from tstparttbl
+select count(1) from tstparttbl_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(1) from tstparttbl
+select count(1) from tstparttbl_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -223,7 +223,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tstparttbl
+            alias: tstparttbl_n0
             Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               Statistics: Num rows: 120 Data size: 58120 Basic stats: PARTIAL Column stats: NONE
@@ -257,58 +257,58 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1) from tstparttbl
+PREHOOK: query: select count(1) from tstparttbl_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstparttbl
-PREHOOK: Input: default@tstparttbl@ds=2008-04-08
-PREHOOK: Input: default@tstparttbl@ds=2008-04-09
+PREHOOK: Input: default@tstparttbl_n0
+PREHOOK: Input: default@tstparttbl_n0@ds=2008-04-08
+PREHOOK: Input: default@tstparttbl_n0@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from tstparttbl
+POSTHOOK: query: select count(1) from tstparttbl_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstparttbl
-POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
-POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
+POSTHOOK: Input: default@tstparttbl_n0
+POSTHOOK: Input: default@tstparttbl_n0@ds=2008-04-08
+POSTHOOK: Input: default@tstparttbl_n0@ds=2008-04-09
 #### A masked pattern was here ####
 500
-PREHOOK: query: DROP TABLE tstparttbl2
+PREHOOK: query: DROP TABLE tstparttbl2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tstparttbl2
-PREHOOK: Output: default@tstparttbl2
-POSTHOOK: query: DROP TABLE tstparttbl2
+PREHOOK: Input: default@tstparttbl2_n0
+PREHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: query: DROP TABLE tstparttbl2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tstparttbl2
-POSTHOOK: Output: default@tstparttbl2
-PREHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+POSTHOOK: Input: default@tstparttbl2_n0
+POSTHOOK: Output: default@tstparttbl2_n0
+PREHOOK: query: CREATE TABLE tstparttbl2_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tstparttbl2
-POSTHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+PREHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: query: CREATE TABLE tstparttbl2_n0(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tstparttbl2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
+POSTHOOK: Output: default@tstparttbl2_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2_n0 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@tstparttbl2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
+PREHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2_n0 PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tstparttbl2
-POSTHOOK: Output: default@tstparttbl2@ds=2008-04-09
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
+POSTHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: Output: default@tstparttbl2_n0@ds=2008-04-09
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2_n0 PARTITION (ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@tstparttbl2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
+PREHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE tstparttbl2_n0 PARTITION (ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@tstparttbl2
-POSTHOOK: Output: default@tstparttbl2@ds=2008-04-08
+POSTHOOK: Output: default@tstparttbl2_n0
+POSTHOOK: Output: default@tstparttbl2_n0@ds=2008-04-08
 PREHOOK: query: explain
-select count(1) from tstparttbl2
+select count(1) from tstparttbl2_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(1) from tstparttbl2
+select count(1) from tstparttbl2_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -319,7 +319,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tstparttbl2
+            alias: tstparttbl2_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -353,16 +353,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1) from tstparttbl2
+PREHOOK: query: select count(1) from tstparttbl2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstparttbl2
-PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
-PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
+PREHOOK: Input: default@tstparttbl2_n0
+PREHOOK: Input: default@tstparttbl2_n0@ds=2008-04-08
+PREHOOK: Input: default@tstparttbl2_n0@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from tstparttbl2
+POSTHOOK: query: select count(1) from tstparttbl2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstparttbl2
-POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
-POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
+POSTHOOK: Input: default@tstparttbl2_n0
+POSTHOOK: Input: default@tstparttbl2_n0@ds=2008-04-08
+POSTHOOK: Input: default@tstparttbl2_n0@ds=2008-04-09
 #### A masked pattern was here ####
 0

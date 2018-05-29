@@ -23,6 +23,7 @@ import java.util.Arrays;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Cast a decimal to a decimal, accounting for precision and scale changes.
@@ -56,7 +57,7 @@ public class CastDecimalToDecimal extends VectorExpression {
    */
   protected void convert(DecimalColumnVector outputColVector, DecimalColumnVector inputColVector, int i) {
     // The set routine enforces precision and scale.
-    outputColVector.vector[i].set(inputColVector.vector[i]);
+    outputColVector.set(i, inputColVector.vector[i]);
   }
 
   /**
@@ -66,7 +67,7 @@ public class CastDecimalToDecimal extends VectorExpression {
    * respectively.
    */
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);

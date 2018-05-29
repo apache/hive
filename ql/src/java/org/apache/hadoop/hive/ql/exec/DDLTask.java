@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
 import java.io.BufferedWriter;
@@ -53,7 +52,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -74,7 +77,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -149,7 +151,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
 import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
@@ -163,6 +164,7 @@ import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
+import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
@@ -211,7 +213,7 @@ import org.apache.hadoop.hive.ql.plan.DropWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
-import org.apache.hadoop.hive.ql.plan.InsertTableDesc;
+import org.apache.hadoop.hive.ql.plan.InsertCommitHookDesc;
 import org.apache.hadoop.hive.ql.plan.KillQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
@@ -291,10 +293,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ListenableFuture;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
 /**
  * DDLTask implementation.
@@ -602,9 +633,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (cacheMetadataDesc != null) {
         return cacheMetadata(db, cacheMetadataDesc);
       }
-      InsertTableDesc insertTableDesc = work.getInsertTableDesc();
-      if (insertTableDesc != null) {
-        return insertCommitWork(db, insertTableDesc);
+      InsertCommitHookDesc insertCommitHookDesc = work.getInsertCommitHookDesc();
+      if (insertCommitHookDesc != null) {
+        return insertCommitWork(db, insertCommitHookDesc);
       }
       PreInsertTableDesc preInsertTableDesc = work.getPreInsertTableDesc();
       if (preInsertTableDesc != null) {
@@ -860,22 +891,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int insertCommitWork(Hive db, InsertTableDesc insertTableDesc) throws MetaException {
+  private int insertCommitWork(Hive db, InsertCommitHookDesc insertCommitHookDesc) throws MetaException {
     boolean failed = true;
-    HiveMetaHook hook = insertTableDesc.getTable().getStorageHandler().getMetaHook();
+    HiveMetaHook hook = insertCommitHookDesc.getTable().getStorageHandler().getMetaHook();
     if (hook == null || !(hook instanceof DefaultHiveMetaHook)) {
       return 0;
     }
     DefaultHiveMetaHook hiveMetaHook = (DefaultHiveMetaHook) hook;
     try {
-      hiveMetaHook.commitInsertTable(insertTableDesc.getTable().getTTable(),
-              insertTableDesc.isOverwrite()
+      hiveMetaHook.commitInsertTable(insertCommitHookDesc.getTable().getTTable(),
+              insertCommitHookDesc.isOverwrite()
       );
       failed = false;
     } finally {
       if (failed) {
-        hiveMetaHook.rollbackInsertTable(insertTableDesc.getTable().getTTable(),
-                insertTableDesc.isOverwrite()
+        hiveMetaHook.rollbackInsertTable(insertCommitHookDesc.getTable().getTTable(),
+                insertCommitHookDesc.isOverwrite()
         );
       }
     }
@@ -1556,10 +1587,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  private void deleteDir(Path dir) throws HiveException {
+  private void deleteDir(Path dir, Database db) throws HiveException {
     try {
       Warehouse wh = new Warehouse(conf);
-      wh.deleteDir(dir, true);
+      wh.deleteDir(dir, true, db);
     } catch (MetaException e) {
       throw new HiveException(e);
     }
@@ -1814,7 +1845,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If a failure occurs here, the directory containing the original files
     // will not be deleted. The user will run ARCHIVE again to clear this up
     if(pathExists(intermediateOriginalDir)) {
-      deleteDir(intermediateOriginalDir);
+      deleteDir(intermediateOriginalDir, db.getDatabase(tbl.getDbName()));
     }
 
     if(recovery) {
@@ -2020,7 +2051,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If a failure happens here, the intermediate archive files won't be
     // deleted. The user will need to call unarchive again to clear those up.
     if(pathExists(intermediateArchivedDir)) {
-      deleteDir(intermediateArchivedDir);
+      deleteDir(intermediateArchivedDir, db.getDatabase(tbl.getDbName()));
     }
 
     if(recovery) {
@@ -3729,6 +3760,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       NotNullConstraint nnInfo = null;
       DefaultConstraint dInfo = null;
       CheckConstraint cInfo = null;
+      StorageHandlerInfo storageHandlerInfo = null;
       if (descTbl.isExt() || descTbl.isFormatted()) {
         pkInfo = db.getPrimaryKeys(tbl.getDbName(), tbl.getTableName());
         fkInfo = db.getForeignKeys(tbl.getDbName(), tbl.getTableName());
@@ -3736,6 +3768,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         nnInfo = db.getNotNullConstraints(tbl.getDbName(), tbl.getTableName());
         dInfo = db.getDefaultConstraints(tbl.getDbName(), tbl.getTableName());
         cInfo = db.getCheckConstraints(tbl.getDbName(), tbl.getTableName());
+        storageHandlerInfo = db.getStorageHandlerInfo(tbl);
       }
       fixDecimalColumnTypeName(cols);
       // In case the query is served by HiveServer2, don't pad it with spaces,
@@ -3744,7 +3777,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       formatter.describeTable(outStream, colPath, tableName, tbl, part,
           cols, descTbl.isFormatted(), descTbl.isExt(),
           isOutputPadded, colStats,
-          pkInfo, fkInfo, ukInfo, nnInfo, dInfo, cInfo);
+          pkInfo, fkInfo, ukInfo, nnInfo, dInfo, cInfo, storageHandlerInfo);
 
       LOG.debug("DDLTask: written data for {}", tableName);
 
@@ -4297,6 +4330,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       tbl.setStoredAsSubDirectories(alterTbl.isStoredAsSubDirectories());
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.OWNER) {
+      if (alterTbl.getOwnerPrincipal() != null) {
+        tbl.setOwner(alterTbl.getOwnerPrincipal().getName());
+        tbl.setOwnerType(alterTbl.getOwnerPrincipal().getType());
+      }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERSKEWEDLOCATION) {
       // process location one-by-one
       Map<List<String>,String> locMaps = alterTbl.getSkewedLocations();
@@ -4440,7 +4478,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Boolean isToMmTable = AcidUtils.isToInsertOnlyTable(tbl, alterTbl.getProps());
       if (isToMmTable != null) {
         if (!isFromMmTable && isToMmTable) {
-          result = generateAddMmTasks(tbl, alterTbl.getWriteId());
+          if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS)) {
+            result = generateAddMmTasks(tbl, alterTbl.getWriteId());
+          } else {
+            if (tbl.getPartitionKeys().size() > 0) {
+              Hive db = getHive();
+              PartitionIterable parts = new PartitionIterable(db, tbl, null,
+                  HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+              Iterator<Partition> partIter = parts.iterator();
+              while (partIter.hasNext()) {
+                Partition part0 = partIter.next();
+                checkMmLb(part0);
+              }
+            } else {
+              checkMmLb(tbl);
+            }
+          }
         } else if (isFromMmTable && !isToMmTable) {
           throw new HiveException("Cannot convert an ACID table to non-ACID");
         }

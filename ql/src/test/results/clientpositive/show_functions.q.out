@@ -63,8 +63,10 @@ covar_samp
 crc32
 create_union
 cume_dist
+current_authorizer
 current_database
 current_date
+current_groups
 current_timestamp
 current_user
 date_add
@@ -212,6 +214,7 @@ regr_syy
 repeat
 replace
 replicate_rows
+restrict_information_schema
 reverse
 rlike
 round
@@ -317,8 +320,10 @@ covar_samp
 crc32
 create_union
 cume_dist
+current_authorizer
 current_database
 current_date
+current_groups
 current_timestamp
 current_user
 PREHOOK: query: SHOW FUNCTIONS '.*e$'

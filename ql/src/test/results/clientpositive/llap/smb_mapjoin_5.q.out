@@ -1,56 +1,56 @@
-PREHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: query: create table smb_bucket_1_n2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket_1_n2
+POSTHOOK: query: create table smb_bucket_1_n2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket_1
-PREHOOK: query: create table smb_bucket_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+POSTHOOK: Output: default@smb_bucket_1_n2
+PREHOOK: query: create table smb_bucket_2_n2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket_2
-POSTHOOK: query: create table smb_bucket_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket_2_n2
+POSTHOOK: query: create table smb_bucket_2_n2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket_2
-PREHOOK: query: create table smb_bucket_3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+POSTHOOK: Output: default@smb_bucket_2_n2
+PREHOOK: query: create table smb_bucket_3_n2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket_3
-POSTHOOK: query: create table smb_bucket_3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket_3_n2
+POSTHOOK: query: create table smb_bucket_3_n2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket_3
-PREHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1
+POSTHOOK: Output: default@smb_bucket_3_n2
+PREHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1
+PREHOOK: Output: default@smb_bucket_1_n2
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_bucket_1
-PREHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2
+POSTHOOK: Output: default@smb_bucket_1_n2
+PREHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_bucket_2
-POSTHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2
+PREHOOK: Output: default@smb_bucket_2_n2
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_bucket_2
-PREHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3
+POSTHOOK: Output: default@smb_bucket_2_n2
+PREHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_bucket_3
-POSTHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3
+PREHOOK: Output: default@smb_bucket_3_n2
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_bucket_3
+POSTHOOK: Output: default@smb_bucket_3_n2
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -151,23 +151,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -268,23 +268,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -376,17 +376,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 1	val_1	NULL	NULL	NULL	NULL
 10	val_10	NULL	NULL	NULL	NULL
@@ -394,10 +394,10 @@ POSTHOOK: Input: default@smb_bucket_3
 4	val_4	NULL	NULL	NULL	NULL
 5	val_5	NULL	NULL	NULL	NULL
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -489,17 +489,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	17	val_17
@@ -508,10 +508,10 @@ NULL	NULL	NULL	NULL	20	val_20
 NULL	NULL	NULL	NULL	23	val_23
 NULL	NULL	NULL	NULL	4	val_4
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -603,17 +603,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a left outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 1	val_1	NULL	NULL	NULL	NULL
 10	val_10	NULL	NULL	NULL	NULL
@@ -627,10 +627,10 @@ NULL	NULL	NULL	NULL	20	val_20
 NULL	NULL	NULL	NULL	23	val_23
 NULL	NULL	NULL	NULL	4	val_4
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -731,25 +731,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 NULL	NULL	20	val_20	20	val_20
 NULL	NULL	23	val_23	23	val_23
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -841,27 +841,27 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 NULL	NULL	20	val_20	20	val_20
 NULL	NULL	23	val_23	23	val_23
 NULL	NULL	25	val_25	NULL	NULL
 NULL	NULL	30	val_30	NULL	NULL
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -953,17 +953,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 NULL	NULL	20	val_20	20	val_20
 NULL	NULL	23	val_23	23	val_23
@@ -972,10 +972,10 @@ NULL	NULL	NULL	NULL	17	val_17
 NULL	NULL	NULL	NULL	19	val_19
 NULL	NULL	NULL	NULL	4	val_4
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1067,17 +1067,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a right outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 NULL	NULL	20	val_20	20	val_20
 NULL	NULL	23	val_23	23	val_23
@@ -1088,10 +1088,10 @@ NULL	NULL	NULL	NULL	17	val_17
 NULL	NULL	NULL	NULL	19	val_19
 NULL	NULL	NULL	NULL	4	val_4
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1192,25 +1192,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 NULL	NULL	20	val_20	20	val_20
 NULL	NULL	23	val_23	23	val_23
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1302,17 +1302,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key left outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 1	val_1	NULL	NULL	NULL	NULL
 10	val_10	NULL	NULL	NULL	NULL
@@ -1324,10 +1324,10 @@ NULL	NULL	23	val_23	23	val_23
 NULL	NULL	25	val_25	NULL	NULL
 NULL	NULL	30	val_30	NULL	NULL
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1419,17 +1419,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key right outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 NULL	NULL	20	val_20	20	val_20
 NULL	NULL	23	val_23	23	val_23
@@ -1438,10 +1438,10 @@ NULL	NULL	NULL	NULL	17	val_17
 NULL	NULL	NULL	NULL	19	val_19
 NULL	NULL	NULL	NULL	4	val_4
 PREHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1533,17 +1533,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+PREHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n2
+PREHOOK: Input: default@smb_bucket_2_n2
+PREHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
+POSTHOOK: query: select /*+mapjoin(a,c)*/ * from smb_bucket_1_n2 a full outer join smb_bucket_2_n2 b on a.key = b.key full outer join smb_bucket_3_n2 c on b.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n2
+POSTHOOK: Input: default@smb_bucket_2_n2
+POSTHOOK: Input: default@smb_bucket_3_n2
 #### A masked pattern was here ####
 1	val_1	NULL	NULL	NULL	NULL
 10	val_10	NULL	NULL	NULL	NULL

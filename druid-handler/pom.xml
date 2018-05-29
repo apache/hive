@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -362,6 +362,7 @@
                       <include>org.roaringbitmap:*</include>
                       <include>org.apache.derby:*</include>
                       <include>org.asynchttpclient:*</include>
+                      <include>org.antlr:*</include>
                     </includes>
                   </artifactSet>
                   <filters>
@@ -371,6 +372,7 @@
                         <exclude>META-INF/*.SF</exclude>
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
+			<exclude>static/</exclude>
                       </excludes>
                     </filter>
                   </filters>

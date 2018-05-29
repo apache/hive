@@ -1,42 +1,42 @@
-PREHOOK: query: CREATE TABLE T1_text(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_text_n9(key INT, value INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text
-POSTHOOK: query: CREATE TABLE T1_text(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_text_n9
+POSTHOOK: query: CREATE TABLE T1_text_n9(key INT, value INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text
+POSTHOOK: Output: default@T1_text_n9
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text_n9
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1_text
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text
+PREHOOK: Output: default@t1_text_n9
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text_n9
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1_text
-PREHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+POSTHOOK: Output: default@t1_text_n9
+PREHOOK: query: CREATE TABLE T1_n112 STORED AS ORC AS SELECT * FROM T1_text_n9
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@t1_text
+PREHOOK: Input: default@t1_text_n9
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+PREHOOK: Output: default@T1_n112
+POSTHOOK: query: CREATE TABLE T1_n112 STORED AS ORC AS SELECT * FROM T1_text_n9
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@t1_text
+POSTHOOK: Input: default@t1_text_n9
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1_text)t1_text.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: t1.value SIMPLE [(t1_text)t1_text.FieldSchema(name:value, type:int, comment:null), ]
-t1_text.key	t1_text.value
+POSTHOOK: Output: default@T1_n112
+POSTHOOK: Lineage: t1_n112.key SIMPLE [(t1_text_n9)t1_text_n9.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: t1_n112.value SIMPLE [(t1_text_n9)t1_text_n9.FieldSchema(name:value, type:int, comment:null), ]
+t1_text_n9.key	t1_text_n9.value
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
@@ -61,7 +61,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n112
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -183,20 +183,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n112
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n112
 #### A masked pattern was here ####
 key	value	grouping__id	_c3
 1	NULL	1	2
@@ -205,14 +205,14 @@ key	value	grouping__id	_c3
 4	NULL	1	1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
@@ -237,7 +237,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n112
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -357,20 +357,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n112
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n112
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n112
 #### A masked pattern was here ####
 key	value	grouping__id	_c3
 1	NULL	1	2

@@ -20,6 +20,7 @@ package org.apache.hive.streaming;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -60,43 +62,50 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractRecordWriter implements RecordWriter {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractRecordWriter.class.getName());
 
+  private static final String DEFAULT_LINE_DELIMITER_PATTERN = "[\r\n]";
   protected HiveConf conf;
-  private StreamingConnection conn;
+  protected StreamingConnection conn;
   protected Table table;
-  List<String> inputColumns;
-  List<String> inputTypes;
-  private String fullyQualifiedTableName;
-  private Map<String, List<RecordUpdater>> updaters = new HashMap<>();
-  private Map<String, Path> partitionPaths = new HashMap<>();
-  private Set<String> addedPartitions = new HashSet<>();
+  protected List<String> inputColumns;
+  protected List<String> inputTypes;
+  protected String fullyQualifiedTableName;
+  protected Map<String, List<RecordUpdater>> updaters = new HashMap<>();
+  protected Map<String, Path> partitionPaths = new HashMap<>();
+  protected Set<String> addedPartitions = new HashSet<>();
   // input OI includes table columns + partition columns
-  private StructObjectInspector inputRowObjectInspector;
+  protected StructObjectInspector inputRowObjectInspector;
   // output OI strips off the partition columns and retains other columns
-  private ObjectInspector outputRowObjectInspector;
-  private List<String> partitionColumns = new ArrayList<>();
-  private ObjectInspector[] partitionObjInspectors = null;
-  private StructField[] partitionStructFields = null;
-  private Object[] partitionFieldData;
-  private ObjectInspector[] bucketObjInspectors = null;
-  private StructField[] bucketStructFields = null;
-  private Object[] bucketFieldData;
-  private List<Integer> bucketIds = new ArrayList<>();
-  private int totalBuckets;
-  private String defaultPartitionName;
-  private boolean isBucketed;
-  private AcidOutputFormat<?, ?> acidOutputFormat;
-  private Long curBatchMinWriteId;
-  private Long curBatchMaxWriteId;
-  private HeapMemoryMonitor heapMemoryMonitor;
+  protected ObjectInspector outputRowObjectInspector;
+  protected List<String> partitionColumns = new ArrayList<>();
+  protected ObjectInspector[] partitionObjInspectors = null;
+  protected StructField[] partitionStructFields = null;
+  protected Object[] partitionFieldData;
+  protected ObjectInspector[] bucketObjInspectors = null;
+  protected StructField[] bucketStructFields = null;
+  protected Object[] bucketFieldData;
+  protected List<Integer> bucketIds = new ArrayList<>();
+  protected int totalBuckets;
+  protected String defaultPartitionName;
+  protected boolean isBucketed;
+  protected AcidOutputFormat<?, ?> acidOutputFormat;
+  protected Long curBatchMinWriteId;
+  protected Long curBatchMaxWriteId;
+  protected final String lineDelimiter;
+  protected HeapMemoryMonitor heapMemoryMonitor;
   // if low memory canary is set and if records after set canary exceeds threshold, trigger a flush.
   // This is to avoid getting notified of low memory too often and flushing too often.
-  private AtomicBoolean lowMemoryCanary;
-  private long ingestSizeBytes = 0;
-  private boolean autoFlush;
-  private float memoryUsageThreshold;
-  private long ingestSizeThreshold;
+  protected AtomicBoolean lowMemoryCanary;
+  protected long ingestSizeBytes = 0;
+  protected boolean autoFlush;
+  protected float memoryUsageThreshold;
+  protected long ingestSizeThreshold;
 
-  private static class OrcMemoryPressureMonitor implements HeapMemoryMonitor.Listener {
+  public AbstractRecordWriter(final String lineDelimiter) {
+    this.lineDelimiter = lineDelimiter == null || lineDelimiter.isEmpty() ?
+      DEFAULT_LINE_DELIMITER_PATTERN : lineDelimiter;
+  }
+
+  protected static class OrcMemoryPressureMonitor implements HeapMemoryMonitor.Listener {
     private static final Logger LOG = LoggerFactory.getLogger(OrcMemoryPressureMonitor.class.getName());
     private final AtomicBoolean lowMemoryCanary;
 
@@ -119,31 +128,41 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     if (conn == null) {
       throw new StreamingException("Streaming connection cannot be null during record writer initialization");
     }
+    this.conn = conn;
+    this.curBatchMinWriteId = minWriteId;
+    this.curBatchMaxWriteId = maxWriteId;
+    this.conf = conn.getHiveConf();
+    this.defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    this.table = conn.getTable();
+    this.inputColumns = table.getSd().getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
+    this.inputTypes = table.getSd().getCols().stream().map(FieldSchema::getType).collect(Collectors.toList());
+    if (conn.isPartitionedTable() && conn.isDynamicPartitioning()) {
+      this.partitionColumns = table.getPartitionKeys().stream().map(FieldSchema::getName)
+        .collect(Collectors.toList());
+      this.inputColumns.addAll(partitionColumns);
+      this.inputTypes
+        .addAll(table.getPartitionKeys().stream().map(FieldSchema::getType).collect(Collectors.toList()));
+    }
+    this.fullyQualifiedTableName = Warehouse.getQualifiedName(table.getDbName(), table.getTableName());
+    String outFormatName = this.table.getSd().getOutputFormat();
     try {
-      this.conn = conn;
-      this.curBatchMinWriteId = minWriteId;
-      this.curBatchMaxWriteId = maxWriteId;
-      this.conf = conn.getHiveConf();
-      this.defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
-      this.table = conn.getTable();
-      this.inputColumns = table.getSd().getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
-      this.inputTypes = table.getSd().getCols().stream().map(FieldSchema::getType).collect(Collectors.toList());
-      if (conn.isPartitionedTable() && conn.isDynamicPartitioning()) {
-        this.partitionColumns = table.getPartitionKeys().stream().map(FieldSchema::getName)
-          .collect(Collectors.toList());
-        this.inputColumns.addAll(partitionColumns);
-        this.inputTypes
-          .addAll(table.getPartitionKeys().stream().map(FieldSchema::getType).collect(Collectors.toList()));
-      }
-      this.fullyQualifiedTableName = Warehouse.getQualifiedName(table.getDbName(), table.getTableName());
-      String outFormatName = this.table.getSd().getOutputFormat();
       this.acidOutputFormat = (AcidOutputFormat<?, ?>) ReflectionUtils
         .newInstance(JavaUtils.loadClass(outFormatName), conf);
-      setupMemoryMonitoring();
     } catch (ClassNotFoundException e) {
-      throw new StreamingException(e.getMessage(), e);
+      String shadePrefix = conf.getVar(HiveConf.ConfVars.HIVE_CLASSLOADER_SHADE_PREFIX);
+      if (shadePrefix != null && !shadePrefix.trim().isEmpty()) {
+        try {
+          LOG.info("Shade prefix: {} specified. Using as fallback to load {}..", shadePrefix, outFormatName);
+          this.acidOutputFormat = (AcidOutputFormat<?, ?>) ReflectionUtils
+            .newInstance(JavaUtils.loadClass(shadePrefix, outFormatName), conf);
+        } catch (ClassNotFoundException e1) {
+          throw new StreamingException(e.getMessage(), e);
+        }
+      } else {
+        throw new StreamingException(e.getMessage(), e);
+      }
     }
-
+    setupMemoryMonitoring();
     try {
       final AbstractSerDe serDe = createSerde();
       this.inputRowObjectInspector = (StructObjectInspector) serDe.getObjectInspector();
@@ -160,7 +179,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
-  private void setupMemoryMonitoring() {
+  protected void setupMemoryMonitoring() {
     this.autoFlush = conf.getBoolVar(HiveConf.ConfVars.HIVE_STREAMING_AUTO_FLUSH_ENABLED);
     this.memoryUsageThreshold = conf.getFloatVar(HiveConf.ConfVars.HIVE_HEAP_MEMORY_MONITOR_USAGE_THRESHOLD);
     this.ingestSizeThreshold = conf.getSizeVar(HiveConf.ConfVars.HIVE_STREAMING_AUTO_FLUSH_CHECK_INTERVAL_SIZE);
@@ -182,7 +201,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
-  private void prepareBucketingFields() {
+  protected void prepareBucketingFields() {
     this.isBucketed = table.getSd().getNumBuckets() > 0;
     // For unbucketed tables we have exactly 1 RecordUpdater (until HIVE-19208) for each AbstractRecordWriter which
     // ends up writing to a file bucket_000000.
@@ -200,7 +219,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
-  private void preparePartitioningFields() {
+  protected void preparePartitioningFields() {
     final int numPartitions = table.getPartitionKeys().size();
     this.partitionFieldData = new Object[numPartitions];
     this.partitionObjInspectors = new ObjectInspector[numPartitions];
@@ -221,12 +240,12 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   /**
    * used to tag error msgs to provided some breadcrumbs
    */
-  private String getWatermark(String partition) {
+  protected String getWatermark(String partition) {
     return partition + " writeIds[" + curBatchMinWriteId + "," + curBatchMaxWriteId + "]";
   }
 
   // return the column numbers of the bucketed columns
-  private List<Integer> getBucketColIDs(List<String> bucketCols, List<FieldSchema> cols) {
+  protected List<Integer> getBucketColIDs(List<String> bucketCols, List<FieldSchema> cols) {
     ArrayList<Integer> result = new ArrayList<>(bucketCols.size());
     HashSet<String> bucketSet = new HashSet<>(bucketCols);
     for (int i = 0; i < cols.size(); i++) {
@@ -256,7 +275,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   public abstract Object encode(byte[] record) throws SerializationError;
 
   // returns the bucket number to which the record belongs to
-  private int getBucket(Object row) {
+  protected int getBucket(Object row) {
     if (!isBucketed) {
       return 0;
     }
@@ -269,7 +288,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       ObjectInspectorUtils.getBucketNumberOld(bucketFields, bucketObjInspectors, totalBuckets);
   }
 
-  private List<String> getPartitionValues(final Object row) {
+  protected List<String> getPartitionValues(final Object row) {
     if (!conn.isPartitionedTable()) {
       return null;
     }
@@ -340,7 +359,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
-  private static ObjectInspector[] getObjectInspectorsForBucketedCols(List<Integer> bucketIds
+  protected static ObjectInspector[] getObjectInspectorsForBucketedCols(List<Integer> bucketIds
     , StructObjectInspector recordObjInspector) {
     ObjectInspector[] result = new ObjectInspector[bucketIds.size()];
 
@@ -352,18 +371,27 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     return result;
   }
 
-  private Object[] getBucketFields(Object row) {
+  protected Object[] getBucketFields(Object row) {
     for (int i = 0; i < bucketIds.size(); i++) {
       bucketFieldData[i] = inputRowObjectInspector.getStructFieldData(row, bucketStructFields[i]);
     }
     return bucketFieldData;
   }
 
-  private Object[] getPartitionFields(Object row) {
+  protected Object[] getPartitionFields(Object row) {
     for (int i = 0; i < partitionFieldData.length; i++) {
       partitionFieldData[i] = inputRowObjectInspector.getStructFieldData(row, partitionStructFields[i]);
     }
     return partitionFieldData;
+  }
+
+  @Override
+  public void write(final long writeId, final InputStream inputStream) throws StreamingException {
+    try (Scanner scanner = new Scanner(inputStream).useDelimiter(lineDelimiter)) {
+      while (scanner.hasNext()) {
+        write(writeId, scanner.next().getBytes());
+      }
+    }
   }
 
   @Override
@@ -375,13 +403,16 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       int bucket = getBucket(encodedRow);
       List<String> partitionValues = getPartitionValues(encodedRow);
       getRecordUpdater(partitionValues, bucket).insert(writeId, encodedRow);
+      // ingest size bytes gets resetted on flush() whereas connection stats is not
+      conn.getConnectionStats().incrementRecordsWritten();
+      conn.getConnectionStats().incrementRecordsSize(record.length);
     } catch (IOException e) {
       throw new StreamingIOFailure("Error writing record in transaction write id ("
         + writeId + ")", e);
     }
   }
 
-  private void checkAutoFlush() throws StreamingIOFailure {
+  protected void checkAutoFlush() throws StreamingIOFailure {
     if (!autoFlush) {
       return;
     }
@@ -413,7 +444,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     return addedPartitions;
   }
 
-  private RecordUpdater createRecordUpdater(final Path partitionPath, int bucketId, Long minWriteId,
+  protected RecordUpdater createRecordUpdater(final Path partitionPath, int bucketId, Long minWriteId,
     Long maxWriteID)
     throws IOException {
     // Initialize table properties from the table parameters. This is required because the table
@@ -432,7 +463,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
         .finalDestination(partitionPath));
   }
 
-  private RecordUpdater getRecordUpdater(List<String> partitionValues, int bucketId) throws StreamingIOFailure {
+  protected RecordUpdater getRecordUpdater(List<String> partitionValues, int bucketId) throws StreamingIOFailure {
     RecordUpdater recordUpdater;
     String key;
     Path destLocation;
@@ -479,7 +510,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     return recordUpdater;
   }
 
-  private List<RecordUpdater> initializeBuckets() {
+  protected List<RecordUpdater> initializeBuckets() {
     List<RecordUpdater> result = new ArrayList<>(totalBuckets);
     for (int bucket = 0; bucket < totalBuckets; bucket++) {
       result.add(bucket, null); //so that get(i) returns null rather than ArrayOutOfBounds
@@ -487,7 +518,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     return result;
   }
 
-  private void logStats(final String prefix) {
+  protected void logStats(final String prefix) {
     int openRecordUpdaters = updaters.values()
       .stream()
       .mapToInt(List::size)

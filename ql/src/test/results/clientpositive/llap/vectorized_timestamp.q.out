@@ -1,29 +1,29 @@
-PREHOOK: query: DROP TABLE IF EXISTS test
+PREHOOK: query: DROP TABLE IF EXISTS test_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS test
+POSTHOOK: query: DROP TABLE IF EXISTS test_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE test(ts TIMESTAMP) STORED AS ORC
+PREHOOK: query: CREATE TABLE test_n2(ts TIMESTAMP) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test
-POSTHOOK: query: CREATE TABLE test(ts TIMESTAMP) STORED AS ORC
+PREHOOK: Output: default@test_n2
+POSTHOOK: query: CREATE TABLE test_n2(ts TIMESTAMP) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test
-PREHOOK: query: INSERT INTO TABLE test VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
+POSTHOOK: Output: default@test_n2
+PREHOOK: query: INSERT INTO TABLE test_n2 VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO TABLE test VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
+PREHOOK: Output: default@test_n2
+POSTHOOK: query: INSERT INTO TABLE test_n2 VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test
-POSTHOOK: Lineage: test.ts SCRIPT []
+POSTHOOK: Output: default@test_n2
+POSTHOOK: Lineage: test_n2.ts SCRIPT []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT ts FROM test
+SELECT ts FROM test_n2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT ts FROM test
+SELECT ts FROM test_n2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: false
@@ -41,7 +41,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test
+                  alias: test_n2
                   Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ts (type: timestamp)
@@ -63,49 +63,49 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT ts FROM test
+PREHOOK: query: SELECT ts FROM test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
+PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT ts FROM test
+POSTHOOK: query: SELECT ts FROM test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 0001-01-01 00:00:00
 9999-12-31 23:59:59.999999999
-PREHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+PREHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
+PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+POSTHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652060 23:59:59.999999999
-PREHOOK: query: SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+PREHOOK: query: SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
+PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+POSTHOOK: query: SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 0001-01-01 00:00:00
-PREHOOK: query: SELECT ts FROM test
+PREHOOK: query: SELECT ts FROM test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
+PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT ts FROM test
+POSTHOOK: query: SELECT ts FROM test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 0001-01-01 00:00:00
 9999-12-31 23:59:59.999999999
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -126,7 +126,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test
+                  alias: test_n2
                   Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -232,20 +232,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+PREHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
+PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test
+POSTHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652060 23:59:59.999999999
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -263,7 +263,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test
+                  alias: test_n2
                   Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -317,20 +317,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+PREHOOK: query: SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
+PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+POSTHOOK: query: SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 0001-01-01 00:00:00
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test
+SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test
+SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -351,7 +351,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test
+                  alias: test_n2
                   Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -457,20 +457,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test
+PREHOOK: query: SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
+PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test
+POSTHOOK: query: SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 9.56332944E10	5000-07-01 13:00:00
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test
+SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test
+SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -491,7 +491,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test
+                  alias: test_n2
                   Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -598,12 +598,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test
+PREHOOK: query: SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test
+PREHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test
+POSTHOOK: query: SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
 2.489106846793884E22	2.489106846793884E22	4.978213693587768E22	1.577690352E11	1.577690352E11	1.577690352E11	2.2311910930235822E11

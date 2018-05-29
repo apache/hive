@@ -1,28 +1,28 @@
-PREHOOK: query: create table dest1(key int, cnt int)
+PREHOOK: query: create table dest1_n99(key int, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: create table dest1(key int, cnt int)
+PREHOOK: Output: default@dest1_n99
+POSTHOOK: query: create table dest1_n99(key int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: create table dest2(key int, cnt int)
+POSTHOOK: Output: default@dest1_n99
+PREHOOK: query: create table dest2_n27(key int, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: create table dest2(key int, cnt int)
+PREHOOK: Output: default@dest2_n27
+POSTHOOK: query: create table dest2_n27(key int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest2_n27
 PREHOOK: query: explain
 from src
-insert overwrite table dest1 select key, count(distinct value) group by key
-insert overwrite table dest2 select key+key, count(distinct value) group by key+key
+insert overwrite table dest1_n99 select key, count(distinct value) group by key
+insert overwrite table dest2_n27 select key+key, count(distinct value) group by key+key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table dest1 select key, count(distinct value) group by key
-insert overwrite table dest2 select key+key, count(distinct value) group by key+key
+insert overwrite table dest1_n99 select key, count(distinct value) group by key
+insert overwrite table dest2_n27 select key+key, count(distinct value) group by key+key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -90,7 +90,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n99
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int)
               outputColumnNames: key, cnt
@@ -115,7 +115,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n99
 
   Stage: Stage-3
     Stats Work
@@ -123,7 +123,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.dest1
+          Table: default.dest1_n99
 
   Stage: Stage-4
     Map Reduce
@@ -154,7 +154,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.dest2
+          Table: default.dest2_n27
 
   Stage: Stage-5
     Map Reduce
@@ -184,7 +184,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest2
+                  name: default.dest2_n27
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int)
               outputColumnNames: key, cnt
@@ -209,7 +209,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n27
 
   Stage: Stage-7
     Map Reduce
@@ -235,30 +235,30 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: from src
-insert overwrite table dest1 select key, count(distinct value) group by key
-insert overwrite table dest2 select key+key, count(distinct value) group by key+key
+insert overwrite table dest1_n99 select key, count(distinct value) group by key
+insert overwrite table dest2_n27 select key+key, count(distinct value) group by key+key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n99
+PREHOOK: Output: default@dest2_n27
 POSTHOOK: query: from src
-insert overwrite table dest1 select key, count(distinct value) group by key
-insert overwrite table dest2 select key+key, count(distinct value) group by key+key
+insert overwrite table dest1_n99 select key, count(distinct value) group by key
+insert overwrite table dest2_n27 select key+key, count(distinct value) group by key+key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.cnt EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.cnt EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from dest1 where key < 10
+POSTHOOK: Output: default@dest1_n99
+POSTHOOK: Output: default@dest2_n27
+POSTHOOK: Lineage: dest1_n99.cnt EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n99.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n27.cnt EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n27.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from dest1_n99 where key < 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n99
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1 where key < 10
+POSTHOOK: query: select * from dest1_n99 where key < 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n99
 #### A masked pattern was here ####
 0	1
 2	1
@@ -266,13 +266,13 @@ POSTHOOK: Input: default@dest1
 5	1
 8	1
 9	1
-PREHOOK: query: select * from dest2 where key < 20 order by key limit 10
+PREHOOK: query: select * from dest2_n27 where key < 20 order by key limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n27
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2 where key < 20 order by key limit 10
+POSTHOOK: query: select * from dest2_n27 where key < 20 order by key limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n27
 #### A masked pattern was here ####
 0	1
 10	1
