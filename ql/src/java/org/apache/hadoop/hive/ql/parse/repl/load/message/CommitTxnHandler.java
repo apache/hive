@@ -49,9 +49,9 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     CommitTxnMessage msg = deserializer.getCommitTxnMessage(context.dmd.getPayload());
     int numEntry = (msg.getTables() == null ? 0 : msg.getTables().size());
     List<Task<? extends Serializable>> tasks = new ArrayList<>();
-    String dbName = (context.dbName == null || context.isDbNameEmpty() ? msg.getDB() : context.dbName);
+    String dbName = context.dbName;
     String tableNamePrev = null;
-    String tblName = null;
+    String tblName = context.tableName;
 
     ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName, context.tableName), context.dbName,
       context.tableName, msg.getTxnId(), ReplTxnWork.OperationType.REPL_COMMIT_TXN, context.eventOnlyReplicationSpec());
@@ -64,14 +64,16 @@ public class CommitTxnHandler extends AbstractMessageHandler {
 
     for (int idx = 0; idx < numEntry; idx++) {
       String actualTblName = msg.getTables().get(idx);
-      String completeName = Table.getCompleteName(msg.getDatabases().get(idx), actualTblName);
+      String actualDBName = msg.getDatabases().get(idx);
+      String completeName = Table.getCompleteName(actualDBName, actualTblName);
 
       // One import task per table. Events for same table are kept together in one dump directory during dump and are
       // grouped together in commit txn message.
       if (tableNamePrev == null || !(completeName.equals(tableNamePrev))) {
         // The data location is created by source, so the location should be formed based on the table name in msg.
-        Path location = HiveUtils.getDumpPath(new Path(context.location), msg.getDatabases().get(idx), actualTblName);
+        Path location = HiveUtils.getDumpPath(new Path(context.location), actualDBName, actualTblName);
         tblName = context.isTableNameEmpty() ? actualTblName : context.tableName;
+        dbName = (context.isDbNameEmpty() ? actualDBName : context.dbName); // for warehouse level dump, use db name from write event
         Context currentContext = new Context(context, dbName, tblName);
         currentContext.setLocation(location.toUri().toString());
 
@@ -97,7 +99,12 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     }
 
     Task<ReplTxnWork> commitTxnTask = TaskFactory.get(work, context.hiveConf);
-    updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
+
+    // For warehouse level dump, don't update the metadata of database as we don't know this txn is for which database.
+    // Anyways, if this event gets executed again, it is taken care of.
+    if (!context.isDbNameEmpty()) {
+      updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
+    }
     context.log.debug("Added Commit txn task : {}", commitTxnTask.getId());
     DAGTraversal.traverse(tasks, new AddDependencyToLeaves(commitTxnTask));
     return tasks;

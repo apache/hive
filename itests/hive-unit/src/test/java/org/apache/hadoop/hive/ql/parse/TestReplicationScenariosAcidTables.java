@@ -130,6 +130,7 @@ public class TestReplicationScenariosAcidTables {
     primary.run("drop database if exists " + primaryDbName + " cascade");
     replica.run("drop database if exists " + replicatedDbName + " cascade");
     replicaNonAcid.run("drop database if exists " + replicatedDbName + " cascade");
+    primary.run("drop database if exists " + primaryDbName + "_extra cascade");
   }
 
   @Test
@@ -804,6 +805,75 @@ public class TestReplicationScenariosAcidTables {
     deleteRecords(tableName);
     incrementalDump = verifyIncrementalLoad(Collections.singletonList("select count(*) from " + tableName),
             Collections.singletonList(new String[] {"0"}), incrementalDump.lastReplicationId);
+  }
+
+  @Test
+  public void testMultiDBTxn() throws Throwable {
+    String tableName = testName.getMethodName();
+    String dbName1 = tableName + "_db1";
+    String dbName2 = tableName + "_db2";
+    String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
+    String tableProperty = "'transactional'='true'";
+    String txnStrStart = "START TRANSACTION";
+    String txnStrCommit = "COMMIT";
+
+    WarehouseInstance.Tuple incrementalDump;
+    primary.run("alter database default set dbproperties ('repl.source.for' = '1, 2, 3')");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump("`*`", null);
+
+    primary.run("use " + primaryDbName)
+          .run("create database " + dbName1 + " WITH DBPROPERTIES ( '" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
+          .run("create database " + dbName2 + " WITH DBPROPERTIES ( '" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
+          .run("CREATE TABLE " + dbName1 + "." + tableName + " (key int, value int) PARTITIONED BY (load_date date) " +
+                  "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+          .run("use " + dbName1)
+          .run("SHOW TABLES LIKE '" + tableName + "'")
+          .verifyResult(tableName)
+          .run("CREATE TABLE " + dbName2 + "." + tableName + " (key int, value int) PARTITIONED BY (load_date date) " +
+                  "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+          .run("use " + dbName2)
+          .run("SHOW TABLES LIKE '" + tableName + "'")
+          .verifyResult(tableName)
+          .run(txnStrStart)
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-02') VALUES (5, 5)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-01') VALUES (1, 1)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-01') VALUES (2, 2)")
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-01') VALUES (2, 2)")
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-02') VALUES (3, 3)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-02') VALUES (3, 3)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-03') VALUES (4, 4)")
+          .run("INSERT INTO " + dbName1 + "." + tableName + " partition (load_date='2016-03-02') VALUES (5, 5)")
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-01') VALUES (1, 1)")
+          .run("INSERT INTO " + dbName2 + "." + tableName + " partition (load_date='2016-03-03') VALUES (4, 4)")
+          .run("select key from " + dbName2 + "." + tableName + " order by key")
+          .verifyResults(resultArray)
+          .run("select key from " + dbName1 + "." + tableName + " order by key")
+          .verifyResults(resultArray)
+          .run(txnStrCommit);
+
+    incrementalDump = primary.dump("`*`", bootStrapDump.lastReplicationId);
+
+    // Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
+    // we are not able to create multiple embedded derby instances for two different MetaStore instances.
+    primary.run("drop database " + primaryDbName + " cascade");
+    primary.run("drop database " + dbName1 + " cascade");
+    primary.run("drop database " + dbName2 + " cascade");
+    //End of additional steps
+
+    replica.loadWithoutExplain("", bootStrapDump.dumpLocation)
+            .run("REPL STATUS default")
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    replica.loadWithoutExplain("", incrementalDump.dumpLocation)
+          .run("REPL STATUS " + dbName1)
+          .run("select key from " + dbName1 + "." + tableName + " order by key")
+          .verifyResults(resultArray)
+          .run("select key from " + dbName2 + "." + tableName + " order by key")
+          .verifyResults(resultArray);
+
+    replica.run("drop database " + primaryDbName + " cascade");
+    replica.run("drop database " + dbName1 + " cascade");
+    replica.run("drop database " + dbName2 + " cascade");
   }
 
   private void verifyResultsInReplica(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable  {

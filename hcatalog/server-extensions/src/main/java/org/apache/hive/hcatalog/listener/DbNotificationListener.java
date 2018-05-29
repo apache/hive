@@ -739,19 +739,21 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
-      String s = sqlGenerator.addForUpdateClause("select WNL_FILES, WNL_ID from" +
-                      " TXN_WRITE_NOTIFICATION_LOG " +
-                      "where WNL_DATABASE = " + quoteString(dbName) +
-                      "and WNL_TABLE = " + quoteString(tblName) +  " and WNL_PARTITION = " + quoteString(partition) +
-                      " and WNL_TXNID = " + Long.toString(acidWriteEvent.getTxnId()));
+      String s = sqlGenerator.addForUpdateClause("select \"WNL_FILES\", \"WNL_ID\" from" +
+                      " \"TXN_WRITE_NOTIFICATION_LOG\" " +
+                      "where \"WNL_DATABASE\" = " + quoteString(dbName) +
+                      "and \"WNL_TABLE\" = " + quoteString(tblName) +  " and \"WNL_PARTITION\" = " +
+                      quoteString(partition) + " and \"WNL_TXNID\" = " + Long.toString(acidWriteEvent.getTxnId()));
       LOG.debug("Going to execute query <" + s + ">");
       rs = stmt.executeQuery(s);
       if (!rs.next()) {
         // if rs is empty then no lock is taken and thus it can not cause deadlock.
         long nextNLId = getNextNLId(stmt, sqlGenerator,
                 "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog");
-        s = "insert into TXN_WRITE_NOTIFICATION_LOG (WNL_ID, WNL_TXNID, WNL_WRITEID, WNL_DATABASE, WNL_TABLE," +
-                " WNL_PARTITION, WNL_TABLE_OBJ, WNL_PARTITION_OBJ, WNL_FILES, WNL_EVENT_TIME) values (" + nextNLId
+        s = "insert into \"TXN_WRITE_NOTIFICATION_LOG\" (\"WNL_ID\", \"WNL_TXNID\", \"WNL_WRITEID\"," +
+                " \"WNL_DATABASE\", \"WNL_TABLE\"," +
+                " \"WNL_PARTITION\", \"WNL_TABLE_OBJ\", \"WNL_PARTITION_OBJ\", \"WNL_FILES\", \"WNL_EVENT_TIME\")" +
+                " values (" + nextNLId
                 + "," + acidWriteEvent.getTxnId() +  "," + acidWriteEvent.getWriteId()+  "," +
                 quoteString(dbName)+  "," +  quoteString(tblName)+  "," + quoteString(partition)+  "," +
                 quoteString(tableObj)+  "," + quoteString(partitionObj) +  "," +  quoteString(files)+
@@ -768,11 +770,11 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         }
         long nlId = rs.getLong(2);
         files = ReplChangeManager.joinWithSeparator(Lists.newArrayList(files, existingFiles));
-        s = "update TXN_WRITE_NOTIFICATION_LOG set WNL_TABLE_OBJ = " +  quoteString(tableObj) + "," +
-                " WNL_PARTITION_OBJ = " + quoteString(partitionObj) + "," +
-                " WNL_FILES = " + quoteString(files) + "," +
-                " WNL_EVENT_TIME = " + now() +
-                " where WNL_ID = " + nlId;
+        s = "update \"TXN_WRITE_NOTIFICATION_LOG\" set \"WNL_TABLE_OBJ\" = " +  quoteString(tableObj) + "," +
+                " \"WNL_PARTITION_OBJ\" = " + quoteString(partitionObj) + "," +
+                " \"WNL_FILES\" = " + quoteString(files) + "," +
+                " \"WNL_EVENT_TIME\" = " + now() +
+                " where \"WNL_ID\" = " + nlId;
         LOG.info("Going to execute update <" + s + ">");
         stmt.executeUpdate(sqlGenerator.addEscapeCharacters(s));
       }
