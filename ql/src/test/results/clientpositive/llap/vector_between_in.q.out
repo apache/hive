@@ -57,7 +57,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColumnInList(col 3:date, values [-67, -171])
                     predicate: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
-                    Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
                       outputColumnNames: _col0
@@ -65,7 +65,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [3]
-                      Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
                         sort order: +
@@ -73,7 +73,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -101,13 +101,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 53 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -152,13 +152,13 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: LongColumnInList(col 3, values [-67, -171, 20]) -> 5:boolean)
                     predicate: (not (cdate) IN (DATE'1969-10-26', DATE'1969-07-14', DATE'1970-01-21')) (type: boolean)
-                    Statistics: Num rows: 12274 Data size: 653057 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12284 Data size: 653589 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 12274 Data size: 653057 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12284 Data size: 653589 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
