@@ -196,5 +196,4 @@ public class ColStatistics {
       return sb.toString();
     }
   }
-
 }
