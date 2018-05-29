@@ -36,12 +36,14 @@ public class MPartitionPrivilege {
 
   private boolean grantOption;
 
+  private String authorizer;
+
   public MPartitionPrivilege() {
   }
 
   public MPartitionPrivilege(String principalName, String principalType,
       MPartition partition, String privilege, int createTime,
-      String grantor, String grantorType, boolean grantOption) {
+      String grantor, String grantorType, boolean grantOption, String authorizer) {
     super();
     this.principalName = principalName;
     this.principalType = principalType;
@@ -51,6 +53,7 @@ public class MPartitionPrivilege {
     this.grantor = grantor;
     this.grantorType = grantorType;
     this.grantOption = grantOption;
+    this.authorizer = authorizer;
   }
 
   public String getPrincipalName() {
@@ -136,4 +139,11 @@ public class MPartitionPrivilege {
     this.grantorType = grantorType;
   }
 
+  public String getAuthorizer() {
+    return authorizer;
+  }
+
+  public void setAuthorizer(String authorizer) {
+    this.authorizer = authorizer;
+  }
 }

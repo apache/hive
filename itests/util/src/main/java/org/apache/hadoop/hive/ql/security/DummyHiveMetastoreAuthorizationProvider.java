@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
 
 /**
  * Dummy implementation for use by unit tests. Tracks the context of calls made to
@@ -211,6 +213,8 @@ public class DummyHiveMetastoreAuthorizationProvider implements HiveMetastoreAut
     authCalls.add(new AuthCallContext(AuthCallContextType.AUTHORIZATION, null, null));
   }
 
-
-
+  @Override
+  public HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException {
+    return null;
+  }
 }

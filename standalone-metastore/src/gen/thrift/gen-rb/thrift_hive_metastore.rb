@@ -2161,13 +2161,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'grant_revoke_privileges failed: unknown result')
     end
 
-    def refresh_privileges(objToRefresh, grantRequest)
-      send_refresh_privileges(objToRefresh, grantRequest)
+    def refresh_privileges(objToRefresh, authorizer, grantRequest)
+      send_refresh_privileges(objToRefresh, authorizer, grantRequest)
       return recv_refresh_privileges()
     end
 
-    def send_refresh_privileges(objToRefresh, grantRequest)
-      send_message('refresh_privileges', Refresh_privileges_args, :objToRefresh => objToRefresh, :grantRequest => grantRequest)
+    def send_refresh_privileges(objToRefresh, authorizer, grantRequest)
+      send_message('refresh_privileges', Refresh_privileges_args, :objToRefresh => objToRefresh, :authorizer => authorizer, :grantRequest => grantRequest)
     end
 
     def recv_refresh_privileges()
@@ -5141,7 +5141,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Refresh_privileges_args)
       result = Refresh_privileges_result.new()
       begin
-        result.success = @handler.refresh_privileges(args.objToRefresh, args.grantRequest)
+        result.success = @handler.refresh_privileges(args.objToRefresh, args.authorizer, args.grantRequest)
       rescue ::MetaException => o1
         result.o1 = o1
       end
@@ -10926,10 +10926,12 @@ module ThriftHiveMetastore
   class Refresh_privileges_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     OBJTOREFRESH = 1
-    GRANTREQUEST = 2
+    AUTHORIZER = 2
+    GRANTREQUEST = 3
 
     FIELDS = {
       OBJTOREFRESH => {:type => ::Thrift::Types::STRUCT, :name => 'objToRefresh', :class => ::HiveObjectRef},
+      AUTHORIZER => {:type => ::Thrift::Types::STRING, :name => 'authorizer'},
       GRANTREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'grantRequest', :class => ::GrantRevokePrivilegeRequest}
     }
 

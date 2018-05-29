@@ -507,12 +507,14 @@ class HiveObjectPrivilege
   PRINCIPALNAME = 2
   PRINCIPALTYPE = 3
   GRANTINFO = 4
+  AUTHORIZER = 5
 
   FIELDS = {
     HIVEOBJECT => {:type => ::Thrift::Types::STRUCT, :name => 'hiveObject', :class => ::HiveObjectRef},
     PRINCIPALNAME => {:type => ::Thrift::Types::STRING, :name => 'principalName'},
     PRINCIPALTYPE => {:type => ::Thrift::Types::I32, :name => 'principalType', :enum_class => ::PrincipalType},
-    GRANTINFO => {:type => ::Thrift::Types::STRUCT, :name => 'grantInfo', :class => ::PrivilegeGrantInfo}
+    GRANTINFO => {:type => ::Thrift::Types::STRUCT, :name => 'grantInfo', :class => ::PrivilegeGrantInfo},
+    AUTHORIZER => {:type => ::Thrift::Types::STRING, :name => 'authorizer'}
   }
 
   def struct_fields; FIELDS; end

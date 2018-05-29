@@ -46,8 +46,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLs;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLsImpl;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.DummyHiveAuthorizationValidator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessControllerWrapper;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizationValidator;
 import org.apache.hive.beeline.BeeLine;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.CLIServiceClient;
@@ -171,18 +171,7 @@ public class TestInformationSchemaWithPrivilege {
       SQLStdHiveAccessControllerWrapper privilegeManager = new SQLStdHiveAccessControllerWrapper(metastoreClientFactory,
           conf, authenticator, ctx);
       return new HiveAuthorizerImplWithPolicyProvider(privilegeManager,
-          new SQLStdHiveAuthorizationValidator(metastoreClientFactory, conf, authenticator, privilegeManager, ctx));
-    }
-  }
-
-  static class TestHiveAuthorizerNullPolicyProviderFactory implements HiveAuthorizerFactory {
-    @Override
-    public HiveAuthorizer createHiveAuthorizer(HiveMetastoreClientFactory metastoreClientFactory, HiveConf conf,
-        HiveAuthenticationProvider authenticator, HiveAuthzSessionContext ctx) throws HiveAuthzPluginException {
-      SQLStdHiveAccessControllerWrapper privilegeManager = new SQLStdHiveAccessControllerWrapper(metastoreClientFactory,
-          conf, authenticator, ctx);
-      return new HiveAuthorizerImplWithNullPolicyProvider(privilegeManager,
-          new SQLStdHiveAuthorizationValidator(metastoreClientFactory, conf, authenticator, privilegeManager, ctx));
+          new DummyHiveAuthorizationValidator());
     }
   }
 
@@ -208,7 +197,6 @@ public class TestInformationSchemaWithPrivilege {
         + File.separator + "mapred" + File.separator + "staging");
     confOverlay.put("mapred.temp.dir", workDir + File.separator + "TestInformationSchemaWithPrivilege"
         + File.separator + "mapred" + File.separator + "temp");
-    confOverlay.put(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER.varname, "true");
     confOverlay.put(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL.varname, "1");
     confOverlay.put(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY.varname, "true");
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname, TestHiveAuthorizerFactory.class.getName());
@@ -216,6 +204,8 @@ public class TestInformationSchemaWithPrivilege {
     confOverlay.put(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname, Integer.toString(zkPort));
     confOverlay.put(MetastoreConf.ConfVars.AUTO_CREATE_ALL.getVarname(), "true");
     confOverlay.put(ConfVars.HIVE_AUTHENTICATOR_MANAGER.varname, FakeGroupAuthenticator.class.getName());
+    confOverlay.put(ConfVars.HIVE_AUTHORIZATION_ENABLED.varname, "true");
+    confOverlay.put(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname, ".*");
     miniHS2.start(confOverlay);
   }
 
@@ -585,9 +575,7 @@ public class TestInformationSchemaWithPrivilege {
     serviceClient.closeSession(sessHandle);
 
     // Revert hive.server2.restrict_information_schema to false
-    miniHS2.getHiveConf().set(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
-        TestHiveAuthorizerNullPolicyProviderFactory.class.getName());
-    miniHS2.getHiveConf().unset(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname());
+    miniHS2.getHiveConf().set(ConfVars.HIVE_AUTHORIZATION_ENABLED.varname, "false");
 
     sessHandle = serviceClient.openSession("user1", "");
 

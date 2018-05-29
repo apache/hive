@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
 
 /**
  * HiveMetastoreAuthorizationProvider : An extension of HiveAuthorizaytionProvider
@@ -44,5 +46,10 @@ public interface HiveMetastoreAuthorizationProvider extends HiveAuthorizationPro
    */
   void authorizeAuthorizationApiInvocation() throws HiveException, AuthorizationException;
 
+  /**
+   * @return HivePolicyProvider instance (expected to be a singleton)
+   * @throws HiveAuthzPluginException
+   */
+  HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException;
 
 }

@@ -1452,9 +1452,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+  public boolean refreshPrivileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
-    return rawStore.refreshPrivileges(objToRefresh, grantPrivileges);
+    return rawStore.refreshPrivileges(objToRefresh, authorizer, grantPrivileges);
   }
 
   @Override

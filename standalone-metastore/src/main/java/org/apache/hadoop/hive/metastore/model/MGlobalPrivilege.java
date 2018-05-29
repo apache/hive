@@ -38,13 +38,15 @@ public class MGlobalPrivilege {
 
   private boolean grantOption;
 
+  private String authorizer;
+
   public MGlobalPrivilege() {
     super();
   }
 
   public MGlobalPrivilege(String userName, String principalType,
       String dbPrivilege, int createTime, String grantor, String grantorType,
-      boolean grantOption) {
+      boolean grantOption, String authorizer) {
     super();
     this.principalName = userName;
     this.principalType = principalType;
@@ -53,6 +55,7 @@ public class MGlobalPrivilege {
     this.grantor = grantor;
     this.grantorType = grantorType;
     this.grantOption = grantOption;
+    this.authorizer = authorizer;
   }
 
   /**
@@ -117,4 +120,11 @@ public class MGlobalPrivilege {
     this.grantorType = grantorType;
   }
 
+  public String getAuthorizer() {
+    return authorizer;
+  }
+
+  public void setAuthorizer(String authorizer) {
+    this.authorizer = authorizer;
+  }
 }

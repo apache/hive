@@ -1061,10 +1061,11 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def refresh_privileges(self, objToRefresh, grantRequest):
+  def refresh_privileges(self, objToRefresh, authorizer, grantRequest):
     """
     Parameters:
      - objToRefresh
+     - authorizer
      - grantRequest
     """
     pass
@@ -6338,19 +6339,21 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o1
     raise TApplicationException(TApplicationException.MISSING_RESULT, "grant_revoke_privileges failed: unknown result")
 
-  def refresh_privileges(self, objToRefresh, grantRequest):
+  def refresh_privileges(self, objToRefresh, authorizer, grantRequest):
     """
     Parameters:
      - objToRefresh
+     - authorizer
      - grantRequest
     """
-    self.send_refresh_privileges(objToRefresh, grantRequest)
+    self.send_refresh_privileges(objToRefresh, authorizer, grantRequest)
     return self.recv_refresh_privileges()
 
-  def send_refresh_privileges(self, objToRefresh, grantRequest):
+  def send_refresh_privileges(self, objToRefresh, authorizer, grantRequest):
     self._oprot.writeMessageBegin('refresh_privileges', TMessageType.CALL, self._seqid)
     args = refresh_privileges_args()
     args.objToRefresh = objToRefresh
+    args.authorizer = authorizer
     args.grantRequest = grantRequest
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
@@ -12429,7 +12432,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = refresh_privileges_result()
     try:
-      result.success = self._handler.refresh_privileges(args.objToRefresh, args.grantRequest)
+      result.success = self._handler.refresh_privileges(args.objToRefresh, args.authorizer, args.grantRequest)
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
@@ -36878,17 +36881,20 @@ class refresh_privileges_args:
   """
   Attributes:
    - objToRefresh
+   - authorizer
    - grantRequest
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'objToRefresh', (HiveObjectRef, HiveObjectRef.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'grantRequest', (GrantRevokePrivilegeRequest, GrantRevokePrivilegeRequest.thrift_spec), None, ), # 2
+    (2, TType.STRING, 'authorizer', None, None, ), # 2
+    (3, TType.STRUCT, 'grantRequest', (GrantRevokePrivilegeRequest, GrantRevokePrivilegeRequest.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, objToRefresh=None, grantRequest=None,):
+  def __init__(self, objToRefresh=None, authorizer=None, grantRequest=None,):
     self.objToRefresh = objToRefresh
+    self.authorizer = authorizer
     self.grantRequest = grantRequest
 
   def read(self, iprot):
@@ -36907,6 +36913,11 @@ class refresh_privileges_args:
         else:
           iprot.skip(ftype)
       elif fid == 2:
+        if ftype == TType.STRING:
+          self.authorizer = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
         if ftype == TType.STRUCT:
           self.grantRequest = GrantRevokePrivilegeRequest()
           self.grantRequest.read(iprot)
@@ -36926,8 +36937,12 @@ class refresh_privileges_args:
       oprot.writeFieldBegin('objToRefresh', TType.STRUCT, 1)
       self.objToRefresh.write(oprot)
       oprot.writeFieldEnd()
+    if self.authorizer is not None:
+      oprot.writeFieldBegin('authorizer', TType.STRING, 2)
+      oprot.writeString(self.authorizer)
+      oprot.writeFieldEnd()
     if self.grantRequest is not None:
-      oprot.writeFieldBegin('grantRequest', TType.STRUCT, 2)
+      oprot.writeFieldBegin('grantRequest', TType.STRUCT, 3)
       self.grantRequest.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -36940,6 +36955,7 @@ class refresh_privileges_args:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.objToRefresh)
+    value = (value * 31) ^ hash(self.authorizer)
     value = (value * 31) ^ hash(self.grantRequest)
     return value
 
