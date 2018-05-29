@@ -578,7 +578,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@lineorder_n0
 POSTHOOK: Output: default@lineorder_n0
 #### A masked pattern was here ####
-PREHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv_n0` ENABLE REWRITE
+PREHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv_n0`
 AS
 SELECT
   c_city,
@@ -614,7 +614,7 @@ PREHOOK: Input: default@ssb_part_n0
 PREHOOK: Input: default@supplier_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ssb_mv_n0
-POSTHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv_n0` ENABLE REWRITE
+POSTHOOK: query: CREATE MATERIALIZED VIEW `ssb_mv_n0`
 AS
 SELECT
   c_city,

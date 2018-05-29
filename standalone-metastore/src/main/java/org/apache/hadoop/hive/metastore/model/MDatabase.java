@@ -21,7 +21,12 @@
  */
 package org.apache.hadoop.hive.metastore.model;
 
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Storage Class representing the Hive MDatabase in a rdbms
@@ -109,7 +114,21 @@ public class MDatabase {
    * @param parameters the parameters mapping.
    */
   public void setParameters(Map<String, String> parameters) {
-    this.parameters = parameters;
+    if (parameters == null) {
+      this.parameters = null;
+      return;
+    }
+    this.parameters = new HashMap<>();
+    Set<String> keys = new HashSet<>(parameters.keySet());
+    for(String key : keys) {
+      // Normalize the case for source of replication parameter
+      if (ReplChangeManager.SOURCE_OF_REPLICATION.equalsIgnoreCase(key)) {
+        // TODO :  Some extra validation can also be added as this is a user provided parameter.
+        this.parameters.put(ReplChangeManager.SOURCE_OF_REPLICATION, parameters.get(key));
+      } else {
+        this.parameters.put(key, parameters.get(key));
+      }
+    }
   }
 
   public String getOwnerName() {

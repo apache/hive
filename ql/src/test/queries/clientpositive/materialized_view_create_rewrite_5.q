@@ -23,7 +23,7 @@ insert into cmv_basetable_2_n3 values
 
 analyze table cmv_basetable_2_n3 compute statistics for columns;
 
-CREATE MATERIALIZED VIEW cmv_mat_view_n6 ENABLE REWRITE
+CREATE MATERIALIZED VIEW cmv_mat_view_n6
   TBLPROPERTIES ('transactional'='true') AS
   SELECT cmv_basetable_n6.a, cmv_basetable_2_n3.c
   FROM cmv_basetable_n6 JOIN cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)

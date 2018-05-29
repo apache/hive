@@ -38,13 +38,13 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Output: default@cmv_basetable_n0
 #### A masked pattern was here ####
-PREHOOK: query: create materialized view cmv_mat_view_n0 enable rewrite
+PREHOOK: query: create materialized view cmv_mat_view_n0
 as select a, b, c from cmv_basetable_n0 where a = 2
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view_n0
-POSTHOOK: query: create materialized view cmv_mat_view_n0 enable rewrite
+POSTHOOK: query: create materialized view cmv_mat_view_n0
 as select a, b, c from cmv_basetable_n0 where a = 2
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n0
@@ -71,13 +71,13 @@ numRows	2
 rawDataSize	408
 totalSize	457
 #### A masked pattern was here ####
-PREHOOK: query: create materialized view if not exists cmv_mat_view2 enable rewrite
+PREHOOK: query: create materialized view if not exists cmv_mat_view2
 as select a, c from cmv_basetable_n0 where a = 3
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_basetable_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view2
-POSTHOOK: query: create materialized view if not exists cmv_mat_view2 enable rewrite
+POSTHOOK: query: create materialized view if not exists cmv_mat_view2
 as select a, c from cmv_basetable_n0 where a = 3
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n0
