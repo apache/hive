@@ -1587,10 +1587,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  private void deleteDir(Path dir) throws HiveException {
+  private void deleteDir(Path dir, Database db) throws HiveException {
     try {
       Warehouse wh = new Warehouse(conf);
-      wh.deleteDir(dir, true);
+      wh.deleteDir(dir, true, db);
     } catch (MetaException e) {
       throw new HiveException(e);
     }
@@ -1845,7 +1845,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If a failure occurs here, the directory containing the original files
     // will not be deleted. The user will run ARCHIVE again to clear this up
     if(pathExists(intermediateOriginalDir)) {
-      deleteDir(intermediateOriginalDir);
+      deleteDir(intermediateOriginalDir, db.getDatabase(tbl.getDbName()));
     }
 
     if(recovery) {
@@ -2051,7 +2051,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If a failure happens here, the intermediate archive files won't be
     // deleted. The user will need to call unarchive again to clear those up.
     if(pathExists(intermediateArchivedDir)) {
-      deleteDir(intermediateArchivedDir);
+      deleteDir(intermediateArchivedDir, db.getDatabase(tbl.getDbName()));
     }
 
     if(recovery) {
