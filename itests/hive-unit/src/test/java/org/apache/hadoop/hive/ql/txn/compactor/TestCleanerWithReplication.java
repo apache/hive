@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -52,6 +54,7 @@ public class TestCleanerWithReplication extends CompactorTest {
   private Path cmRootDirectory;
   private static FileSystem fs;
   private static MiniDFSCluster miniDFSCluster;
+  private final String dbName = "TestCleanerWithReplication";
 
   @Before
   public void setup() throws Exception {
@@ -68,6 +71,10 @@ public class TestCleanerWithReplication extends CompactorTest {
       fs.mkdirs(cmRootDirectory);
     }
     tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
+    Database db = new Database();
+    db.putToParameters(SOURCE_OF_REPLICATION, "1,2,3");
+    db.setName(dbName);
+    ms.createDatabase(db);
   }
 
   @BeforeClass
@@ -81,9 +88,10 @@ public class TestCleanerWithReplication extends CompactorTest {
   }
 
   @After
-  public void tearDown() throws IOException {
+  public void tearDown() throws Exception {
     fs.delete(cmRootDirectory, true);
     compactorTestCleanup();
+    ms.dropDatabase(dbName, true, true, true);
   }
 
   @AfterClass
@@ -93,16 +101,16 @@ public class TestCleanerWithReplication extends CompactorTest {
 
   @Test
   public void cleanupAfterMajorTableCompaction() throws Exception {
-    Table t = newTable("default", "camtc", false);
+    Table t = newTable(dbName, "camtc", false);
 
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
     addBaseFile(t, null, 25L, 25);
 
-    burnThroughTransactions("default", "camtc", 25);
+    burnThroughTransactions(dbName, "camtc", 25);
 
-    CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    CompactionRequest rqst = new CompactionRequest(dbName, "camtc", CompactionType.MAJOR);
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     txnHandler.markCompacted(ci);
@@ -113,7 +121,7 @@ public class TestCleanerWithReplication extends CompactorTest {
 
   @Test
   public void cleanupAfterMajorPartitionCompaction() throws Exception {
-    Table t = newTable("default", "campc", true);
+    Table t = newTable(dbName, "campc", true);
     Partition p = newPartition(t, "today");
 
     addBaseFile(t, p, 20L, 20);
@@ -121,9 +129,9 @@ public class TestCleanerWithReplication extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addBaseFile(t, p, 25L, 25);
 
-    burnThroughTransactions("default", "campc", 25);
+    burnThroughTransactions(dbName, "campc", 25);
 
-    CompactionRequest rqst = new CompactionRequest("default", "campc", CompactionType.MAJOR);
+    CompactionRequest rqst = new CompactionRequest(dbName, "campc", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
@@ -135,16 +143,16 @@ public class TestCleanerWithReplication extends CompactorTest {
 
   @Test
   public void cleanupAfterMinorTableCompaction() throws Exception {
-    Table t = newTable("default", "camitc", false);
+    Table t = newTable(dbName, "camitc", false);
 
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "camitc", 25);
+    burnThroughTransactions(dbName, "camitc", 25);
 
-    CompactionRequest rqst = new CompactionRequest("default", "camitc", CompactionType.MINOR);
+    CompactionRequest rqst = new CompactionRequest(dbName, "camitc", CompactionType.MINOR);
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     txnHandler.markCompacted(ci);
@@ -155,7 +163,7 @@ public class TestCleanerWithReplication extends CompactorTest {
 
   @Test
   public void cleanupAfterMinorPartitionCompaction() throws Exception {
-    Table t = newTable("default", "camipc", true);
+    Table t = newTable(dbName, "camipc", true);
     Partition p = newPartition(t, "today");
 
     addBaseFile(t, p, 20L, 20);
@@ -163,9 +171,9 @@ public class TestCleanerWithReplication extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions("default", "camipc", 25);
+    burnThroughTransactions(dbName, "camipc", 25);
 
-    CompactionRequest rqst = new CompactionRequest("default", "camipc", CompactionType.MINOR);
+    CompactionRequest rqst = new CompactionRequest(dbName, "camipc", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");

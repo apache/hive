@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -119,6 +120,7 @@ public class TestReplChangeManager {
     client.dropDatabase(dbName, true, true);
 
     Database db = new Database();
+    db.putToParameters(SOURCE_OF_REPLICATION, "1,2,3");
     db.setName(dbName);
     client.createDatabase(db);
 
@@ -204,6 +206,7 @@ public class TestReplChangeManager {
     client.dropDatabase(dbName, true, true);
 
     Database db = new Database();
+    db.putToParameters(SOURCE_OF_REPLICATION, "1, 2, 3");
     db.setName(dbName);
     client.createDatabase(db);
 
