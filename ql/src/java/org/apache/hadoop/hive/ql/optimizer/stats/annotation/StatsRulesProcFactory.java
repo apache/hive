@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +30,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -60,6 +59,7 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -494,6 +494,19 @@ public class StatsRulesProcFactory {
         }
       }
 
+      boolean allColsFilteredByStats = true;
+      for (int i = 0; i < columnStats.size(); i++) {
+        ValuePruner vp = new ValuePruner(columnStats.get(i));
+        allColsFilteredByStats &= vp.isValid();
+        Set<ExprNodeDescEqualityWrapper> newValues = Sets.newHashSet();
+        for (ExprNodeDescEqualityWrapper v : values.get(i)) {
+          if (vp.accept(v)) {
+            newValues.add(v);
+          }
+        }
+        values.set(i, newValues);
+      }
+
       // 3. Calculate IN selectivity
       double factor = 1d;
       for (int i = 0; i < columnStats.size(); i++) {
@@ -503,8 +516,149 @@ public class StatsRulesProcFactory {
         // max can be 1, even when ndv is larger in IN clause than in column stats
         factor *= columnFactor > 1d ? 1d : columnFactor;
       }
+      if (!allColsFilteredByStats) {
+        factor = Double.max(factor, HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_MIN_RATIO));
+      }
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
       return Math.round( numRows * factor * inFactor);
+    }
+
+    static class RangeOps {
+
+      private String colType;
+      private Range range;
+
+      public RangeOps(String colType, Range range) {
+        this.colType = colType;
+        this.range = range;
+      }
+
+      public static RangeOps build(String colType, Range range) {
+        if (range == null || range.minValue == null || range.maxValue == null) {
+          return null;
+        }
+        return new RangeOps(colType, range);
+      }
+
+      enum RangeResult {
+        BELOW, AT_MIN, BETWEEN, AT_MAX, ABOVE;
+
+        public static RangeResult of(boolean ltMin, boolean ltMax, boolean eqMin, boolean eqMax) {
+          if (ltMin) {
+            return RangeResult.BELOW;
+          }
+          if (eqMin) {
+            return RangeResult.AT_MIN;
+          }
+          if (ltMax) {
+            return RangeResult.BETWEEN;
+          }
+          if (eqMax) {
+            return AT_MAX;
+          }
+          return ABOVE;
+        }
+      }
+
+      public boolean contains(ExprNodeDesc exprNode) {
+        RangeResult intersection = intersect(exprNode);
+        return intersection != RangeResult.ABOVE && intersection != RangeResult.BELOW;
+      }
+
+      public RangeResult intersect(ExprNodeDesc exprNode) {
+        if (!(exprNode instanceof ExprNodeConstantDesc)) {
+          return null;
+        }
+        try {
+
+          ExprNodeConstantDesc constantDesc = (ExprNodeConstantDesc) exprNode;
+
+          String stringVal = constantDesc.getValue().toString();
+
+          @Deprecated
+          String boundValue = stringVal;
+          switch (colType) {
+          case serdeConstants.TINYINT_TYPE_NAME: {
+            byte value = new Byte(stringVal);
+            byte maxValue = range.maxValue.byteValue();
+            byte minValue = range.minValue.byteValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.SMALLINT_TYPE_NAME: {
+            short value = new Short(boundValue);
+            short maxValue = range.maxValue.shortValue();
+            short minValue = range.minValue.shortValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.DATE_TYPE_NAME: {
+            DateWritable dateWriteable = new DateWritable(java.sql.Date.valueOf(boundValue));
+            int value = dateWriteable.getDays();
+            int maxValue = range.maxValue.intValue();
+            int minValue = range.minValue.intValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.INT_TYPE_NAME: {
+            int value = new Integer(boundValue);
+            int maxValue = range.maxValue.intValue();
+            int minValue = range.minValue.intValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.BIGINT_TYPE_NAME: {
+            long value = new Long(boundValue);
+            long maxValue = range.maxValue.longValue();
+            long minValue = range.minValue.longValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.FLOAT_TYPE_NAME: {
+            float value = new Float(boundValue);
+            float maxValue = range.maxValue.floatValue();
+            float minValue = range.minValue.floatValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          case serdeConstants.DOUBLE_TYPE_NAME: {
+            double value = new Double(boundValue);
+            double maxValue = range.maxValue.doubleValue();
+            double minValue = range.minValue.doubleValue();
+            return RangeResult.of(value < minValue, value < maxValue, value == minValue, value == maxValue);
+          }
+          default:
+            return null;
+          }
+        } catch (Exception e) {
+          // NumberFormatException value out of range
+          // other unknown cases
+          return null;
+        }
+      }
+
+    }
+
+    private static class ValuePruner {
+
+      private boolean valid;
+      private RangeOps colRange;
+
+      ValuePruner(ColStatistics colStatistics) {
+        if (colStatistics == null) {
+          valid = false;
+          return;
+        }
+        colRange = RangeOps.build(colStatistics.getColumnType(), colStatistics.getRange());
+        if (colRange == null) {
+          valid = false;
+          return;
+        }
+        valid = true;
+      }
+
+      public boolean isValid() {
+        return valid;
+      }
+
+      public boolean accept(ExprNodeDescEqualityWrapper e) {
+        /** removes all values which are outside of the scope of the column */
+        return !valid || colRange.contains(e.getExprNodeDesc());
+      }
     }
 
     private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, long currNumRows, AnnotateStatsProcCtx aspCtx,
