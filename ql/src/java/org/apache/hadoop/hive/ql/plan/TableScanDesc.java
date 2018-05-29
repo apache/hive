@@ -52,10 +52,10 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private List<VirtualColumn> virtualCols;
   private String statsAggKeyPrefix;   // stats publishing/aggregating key prefix
 
- /**
-  * A list of the partition columns of the table.
-  * Set by the semantic analyzer only in case of the analyze command.
-  */
+  /**
+   * A list of the partition columns of the table.
+   * Set by the semantic analyzer only in case of the analyze command.
+   */
   private List<String> partColumns;
 
   /**
@@ -92,13 +92,13 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private transient List<String> referencedColumns;
 
   public static final String FILTER_EXPR_CONF_STR =
-    "hive.io.filter.expr.serialized";
+      "hive.io.filter.expr.serialized";
 
   public static final String FILTER_TEXT_CONF_STR =
-    "hive.io.filter.text";
+      "hive.io.filter.text";
 
   public static final String FILTER_OBJECT_CONF_STR =
-    "hive.io.filter.object";
+      "hive.io.filter.object";
 
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
@@ -157,8 +157,6 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   }
 
   @Explain(displayName = "alias")
-  // FIXME: this might not needed to be in the signature; but in that case the compare shouldn't consider it either!
-  @Signature
   public String getAlias() {
     return alias;
   }
@@ -386,9 +384,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return isMetadataOnly;
   }
 
-  //  @Signature
+  @Signature
   public String getQualifiedTable() {
-    return tableMetadata.getFullyQualifiedName();
+    return dbName + "." + tableName;
   }
 
   public Table getTableMetadata() {
@@ -540,7 +538,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   public boolean isSame(OperatorDesc other) {
     if (getClass().getName().equals(other.getClass().getName())) {
       TableScanDesc otherDesc = (TableScanDesc) other;
-      return Objects.equals(getAlias(), otherDesc.getAlias()) &&
+      return Objects.equals(getQualifiedTable(), otherDesc.getQualifiedTable()) &&
           ExprNodeDescUtils.isSame(getFilterExpr(), otherDesc.getFilterExpr()) &&
           getRowLimit() == otherDesc.getRowLimit() &&
           isGatherStats() == otherDesc.isGatherStats();
@@ -549,6 +547,6 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   }
 
   public boolean isFullAcidTable() {
-     return isTranscationalTable() && !getAcidOperationalProperties().isInsertOnly();
+    return isTranscationalTable() && !getAcidOperationalProperties().isInsertOnly();
   }
 }
