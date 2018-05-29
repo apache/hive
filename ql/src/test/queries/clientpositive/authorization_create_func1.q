@@ -9,6 +9,8 @@ set role ADMIN;
 
 create temporary function temp_fn as 'org.apache.hadoop.hive.ql.udf.UDFAscii';
 create function perm_fn as 'org.apache.hadoop.hive.ql.udf.UDFAscii';
+create function perm_fn_using as 'IdentityStringUDF' using jar '../../data/files/identity_udf.jar';
 
 drop temporary function temp_fn;
 drop function perm_fn;
+drop function perm_fn_using;

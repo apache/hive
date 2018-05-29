@@ -16,6 +16,16 @@ POSTHOOK: query: create function perm_fn as 'org.apache.hadoop.hive.ql.udf.UDFAs
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default.perm_fn
+PREHOOK: query: create function perm_fn_using as 'IdentityStringUDF' using jar '../../data/files/identity_udf.jar'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
+PREHOOK: Output: default.perm_fn_using
+#### A masked pattern was here ####
+POSTHOOK: query: create function perm_fn_using as 'IdentityStringUDF' using jar '../../data/files/identity_udf.jar'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default.perm_fn_using
+#### A masked pattern was here ####
 PREHOOK: query: drop temporary function temp_fn
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: temp_fn
@@ -30,3 +40,11 @@ POSTHOOK: query: drop function perm_fn
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default.perm_fn
+PREHOOK: query: drop function perm_fn_using
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:default
+PREHOOK: Output: default.perm_fn_using
+POSTHOOK: query: drop function perm_fn_using
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default.perm_fn_using

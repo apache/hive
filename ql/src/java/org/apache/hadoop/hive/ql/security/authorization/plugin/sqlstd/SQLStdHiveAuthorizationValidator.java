@@ -113,6 +113,10 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
       case DFS_URI:
         availPrivs = SQLAuthorizationUtils.getPrivilegesFromFS(new Path(hiveObj.getObjectName()),
             conf, userName);
+        // For operations like create fn, we require admin privilege from the FS but never get it.
+        if (privController.isUserAdmin()) {
+          availPrivs.addPrivilege(SQLPrivTypeGrant.ADMIN_PRIV);
+        }
         break;
       case PARTITION:
         // sql std authorization is managing privileges at the table/view levels
