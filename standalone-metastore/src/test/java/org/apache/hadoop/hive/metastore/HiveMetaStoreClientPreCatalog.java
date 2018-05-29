@@ -2032,7 +2032,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public boolean refresh_privileges(HiveObjectRef objToRefresh,
+  public boolean refresh_privileges(HiveObjectRef objToRefresh, String authorizer,
       PrivilegeBag grantPrivileges) throws MetaException,
       TException {
     String defaultCat = getDefaultCatalog(conf);
@@ -2049,7 +2049,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     grantReq.setRequestType(GrantRevokeType.GRANT);
     grantReq.setPrivileges(grantPrivileges);
 
-    GrantRevokePrivilegeResponse res = client.refresh_privileges(objToRefresh, grantReq);
+    GrantRevokePrivilegeResponse res = client.refresh_privileges(objToRefresh, authorizer, grantReq);
     if (!res.isSetSuccess()) {
       throw new MetaException("GrantRevokePrivilegeResponse missing success field");
     }

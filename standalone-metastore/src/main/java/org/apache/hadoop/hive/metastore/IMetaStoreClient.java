@@ -2567,12 +2567,13 @@ public interface IMetaStoreClient {
 
   /**
    * @param revokePrivileges
+   * @param authorizer
    * @param objToRefresh
    * @return true on success
    * @throws MetaException
    * @throws TException
    */
-  boolean refresh_privileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+  boolean refresh_privileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
       throws MetaException, TException;
 
   /**

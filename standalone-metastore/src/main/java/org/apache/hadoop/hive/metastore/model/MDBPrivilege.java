@@ -36,12 +36,14 @@ public class MDBPrivilege {
 
   private boolean grantOption;
 
+  private String authorizer;
+
   public MDBPrivilege() {
   }
 
   public MDBPrivilege(String principalName, String principalType,
       MDatabase database, String dbPrivileges, int createTime, String grantor,
-      String grantorType, boolean grantOption) {
+      String grantorType, boolean grantOption, String authorizer) {
     super();
     this.principalName = principalName;
     this.principalType = principalType;
@@ -51,6 +53,7 @@ public class MDBPrivilege {
     this.grantorType = grantorType;
     this.grantOption = grantOption;
     this.grantor = grantor;
+    this.authorizer = authorizer;
   }
 
   /**
@@ -129,4 +132,11 @@ public class MDBPrivilege {
     this.principalType = principalType;
   }
 
+  public String getAuthorizer() {
+    return authorizer;
+  }
+
+  public void setAuthorizer(String authorizer) {
+    this.authorizer = authorizer;
+  }
 }
