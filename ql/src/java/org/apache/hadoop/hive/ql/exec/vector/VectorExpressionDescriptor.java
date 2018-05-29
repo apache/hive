@@ -63,39 +63,41 @@ public class VectorExpressionDescriptor {
   //    INTERVAL_DAY_TIME
   //
   public enum ArgumentType {
-    NONE                    (0x000),
-    INT_FAMILY              (0x001),
-    FLOAT_FAMILY            (0x002),
-    DECIMAL                 (0x004),
-    STRING                  (0x008),
-    CHAR                    (0x010),
-    VARCHAR                 (0x020),
+    NONE                    (0x000000L),
+    INT_FAMILY              (0x000001L),
+    FLOAT                   (0x000002L),
+    DOUBLE                  (0x000004L),
+    FLOAT_FAMILY            (FLOAT.value | DOUBLE.value),
+    DECIMAL                 (0x000008L),
+    STRING                  (0x000010L),
+    CHAR                    (0x000020L),
+    VARCHAR                 (0x000040L),
     STRING_FAMILY           (STRING.value | CHAR.value | VARCHAR.value),
-    DATE                    (0x040),
-    TIMESTAMP               (0x080),
-    INTERVAL_YEAR_MONTH     (0x100),
-    INTERVAL_DAY_TIME       (0x200),
-    BINARY                  (0x400),
-    STRUCT                  (0x800),
-    DECIMAL_64              (0x1000),
-    LIST                    (0x2000),
-    MAP                     (0x4000),
-    VOID                    (0x8000),
+    DATE                    (0x000080L),
+    TIMESTAMP               (0x000100L),
+    INTERVAL_YEAR_MONTH     (0x000200L),
+    INTERVAL_DAY_TIME       (0x000400L),
+    BINARY                  (0x000800L),
+    STRUCT                  (0x001000L),
+    DECIMAL_64              (0x002000L),
+    LIST                    (0x004000L),
+    MAP                     (0x008000L),
+    VOID                    (0x010000L),
     INT_DECIMAL_64_FAMILY   (INT_FAMILY.value | DECIMAL_64.value),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
     INT_INTERVAL_YEAR_MONTH     (INT_FAMILY.value | INTERVAL_YEAR_MONTH.value),
     INT_DATE_INTERVAL_YEAR_MONTH  (INT_FAMILY.value | DATE.value | INTERVAL_YEAR_MONTH.value),
     STRING_DATETIME_FAMILY  (STRING_FAMILY.value | DATETIME_FAMILY.value),
-    ALL_FAMILY              (0xFFFF);
+    ALL_FAMILY              (0xFFFFFFL);
 
-    private final int value;
+    private final long value;
 
-    ArgumentType(int val) {
+    ArgumentType(long val) {
       this.value = val;
     }
 
-    public int getValue() {
+    public long getValue() {
       return value;
     }
 
@@ -160,34 +162,6 @@ public class VectorExpressionDescriptor {
 
     public boolean isSameTypeOrFamily(ArgumentType other) {
       return ((value & other.value) != 0);
-    }
-
-    public static String getVectorColumnSimpleName(ArgumentType argType) {
-      if (argType == INT_FAMILY ||
-          argType == DATE ||
-          argType == INTERVAL_YEAR_MONTH
-          ) {
-        return "Long";
-      } else if (argType == TIMESTAMP ||
-                 argType == INTERVAL_DAY_TIME) {
-        return "Timestamp";
-      } else if (argType == FLOAT_FAMILY) {
-        return "Double";
-      } else if (argType == DECIMAL) {
-        return "Decimal";
-      } else if (argType == STRING ||
-                 argType == CHAR ||
-                 argType == VARCHAR ||
-                 argType == BINARY) {
-        return "String";
-      } else {
-        return "None";
-      }
-    }
-
-    public static String getVectorColumnSimpleName(String hiveTypeName) {
-      ArgumentType argType = fromHiveTypeName(hiveTypeName);
-      return getVectorColumnSimpleName(argType);
     }
   }
 
