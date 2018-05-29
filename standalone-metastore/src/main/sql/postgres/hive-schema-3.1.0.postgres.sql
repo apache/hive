@@ -431,7 +431,7 @@ CREATE TABLE "TBL_COL_PRIVS" (
     "PRINCIPAL_TYPE" character varying(128) DEFAULT NULL::character varying,
     "TBL_COL_PRIV" character varying(128) DEFAULT NULL::character varying,
     "TBL_ID" bigint,
-    "AUTHORIZER" character varying(128) DEFAULT NULL::character varying,
+    "AUTHORIZER" character varying(128) DEFAULT NULL::character varying
 );
 
 
@@ -1832,4 +1832,4 @@ CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
-INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '3.0.0', 'Hive release version 3.0.0');
+INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '3.1.0', 'Hive release version 3.1.0');
