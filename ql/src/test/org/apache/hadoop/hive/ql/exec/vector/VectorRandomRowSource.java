@@ -222,21 +222,23 @@ public class VectorRandomRowSource {
       "map"
   };
 
-  private String getRandomTypeName(SupportedTypes supportedTypes, Set<String> allowedTypeNameSet) {
+  private static String getRandomTypeName(Random random, SupportedTypes supportedTypes,
+      Set<String> allowedTypeNameSet) {
+
     String typeName = null;
     do {
-      if (r.nextInt(10 ) != 0) {
-        typeName = possibleHivePrimitiveTypeNames[r.nextInt(possibleHivePrimitiveTypeNames.length)];
+      if (random.nextInt(10 ) != 0) {
+        typeName = possibleHivePrimitiveTypeNames[random.nextInt(possibleHivePrimitiveTypeNames.length)];
       } else {
         switch (supportedTypes) {
         case PRIMITIVES:
-          typeName = possibleHivePrimitiveTypeNames[r.nextInt(possibleHivePrimitiveTypeNames.length)];
+          typeName = possibleHivePrimitiveTypeNames[random.nextInt(possibleHivePrimitiveTypeNames.length)];
           break;
         case ALL_EXCEPT_MAP:
-          typeName = possibleHiveComplexTypeNames[r.nextInt(possibleHiveComplexTypeNames.length - 1)];
+          typeName = possibleHiveComplexTypeNames[random.nextInt(possibleHiveComplexTypeNames.length - 1)];
           break;
         case ALL:
-          typeName = possibleHiveComplexTypeNames[r.nextInt(possibleHiveComplexTypeNames.length)];
+          typeName = possibleHiveComplexTypeNames[random.nextInt(possibleHiveComplexTypeNames.length)];
           break;
         }
       }
@@ -244,17 +246,22 @@ public class VectorRandomRowSource {
     return typeName;
   }
 
-  private String getDecoratedTypeName(String typeName, SupportedTypes supportedTypes,
-      Set<String> allowedTypeNameSet, int depth, int maxDepth) {
+  public static String getDecoratedTypeName(Random random, String typeName) {
+    return getDecoratedTypeName(random, typeName, null, null, 0, 1);
+  }
+
+  private static String getDecoratedTypeName(Random random, String typeName,
+      SupportedTypes supportedTypes, Set<String> allowedTypeNameSet, int depth, int maxDepth) {
+
     depth++;
     if (depth < maxDepth) {
       supportedTypes = SupportedTypes.PRIMITIVES;
     }
     if (typeName.equals("char")) {
-      final int maxLength = 1 + r.nextInt(100);
+      final int maxLength = 1 + random.nextInt(100);
       typeName = String.format("char(%d)", maxLength);
     } else if (typeName.equals("varchar")) {
-      final int maxLength = 1 + r.nextInt(100);
+      final int maxLength = 1 + random.nextInt(100);
       typeName = String.format("varchar(%d)", maxLength);
     } else if (typeName.equals("decimal")) {
       typeName =
@@ -263,26 +270,34 @@ public class VectorRandomRowSource {
               HiveDecimal.SYSTEM_DEFAULT_PRECISION,
               HiveDecimal.SYSTEM_DEFAULT_SCALE);
     } else if (typeName.equals("array")) {
-      String elementTypeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
+      String elementTypeName = getRandomTypeName(random, supportedTypes, allowedTypeNameSet);
       elementTypeName =
-          getDecoratedTypeName(elementTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+          getDecoratedTypeName(random, elementTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
       typeName = String.format("array<%s>", elementTypeName);
     } else if (typeName.equals("map")) {
-      String keyTypeName = getRandomTypeName(SupportedTypes.PRIMITIVES, allowedTypeNameSet);
+      String keyTypeName =
+          getRandomTypeName(
+              random, SupportedTypes.PRIMITIVES, allowedTypeNameSet);
       keyTypeName =
-          getDecoratedTypeName(keyTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
-      String valueTypeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
+          getDecoratedTypeName(
+              random, keyTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+      String valueTypeName =
+          getRandomTypeName(
+              random, supportedTypes, allowedTypeNameSet);
       valueTypeName =
-          getDecoratedTypeName(valueTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+          getDecoratedTypeName(
+              random, valueTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
       typeName = String.format("map<%s,%s>", keyTypeName, valueTypeName);
     } else if (typeName.equals("struct")) {
-      final int fieldCount = 1 + r.nextInt(10);
+      final int fieldCount = 1 + random.nextInt(10);
       final StringBuilder sb = new StringBuilder();
       for (int i = 0; i < fieldCount; i++) {
-        String fieldTypeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
+        String fieldTypeName =
+            getRandomTypeName(
+                random, supportedTypes, allowedTypeNameSet);
         fieldTypeName =
             getDecoratedTypeName(
-                fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+                random, fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
         if (i > 0) {
           sb.append(",");
         }
@@ -294,13 +309,15 @@ public class VectorRandomRowSource {
       typeName = String.format("struct<%s>", sb.toString());
     } else if (typeName.equals("struct") ||
         typeName.equals("uniontype")) {
-      final int fieldCount = 1 + r.nextInt(10);
+      final int fieldCount = 1 + random.nextInt(10);
       final StringBuilder sb = new StringBuilder();
       for (int i = 0; i < fieldCount; i++) {
-        String fieldTypeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
+        String fieldTypeName =
+            getRandomTypeName(
+                random, supportedTypes, allowedTypeNameSet);
         fieldTypeName =
             getDecoratedTypeName(
-                fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+                random, fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
         if (i > 0) {
           sb.append(",");
         }
@@ -309,6 +326,11 @@ public class VectorRandomRowSource {
       typeName = String.format("uniontype<%s>", sb.toString());
     }
     return typeName;
+  }
+
+  private String getDecoratedTypeName(String typeName,
+      SupportedTypes supportedTypes, Set<String> allowedTypeNameSet, int depth, int maxDepth) {
+    return getDecoratedTypeName(r, typeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
   }
 
   private ObjectInspector getObjectInspector(TypeInfo typeInfo) {
@@ -454,7 +476,7 @@ public class VectorRandomRowSource {
         typeName = explicitTypeNameList.get(c);
         dataTypePhysicalVariation = explicitDataTypePhysicalVariationList.get(c);
       } else if (onlyOne || allowedTypeNameSet != null) {
-        typeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
+        typeName = getRandomTypeName(r, supportedTypes, allowedTypeNameSet);
       } else {
         int typeNum;
         if (allTypes) {

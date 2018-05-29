@@ -63,7 +63,7 @@ public class CastStringToDecimal extends VectorExpression {
        * making a new string.
        */
       s = new String(inputColVector.vector[i], inputColVector.start[i], inputColVector.length[i], "UTF-8");
-      outputColVector.vector[i].set(HiveDecimal.create(s));
+      outputColVector.set(i, HiveDecimal.create(s));
     } catch (Exception e) {
 
       // for any exception in conversion to decimal, produce NULL

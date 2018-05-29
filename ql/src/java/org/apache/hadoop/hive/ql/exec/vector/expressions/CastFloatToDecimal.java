@@ -24,24 +24,27 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
- * Cast input double to a decimal. Get target value scale from output column vector.
+ * Cast input float to a decimal. Get target value scale from output column vector.
  */
-public class CastDoubleToDecimal extends FuncDoubleToDecimal {
+public class CastFloatToDecimal extends FuncDoubleToDecimal {
 
   private static final long serialVersionUID = 1L;
 
-  public CastDoubleToDecimal() {
+  public CastFloatToDecimal() {
     super();
   }
 
-  public CastDoubleToDecimal(int inputColumn, int outputColumnNum) {
+  public CastFloatToDecimal(int inputColumn, int outputColumnNum) {
     super(inputColumn, outputColumnNum);
   }
 
   @Override
   protected void func(DecimalColumnVector outV, DoubleColumnVector inV, int i) {
     HiveDecimalWritable decWritable = outV.vector[i];
-    decWritable.setFromDouble(inV.vector[i]);
+
+    // TEMPORARY: In order to avoid a new version of storage-api, do the conversion here...
+    byte[] floatBytes = Float.toString((float) inV.vector[i]).getBytes();
+    decWritable.setFromBytes(floatBytes, 0, floatBytes.length);
     if (!decWritable.mutateEnforcePrecisionScale(outV.precision, outV.scale)) {
       outV.isNull[i] = true;
       outV.noNulls = false;
