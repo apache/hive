@@ -1009,6 +1009,86 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969	1969
+PREHOOK: query: explain SELECT CAST(`__time` AS TIMESTAMP) AS `x_time`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS TIMESTAMP) ORDER BY `x_time` LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT CAST(`__time` AS TIMESTAMP) AS `x_time`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS TIMESTAMP) ORDER BY `x_time` LIMIT 5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table
+          properties:
+            druid.fieldNames extract,$f1
+            druid.fieldTypes timestamp,double
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd HH:mm:ss","timeZone":"US/Pacific","locale":"en"}}],"limitSpec":{"type":"default","limit":5,"columns":[{"dimension":"extract","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cfloat"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: extract (type: timestamp), $f1 (type: double)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT CAST(`__time` AS TIMESTAMP) AS `x_time`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS TIMESTAMP) ORDER BY `x_time` LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(`__time` AS TIMESTAMP) AS `x_time`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS TIMESTAMP) ORDER BY `x_time` LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00	-4532.569952011108
+1969-12-31 16:00:00	-35057.67698967457
+PREHOOK: query: explain SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS DATE) ORDER BY `x_date` LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS DATE) ORDER BY `x_date` LIMIT 5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table
+          properties:
+            druid.fieldNames vc,$f1
+            druid.fieldTypes date,double
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(\"__time\",'P1D','','US/Pacific')","outputType":"LONG"}],"limitSpec":{"type":"default","limit":5,"columns":[{"dimension":"vc","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cfloat"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: date), $f1 (type: double)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS DATE) ORDER BY `x_date` LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS DATE) ORDER BY `x_date` LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31	-39590.24694168568
+PREHOOK: query: SELECT CAST(`__time` AS DATE) AS `x_date` FROM druid_table ORDER BY `x_date` LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(`__time` AS DATE) AS `x_date` FROM druid_table ORDER BY `x_date` LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
 PREHOOK: query: DROP TABLE druid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@druid_table

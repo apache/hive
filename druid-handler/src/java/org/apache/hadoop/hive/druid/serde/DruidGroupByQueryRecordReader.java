@@ -20,113 +20,60 @@ package org.apache.hadoop.hive.druid.serde;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.metamx.http.client.HttpClient;
 import io.druid.data.input.MapBasedRow;
 import io.druid.data.input.Row;
-import io.druid.query.dimension.DimensionSpec;
-import io.druid.query.dimension.ExtractionDimensionSpec;
-import io.druid.query.extraction.TimeFormatExtractionFn;
 import io.druid.query.groupby.GroupByQuery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.apache.hadoop.hive.druid.serde.DruidSerDeUtils.ISO_TIME_FORMAT;
 
 /**
  * Record reader for results for Druid GroupByQuery.
  */
-public class DruidGroupByQueryRecordReader
-        extends DruidQueryRecordReader<GroupByQuery, Row> {
+public class DruidGroupByQueryRecordReader extends DruidQueryRecordReader<GroupByQuery, Row> {
   private final static TypeReference<Row> TYPE_REFERENCE = new TypeReference<Row>() {
   };
 
   private MapBasedRow currentRow;
   private Map<String, Object> currentEvent;
 
-  private List<String> timeExtractionFields = Lists.newArrayList();
-  private List<String> intFormattedTimeExtractionFields = Lists.newArrayList();
-
-  @Override
-  public void initialize(InputSplit split, Configuration conf) throws IOException {
+  @Override public void initialize(InputSplit split, Configuration conf) throws IOException {
     super.initialize(split, conf);
-    initDimensionTypes();
   }
 
-  @Override
-  public void initialize(InputSplit split, Configuration conf, ObjectMapper mapper,
-          ObjectMapper smileMapper, HttpClient httpClient
+  @Override public void initialize(InputSplit split, Configuration conf, ObjectMapper mapper, ObjectMapper smileMapper,
+      HttpClient httpClient
   ) throws IOException {
     super.initialize(split, conf, mapper, smileMapper, httpClient);
-    initDimensionTypes();
   }
 
-  @Override
-  protected JavaType getResultTypeDef() {
+  @Override protected JavaType getResultTypeDef() {
     return DruidStorageHandlerUtils.JSON_MAPPER.getTypeFactory().constructType(TYPE_REFERENCE);
   }
 
-  private void initDimensionTypes() throws IOException {
-    //@TODO move this out of here to org.apache.hadoop.hive.druid.serde.DruidSerDe
-    List<DimensionSpec> dimensionSpecList = ((GroupByQuery) query).getDimensions();
-    List<DimensionSpec> extractionDimensionSpecList = dimensionSpecList.stream()
-            .filter(dimensionSpecs -> dimensionSpecs instanceof ExtractionDimensionSpec)
-            .collect(Collectors.toList());
-    extractionDimensionSpecList.stream().forEach(dimensionSpec -> {
-      ExtractionDimensionSpec extractionDimensionSpec = (ExtractionDimensionSpec) dimensionSpec;
-      if (extractionDimensionSpec.getExtractionFn() instanceof TimeFormatExtractionFn) {
-        final TimeFormatExtractionFn timeFormatExtractionFn = (TimeFormatExtractionFn) extractionDimensionSpec
-                .getExtractionFn();
-        if (timeFormatExtractionFn  == null || timeFormatExtractionFn.getFormat().equals(ISO_TIME_FORMAT)) {
-          timeExtractionFields.add(extractionDimensionSpec.getOutputName());
-        } else {
-          intFormattedTimeExtractionFields.add(extractionDimensionSpec.getOutputName());
-        }
-      }
-    });
-  }
-
-  @Override
-  public boolean nextKeyValue() {
+  @Override public boolean nextKeyValue() {
     // Results
 
     if (queryResultsIterator.hasNext()) {
       final Row row = queryResultsIterator.next();
       // currently druid supports only MapBasedRow as Jackson SerDe so it should safe to cast without check
       currentRow = (MapBasedRow) row;
-      //@TODO move this out of here to org.apache.hadoop.hive.druid.serde.DruidSerDe
-      currentEvent = Maps.transformEntries(currentRow.getEvent(),
-              (key, value1) -> {
-                if (timeExtractionFields.contains(key)) {
-                  return ISODateTimeFormat.dateTimeParser().parseMillis((String) value1);
-                }
-                if (intFormattedTimeExtractionFields.contains(key)) {
-                  return Integer.valueOf((String) value1);
-                }
-                return value1;
-              }
-      );
+      currentEvent = currentRow.getEvent();
       return true;
     }
     return false;
   }
 
-  @Override
-  public NullWritable getCurrentKey() throws IOException, InterruptedException {
+  @Override public NullWritable getCurrentKey() throws IOException, InterruptedException {
     return NullWritable.get();
   }
 
-  @Override
-  public DruidWritable getCurrentValue() throws IOException, InterruptedException {
+  @Override public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
     DruidWritable value = new DruidWritable();
     // 1) The timestamp column
@@ -138,8 +85,7 @@ public class DruidGroupByQueryRecordReader
     return value;
   }
 
-  @Override
-  public boolean next(NullWritable key, DruidWritable value) {
+  @Override public boolean next(NullWritable key, DruidWritable value) {
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
@@ -154,8 +100,7 @@ public class DruidGroupByQueryRecordReader
     return false;
   }
 
-  @Override
-  public float getProgress() throws IOException {
+  @Override public float getProgress() throws IOException {
     return queryResultsIterator.hasNext() ? 0 : 1;
   }
 
