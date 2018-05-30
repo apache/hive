@@ -1,3 +1,5 @@
+--! qt:dataset:alltypesorc
+
 SET hive.vectorized.execution.enabled=false;
 CREATE TABLE druid_table
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
@@ -160,5 +162,18 @@ AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1;
 SELECT EXTRACT(YEAR from `__time`), SUBSTRING(CAST(CAST(`__time` AS DATE) AS STRING), 1, 4) as year_str FROM druid_table WHERE EXTRACT(YEAR from `__time`) >= 1969
 AND CAST(EXTRACT(YEAR from `__time`) as STRING) = '1969' LIMIT 1;
 
+-- Cast to Timestamp
+
+explain SELECT CAST(`__time` AS TIMESTAMP) AS `x_time`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS TIMESTAMP) ORDER BY `x_time` LIMIT 5;
+
+SELECT CAST(`__time` AS TIMESTAMP) AS `x_time`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS TIMESTAMP) ORDER BY `x_time` LIMIT 5;
+
+-- Cast to Date
+
+explain SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS DATE) ORDER BY `x_date` LIMIT 5;
+
+SELECT CAST(`__time` AS DATE) AS `x_date`, SUM(cfloat)  FROM druid_table GROUP BY CAST(`__time` AS DATE) ORDER BY `x_date` LIMIT 5;
+
+SELECT CAST(`__time` AS DATE) AS `x_date` FROM druid_table ORDER BY `x_date` LIMIT 5;
 
 DROP TABLE druid_table;
