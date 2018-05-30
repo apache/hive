@@ -18,7 +18,9 @@
 package org.apache.hadoop.hive.metastore.datasource;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 /**
  * Create a DataSourceProvider for a connectionPool configured in a hadoop
@@ -27,7 +29,8 @@ import org.apache.hadoop.conf.Configuration;
 public abstract  class DataSourceProviderFactory {
 
   private static final ImmutableList<DataSourceProvider> FACTORIES =
-      ImmutableList.<DataSourceProvider>builder().add(new HikariCPDataSourceProvider(), new BoneCPDataSourceProvider()).build();
+      ImmutableList.<DataSourceProvider>builder().add(new HikariCPDataSourceProvider(), new BoneCPDataSourceProvider(),
+              new DbCPDataSourceProvider()).build();
 
   /**
    * @param hdpConfig hadoop configuration
@@ -42,6 +45,22 @@ public abstract  class DataSourceProviderFactory {
       }
     }
     return null;
+  }
+
+  /**
+   * @param hdpConfig hadoop configuration
+   * @return true if the configuration contains settings specifically aimed for one
+   * of the supported conntection pool implementations.
+   */
+  public static boolean hasProviderSpecificConfigurations(Configuration hdpConfig) {
+
+    String poolingType = MetastoreConf.getVar(hdpConfig, MetastoreConf.ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
+
+    return Iterables.any(hdpConfig, entry ->
+    {
+      String key = entry.getKey();
+      return key != null && (key.startsWith(poolingType));
+    });
   }
 
 }
