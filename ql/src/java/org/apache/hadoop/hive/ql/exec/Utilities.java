@@ -3285,6 +3285,9 @@ public final class Utilities {
   public static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir,
       Context ctx, boolean skipDummy) throws Exception {
 
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_PATHS);
+
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
     LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
@@ -3372,6 +3375,8 @@ public final class Utilities {
         finalPathsToAdd.add(newPath);
       }
     }
+
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_PATHS);
 
     return finalPathsToAdd;
   }
