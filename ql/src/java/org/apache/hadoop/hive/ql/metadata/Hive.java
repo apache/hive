@@ -2073,6 +2073,9 @@ public class Hive {
     boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
     try {
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_PARTITION);
+
       // Get the partition object if it already exists
       Partition oldPart = getPartition(tbl, partSpec, false);
       /**
@@ -2107,8 +2110,7 @@ public class Hive {
           ? newPartPath = genPartPathFromTable(tbl, partSpec, tblDataLocationPath) : oldPartPath;
       }
 
-      PerfLogger perfLogger = SessionState.getPerfLogger();
-      perfLogger.PerfLogBegin("MoveTask", "FileMoves");
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
       List<Path> newFiles = null;
 
       // If config is set, table is not temporary and partition being inserted exists, capture
@@ -2170,7 +2172,7 @@ public class Hive {
               tbl.getNumBuckets() > 0, isFullAcidTable, isManaged);
         }
       }
-      perfLogger.PerfLogEnd("MoveTask", "FileMoves");
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
       alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
       validatePartition(newTPart);
@@ -2272,6 +2274,7 @@ public class Hive {
       } else {
         setStatsPropAndAlterPartition(resetStatistics, tbl, newTPart, tableSnapshot);
       }
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_PARTITION);
       return newTPart;
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -2572,6 +2575,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       final boolean resetStatistics, final AcidUtils.Operation operation,
       boolean isInsertOverwrite) throws HiveException {
 
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+
     final Map<Map<String, String>, Partition> partitionsMap =
         Collections.synchronizedMap(new LinkedHashMap<Map<String, String>, Partition>());
 
@@ -2689,6 +2695,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 AcidUtils.toDataOperationType(operation));
       }
       LOG.info("Loaded " + partitionsMap.size() + " partitions");
+
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+
       return partitionsMap;
     } catch (TException te) {
       throw new HiveException("Exception updating metastore for acid table "
@@ -2721,6 +2730,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void loadTable(Path loadPath, String tableName, LoadFileType loadFileType, boolean isSrcLocal,
       boolean isSkewedStoreAsSubdir, boolean isAcidIUDoperation, boolean resetStatistics,
       Long writeId, int stmtId, boolean isInsertOverwrite) throws HiveException {
+
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_TABLE);
 
     List<Path> newFiles = null;
     Table tbl = getTable(tableName);
@@ -2765,6 +2777,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Utilities.FILE_OP_LOGGER.debug("moving " + loadPath + " to " + tblPath
           + " (replace = " + loadFileType + ")");
 
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
+
       boolean isManaged = tbl.getTableType() == TableType.MANAGED_TABLE;
 
       if (loadFileType == LoadFileType.REPLACE_ALL && !isTxnTable) {
@@ -2784,6 +2798,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           throw new HiveException("addFiles: filesystem error in check phase", e);
         }
       }
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
     }
     if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       LOG.debug("setting table statistics false for " + tbl.getDbName() + "." + tbl.getTableName());
@@ -2824,6 +2839,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } else {
       fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
     }
+
+    perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_TABLE);
   }
 
   /**
