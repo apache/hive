@@ -38,6 +38,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
 
   private final int colNum;
 
+  private Object object;
   private long longValue = 0;
   private Timestamp timestampValue = null;
   private byte[] stringValue = null;
@@ -61,6 +62,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
     super(outputColumnNum);
     this.colNum = colNum;
 
+    this.object = object;
     if (object instanceof Long) {
       this.longValue = (Long) object;
     } else if (object instanceof Timestamp) {
@@ -241,7 +243,19 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + stringValue + ", " + getColumnParamString(0, colNum);
+    String value;
+    if (object instanceof Long) {
+      Date tempDate = new Date(0);
+      tempDate.setTime(DateWritable.daysToMillis((int) longValue));
+      value = tempDate.toString();
+    } else if (object instanceof Timestamp) {
+      value = this.timestampValue.toString();
+    } else if (object instanceof byte []) {
+      value = new String(this.stringValue, StandardCharsets.UTF_8);
+    } else {
+      value = "unknown";
+    }
+    return "val " + value + ", " + getColumnParamString(0, colNum);
   }
 
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
