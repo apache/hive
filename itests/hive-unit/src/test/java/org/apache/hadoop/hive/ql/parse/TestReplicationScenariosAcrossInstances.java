@@ -21,6 +21,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -57,6 +58,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestReplicationScenariosAcrossInstances {
@@ -779,4 +781,27 @@ public class TestReplicationScenariosAcrossInstances {
     Partition uk = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("uk"));
     verifyIfCkptSet(uk.getParameters(), tuple.dumpLocation);
   }
+
+  @Test
+  public void shouldNotCreateDirectoryForNonNativeTableInDumpDirectory() throws Throwable {
+    String createTableQuery =
+        "CREATE TABLE custom_serdes( serde_id bigint COMMENT 'from deserializer', name string "
+            + "COMMENT 'from deserializer', slib string COMMENT 'from deserializer') "
+            + "ROW FORMAT SERDE 'org.apache.hive.storage.jdbc.JdbcSerDe' "
+            + "STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler' "
+            + "WITH SERDEPROPERTIES ('serialization.format'='1') "
+            + "TBLPROPERTIES ( "
+            + "'hive.sql.database.type'='METASTORE', "
+            + "'hive.sql.query'='SELECT \"SERDE_ID\", \"NAME\", \"SLIB\" FROM \"SERDES\"')";
+
+    WarehouseInstance.Tuple bootstrapTuple = primary
+        .run("use " + primaryDbName)
+        .run(createTableQuery).dump(primaryDbName, null);
+    Path cSerdesTableDumpLocation = new Path(
+        new Path(bootstrapTuple.dumpLocation, primaryDbName),
+        "custom_serdes");
+    FileSystem fs = cSerdesTableDumpLocation.getFileSystem(primary.hiveConf);
+    assertFalse(fs.exists(cSerdesTableDumpLocation));
+  }
+
 }

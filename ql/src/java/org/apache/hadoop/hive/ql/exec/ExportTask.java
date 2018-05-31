@@ -51,7 +51,7 @@ public class ExportTask extends Task<ExportWork> implements Serializable {
           new TableExport.Paths(work.getAstRepresentationForErrorMsg(), work.getExportRootDir(),
               conf, false);
       Hive db = getHive();
-      LOG.debug("Exporting data to: {}", exportPaths.getExportRootDir());
+      LOG.debug("Exporting data to: {}", exportPaths.exportRootDir());
       work.acidPostProcess(db);
       TableExport tableExport = new TableExport(
           exportPaths, work.getTableSpec(), work.getReplicationSpec(), db, null, conf
