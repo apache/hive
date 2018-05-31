@@ -209,7 +209,7 @@ analyze table ssb_part compute statistics for columns;
 analyze table supplier compute statistics for columns;
 analyze table lineorder compute statistics for columns;
 
-CREATE MATERIALIZED VIEW `ssb_mv` ENABLE REWRITE
+CREATE MATERIALIZED VIEW `ssb_mv`
 AS
 SELECT
   cast(d_year || '-' || d_monthnuminyear || '-' || d_daynuminmonth as timestamp) as `__time`,

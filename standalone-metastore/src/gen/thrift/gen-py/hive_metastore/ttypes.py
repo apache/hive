@@ -2013,6 +2013,7 @@ class HiveObjectPrivilege:
    - principalName
    - principalType
    - grantInfo
+   - authorizer
   """
 
   thrift_spec = (
@@ -2021,13 +2022,15 @@ class HiveObjectPrivilege:
     (2, TType.STRING, 'principalName', None, None, ), # 2
     (3, TType.I32, 'principalType', None, None, ), # 3
     (4, TType.STRUCT, 'grantInfo', (PrivilegeGrantInfo, PrivilegeGrantInfo.thrift_spec), None, ), # 4
+    (5, TType.STRING, 'authorizer', None, None, ), # 5
   )
 
-  def __init__(self, hiveObject=None, principalName=None, principalType=None, grantInfo=None,):
+  def __init__(self, hiveObject=None, principalName=None, principalType=None, grantInfo=None, authorizer=None,):
     self.hiveObject = hiveObject
     self.principalName = principalName
     self.principalType = principalType
     self.grantInfo = grantInfo
+    self.authorizer = authorizer
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2060,6 +2063,11 @@ class HiveObjectPrivilege:
           self.grantInfo.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.authorizer = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2086,6 +2094,10 @@ class HiveObjectPrivilege:
       oprot.writeFieldBegin('grantInfo', TType.STRUCT, 4)
       self.grantInfo.write(oprot)
       oprot.writeFieldEnd()
+    if self.authorizer is not None:
+      oprot.writeFieldBegin('authorizer', TType.STRING, 5)
+      oprot.writeString(self.authorizer)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -2099,6 +2111,7 @@ class HiveObjectPrivilege:
     value = (value * 31) ^ hash(self.principalName)
     value = (value * 31) ^ hash(self.principalType)
     value = (value * 31) ^ hash(self.grantInfo)
+    value = (value * 31) ^ hash(self.authorizer)
     return value
 
   def __repr__(self):

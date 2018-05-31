@@ -53,7 +53,7 @@ alter table depts_n6 change column locationid locationid int constraint nn2 not 
 
 
 -- EXAMPLE 21 -- WORKS NOW
-create materialized view mv1_n4 enable rewrite as
+create materialized view mv1_n4 as
 select depts_n6.deptno, dependents_n4.empid
 from depts_n6
 join dependents_n4 on (depts_n6.name = dependents_n4.name)
@@ -83,7 +83,7 @@ group by dependents_n4.empid, depts_n6.deptno;
 drop materialized view mv1_n4;
 
 -- EXAMPLE 33
-create materialized view mv1_n4 enable rewrite as
+create materialized view mv1_n4 as
 select depts_n6.deptno, dependents_n4.empid, count(emps_n8.salary) as s
 from depts_n6
 join dependents_n4 on (depts_n6.name = dependents_n4.name)
@@ -114,7 +114,7 @@ drop materialized view mv1_n4;
 
 -- EXAMPLE 40 -- REWRITING HAPPENS BUT DISCARDED
 -- DUE TO COST EXCEPT WITH HEURISTICS
-create materialized view mv1_n4 enable rewrite as
+create materialized view mv1_n4 as
 select depts_n6.deptno, dependents_n4.empid
 from depts_n6
 join dependents_n4 on (depts_n6.name = dependents_n4.name)

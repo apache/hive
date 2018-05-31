@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.datasource;
 
 import com.jolbox.bonecp.BoneCPDataSource;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -41,26 +42,35 @@ public class TestDataSourceProviderFactory {
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_USER_NAME, "dummyUser");
     MetastoreConf.setVar(conf, ConfVars.PWD, "dummyPass");
+    conf.unset(ConfVars.CONNECTION_POOLING_TYPE.getVarname());
   }
 
   @Test
   public void testNoDataSourceCreatedWithoutProps() throws SQLException {
 
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, "dummy");
+
     DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
     Assert.assertNull(dsp);
+  }
+
+  @Test
+  public void testCanCreateDataSourceForSpecificProp() throws SQLException {
+
+    Assert.assertFalse(
+            DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
 
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
+    conf.set(BoneCPDataSourceProvider.BONECP + ".dummy.var", "dummy");
 
-    dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
-    Assert.assertNull(dsp);
+    Assert.assertTrue(
+            DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
   }
 
   @Test
   public void testCreateBoneCpDataSource() throws SQLException {
 
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
-    conf.set(BoneCPDataSourceProvider.BONECP + ".firstProp", "value");
-    conf.set(BoneCPDataSourceProvider.BONECP + ".secondProp", "value");
 
     DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
     Assert.assertNotNull(dsp);
@@ -170,4 +180,69 @@ public class TestDataSourceProviderFactory {
     Assert.assertEquals(false, ((HikariDataSource)ds).isAllowPoolSuspension());
   }
 
+  @Test
+  public void testCreateDbCpDataSource() throws SQLException {
+
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, DbCPDataSourceProvider.DBCP);
+
+    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof PoolingDataSource);
+  }
+
+  @Test
+  public void testHasProviderSpecificConfigurationBonecp() throws SQLException {
+
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
+
+    Assert.assertFalse(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+    conf.set("dbcp.dummyConf", "dummyValue");
+    Assert.assertFalse(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+    conf.set("hikaricp.dummyConf", "dummyValue");
+    Assert.assertFalse(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+    conf.set("bonecp.dummyConf", "dummyValue");
+    Assert.assertTrue(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+  }
+
+  @Test
+  public void testHasProviderSpecificConfigurationHikaricp() throws SQLException {
+
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+
+    Assert.assertFalse(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+    conf.set("dbcp.dummyConf", "dummyValue");
+    Assert.assertFalse(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+    conf.set("bonecp.dummyConf", "dummyValue");
+    Assert.assertFalse(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+    conf.set("hikaricp.dummyConf", "dummyValue");
+    Assert.assertTrue(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+  }
+
+  @Test
+  public void testHasProviderSpecificConfigurationDbcp() throws SQLException {
+
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, DbCPDataSourceProvider.DBCP);
+
+    Assert.assertFalse(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+    conf.set("hikaricp.dummyConf", "dummyValue");
+    Assert.assertFalse(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+    conf.set("bonecp.dummyConf", "dummyValue");
+    Assert.assertFalse(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+    conf.set("dbcp.dummyConf", "dummyValue");
+    Assert.assertTrue(DataSourceProviderFactory.hasProviderSpecificConfigurations(conf));
+
+  }
 }

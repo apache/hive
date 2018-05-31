@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.yarn.util.SystemClock;
+import org.apache.tez.dag.history.logging.proto.DatePartitionedLogger;
+import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;

@@ -22,10 +22,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.druid.query.dimension.DimensionSpec;
-import io.druid.query.dimension.ExtractionDimensionSpec;
-import io.druid.query.extraction.TimeFormatExtractionFn;
-
 /**
  * Utils class for Druid SerDe.
  */
@@ -34,6 +30,7 @@ public final class DruidSerDeUtils {
   private static final Logger LOG = LoggerFactory.getLogger(DruidSerDeUtils.class);
 
   protected static final String ISO_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+  protected static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
   protected static final String FLOAT_TYPE = "FLOAT";
   protected static final String DOUBLE_TYPE = "DOUBLE";

@@ -51,13 +51,8 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp.PoolableConnectionFactory;
-import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -122,9 +117,8 @@ import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
-import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
@@ -4334,32 +4328,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private static synchronized DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) throws SQLException {
-    String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(conf);
-    String user = DataSourceProvider.getMetastoreJdbcUser(conf);
-    String passwd = DataSourceProvider.getMetastoreJdbcPasswd(conf);
-    String connectionPooler = MetastoreConf.getVar(conf, ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
-
-    if ("bonecp".equals(connectionPooler)) {
-      doRetryOnConnPool = true;  // Enable retries to work around BONECP bug.
-      return new BoneCPDataSourceProvider().create(conf);
-    } else if ("dbcp".equals(connectionPooler)) {
-      GenericObjectPool objectPool = new GenericObjectPool();
-      //https://commons.apache.org/proper/commons-pool/api-1.6/org/apache/commons/pool/impl/GenericObjectPool.html#setMaxActive(int)
-      objectPool.setMaxActive(maxPoolSize);
-      objectPool.setMaxWait(getConnectionTimeoutMs);
-      ConnectionFactory connFactory = new DriverManagerConnectionFactory(driverUrl, user, passwd);
-      // This doesn't get used, but it's still necessary, see
-      // http://svn.apache.org/viewvc/commons/proper/dbcp/branches/DBCP_1_4_x_BRANCH/doc/ManualPoolingDataSourceExample.java?view=markup
-      PoolableConnectionFactory poolConnFactory =
-          new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
-      return new PoolingDataSource(objectPool);
-    } else if ("hikaricp".equals(connectionPooler)) {
-      return new HikariCPDataSourceProvider().create(conf);
-    } else if ("none".equals(connectionPooler)) {
-      LOG.info("Choosing not to pool JDBC connections");
-      return new NoPoolConnectionPool(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    if (dsp != null) {
+      doRetryOnConnPool = dsp.mayReturnClosedConnection();
+      return dsp.create(conf);
     } else {
-      throw new RuntimeException("Unknown JDBC connection pooling " + connectionPooler);
+      String connectionPooler = MetastoreConf.getVar(conf, ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
+      if ("none".equals(connectionPooler)) {
+        LOG.info("Choosing not to pool JDBC connections");
+        return new NoPoolConnectionPool(conf);
+      } else {
+        throw new RuntimeException("Unknown JDBC connection pooling " + connectionPooler);
+      }
     }
   }
 

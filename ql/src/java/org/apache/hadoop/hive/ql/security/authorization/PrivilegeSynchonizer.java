@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -32,9 +33,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactoryImpl;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
@@ -53,23 +53,26 @@ public class PrivilegeSynchonizer implements Runnable {
   private IMetaStoreClient hiveClient;
   private LeaderLatch privilegeSynchonizerLatch;
   private HiveConf hiveConf;
-  private HiveAuthorizer authorizer;
+  private PolicyProviderContainer policyProviderContainer;
 
-  public PrivilegeSynchonizer(LeaderLatch privilegeSynchonizerLatch, HiveAuthorizer authorizer, HiveConf hiveConf) {
+  public PrivilegeSynchonizer(LeaderLatch privilegeSynchonizerLatch,
+      PolicyProviderContainer policyProviderContainer, HiveConf hiveConf) {
+    this.hiveConf = new HiveConf(hiveConf);
+    this.hiveConf.set(MetastoreConf.ConfVars.FILTER_HOOK.getVarname(), DefaultMetaStoreFilterHookImpl.class.getName());
     try {
-      hiveClient = new HiveMetastoreClientFactoryImpl().getHiveMetastoreClient();
-    } catch (HiveAuthzPluginException e) {
-      throw new RuntimeException("Error creating getHiveMetastoreClient", e);
+      hiveClient = Hive.get(this.hiveConf).getMSC();
+    } catch (Exception e) {
+      throw new RuntimeException("Error creating HiveMetastoreClient", e);
     }
     this.privilegeSynchonizerLatch = privilegeSynchonizerLatch;
-    this.authorizer = authorizer;
+    this.policyProviderContainer = policyProviderContainer;
     this.hiveConf = hiveConf;
   }
 
   private void addACLsToBag(
       Map<String, Map<HiveResourceACLs.Privilege, HiveResourceACLs.AccessResult>> principalAclsMap,
       PrivilegeBag privBag, HiveObjectType objectType, String dbName, String tblName, String columnName,
-      PrincipalType principalType) {
+      PrincipalType principalType, String authorizer) {
 
     for (Map.Entry<String, Map<HiveResourceACLs.Privilege, HiveResourceACLs.AccessResult>> principalAcls
         : principalAclsMap.entrySet()) {
@@ -82,19 +85,19 @@ public class PrivilegeSynchonizer implements Runnable {
             privBag.addToPrivileges(
                 new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.DATABASE, dbName, null, null, null), principal,
                     principalType, new PrivilegeGrantInfo(acl.getKey().toString(),
-                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false)));
+                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
             break;
           case TABLE:
             privBag.addToPrivileges(
                 new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.TABLE, dbName, tblName, null, null), principal,
                     principalType, new PrivilegeGrantInfo(acl.getKey().toString(),
-                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false)));
+                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
             break;
           case COLUMN:
             privBag.addToPrivileges(
                 new HiveObjectPrivilege(new HiveObjectRef(HiveObjectType.COLUMN, dbName, tblName, null, columnName),
                     principal, principalType, new PrivilegeGrantInfo(acl.getKey().toString(),
-                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false)));
+                        (int) (System.currentTimeMillis() / 1000), GRANTOR, PrincipalType.USER, false), authorizer));
             break;
           default:
             throw new RuntimeException("Get unknown object type " + objectType);
@@ -123,7 +126,7 @@ public class PrivilegeSynchonizer implements Runnable {
   }
 
   private void addGrantPrivilegesToBag(HivePolicyProvider policyProvider, PrivilegeBag privBag, HiveObjectType type,
-      String dbName, String tblName, String columnName) throws Exception {
+      String dbName, String tblName, String columnName, String authorizer) throws Exception {
 
     HiveResourceACLs objectAcls = null;
 
@@ -151,51 +154,56 @@ public class PrivilegeSynchonizer implements Runnable {
       return;
     }
 
-    addACLsToBag(objectAcls.getUserPermissions(), privBag, type, dbName, tblName, columnName, PrincipalType.USER);
-    addACLsToBag(objectAcls.getGroupPermissions(), privBag, type, dbName, tblName, columnName, PrincipalType.GROUP);
+    addACLsToBag(objectAcls.getUserPermissions(), privBag, type, dbName, tblName, columnName,
+        PrincipalType.USER, authorizer);
+    addACLsToBag(objectAcls.getGroupPermissions(), privBag, type, dbName, tblName, columnName,
+        PrincipalType.GROUP, authorizer);
   }
 
   @Override
   public void run() {
     while (true) {
+      long interval = HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL, TimeUnit.SECONDS);
       try {
-        HivePolicyProvider policyProvider = authorizer.getHivePolicyProvider();
-        long interval = HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL, TimeUnit.SECONDS);
-        if (hiveConf.getBoolVar(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER)) {
+        for (HivePolicyProvider policyProvider : policyProviderContainer) {
+          String authorizer = policyProvider.getClass().getSimpleName();
           if (!privilegeSynchonizerLatch.await(interval, TimeUnit.SECONDS)) {
             continue;
           }
-          LOG.debug("Start synchonize privilege");
+          LOG.info("Start synchonize privilege");
           for (String dbName : hiveClient.getAllDatabases()) {
             HiveObjectRef dbToRefresh = getObjToRefresh(HiveObjectType.DATABASE, dbName, null);
             PrivilegeBag grantDatabaseBag = new PrivilegeBag();
-            addGrantPrivilegesToBag(policyProvider, grantDatabaseBag, HiveObjectType.DATABASE, dbName, null, null);
-            hiveClient.refresh_privileges(dbToRefresh, grantDatabaseBag);
+            addGrantPrivilegesToBag(policyProvider, grantDatabaseBag, HiveObjectType.DATABASE,
+                dbName, null, null, authorizer);
+            hiveClient.refresh_privileges(dbToRefresh, authorizer, grantDatabaseBag);
 
             for (String tblName : hiveClient.getAllTables(dbName)) {
               HiveObjectRef tableToRefresh = getObjToRefresh(HiveObjectType.TABLE, dbName, tblName);
               PrivilegeBag grantTableBag = new PrivilegeBag();
-              addGrantPrivilegesToBag(policyProvider, grantTableBag, HiveObjectType.TABLE, dbName, tblName, null);
-              hiveClient.refresh_privileges(tableToRefresh, grantTableBag);
+              addGrantPrivilegesToBag(policyProvider, grantTableBag, HiveObjectType.TABLE,
+                  dbName, tblName, null, authorizer);
+              hiveClient.refresh_privileges(tableToRefresh, authorizer, grantTableBag);
 
               HiveObjectRef tableOfColumnsToRefresh = getObjToRefresh(HiveObjectType.COLUMN, dbName, tblName);
               PrivilegeBag grantColumnBag = new PrivilegeBag();
               Table tbl = hiveClient.getTable(dbName, tblName);
               for (FieldSchema fs : tbl.getPartitionKeys()) {
-                addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN, dbName, tblName,
-                    fs.getName());
+                addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
+                    dbName, tblName, fs.getName(), authorizer);
               }
               for (FieldSchema fs : tbl.getSd().getCols()) {
-                addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN, dbName, tblName,
-                    fs.getName());
+                addGrantPrivilegesToBag(policyProvider, grantColumnBag, HiveObjectType.COLUMN,
+                    dbName, tblName, fs.getName(), authorizer);
               }
-              hiveClient.refresh_privileges(tableOfColumnsToRefresh, grantColumnBag);
+              hiveClient.refresh_privileges(tableOfColumnsToRefresh, authorizer, grantColumnBag);
             }
           }
+          // Wait if no exception happens, otherwise, retry immediately
         }
-        // Wait if no exception happens, otherwise, retry immediately
         Thread.sleep(interval * 1000);
-        LOG.debug("Success synchonize privilege");
+        LOG.info("Success synchonize privilege");
+
       } catch (Exception e) {
         LOG.error("Error initializing PrivilegeSynchonizer: " + e.getMessage(), e);
       }

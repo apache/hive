@@ -149,7 +149,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual bool grant_privileges(const PrivilegeBag& privileges) = 0;
   virtual bool revoke_privileges(const PrivilegeBag& privileges) = 0;
   virtual void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request) = 0;
-  virtual void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest) = 0;
+  virtual void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest) = 0;
   virtual void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) = 0;
   virtual void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) = 0;
   virtual int64_t renew_delegation_token(const std::string& token_str_form) = 0;
@@ -660,7 +660,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void grant_revoke_privileges(GrantRevokePrivilegeResponse& /* _return */, const GrantRevokePrivilegeRequest& /* request */) {
     return;
   }
-  void refresh_privileges(GrantRevokePrivilegeResponse& /* _return */, const HiveObjectRef& /* objToRefresh */, const GrantRevokePrivilegeRequest& /* grantRequest */) {
+  void refresh_privileges(GrantRevokePrivilegeResponse& /* _return */, const HiveObjectRef& /* objToRefresh */, const std::string& /* authorizer */, const GrantRevokePrivilegeRequest& /* grantRequest */) {
     return;
   }
   void set_ugi(std::vector<std::string> & /* _return */, const std::string& /* user_name */, const std::vector<std::string> & /* group_names */) {
@@ -17173,8 +17173,9 @@ class ThriftHiveMetastore_grant_revoke_privileges_presult {
 };
 
 typedef struct _ThriftHiveMetastore_refresh_privileges_args__isset {
-  _ThriftHiveMetastore_refresh_privileges_args__isset() : objToRefresh(false), grantRequest(false) {}
+  _ThriftHiveMetastore_refresh_privileges_args__isset() : objToRefresh(false), authorizer(false), grantRequest(false) {}
   bool objToRefresh :1;
+  bool authorizer :1;
   bool grantRequest :1;
 } _ThriftHiveMetastore_refresh_privileges_args__isset;
 
@@ -17183,22 +17184,27 @@ class ThriftHiveMetastore_refresh_privileges_args {
 
   ThriftHiveMetastore_refresh_privileges_args(const ThriftHiveMetastore_refresh_privileges_args&);
   ThriftHiveMetastore_refresh_privileges_args& operator=(const ThriftHiveMetastore_refresh_privileges_args&);
-  ThriftHiveMetastore_refresh_privileges_args() {
+  ThriftHiveMetastore_refresh_privileges_args() : authorizer() {
   }
 
   virtual ~ThriftHiveMetastore_refresh_privileges_args() throw();
   HiveObjectRef objToRefresh;
+  std::string authorizer;
   GrantRevokePrivilegeRequest grantRequest;
 
   _ThriftHiveMetastore_refresh_privileges_args__isset __isset;
 
   void __set_objToRefresh(const HiveObjectRef& val);
 
+  void __set_authorizer(const std::string& val);
+
   void __set_grantRequest(const GrantRevokePrivilegeRequest& val);
 
   bool operator == (const ThriftHiveMetastore_refresh_privileges_args & rhs) const
   {
     if (!(objToRefresh == rhs.objToRefresh))
+      return false;
+    if (!(authorizer == rhs.authorizer))
       return false;
     if (!(grantRequest == rhs.grantRequest))
       return false;
@@ -17222,6 +17228,7 @@ class ThriftHiveMetastore_refresh_privileges_pargs {
 
   virtual ~ThriftHiveMetastore_refresh_privileges_pargs() throw();
   const HiveObjectRef* objToRefresh;
+  const std::string* authorizer;
   const GrantRevokePrivilegeRequest* grantRequest;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -26473,8 +26480,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request);
   void send_grant_revoke_privileges(const GrantRevokePrivilegeRequest& request);
   void recv_grant_revoke_privileges(GrantRevokePrivilegeResponse& _return);
-  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
-  void send_refresh_privileges(const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest);
+  void send_refresh_privileges(const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest);
   void recv_refresh_privileges(GrantRevokePrivilegeResponse& _return);
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names);
   void send_set_ugi(const std::string& user_name, const std::vector<std::string> & group_names);
@@ -28385,13 +28392,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest) {
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->refresh_privileges(_return, objToRefresh, grantRequest);
+      ifaces_[i]->refresh_privileges(_return, objToRefresh, authorizer, grantRequest);
     }
-    ifaces_[i]->refresh_privileges(_return, objToRefresh, grantRequest);
+    ifaces_[i]->refresh_privileges(_return, objToRefresh, authorizer, grantRequest);
     return;
   }
 
@@ -29546,8 +29553,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const GrantRevokePrivilegeRequest& request);
   int32_t send_grant_revoke_privileges(const GrantRevokePrivilegeRequest& request);
   void recv_grant_revoke_privileges(GrantRevokePrivilegeResponse& _return, const int32_t seqid);
-  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
-  int32_t send_refresh_privileges(const HiveObjectRef& objToRefresh, const GrantRevokePrivilegeRequest& grantRequest);
+  void refresh_privileges(GrantRevokePrivilegeResponse& _return, const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest);
+  int32_t send_refresh_privileges(const HiveObjectRef& objToRefresh, const std::string& authorizer, const GrantRevokePrivilegeRequest& grantRequest);
   void recv_refresh_privileges(GrantRevokePrivilegeResponse& _return, const int32_t seqid);
   void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names);
   int32_t send_set_ugi(const std::string& user_name, const std::vector<std::string> & group_names);

@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -85,6 +86,9 @@ public class TestSparkClient {
     if (!Strings.isNullOrEmpty(System.getProperty("spark.home"))) {
       conf.put("spark.home", System.getProperty("spark.home"));
     }
+
+    conf.put("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
+            "TestSparkClient-local-dir").toString());
 
     return conf;
   }

@@ -34,7 +34,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
@@ -44,7 +43,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.NestedScriptParser;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -916,12 +914,7 @@ public class HiveSchemaTool {
             return;
           }
         }
-        SQLGenerator sqlGenerator = new SQLGenerator(
-            DatabaseProduct.determineDatabaseProduct(
-                conn.getMetaData().getDatabaseProductName()
-            ), hiveConf);
-        String query = sqlGenerator.addForUpdateClause("select max(" + quoteIf("CTLG_ID") + ") " +
-            "from " + quoteIf("CTLGS"));
+        String query = "select max(" + quoteIf("CTLG_ID") + ") from " + quoteIf("CTLGS");
         LOG.debug("Going to run " + query);
         ResultSet rs = stmt.executeQuery(query);
         if (!rs.next()) {
@@ -937,14 +930,14 @@ public class HiveSchemaTool {
         conn.commit();
         success = true;
       }
-    } catch (MetaException|SQLException e) {
+    } catch (SQLException e) {
       throw new HiveMetaException("Failed to add catalog", e);
     } finally {
       try {
         if (!success) conn.rollback();
       } catch (SQLException e) {
         // Not really much we can do here.
-        LOG.error("Failed to rollback, everything will probably go bad from here.");
+        LOG.error("Failed to rollback, everything will probably go bad from here.", e);
       }
     }
   }

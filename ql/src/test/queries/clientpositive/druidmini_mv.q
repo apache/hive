@@ -25,7 +25,7 @@ FROM TABLE (
     (3, 'charlie', 'charlie_a', 9.8, 1),
     (3, 'charlie', 'charlie_b', 15.8, 1)) as q (a, b, userid, c, d);
 
-CREATE MATERIALIZED VIEW cmv_mat_view_n2 ENABLE REWRITE
+CREATE MATERIALIZED VIEW cmv_mat_view_n2
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
@@ -37,7 +37,7 @@ SELECT a, b, c FROM cmv_mat_view_n2;
 
 SHOW TBLPROPERTIES cmv_mat_view_n2;
 
-CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2_n0 ENABLE REWRITE
+CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS

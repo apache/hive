@@ -18,14 +18,14 @@ insert into cmv_basetable_n0 values
 
 analyze table cmv_basetable_n0 compute statistics for columns;
 
-create materialized view cmv_mat_view_n0 enable rewrite
+create materialized view cmv_mat_view_n0
 as select a, b, c from cmv_basetable_n0 where a = 2;
 
 select * from cmv_mat_view_n0;
 
 show tblproperties cmv_mat_view_n0;
 
-create materialized view if not exists cmv_mat_view2 enable rewrite
+create materialized view if not exists cmv_mat_view2
 as select a, c from cmv_basetable_n0 where a = 3;
 
 select * from cmv_mat_view2;
