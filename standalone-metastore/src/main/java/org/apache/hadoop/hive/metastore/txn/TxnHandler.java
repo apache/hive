@@ -209,19 +209,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   //todo: make these like OperationType and remove above char constatns
   enum TxnStatus {OPEN, ABORTED, COMMITTED, UNKNOWN}
 
-  public enum TxnType {
-    DEFAULT(0), REPL_CREATED(1), READ_ONLY(2);
-
-    private final int value;
-    TxnType(int value) {
-      this.value = value;
-    }
-
-    public int getValue() {
-      return value;
-    }
-  }
-
   // Lock states
   static final protected char LOCK_ACQUIRED = 'a';
   static final protected char LOCK_WAITING = 'w';
@@ -615,7 +602,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throws SQLException, MetaException {
     int numTxns = rqst.getNum_txns();
     ResultSet rs = null;
-    TxnType txnType = TxnType.DEFAULT;
     try {
       if (rqst.isSetReplPolicy()) {
         List<Long> targetTxnIdList = getTargetTxnIdList(rqst.getReplPolicy(), rqst.getReplSrcTxnIds(), stmt);
@@ -629,7 +615,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   rqst.getReplPolicy() + " and Source transaction id : " + rqst.getReplSrcTxnIds().toString());
           return targetTxnIdList;
         }
-        txnType = TxnType.REPL_CREATED;
       }
 
       String s = sqlGenerator.addForUpdateClause("select ntxn_next from NEXT_TXN_ID");
@@ -651,10 +636,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       for (long i = first; i < first + numTxns; i++) {
         txnIds.add(i);
         rows.add(i + "," + quoteChar(TXN_OPEN) + "," + now + "," + now + ","
-                + quoteString(rqst.getUser()) + "," + quoteString(rqst.getHostname()) + "," + txnType.getValue());
+                + quoteString(rqst.getUser()) + "," + quoteString(rqst.getHostname()));
       }
       List<String> queries = sqlGenerator.createInsertValuesStmt(
-            "TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, txn_user, txn_host, txn_type)", rows);
+              "TXNS (txn_id, txn_state, txn_started, txn_last_heartbeat, txn_user, txn_host)", rows);
       for (String q : queries) {
         LOG.debug("Going to execute update <" + q + ">");
         stmt.execute(q);
@@ -4239,7 +4224,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       while(true) {
         stmt = dbConn.createStatement();
         String s = " txn_id from TXNS where txn_state = '" + TXN_OPEN +
-            "' and txn_last_heartbeat <  " + (now - timeout) + " and txn_type != " + TxnType.REPL_CREATED.getValue();
+          "' and txn_last_heartbeat <  " + (now - timeout);
         //safety valve for extreme cases
         s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
         LOG.debug("Going to execute query <" + s + ">");
