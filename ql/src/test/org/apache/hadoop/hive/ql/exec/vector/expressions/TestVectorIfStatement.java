@@ -43,6 +43,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -178,15 +180,29 @@ public class TestVectorIfStatement {
   private void doIfTests(Random random, String typeName,
       DataTypePhysicalVariation dataTypePhysicalVariation)
           throws Exception {
-    for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
-      doIfTestsWithDiffColumnScalar(
-          random, typeName, columnScalarMode, dataTypePhysicalVariation);
-    }
+    doIfTestsWithDiffColumnScalar(
+        random, typeName, ColumnScalarMode.COLUMN_COLUMN, dataTypePhysicalVariation, false, false);
+    doIfTestsWithDiffColumnScalar(
+        random, typeName, ColumnScalarMode.COLUMN_SCALAR, dataTypePhysicalVariation, false, false);
+    doIfTestsWithDiffColumnScalar(
+        random, typeName, ColumnScalarMode.COLUMN_SCALAR, dataTypePhysicalVariation, false, true);
+    doIfTestsWithDiffColumnScalar(
+        random, typeName, ColumnScalarMode.SCALAR_COLUMN, dataTypePhysicalVariation, false, false);
+    doIfTestsWithDiffColumnScalar(
+        random, typeName, ColumnScalarMode.SCALAR_COLUMN, dataTypePhysicalVariation, true, false);
+    doIfTestsWithDiffColumnScalar(
+        random, typeName, ColumnScalarMode.SCALAR_SCALAR, dataTypePhysicalVariation, false, false);
   }
 
   private void doIfTestsWithDiffColumnScalar(Random random, String typeName,
-      ColumnScalarMode columnScalarMode, DataTypePhysicalVariation dataTypePhysicalVariation)
+      ColumnScalarMode columnScalarMode, DataTypePhysicalVariation dataTypePhysicalVariation,
+      boolean isNullScalar1, boolean isNullScalar2)
           throws Exception {
+
+    System.out.println("*DEBUG* typeName " + typeName +
+        " columnScalarMode " + columnScalarMode +
+        " isNullScalar1 " + isNullScalar1 +
+        " isNullScalar2 " + isNullScalar2);
 
     TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
 
@@ -225,9 +241,14 @@ public class TestVectorIfStatement {
       col2Expr = new ExprNodeColumnDesc(typeInfo, columnName, "table", false);
       columns.add(columnName);
     } else {
-      Object scalar1Object =
-          VectorRandomRowSource.randomPrimitiveObject(
-              random, (PrimitiveTypeInfo) typeInfo);
+      Object scalar1Object;
+      if (isNullScalar1) {
+        scalar1Object = null;
+      } else {
+        scalar1Object =
+            VectorRandomRowSource.randomPrimitiveObject(
+                random, (PrimitiveTypeInfo) typeInfo);
+      }
       col2Expr = new ExprNodeConstantDesc(typeInfo, scalar1Object);
     }
     ExprNodeDesc col3Expr;
@@ -237,9 +258,14 @@ public class TestVectorIfStatement {
       col3Expr = new ExprNodeColumnDesc(typeInfo, columnName, "table", false);
       columns.add(columnName);
     } else {
-      Object scalar2Object =
-          VectorRandomRowSource.randomPrimitiveObject(
-              random, (PrimitiveTypeInfo) typeInfo);
+      Object scalar2Object;
+      if (isNullScalar2) {
+        scalar2Object = null;
+      } else {
+        scalar2Object =
+            VectorRandomRowSource.randomPrimitiveObject(
+                random, (PrimitiveTypeInfo) typeInfo);
+      }
       col3Expr = new ExprNodeConstantDesc(typeInfo, scalar2Object);
     }
 
@@ -369,13 +395,22 @@ public class TestVectorIfStatement {
   }
 
   private void extractResultObjects(VectorizedRowBatch batch, int rowIndex,
-      VectorExtractRow resultVectorExtractRow, Object[] scrqtchRow, Object[] resultObjects) {
-    // UNDONE: selectedInUse
-    for (int i = 0; i < batch.size; i++) {
-      resultVectorExtractRow.extractRow(batch, i, scrqtchRow);
+      VectorExtractRow resultVectorExtractRow, Object[] scrqtchRow,
+      TypeInfo targetTypeInfo, Object[] resultObjects) {
 
-      // UNDONE: Need to copy the object.
-      resultObjects[rowIndex++] = scrqtchRow[0];
+    ObjectInspector objectInspector = TypeInfoUtils
+        .getStandardWritableObjectInspectorFromTypeInfo(targetTypeInfo);
+
+    boolean selectedInUse = batch.selectedInUse;
+    int[] selected = batch.selected;
+    for (int logicalIndex = 0; logicalIndex < batch.size; logicalIndex++) {
+      final int batchIndex = (selectedInUse ? selected[logicalIndex] : logicalIndex);
+      resultVectorExtractRow.extractRow(batch, batchIndex, scrqtchRow);
+
+      Object copyResult =
+          ObjectInspectorUtils.copyToStandardObject(
+              scrqtchRow[0], objectInspector, ObjectInspectorCopyOption.WRITABLE);
+      resultObjects[rowIndex++] = copyResult;
     }
   }
 
@@ -422,13 +457,11 @@ public class TestVectorIfStatement {
     resultVectorExtractRow.init(new TypeInfo[] { typeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
-    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " ifStmtTestMode " + ifStmtTestMode +
         " columnScalarMode " + columnScalarMode +
         " vectorExpression " + vectorExpression.getClass().getSimpleName());
-    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;
@@ -437,7 +470,8 @@ public class TestVectorIfStatement {
         break;
       }
       vectorExpression.evaluate(batch);
-      extractResultObjects(batch, rowIndex, resultVectorExtractRow, scrqtchRow, resultObjects);
+      extractResultObjects(batch, rowIndex, resultVectorExtractRow, scrqtchRow,
+          typeInfo, resultObjects);
       rowIndex += batch.size;
     }
   }
