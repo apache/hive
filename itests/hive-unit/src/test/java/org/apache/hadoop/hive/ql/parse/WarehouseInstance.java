@@ -30,6 +30,9 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -317,6 +320,18 @@ public class WarehouseInstance implements Closeable {
     for (String s : getOutput()) {
       logger.info(s);
     }
+  }
+
+  public Database getDatabase(String dbName) throws Exception {
+    return client.getDatabase(dbName);
+  }
+
+  public Table getTable(String dbName, String tableName) throws Exception {
+    return client.getTable(dbName, tableName);
+  }
+
+  public Partition getPartition(String dbName, String tableName, List<String> partValues) throws Exception {
+    return client.getPartition(dbName, tableName, partValues);
   }
 
   ReplicationV1CompatRule getReplivationV1CompatRule(List<String> testsToSkip) {
