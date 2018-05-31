@@ -62,6 +62,7 @@
     <module>testutils</module>
     <module>packaging</module>
     <module>standalone-metastore</module>
+    <module>upgrade-acid</module>
   </modules>
 
   <properties>
@@ -995,6 +996,11 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-upgrade-acid</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

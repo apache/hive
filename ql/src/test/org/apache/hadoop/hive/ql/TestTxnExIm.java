@@ -539,42 +539,4 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
         TestTxnCommands2.stringifyValues(data), rs);
 
   }
-
-  @Ignore("HIVE-19509: Disable tests that are failing continuously")
-  @Test
-  public void testUpgrade() throws Exception {
-    int[][] data = {{1,2}, {3, 4}, {5, 6}};
-    int[][] dataPart = {{1, 2, 10}, {3, 4, 11}, {5, 6, 12}};
-    runStatementOnDriver("drop table if exists TAcid");
-    runStatementOnDriver("drop table if exists TAcidPart");
-    runStatementOnDriver("drop table if exists TFlat");
-    runStatementOnDriver("drop table if exists TFlatText");
-    runStatementOnDriver("create table TAcid (a int, b int) stored as orc");
-    runStatementOnDriver("create table TAcidPart (a int, b int) partitioned by (p int) stored" +
-        " as orc");
-    runStatementOnDriver("create table TFlat (a int, b int) stored as orc tblproperties('transactional'='false')");
-    runStatementOnDriver("create table TFlatText (a int, b int) stored as textfile tblproperties('transactional'='false')");
-
-
-    //this needs major compaction
-    runStatementOnDriver("insert into TAcid" + TestTxnCommands2.makeValuesClause(data));
-    runStatementOnDriver("update TAcid set a = 1 where b = 2");
-
-    //this table needs to be converted to Acid
-    runStatementOnDriver("insert into TFlat" + TestTxnCommands2.makeValuesClause(data));
-
-    //this table needs to be converted to MM
-    runStatementOnDriver("insert into TFlatText" + TestTxnCommands2.makeValuesClause(data));
-
-    //p=10 needs major compaction
-    runStatementOnDriver("insert into TAcidPart" + TestTxnCommands2.makeValuesClause(dataPart));
-    runStatementOnDriver("update TAcidPart set a = 1 where b = 2 and p = 10");
-
-    //todo: add partitioned table that needs conversion to MM/Acid
-
-    //todo: rename files case
-    String[] args = new String[1];
-    args[0] = new String("-prepareAcidUpgrade");
-    HiveMetaTool.main(args);
-  }
 }
