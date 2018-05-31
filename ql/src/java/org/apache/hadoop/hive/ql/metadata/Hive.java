@@ -1655,6 +1655,9 @@ public class Hive {
     boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
     try {
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_PARTITION);
+
       // Get the partition object if it already exists
       Partition oldPart = getPartition(tbl, partSpec, false);
       /**
@@ -1690,8 +1693,8 @@ public class Hive {
         newPartPath = oldPartPath;
       }
       List<Path> newFiles = null;
-      PerfLogger perfLogger = SessionState.getPerfLogger();
-      perfLogger.PerfLogBegin("MoveTask", "FileMoves");
+
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
       // If config is set, table is not temporary and partition being inserted exists, capture
       // the list of files added. For not yet existing partitions (insert overwrite to new partition
       // or dynamic partition inserts), the add partition event will capture the list of files added.
@@ -1749,7 +1752,7 @@ public class Hive {
               tbl.getNumBuckets() > 0, isFullAcidTable);
         }
       }
-      perfLogger.PerfLogEnd("MoveTask", "FileMoves");
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
       alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
       validatePartition(newTPart);
@@ -1833,6 +1836,7 @@ public class Hive {
       } else {
         setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
       }
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_PARTITION);
       return newTPart;
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -2125,6 +2129,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       final boolean hasFollowingStatsTask, final AcidUtils.Operation operation,
       boolean isInsertOverwrite) throws HiveException {
 
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+
     final Map<Map<String, String>, Partition> partitionsMap =
         Collections.synchronizedMap(new LinkedHashMap<Map<String, String>, Partition>());
 
@@ -2234,6 +2241,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 AcidUtils.toDataOperationType(operation));
       }
       LOG.info("Loaded " + partitionsMap.size() + " partitions");
+
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+
       return partitionsMap;
     } catch (TException te) {
       throw new HiveException("Exception updating metastore for acid table "
@@ -2267,6 +2277,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void loadTable(Path loadPath, String tableName, LoadFileType loadFileType, boolean isSrcLocal,
       boolean isSkewedStoreAsSubdir, boolean isAcidIUDoperation, boolean hasFollowingStatsTask,
       Long writeId, int stmtId, boolean isInsertOverwrite) throws HiveException {
+
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_TABLE);
+
     List<Path> newFiles = null;
     Table tbl = getTable(tableName);
     assert tbl.getPath() != null : "null==getPath() for " + tbl.getTableName();
@@ -2304,6 +2318,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       Utilities.FILE_OP_LOGGER.debug("moving " + loadPath + " to " + tblPath
           + " (replace = " + loadFileType + ")");
+
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
+
       if (loadFileType == LoadFileType.REPLACE_ALL && !isTxnTable) {
         //for fullAcid we don't want to delete any files even for OVERWRITE see HIVE-14988/HIVE-17361
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
@@ -2321,6 +2338,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           throw new HiveException("addFiles: filesystem error in check phase", e);
         }
       }
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
     }
     if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
@@ -2354,6 +2372,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     alterTable(tbl, environmentContext);
 
     fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
+
+    perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_TABLE);
   }
 
   /**
