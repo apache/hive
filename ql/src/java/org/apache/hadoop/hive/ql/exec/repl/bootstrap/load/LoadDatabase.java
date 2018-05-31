@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
+import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -84,6 +85,11 @@ public class LoadDatabase {
      */
     Map<String, String> parameters = new HashMap<>(dbObj.getParameters());
     parameters.remove(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+
+    // Add the checkpoint key to the Database binding it to current dump directory.
+    // So, if retry using same dump, we shall skip Database object update.
+    parameters.put(ReplUtils.REPL_CHECKPOINT_KEY, context.dumpDirectory);
+
     createDbDesc.setDatabaseProperties(parameters);
     // note that we do not set location - for repl load, we want that auto-created.
     createDbDesc.setIfNotExists(false);
