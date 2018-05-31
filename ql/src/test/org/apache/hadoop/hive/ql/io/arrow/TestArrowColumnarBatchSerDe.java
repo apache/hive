@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -494,6 +495,23 @@ public class TestArrowColumnarBatchSerDe {
     };
 
     initAndSerializeAndDeserialize(schema, DTI_ROWS);
+  }
+
+  @Test
+  public void testPrimitiveRandomTimestamp() throws SerDeException {
+    String[][] schema = {
+        {"timestamp1", "timestamp"},
+    };
+
+    int size = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE);
+    Random rand = new Random(294722773L);
+    Object[][] rows = new Object[size][];
+    for (int i = 0; i < size; i++) {
+      long millis = ((long) rand.nextInt(Integer.MAX_VALUE)) * 1000;
+      rows[i] = new Object[] {new TimestampWritable(new Timestamp(millis))};
+    }
+
+    initAndSerializeAndDeserialize(schema, rows);
   }
 
   @Test
