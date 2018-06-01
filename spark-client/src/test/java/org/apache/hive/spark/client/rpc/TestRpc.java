@@ -46,6 +46,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.util.concurrent.Future;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,7 @@ public class TestRpc {
   private Collection<Closeable> closeables;
   private static final Map<String, String> emptyConfig =
       ImmutableMap.of(HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname, "DEBUG");
+  private static final int RETRY_ACQUIRE_PORT_COUNT = 10;
 
   @Before
   public void setUp() {
@@ -187,10 +189,21 @@ public class TestRpc {
     assertTrue("Port should be within configured port range:" + server1.getPort(), server1.getPort() >= 49152 && server1.getPort() <= 49333);
     IOUtils.closeQuietly(server1);
 
-    int expectedPort = 65535;
-    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort));
-    RpcServer server2 = new RpcServer(config);
-    assertTrue("Port should match configured one: " + server2.getPort(), server2.getPort() == expectedPort);
+    int expectedPort = ServerUtils.findFreePort();
+    RpcServer server2 = null;
+    for (int i = 0; i < RETRY_ACQUIRE_PORT_COUNT; i++) {
+      try {
+        config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort));
+        server2 = new RpcServer(config);
+        break;
+      } catch (Exception e) {
+        LOG.debug("Error while connecting to port " + expectedPort + " retrying: " + e.getMessage());
+        expectedPort = ServerUtils.findFreePort();
+      }
+    }
+
+    assertNotNull("Unable to create RpcServer with any attempted port", server2);
+    assertEquals("Port should match configured one: " + server2.getPort(), expectedPort, server2.getPort());
     IOUtils.closeQuietly(server2);
 
     config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, "49552-49222,49223,49224-49333");
@@ -204,10 +217,20 @@ public class TestRpc {
     }
 
     // Retry logic
-    expectedPort = 65535;
-    config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort) + ",21-23");
-    RpcServer server3 = new RpcServer(config);
-    assertTrue("Port should match configured one:" + server3.getPort(), server3.getPort() == expectedPort);
+    expectedPort = ServerUtils.findFreePort();
+    RpcServer server3 = null;
+    for (int i = 0; i < RETRY_ACQUIRE_PORT_COUNT; i++) {
+      try {
+        config.put(HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname, String.valueOf(expectedPort) + ",21-23");
+        server3 = new RpcServer(config);
+        break;
+      } catch (Exception e) {
+        LOG.debug("Error while connecting to port " + expectedPort + " retrying");
+        expectedPort = ServerUtils.findFreePort();
+      }
+    }
+    assertNotNull("Unable to create RpcServer with any attempted port", server3);
+    assertEquals("Port should match configured one:" + server3.getPort(), expectedPort, server3.getPort());
     IOUtils.closeQuietly(server3);
   }
 
