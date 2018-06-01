@@ -85,6 +85,10 @@ if [ "$SERVICE" = "" ] ; then
   fi
 fi
 
+if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
+  SERVICE="beeline"
+fi
+
 if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then
   SKIP_HBASECP=true
 fi
