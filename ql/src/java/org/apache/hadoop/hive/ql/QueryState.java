@@ -50,6 +50,11 @@ public class QueryState {
   private HiveTxnManager txnManager;
 
   /**
+   * Holds the number of rows affected for insert queries.
+   */
+  private long numModifiedRows = 0;
+
+  /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
    */
@@ -100,6 +105,13 @@ public class QueryState {
     this.txnManager = txnManager;
   }
 
+  public long getNumModifiedRows() {
+    return numModifiedRows;
+  }
+
+  public void setNumModifiedRows(long numModifiedRows) {
+    this.numModifiedRows = numModifiedRows;
+  }
   /**
    * Builder to instantiate the QueryState object.
    */
