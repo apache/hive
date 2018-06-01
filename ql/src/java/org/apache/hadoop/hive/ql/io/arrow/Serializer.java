@@ -30,7 +30,7 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.IntervalDayVector;
 import org.apache.arrow.vector.IntervalYearVector;
 import org.apache.arrow.vector.SmallIntVector;
-import org.apache.arrow.vector.TimeStampMilliVector;
+import org.apache.arrow.vector.TimeStampNanoVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
@@ -175,7 +175,7 @@ class Serializer {
           case DATE:
             return Types.MinorType.DATEDAY.getType();
           case TIMESTAMP:
-            return Types.MinorType.TIMESTAMPMILLI.getType();
+            return Types.MinorType.TIMESTAMPNANO.getType();
           case BINARY:
             return Types.MinorType.VARBINARY.getType();
           case DECIMAL:
@@ -430,13 +430,23 @@ class Serializer {
         break;
       case TIMESTAMP:
         {
-          final TimeStampMilliVector timeStampMilliVector = (TimeStampMilliVector) arrowVector;
+          final TimeStampNanoVector timeStampNanoVector = (TimeStampNanoVector) arrowVector;
           final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
           for (int i = 0; i < size; i++) {
             if (hiveVector.isNull[i]) {
-              timeStampMilliVector.setNull(i);
+              timeStampNanoVector.setNull(i);
             } else {
-              timeStampMilliVector.set(i, timestampColumnVector.getTime(i));
+              // Time = second + sub-second
+              final long secondInMillis = timestampColumnVector.getTime(i);
+              final long secondInNanos = (secondInMillis - secondInMillis % 1000) * NS_PER_MS; // second
+              final long subSecondInNanos = timestampColumnVector.getNanos(i); // sub-second
+
+              if ((secondInMillis > 0 && secondInNanos < 0) || (secondInMillis < 0 && secondInNanos > 0)) {
+                // If the timestamp cannot be represented in long nanosecond, set it as a null value
+                timeStampNanoVector.setNull(i);
+              } else {
+                timeStampNanoVector.set(i, secondInNanos + subSecondInNanos);
+              }
             }
           }
         }
