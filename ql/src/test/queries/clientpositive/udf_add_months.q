@@ -25,6 +25,7 @@ add_months('2014-04-30 10:30:00', -2),
 add_months('2015-02-28 10:30:00', 12),
 add_months('2016-02-29 10:30:00', -12),
 add_months('2016-01-29 10:30:00', 1),
+add_months('2016-02-29 10:30:12', -12, 'YYYY-MM-dd HH:mm:ss'),
 add_months('2016-02-29 10:30:00', -1);
 
 select
@@ -37,4 +38,5 @@ add_months(cast('2015-02-28 10:30:00' as timestamp), 12),
 add_months(cast('2016-02-29 10:30:00' as timestamp), -12),
 add_months(cast('2016-01-29 10:30:00' as timestamp), 1),
 add_months(cast('2016-02-29 10:30:00' as timestamp), -1),
+add_months(cast('2016-02-29 10:30:12' as timestamp), 2, 'YYYY-MM-dd HH:mm:ss'),
 add_months(cast(null as timestamp), 1);
