@@ -8571,6 +8571,11 @@ void TGetOperationStatusResp::__set_progressUpdateResponse(const TProgressUpdate
 __isset.progressUpdateResponse = true;
 }
 
+void TGetOperationStatusResp::__set_numModifiedRows(const int64_t val) {
+  this->numModifiedRows = val;
+__isset.numModifiedRows = true;
+}
+
 uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -8675,6 +8680,14 @@ uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->numModifiedRows);
+          this->__isset.numModifiedRows = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -8743,6 +8756,11 @@ uint32_t TGetOperationStatusResp::write(::apache::thrift::protocol::TProtocol* o
     xfer += this->progressUpdateResponse.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.numModifiedRows) {
+    xfer += oprot->writeFieldBegin("numModifiedRows", ::apache::thrift::protocol::T_I64, 11);
+    xfer += oprot->writeI64(this->numModifiedRows);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -8760,6 +8778,7 @@ void swap(TGetOperationStatusResp &a, TGetOperationStatusResp &b) {
   swap(a.operationCompleted, b.operationCompleted);
   swap(a.hasResultSet, b.hasResultSet);
   swap(a.progressUpdateResponse, b.progressUpdateResponse);
+  swap(a.numModifiedRows, b.numModifiedRows);
   swap(a.__isset, b.__isset);
 }
 
@@ -8774,6 +8793,7 @@ TGetOperationStatusResp::TGetOperationStatusResp(const TGetOperationStatusResp& 
   operationCompleted = other283.operationCompleted;
   hasResultSet = other283.hasResultSet;
   progressUpdateResponse = other283.progressUpdateResponse;
+  numModifiedRows = other283.numModifiedRows;
   __isset = other283.__isset;
 }
 TGetOperationStatusResp& TGetOperationStatusResp::operator=(const TGetOperationStatusResp& other284) {
@@ -8787,6 +8807,7 @@ TGetOperationStatusResp& TGetOperationStatusResp::operator=(const TGetOperationS
   operationCompleted = other284.operationCompleted;
   hasResultSet = other284.hasResultSet;
   progressUpdateResponse = other284.progressUpdateResponse;
+  numModifiedRows = other284.numModifiedRows;
   __isset = other284.__isset;
   return *this;
 }
@@ -8803,6 +8824,7 @@ void TGetOperationStatusResp::printTo(std::ostream& out) const {
   out << ", " << "operationCompleted="; (__isset.operationCompleted ? (out << to_string(operationCompleted)) : (out << "<null>"));
   out << ", " << "hasResultSet="; (__isset.hasResultSet ? (out << to_string(hasResultSet)) : (out << "<null>"));
   out << ", " << "progressUpdateResponse="; (__isset.progressUpdateResponse ? (out << to_string(progressUpdateResponse)) : (out << "<null>"));
+  out << ", " << "numModifiedRows="; (__isset.numModifiedRows ? (out << to_string(numModifiedRows)) : (out << "<null>"));
   out << ")";
 }
 

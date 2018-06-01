@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -83,27 +82,13 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.Murmur3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import java.util.function.BiFunction;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
-
 /**
  * File Sink operator implementation.
  **/
@@ -147,6 +132,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient boolean isInsertOverwrite;
   private transient String counterGroup;
   private transient BiFunction<Object[], ObjectInspector[], Integer> hashFunc;
+  public static final String TOTAL_TABLE_ROWS_WRITTEN = "TOTAL_TABLE_ROWS_WRITTEN";
+
   /**
    * Counters.
    */
@@ -583,6 +570,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       hashFunc = conf.getTableInfo().getBucketingVersion() == 2 ?
           ObjectInspectorUtils::getBucketHashCode :
           ObjectInspectorUtils::getBucketHashCodeOld;
+
+      //Counter for number of rows that are associated with a destination table in FileSinkOperator.
+      //This count is used to get total number of rows in an insert query.
+      if (conf.getTableInfo() != null && conf.getTableInfo().getTableName() != null) {
+        statsMap.put(TOTAL_TABLE_ROWS_WRITTEN, row_count);
+      }
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {

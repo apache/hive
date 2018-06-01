@@ -2326,11 +2326,18 @@ public class Driver implements IDriver {
       Map<String, MapRedStats> stats = SessionState.get().getMapRedStats();
       if (stats != null && !stats.isEmpty()) {
         long totalCpu = 0;
+        long numModifiedRows = 0;
         console.printInfo("MapReduce Jobs Launched: ");
         for (Map.Entry<String, MapRedStats> entry : stats.entrySet()) {
           console.printInfo("Stage-" + entry.getKey() + ": " + entry.getValue());
           totalCpu += entry.getValue().getCpuMSec();
+
+          if (numModifiedRows > -1) {
+            //if overflow, then numModifiedRows is set as -1. Else update numModifiedRows with the sum.
+            numModifiedRows = addWithOverflowCheck(numModifiedRows, entry.getValue().getNumModifiedRows());
+          }
         }
+        queryState.setNumModifiedRows(numModifiedRows);
         console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
       }
       lDrvState.stateLock.lock();
@@ -2348,6 +2355,14 @@ public class Driver implements IDriver {
 
     if (console != null) {
       console.printInfo("OK");
+    }
+  }
+
+  private long addWithOverflowCheck(long val1, long val2) {
+    try {
+      return Math.addExact(val1, val2);
+    } catch (ArithmeticException e) {
+      return -1;
     }
   }
 

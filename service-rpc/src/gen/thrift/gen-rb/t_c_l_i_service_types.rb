@@ -1624,6 +1624,7 @@ class TGetOperationStatusResp
   OPERATIONCOMPLETED = 8
   HASRESULTSET = 9
   PROGRESSUPDATERESPONSE = 10
+  NUMMODIFIEDROWS = 11
 
   FIELDS = {
     STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
@@ -1635,7 +1636,8 @@ class TGetOperationStatusResp
     OPERATIONSTARTED => {:type => ::Thrift::Types::I64, :name => 'operationStarted', :optional => true},
     OPERATIONCOMPLETED => {:type => ::Thrift::Types::I64, :name => 'operationCompleted', :optional => true},
     HASRESULTSET => {:type => ::Thrift::Types::BOOL, :name => 'hasResultSet', :optional => true},
-    PROGRESSUPDATERESPONSE => {:type => ::Thrift::Types::STRUCT, :name => 'progressUpdateResponse', :class => ::TProgressUpdateResp, :optional => true}
+    PROGRESSUPDATERESPONSE => {:type => ::Thrift::Types::STRUCT, :name => 'progressUpdateResponse', :class => ::TProgressUpdateResp, :optional => true},
+    NUMMODIFIEDROWS => {:type => ::Thrift::Types::I64, :name => 'numModifiedRows', :optional => true}
   }
 
   def struct_fields; FIELDS; end

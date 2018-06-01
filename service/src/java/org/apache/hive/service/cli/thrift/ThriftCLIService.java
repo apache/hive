@@ -20,6 +20,7 @@ package org.apache.hive.service.cli.thrift;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
@@ -691,6 +692,11 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     try {
       OperationStatus operationStatus =
           cliService.getOperationStatus(operationHandle, req.isGetProgressUpdate());
+
+      if (operationStatus.getState().equals(OperationState.FINISHED)) {
+        long numModifiedRows = operationStatus.getNumModifiedRows();
+        resp.setNumModifiedRows(numModifiedRows);
+      }
       resp.setOperationState(operationStatus.getState().toTOperationState());
       resp.setErrorMessage(operationStatus.getState().getErrorMessage());
       HiveSQLException opException = operationStatus.getOperationException();
