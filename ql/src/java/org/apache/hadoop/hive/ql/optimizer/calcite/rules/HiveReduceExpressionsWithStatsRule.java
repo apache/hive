@@ -295,9 +295,9 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
         RelOptHiveTable table = (RelOptHiveTable) columnOrigin.getOriginTable();
         if (table != null) {
           ColStatistics colStats =
-                  table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal())).get(0);
+              table.getColStat(Lists.newArrayList(columnOrigin.getOriginColumnOrdinal()), false).get(0);
           if (colStats != null && StatsUtils.areColumnStatsUptoDateForQueryAnswering(
-                  table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
+              table.getHiveTableMD(), table.getHiveTableMD().getParameters(), colStats.getColumnName())) {
             return colStats;
           }
         }
