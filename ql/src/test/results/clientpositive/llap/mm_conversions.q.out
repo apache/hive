@@ -460,6 +460,68 @@ POSTHOOK: query: drop table part_to_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_to_mm
 POSTHOOK: Output: default@part_to_mm
+PREHOOK: query: drop table load_to_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table load_to_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table load_to_mm (key string, value string) tblproperties("transactional"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@load_to_mm
+POSTHOOK: query: create table load_to_mm (key string, value string) tblproperties("transactional"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@load_to_mm
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_to_mm
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load_to_mm
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_to_mm
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load_to_mm
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_to_mm
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load_to_mm
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_to_mm
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load_to_mm
+PREHOOK: query: select count(*) from load_to_mm s1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load_to_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from load_to_mm s1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load_to_mm
+#### A masked pattern was here ####
+1000
+PREHOOK: query: alter table load_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@load_to_mm
+PREHOOK: Output: default@load_to_mm
+POSTHOOK: query: alter table load_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@load_to_mm
+POSTHOOK: Output: default@load_to_mm
+PREHOOK: query: select count(*) from load_to_mm s2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load_to_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from load_to_mm s2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load_to_mm
+#### A masked pattern was here ####
+1000
+PREHOOK: query: drop table load_to_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@load_to_mm
+PREHOOK: Output: default@load_to_mm
+POSTHOOK: query: drop table load_to_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@load_to_mm
+POSTHOOK: Output: default@load_to_mm
 PREHOOK: query: drop table simple_to_mm_text
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table simple_to_mm_text
