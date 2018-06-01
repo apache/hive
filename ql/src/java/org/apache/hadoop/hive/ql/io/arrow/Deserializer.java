@@ -29,14 +29,12 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.IntervalDayVector;
 import org.apache.arrow.vector.IntervalYearVector;
 import org.apache.arrow.vector.SmallIntVector;
-import org.apache.arrow.vector.TimeStampMilliVector;
 import org.apache.arrow.vector.TimeStampNanoVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.holders.NullableIntervalDayHolder;
-import org.apache.arrow.vector.types.Types;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -132,7 +130,7 @@ class Deserializer {
   private void read(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
-        readPrimitive(arrowVector, hiveVector);
+        readPrimitive(arrowVector, hiveVector, typeInfo);
         break;
       case LIST:
         readList(arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo);
@@ -151,14 +149,15 @@ class Deserializer {
     }
   }
 
-  private void readPrimitive(FieldVector arrowVector, ColumnVector hiveVector) {
-    final Types.MinorType minorType = arrowVector.getMinorType();
+  private void readPrimitive(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo) {
+    final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
+        ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
 
     final int size = arrowVector.getValueCount();
     hiveVector.ensureSize(size, false);
 
-    switch (minorType) {
-      case BIT:
+    switch (primitiveCategory) {
+      case BOOLEAN:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -170,7 +169,7 @@ class Deserializer {
           }
         }
         break;
-      case TINYINT:
+      case BYTE:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -182,7 +181,7 @@ class Deserializer {
           }
         }
         break;
-      case SMALLINT:
+      case SHORT:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -206,7 +205,7 @@ class Deserializer {
           }
         }
         break;
-      case BIGINT:
+      case LONG:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -218,19 +217,19 @@ class Deserializer {
           }
         }
         break;
-      case FLOAT4:
-        {
-          for (int i = 0; i < size; i++) {
-            if (arrowVector.isNull(i)) {
-              VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
-            } else {
-              hiveVector.isNull[i] = false;
-              ((DoubleColumnVector) hiveVector).vector[i] = ((Float4Vector) arrowVector).get(i);
-            }
+      case FLOAT:
+      {
+        for (int i = 0; i < size; i++) {
+          if (arrowVector.isNull(i)) {
+            VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
+          } else {
+            hiveVector.isNull[i] = false;
+            ((DoubleColumnVector) hiveVector).vector[i] = ((Float4Vector) arrowVector).get(i);
           }
         }
+      }
         break;
-      case FLOAT8:
+      case DOUBLE:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -242,7 +241,9 @@ class Deserializer {
           }
         }
         break;
+      case STRING:
       case VARCHAR:
+      case CHAR:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -254,7 +255,7 @@ class Deserializer {
           }
         }
         break;
-      case DATEDAY:
+      case DATE:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -266,37 +267,7 @@ class Deserializer {
           }
         }
         break;
-      case TIMESTAMPMILLI:
-        {
-          for (int i = 0; i < size; i++) {
-            if (arrowVector.isNull(i)) {
-              VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
-            } else {
-              hiveVector.isNull[i] = false;
-
-              // Time = second + sub-second
-              final long timeInMillis = ((TimeStampMilliVector) arrowVector).get(i);
-              final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
-              int subSecondInNanos = (int) ((timeInMillis % MS_PER_SECOND) * NS_PER_MS);
-              long second = timeInMillis / MS_PER_SECOND;
-
-              // A nanosecond value should not be negative
-              if (subSecondInNanos < 0) {
-
-                // So add one second to the negative nanosecond value to make it positive
-                subSecondInNanos += NS_PER_SECOND;
-
-                // Subtract one second from the second value because we added one second,
-                // then subtract one more second because of the ceiling in the division.
-                second -= 2;
-              }
-              timestampColumnVector.time[i] = second * MS_PER_SECOND;
-              timestampColumnVector.nanos[i] = subSecondInNanos;
-            }
-          }
-        }
-        break;
-      case TIMESTAMPNANO:
+      case TIMESTAMP:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -326,7 +297,7 @@ class Deserializer {
           }
         }
         break;
-      case VARBINARY:
+      case BINARY:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -351,7 +322,7 @@ class Deserializer {
           }
         }
         break;
-      case INTERVALYEAR:
+      case INTERVAL_YEAR_MONTH:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -363,7 +334,7 @@ class Deserializer {
           }
         }
         break;
-      case INTERVALDAY:
+      case INTERVAL_DAY_TIME:
         {
           final IntervalDayVector intervalDayVector = (IntervalDayVector) arrowVector;
           final NullableIntervalDayHolder intervalDayHolder = new NullableIntervalDayHolder();
@@ -383,8 +354,11 @@ class Deserializer {
           }
         }
         break;
+      case VOID:
+      case TIMESTAMPLOCALTZ:
+      case UNKNOWN:
       default:
-        throw new IllegalArgumentException();
+        break;
     }
   }
 
