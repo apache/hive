@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.common;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
@@ -77,4 +79,10 @@ public class ServerUtils {
     }
   }
 
+  public static int findFreePort() throws IOException {
+    ServerSocket socket= new ServerSocket(0);
+    int port = socket.getLocalPort();
+    socket.close();
+    return port;
+  }
 }
