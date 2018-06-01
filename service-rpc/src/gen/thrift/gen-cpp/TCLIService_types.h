@@ -3840,7 +3840,7 @@ inline std::ostream& operator<<(std::ostream& out, const TGetOperationStatusReq&
 }
 
 typedef struct _TGetOperationStatusResp__isset {
-  _TGetOperationStatusResp__isset() : operationState(false), sqlState(false), errorCode(false), errorMessage(false), taskStatus(false), operationStarted(false), operationCompleted(false), hasResultSet(false), progressUpdateResponse(false) {}
+  _TGetOperationStatusResp__isset() : operationState(false), sqlState(false), errorCode(false), errorMessage(false), taskStatus(false), operationStarted(false), operationCompleted(false), hasResultSet(false), progressUpdateResponse(false), numModifiedRows(false) {}
   bool operationState :1;
   bool sqlState :1;
   bool errorCode :1;
@@ -3850,6 +3850,7 @@ typedef struct _TGetOperationStatusResp__isset {
   bool operationCompleted :1;
   bool hasResultSet :1;
   bool progressUpdateResponse :1;
+  bool numModifiedRows :1;
 } _TGetOperationStatusResp__isset;
 
 class TGetOperationStatusResp {
@@ -3857,7 +3858,7 @@ class TGetOperationStatusResp {
 
   TGetOperationStatusResp(const TGetOperationStatusResp&);
   TGetOperationStatusResp& operator=(const TGetOperationStatusResp&);
-  TGetOperationStatusResp() : operationState((TOperationState::type)0), sqlState(), errorCode(0), errorMessage(), taskStatus(), operationStarted(0), operationCompleted(0), hasResultSet(0) {
+  TGetOperationStatusResp() : operationState((TOperationState::type)0), sqlState(), errorCode(0), errorMessage(), taskStatus(), operationStarted(0), operationCompleted(0), hasResultSet(0), numModifiedRows(0) {
   }
 
   virtual ~TGetOperationStatusResp() throw();
@@ -3871,6 +3872,7 @@ class TGetOperationStatusResp {
   int64_t operationCompleted;
   bool hasResultSet;
   TProgressUpdateResp progressUpdateResponse;
+  int64_t numModifiedRows;
 
   _TGetOperationStatusResp__isset __isset;
 
@@ -3893,6 +3895,8 @@ class TGetOperationStatusResp {
   void __set_hasResultSet(const bool val);
 
   void __set_progressUpdateResponse(const TProgressUpdateResp& val);
+
+  void __set_numModifiedRows(const int64_t val);
 
   bool operator == (const TGetOperationStatusResp & rhs) const
   {
@@ -3933,6 +3937,10 @@ class TGetOperationStatusResp {
     if (__isset.progressUpdateResponse != rhs.__isset.progressUpdateResponse)
       return false;
     else if (__isset.progressUpdateResponse && !(progressUpdateResponse == rhs.progressUpdateResponse))
+      return false;
+    if (__isset.numModifiedRows != rhs.__isset.numModifiedRows)
+      return false;
+    else if (__isset.numModifiedRows && !(numModifiedRows == rhs.numModifiedRows))
       return false;
     return true;
   }

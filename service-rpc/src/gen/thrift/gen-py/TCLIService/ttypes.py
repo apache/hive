@@ -6303,6 +6303,7 @@ class TGetOperationStatusResp:
    - operationCompleted
    - hasResultSet
    - progressUpdateResponse
+   - numModifiedRows
   """
 
   thrift_spec = (
@@ -6317,9 +6318,10 @@ class TGetOperationStatusResp:
     (8, TType.I64, 'operationCompleted', None, None, ), # 8
     (9, TType.BOOL, 'hasResultSet', None, None, ), # 9
     (10, TType.STRUCT, 'progressUpdateResponse', (TProgressUpdateResp, TProgressUpdateResp.thrift_spec), None, ), # 10
+    (11, TType.I64, 'numModifiedRows', None, None, ), # 11
   )
 
-  def __init__(self, status=None, operationState=None, sqlState=None, errorCode=None, errorMessage=None, taskStatus=None, operationStarted=None, operationCompleted=None, hasResultSet=None, progressUpdateResponse=None,):
+  def __init__(self, status=None, operationState=None, sqlState=None, errorCode=None, errorMessage=None, taskStatus=None, operationStarted=None, operationCompleted=None, hasResultSet=None, progressUpdateResponse=None, numModifiedRows=None,):
     self.status = status
     self.operationState = operationState
     self.sqlState = sqlState
@@ -6330,6 +6332,7 @@ class TGetOperationStatusResp:
     self.operationCompleted = operationCompleted
     self.hasResultSet = hasResultSet
     self.progressUpdateResponse = progressUpdateResponse
+    self.numModifiedRows = numModifiedRows
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -6392,6 +6395,11 @@ class TGetOperationStatusResp:
           self.progressUpdateResponse.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.I64:
+          self.numModifiedRows = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -6442,6 +6450,10 @@ class TGetOperationStatusResp:
       oprot.writeFieldBegin('progressUpdateResponse', TType.STRUCT, 10)
       self.progressUpdateResponse.write(oprot)
       oprot.writeFieldEnd()
+    if self.numModifiedRows is not None:
+      oprot.writeFieldBegin('numModifiedRows', TType.I64, 11)
+      oprot.writeI64(self.numModifiedRows)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -6463,6 +6475,7 @@ class TGetOperationStatusResp:
     value = (value * 31) ^ hash(self.operationCompleted)
     value = (value * 31) ^ hash(self.hasResultSet)
     value = (value * 31) ^ hash(self.progressUpdateResponse)
+    value = (value * 31) ^ hash(self.numModifiedRows)
     return value
 
   def __repr__(self):

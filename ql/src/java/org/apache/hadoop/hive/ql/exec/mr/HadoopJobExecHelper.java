@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskHandle;
@@ -426,6 +427,16 @@ public class HadoopJobExecHelper {
 
     SessionState ss = SessionState.get();
     if (ss != null) {
+      //Set the number of table rows affected in mapRedStats to display number of rows inserted.
+      if (ctrs != null) {
+        Counter counter = ctrs.findCounter(
+            ss.getConf().getVar(HiveConf.ConfVars.HIVECOUNTERGROUP),
+            FileSinkOperator.TOTAL_TABLE_ROWS_WRITTEN);
+        if (counter != null) {
+          mapRedStats.setNumModifiedRows(counter.getValue());
+        }
+      }
+
       this.callBackObj.logPlanProgress(ss);
     }
     // LOG.info(queryPlan);

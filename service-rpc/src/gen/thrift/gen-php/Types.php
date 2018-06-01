@@ -8351,6 +8351,10 @@ class TGetOperationStatusResp {
    * @var \TProgressUpdateResp
    */
   public $progressUpdateResponse = null;
+  /**
+   * @var int
+   */
+  public $numModifiedRows = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -8397,6 +8401,10 @@ class TGetOperationStatusResp {
           'type' => TType::STRUCT,
           'class' => '\TProgressUpdateResp',
           ),
+        11 => array(
+          'var' => 'numModifiedRows',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -8429,6 +8437,9 @@ class TGetOperationStatusResp {
       }
       if (isset($vals['progressUpdateResponse'])) {
         $this->progressUpdateResponse = $vals['progressUpdateResponse'];
+      }
+      if (isset($vals['numModifiedRows'])) {
+        $this->numModifiedRows = $vals['numModifiedRows'];
       }
     }
   }
@@ -8524,6 +8535,13 @@ class TGetOperationStatusResp {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 11:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->numModifiedRows);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -8591,6 +8609,11 @@ class TGetOperationStatusResp {
       }
       $xfer += $output->writeFieldBegin('progressUpdateResponse', TType::STRUCT, 10);
       $xfer += $this->progressUpdateResponse->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->numModifiedRows !== null) {
+      $xfer += $output->writeFieldBegin('numModifiedRows', TType::I64, 11);
+      $xfer += $output->writeI64($this->numModifiedRows);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

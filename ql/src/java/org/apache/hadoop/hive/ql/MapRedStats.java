@@ -38,6 +38,8 @@ public class MapRedStats {
 
   String jobId;
 
+  private long numModifiedRows;
+
   public MapRedStats(int numMap, int numReduce, long cpuMSec, boolean ifSuccess, String jobId) {
     this.numMap = numMap;
     this.numReduce = numReduce;
@@ -92,6 +94,14 @@ public class MapRedStats {
 
   public void setJobId(String jobId) {
     this.jobId = jobId;
+  }
+
+  public long getNumModifiedRows() {
+    return numModifiedRows;
+  }
+
+  public void setNumModifiedRows(long numModifiedRows) {
+    this.numModifiedRows = numModifiedRows;
   }
 
   public String getTaskNumbers() {

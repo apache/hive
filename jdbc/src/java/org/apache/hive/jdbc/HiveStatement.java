@@ -369,7 +369,7 @@ public class HiveStatement implements java.sql.Statement {
     TGetOperationStatusResp statusResp = null;
 
     // Poll on the operation status, till the operation is complete
-    while (!isOperationComplete) {
+    do {
       try {
         /**
          * For an async SQLOperation, GetOperationStatus will use the long polling approach It will
@@ -414,7 +414,7 @@ public class HiveStatement implements java.sql.Statement {
         isLogBeingGenerated = false;
         throw new SQLException(e.toString(), "08S01", e);
       }
-    }
+    } while (!isOperationComplete);
 
     /*
       we set progress bar to be completed when hive query execution has completed
@@ -708,8 +708,16 @@ public class HiveStatement implements java.sql.Statement {
      * client might end up using executeAsync and then call this to check if the query run is
      * finished.
      */
-    waitForOperationToComplete();
-    return -1;
+    long numModifiedRows = -1;
+    TGetOperationStatusResp resp = waitForOperationToComplete();
+    if (resp != null) {
+      numModifiedRows = resp.getNumModifiedRows();
+    }
+    if (numModifiedRows == -1 || numModifiedRows > Integer.MAX_VALUE) {
+      LOG.warn("Number of rows is greater than Integer.MAX_VALUE");
+      return -1;
+    }
+    return (int) numModifiedRows;
   }
 
   /*
