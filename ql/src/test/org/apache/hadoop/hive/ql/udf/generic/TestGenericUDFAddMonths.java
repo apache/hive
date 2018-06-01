@@ -25,12 +25,20 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import java.sql.Timestamp;
 
 public class TestGenericUDFAddMonths extends TestCase {
+
+  private final Text fmtTextWithTime = new Text("YYYY-MM-dd HH:mm:ss");
+  private final Text fmtTextWithTimeAndms = new Text("YYYY-MM-dd HH:mm:ss.SSS");
+  private final Text fmtTextWithoutTime = new Text("YYYY-MM-dd");
+  private final Text fmtTextInvalid = new Text("YYYY-abcdz");
 
   public void testAddMonthsInt() throws HiveException {
     GenericUDFAddMonths udf = new GenericUDFAddMonths();
@@ -61,6 +69,85 @@ public class TestGenericUDFAddMonths extends TestCase {
     runAndVerify("2016-02-29 10:30:00", -12, "2015-02-28", udf);
     runAndVerify("2016-01-29 10:30:00", 1, "2016-02-29", udf);
     runAndVerify("2016-02-29 10:30:00", -1, "2016-01-31", udf);
+    runAndVerify("2016-02-29 10:30:00", -1, fmtTextWithoutTime, "2016-01-31", udf);
+  }
+
+  public void testAddMonthsStringWithTime() throws HiveException {
+    GenericUDFAddMonths udf = new GenericUDFAddMonths();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo,
+            fmtTextWithTime);
+
+    ObjectInspector[] arguments = {valueOI0, valueOI1, valueOI2};
+    udf.initialize(arguments);
+    runAndVerify("2018-05-10 08:15:12", -1, fmtTextWithTime, "2018-04-10 08:15:12", udf);
+    runAndVerify("2017-12-31 14:15:16", 2, fmtTextWithTime, "2018-02-28 14:15:16", udf);
+    runAndVerify("2017-12-31 14:15:16.001", 2, fmtTextWithTime, "2018-02-28 14:15:16", udf);
+  }
+
+  public void testAddMonthsInvalidFormatter() throws HiveException {
+    GenericUDFAddMonths udf = new GenericUDFAddMonths();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo,
+            fmtTextInvalid);
+
+    ObjectInspector[] arguments = {valueOI0, valueOI1, valueOI2};
+    try {
+      udf.initialize(arguments);
+      fail("Expected to throw an exception for invalid DateFormat");
+    } catch (IllegalArgumentException e) {
+      //test success if exception caught
+    }
+  }
+  public void testAddMonthsStringWithTimeWithms() throws HiveException {
+    GenericUDFAddMonths udf = new GenericUDFAddMonths();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo,
+            fmtTextWithTimeAndms);
+
+    ObjectInspector[] arguments = {valueOI0, valueOI1, valueOI2};
+    udf.initialize(arguments);
+    runAndVerify("2017-12-31 14:15:16.350", 2, fmtTextWithTimeAndms, "2018-02-28 14:15:16.350",
+        udf);
+    runAndVerify("2017-12-31 14:15:16.001", 2, fmtTextWithTimeAndms, "2018-02-28 14:15:16.001",
+        udf);
+    //Try to parse ms where there is no millisecond part in input, expected to return .000 as ms
+    runAndVerify("2017-12-31 14:15:16", 2, fmtTextWithTimeAndms, "2018-02-28 14:15:16.000", udf);
+  }
+
+  public void testAddMonthsWithNullFormatter() throws HiveException {
+    GenericUDFAddMonths udf = new GenericUDFAddMonths();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo,
+            null);
+
+    ObjectInspector[] arguments = {valueOI0, valueOI1, valueOI2};
+    udf.initialize(arguments);
+    runAndVerify("2017-12-31 14:15:16.350", 2, null, "2018-02-28",
+        udf);
+    runAndVerify("2017-12-31", 2, null, "2018-02-28",
+        udf);
+  }
+  public void testAddMonthsTimestamp() throws HiveException {
+    GenericUDFAddMonths udf = new GenericUDFAddMonths();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtTextWithTime);
+    ObjectInspector[] arguments = {valueOI0, valueOI1, valueOI2};
+
+    udf.initialize(arguments);
+    runAndVerify(Timestamp.valueOf("2018-05-10 08:15:12"), 1, fmtTextWithTime, "2018-06-10 08:15:12", udf);
+    runAndVerify(Timestamp.valueOf("2017-12-31 14:15:16"), 2, fmtTextWithTime, "2018-02-28 14:15:16", udf);
   }
 
   public void testWrongDateStr() throws HiveException {
@@ -149,6 +236,28 @@ public class TestGenericUDFAddMonths extends TestCase {
     Text output = (Text) udf.evaluate(args);
     assertEquals("add_months() test ", expResult, output != null ? output.toString() : null);
   }
+
+  private void runAndVerify(String str, int months, Text dateFormat, String expResult,
+      GenericUDF udf) throws HiveException {
+    DeferredObject valueObj0 = new DeferredJavaObject(new Text(str));
+    DeferredObject valueObj1 = new DeferredJavaObject(new IntWritable(months));
+    DeferredObject valueObj2 = new DeferredJavaObject(dateFormat);
+    DeferredObject[] args = {valueObj0, valueObj1, valueObj2};
+    Text output = (Text) udf.evaluate(args);
+    assertEquals("add_months() test with time part", expResult,
+        output != null ? output.toString() : null);
+  }
+
+  private void runAndVerify(Timestamp ts, int months, Text dateFormat, String expResult, GenericUDF udf)
+      throws HiveException {
+    DeferredObject valueObj0 = new DeferredJavaObject(new TimestampWritable(ts));
+    DeferredObject valueObj1 = new DeferredJavaObject(new IntWritable(months));
+    DeferredObject valueObj2 = new DeferredJavaObject(dateFormat);
+    DeferredObject[] args = {valueObj0, valueObj1, valueObj2};
+    Text output = (Text) udf.evaluate(args);
+    assertEquals("add_months() test for timestamp", expResult, output != null ? output.toString() : null);
+  }
+
 
   private void runAndVerify(String str, short months, String expResult, GenericUDF udf)
       throws HiveException {
