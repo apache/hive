@@ -1952,11 +1952,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 dynamicPartitionColumns.add(tokPartVal.getChild(0).getText());
               }
             }
+            for(String colName : dynamicPartitionColumns) {
+              targetColumns.remove(colName);
+            }
+          } else  {
+            // partition spec is not specified but column schema can have partitions specified
+            for(FieldSchema f : targetTable.getPartCols()) {
+              //parser only allows foo(a,b), not foo(foo.a, foo.b)
+              targetColumns.remove(f.getName());
+            }
           }
         }
-        for(String colName : dynamicPartitionColumns) {
-          targetColumns.remove(colName);
-        }
+
         if(!targetColumns.isEmpty()) {
           //Found some columns in user specified schema which are neither regular not dynamic partition columns
           throw new SemanticException(generateErrorMessage(tabColName,
