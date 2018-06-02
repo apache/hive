@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 
 import com.google.common.base.Joiner;
@@ -268,7 +269,7 @@ public class MetaStoreUtils {
     }
     if (colStatsMap.size() < 1) {
       LOG.debug("No stats data found for: tblName= {}, partNames= {}, colNames= {}",
-          Warehouse.getCatalogQualifiedTableName(catName, dbName, tableName), partNames, colNames);
+          TableName.getQualified(catName, dbName, tableName), partNames, colNames);
       return new ArrayList<ColumnStatisticsObj>();
     }
     return aggrPartitionStats(colStatsMap, partNames, areAllPartsFound,
@@ -1804,34 +1805,4 @@ public class MetaStoreUtils {
     return catName;
   }
 
-
-  public static class FullTableName {
-    public final String catalog, db, table;
-
-    public FullTableName(String catalog, String db, String table) {
-      assert catalog != null && db != null && table != null : catalog + ", " + db + ", " + table;
-      this.catalog = catalog;
-      this.db = db;
-      this.table = table;
-    }
-
-    @Override
-    public String toString() {
-      return catalog + MetaStoreUtils.CATALOG_DB_SEPARATOR + db + "." + table;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      return prime * (prime * (prime + catalog.hashCode()) + db.hashCode()) + table.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (obj == null || getClass() != obj.getClass()) return false;
-      FullTableName other = (FullTableName) obj;
-      return catalog.equals(other.catalog) && db.equals(other.db) && table.equals(other.table);
-    }
-  }
 }
