@@ -428,14 +428,13 @@ public class BytesColumnVector extends ColumnVector {
       // at position 0 is undefined if the position 0 value is null.
       if (noNulls || !isNull[0]) {
 
-        // loops start at position 1 because position 0 is already set
         if (selectedInUse) {
-          for (int j = 1; j < size; j++) {
+          for (int j = 0; j < size; j++) {
             int i = sel[j];
             this.setRef(i, vector[0], start[0], length[0]);
           }
         } else {
-          for (int i = 1; i < size; i++) {
+          for (int i = 0; i < size; i++) {
             this.setRef(i, vector[0], start[0], length[0]);
           }
         }
