@@ -212,7 +212,6 @@ public class ThriftHttpCLIService extends ThriftCLIService {
   @Override
   public void run() {
     try {
-      initServer();
       server.join();
     } catch (Throwable t) {
       LOG.error(
