@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -3459,20 +3460,20 @@ public class VectorizationContext {
 
   private Object getScalarValue(ExprNodeConstantDesc constDesc)
       throws HiveException {
-    if (constDesc.getTypeString().equalsIgnoreCase("String")) {
-      try {
-         byte[] bytes = ((String) constDesc.getValue()).getBytes("UTF-8");
-         return bytes;
-      } catch (Exception ex) {
-        throw new HiveException(ex);
-      }
-    } else if (constDesc.getTypeString().equalsIgnoreCase("boolean")) {
+    String typeString = constDesc.getTypeString();
+    if (typeString.equalsIgnoreCase("String")) {
+      return ((String) constDesc.getValue()).getBytes(StandardCharsets.UTF_8);
+    } else if (charTypePattern.matcher(typeString).matches()) {
+      return ((HiveChar) constDesc.getValue()).getStrippedValue().getBytes(StandardCharsets.UTF_8);
+    } else if (varcharTypePattern.matcher(typeString).matches()) {
+      return ((HiveVarchar) constDesc.getValue()).getValue().getBytes(StandardCharsets.UTF_8);
+    } else if (typeString.equalsIgnoreCase("boolean")) {
       if (constDesc.getValue().equals(Boolean.valueOf(true))) {
         return 1;
       } else {
         return 0;
       }
-    } else if (decimalTypePattern.matcher(constDesc.getTypeString()).matches()) {
+    } else if (decimalTypePattern.matcher(typeString).matches()) {
       return constDesc.getValue();
     } else {
       return constDesc.getValue();
