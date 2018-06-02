@@ -942,3 +942,267 @@ POSTHOOK: query: DROP TABLE dest2_n37
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest2_n37
 POSTHOOK: Output: default@dest2_n37
+PREHOOK: query: CREATE TABLE table1_n15 (name string, age int) PARTITIONED BY (country string, state string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1_n15
+POSTHOOK: query: CREATE TABLE table1_n15 (name string, age int) PARTITIONED BY (country string, state string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1_n15
+PREHOOK: query: INSERT INTO table1_n15 values ('John Doe', 23, 'USA', 'CA'), ('Jane Doe', 22, 'USA', 'TX')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1_n15
+POSTHOOK: query: INSERT INTO table1_n15 values ('John Doe', 23, 'USA', 'CA'), ('Jane Doe', 22, 'USA', 'TX')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1_n15@country=USA/state=CA
+POSTHOOK: Output: default@table1_n15@country=USA/state=TX
+POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=CA).age SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=CA).name SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=TX).age SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=TX).name SCRIPT []
+PREHOOK: query: SHOW PARTITIONS table1_n15
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table1_n15
+POSTHOOK: query: SHOW PARTITIONS table1_n15
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table1_n15
+country=USA/state=CA
+country=USA/state=TX
+PREHOOK: query: CREATE TABLE table2_n10 (name string, age int) PARTITIONED BY (country string, state string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2_n10
+POSTHOOK: query: CREATE TABLE table2_n10 (name string, age int) PARTITIONED BY (country string, state string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2_n10
+PREHOOK: query: INSERT INTO TABLE table2_n10(age, name, country, state) SELECT age, name, country, state FROM table1_n15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n15
+PREHOOK: Input: default@table1_n15@country=USA/state=CA
+PREHOOK: Input: default@table1_n15@country=USA/state=TX
+PREHOOK: Output: default@table2_n10
+POSTHOOK: query: INSERT INTO TABLE table2_n10(age, name, country, state) SELECT age, name, country, state FROM table1_n15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n15
+POSTHOOK: Input: default@table1_n15@country=USA/state=CA
+POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10@country=USA/state=CA
+POSTHOOK: Output: default@table2_n10@country=USA/state=TX
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=CA).age SIMPLE [(table1_n15)table1_n15.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=CA).name SIMPLE [(table1_n15)table1_n15.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=TX).age SIMPLE [(table1_n15)table1_n15.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=TX).name SIMPLE [(table1_n15)table1_n15.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SHOW PARTITIONS table2_n10
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table2_n10
+POSTHOOK: query: SHOW PARTITIONS table2_n10
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table2_n10
+country=USA/state=CA
+country=USA/state=TX
+PREHOOK: query: SELECT  * from table2_n10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2_n10
+PREHOOK: Input: default@table2_n10@country=USA/state=CA
+PREHOOK: Input: default@table2_n10@country=USA/state=TX
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT  * from table2_n10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2_n10
+POSTHOOK: Input: default@table2_n10@country=USA/state=CA
+POSTHOOK: Input: default@table2_n10@country=USA/state=TX
+#### A masked pattern was here ####
+John Doe	23	USA	CA
+Jane Doe	22	USA	TX
+PREHOOK: query: INSERT INTO TABLE table2_n10(state, country) SELECT state, country FROM table1_n15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n15
+PREHOOK: Input: default@table1_n15@country=USA/state=CA
+PREHOOK: Input: default@table1_n15@country=USA/state=TX
+PREHOOK: Output: default@table2_n10
+POSTHOOK: query: INSERT INTO TABLE table2_n10(state, country) SELECT state, country FROM table1_n15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n15
+POSTHOOK: Input: default@table1_n15@country=USA/state=CA
+POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10@country=USA/state=CA
+POSTHOOK: Output: default@table2_n10@country=USA/state=TX
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=CA).age SIMPLE []
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=CA).name SIMPLE []
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=TX).age SIMPLE []
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=TX).name SIMPLE []
+PREHOOK: query: SHOW PARTITIONS table2_n10
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table2_n10
+POSTHOOK: query: SHOW PARTITIONS table2_n10
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table2_n10
+country=USA/state=CA
+country=USA/state=TX
+PREHOOK: query: SELECT  * from table2_n10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2_n10
+PREHOOK: Input: default@table2_n10@country=USA/state=CA
+PREHOOK: Input: default@table2_n10@country=USA/state=TX
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT  * from table2_n10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2_n10
+POSTHOOK: Input: default@table2_n10@country=USA/state=CA
+POSTHOOK: Input: default@table2_n10@country=USA/state=TX
+#### A masked pattern was here ####
+John Doe	23	USA	CA
+NULL	NULL	USA	CA
+Jane Doe	22	USA	TX
+NULL	NULL	USA	TX
+PREHOOK: query: INSERT INTO TABLE table2_n10(age, name, country) SELECT age, name, country FROM table1_n15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n15
+PREHOOK: Input: default@table1_n15@country=USA/state=CA
+PREHOOK: Input: default@table1_n15@country=USA/state=TX
+PREHOOK: Output: default@table2_n10
+POSTHOOK: query: INSERT INTO TABLE table2_n10(age, name, country) SELECT age, name, country FROM table1_n15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n15
+POSTHOOK: Input: default@table1_n15@country=USA/state=CA
+POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10@country=USA/state=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=__HIVE_DEFAULT_PARTITION__).age SIMPLE [(table1_n15)table1_n15.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(table1_n15)table1_n15.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SHOW PARTITIONS table2_n10
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table2_n10
+POSTHOOK: query: SHOW PARTITIONS table2_n10
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table2_n10
+country=USA/state=CA
+country=USA/state=TX
+country=USA/state=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: SELECT  * from table2_n10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2_n10
+PREHOOK: Input: default@table2_n10@country=USA/state=CA
+PREHOOK: Input: default@table2_n10@country=USA/state=TX
+PREHOOK: Input: default@table2_n10@country=USA/state=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT  * from table2_n10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2_n10
+POSTHOOK: Input: default@table2_n10@country=USA/state=CA
+POSTHOOK: Input: default@table2_n10@country=USA/state=TX
+POSTHOOK: Input: default@table2_n10@country=USA/state=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+John Doe	23	USA	CA
+NULL	NULL	USA	CA
+Jane Doe	22	USA	TX
+NULL	NULL	USA	TX
+John Doe	23	USA	__HIVE_DEFAULT_PARTITION__
+Jane Doe	22	USA	__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: INSERT INTO TABLE table2_n10( name, country) SELECT name, country FROM table1_n15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1_n15
+PREHOOK: Input: default@table1_n15@country=USA/state=CA
+PREHOOK: Input: default@table1_n15@country=USA/state=TX
+PREHOOK: Output: default@table2_n10
+POSTHOOK: query: INSERT INTO TABLE table2_n10( name, country) SELECT name, country FROM table1_n15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1_n15
+POSTHOOK: Input: default@table1_n15@country=USA/state=CA
+POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10@country=USA/state=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=__HIVE_DEFAULT_PARTITION__).age SIMPLE []
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=__HIVE_DEFAULT_PARTITION__).name SIMPLE [(table1_n15)table1_n15.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SHOW PARTITIONS table2_n10
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table2_n10
+POSTHOOK: query: SHOW PARTITIONS table2_n10
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table2_n10
+country=USA/state=CA
+country=USA/state=TX
+country=USA/state=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: SELECT  * from table2_n10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2_n10
+PREHOOK: Input: default@table2_n10@country=USA/state=CA
+PREHOOK: Input: default@table2_n10@country=USA/state=TX
+PREHOOK: Input: default@table2_n10@country=USA/state=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT  * from table2_n10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2_n10
+POSTHOOK: Input: default@table2_n10@country=USA/state=CA
+POSTHOOK: Input: default@table2_n10@country=USA/state=TX
+POSTHOOK: Input: default@table2_n10@country=USA/state=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+John Doe	23	USA	CA
+NULL	NULL	USA	CA
+Jane Doe	22	USA	TX
+NULL	NULL	USA	TX
+John Doe	23	USA	__HIVE_DEFAULT_PARTITION__
+Jane Doe	22	USA	__HIVE_DEFAULT_PARTITION__
+John Doe	NULL	USA	__HIVE_DEFAULT_PARTITION__
+Jane Doe	NULL	USA	__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: DROP TABLE table2_n10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table2_n10
+PREHOOK: Output: default@table2_n10
+POSTHOOK: query: DROP TABLE table2_n10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table2_n10
+POSTHOOK: Output: default@table2_n10
+PREHOOK: query: DROP TABLE table1_n15
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1_n15
+PREHOOK: Output: default@table1_n15
+POSTHOOK: query: DROP TABLE table1_n15
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1_n15
+POSTHOOK: Output: default@table1_n15
+PREHOOK: query: CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int)
+    CLUSTERED BY (userid) INTO 256 BUCKETS STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pageviews
+POSTHOOK: query: CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int)
+    CLUSTERED BY (userid) INTO 256 BUCKETS STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pageviews
+PREHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp='2014-09-23',i)(userid,i,link) VALUES ('jsmith', 7, '7mail.com')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pageviews@datestamp=2014-09-23
+POSTHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp='2014-09-23',i)(userid,i,link) VALUES ('jsmith', 7, '7mail.com')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pageviews@datestamp=2014-09-23/i=7
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).link SCRIPT []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).source SIMPLE []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).userid SCRIPT []
+PREHOOK: query: SHOW PARTITIONS pageviews
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@pageviews
+POSTHOOK: query: SHOW PARTITIONS pageviews
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@pageviews
+datestamp=2014-09-23/i=7
+PREHOOK: query: select * from pageviews
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pageviews
+PREHOOK: Input: default@pageviews@datestamp=2014-09-23/i=7
+#### A masked pattern was here ####
+POSTHOOK: query: select * from pageviews
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pageviews
+POSTHOOK: Input: default@pageviews@datestamp=2014-09-23/i=7
+#### A masked pattern was here ####
+jsmith	7mail.com	NULL	2014-09-23	7
+PREHOOK: query: drop database if exists x314n cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists x314n cascade
+POSTHOOK: type: DROPDATABASE
