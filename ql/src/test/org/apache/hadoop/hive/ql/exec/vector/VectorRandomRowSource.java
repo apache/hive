@@ -977,6 +977,18 @@ public class VectorRandomRowSource {
     }
   }
 
+  public static String randomPrimitiveDateStringObject(Random r) {
+    Date randomDate = RandomTypeUtil.getRandDate(r);
+    String randomDateString = randomDate.toString();
+    return randomDateString;
+  }
+
+  public static String randomPrimitiveTimestampStringObject(Random r) {
+    Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(r);
+    String randomTimestampString = randomTimestamp.toString();
+    return randomTimestampString;
+  }
+
   public static HiveChar getRandHiveChar(Random r, CharTypeInfo charTypeInfo) {
     final int maxLength = 1 + r.nextInt(charTypeInfo.getLength());
     final String randomString = RandomTypeUtil.getRandString(r, "abcdefghijklmnopqrstuvwxyz", 100);

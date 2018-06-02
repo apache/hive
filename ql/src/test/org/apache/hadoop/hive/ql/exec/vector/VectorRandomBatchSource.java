@@ -19,9 +19,12 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
@@ -83,18 +86,53 @@ public class VectorRandomBatchSource {
 
     final int batchSize;
     final BitSet bitSet;
+    final int[] selected;
 
-    private VectorBatchPattern(int batchSize, BitSet bitSet) {
+    private VectorBatchPattern(Random random, int batchSize,
+        BitSet bitSet, boolean asSelected) {
       this.batchSize = batchSize;
       this.bitSet = bitSet;
+      if (asSelected) {
+        selected = randomSelection(random, batchSize);
+      } else {
+        selected = null;
+      }
+    }
+
+    private int[] randomSelection(Random random, int batchSize) {
+
+      // Random batchSize unique ordered integers of 1024 (VectorizedRowBatch.DEFAULT_SIZE) indices.
+      // This could be smarter...
+      Set<Integer> selectedSet = new TreeSet<Integer>();
+      int currentCount = 0;
+      while (true) {
+        final int candidateIndex = random.nextInt(VectorizedRowBatch.DEFAULT_SIZE);
+        if (!selectedSet.contains(candidateIndex)) {
+          selectedSet.add(candidateIndex);
+          if (++currentCount == batchSize) {
+            Integer[] integerArray = selectedSet.toArray(new Integer[0]);
+            int[] result = new int[batchSize];
+            for (int i = 0; i < batchSize; i++) {
+              result[i] = integerArray[i];
+            }
+            return result;
+          }
+        }
+      }
     }
 
     public static VectorBatchPattern createRegularBatch(int batchSize) {
-      return new VectorBatchPattern(batchSize, null);
+      return new VectorBatchPattern(null, batchSize, null, false);
     }
 
-    public static VectorBatchPattern createRepeatedBatch(int batchSize, BitSet bitSet) {
-      return new VectorBatchPattern(batchSize, bitSet);
+    public static VectorBatchPattern createRegularBatch(Random random, int batchSize,
+        boolean asSelected) {
+      return new VectorBatchPattern(random, batchSize, null, asSelected);
+    }
+
+    public static VectorBatchPattern createRepeatedBatch(Random random, int batchSize,
+        BitSet bitSet, boolean asSelected) {
+      return new VectorBatchPattern(random, batchSize, bitSet, asSelected);
     }
 
     public int getBatchSize() {
@@ -105,13 +143,22 @@ public class VectorRandomBatchSource {
       return bitSet;
     }
 
+    public int[] getSelected() {
+      return selected;
+    }
+
     public String toString() {
       String batchSizeString = "batchSize " + Integer.toString(batchSize);
-      if (bitSet == null) {
-        return batchSizeString;
+      if (bitSet != null) {
+        long bitMask = bitSet.toLongArray()[0];
+        batchSizeString += " repeating 0x" + Long.toHexString(bitMask);
       }
-      long bitMask = bitSet.toLongArray()[0];
-      return batchSizeString + " repeating 0x" + Long.toHexString(bitMask);
+      boolean selectedInUse = (selected != null);
+      batchSizeString += " selectedInUse " + selectedInUse;
+      if (selectedInUse) {
+        batchSizeString += " selected " + Arrays.toString(selected);
+      }
+      return batchSizeString;
     }
   }
 
@@ -128,7 +175,7 @@ public class VectorRandomBatchSource {
 
       final int columnCount = randomRows[0].length;
 
-      // Choose first up to a full batch.
+      // Choose first up to a full batch with no selection.
       final int regularBatchSize = Math.min(rowCount - rowIndex, VectorizedRowBatch.DEFAULT_SIZE);
       vectorBatchPatternList.add(VectorBatchPattern.createRegularBatch(regularBatchSize));
       rowIndex += regularBatchSize;
@@ -147,66 +194,83 @@ public class VectorRandomBatchSource {
 
       int columnPermutationLimit = Math.min(columnCount, Long.SIZE);
 
-      // Repeated NULL permutations.
-      long columnPermutation = 1;
+      boolean asSelected = false;
+
+      /*
+       * Do a round each as physical with no row selection and logical with row selection.
+       */
       while (true) {
-        if (columnPermutation > columnPermutationLimit) {
-          break;
-        }
-        final int maximumRowCount = Math.min(rowCount - rowIndex, VectorizedRowBatch.DEFAULT_SIZE);
-        if (maximumRowCount == 0) {
-          break;
-        }
-        int randomRowCount = 1 + random.nextInt(maximumRowCount);
-        final int rowLimit = rowIndex + randomRowCount;
 
-        BitSet bitSet = BitSet.valueOf(new long[]{columnPermutation});
-
-        for (int columnNum = bitSet.nextSetBit(0);
-             columnNum >= 0;
-             columnNum = bitSet.nextSetBit(columnNum + 1)) {
-
-          // Repeated NULL fill down column.
-          for (int r = rowIndex; r < rowLimit; r++) {
-            randomRows[r][columnNum] = null;
+        // Repeated NULL permutations.
+        long columnPermutation = 1;
+        while (true) {
+          if (columnPermutation > columnPermutationLimit) {
+            break;
           }
-        }
-        vectorBatchPatternList.add(VectorBatchPattern.createRepeatedBatch(randomRowCount, bitSet));
-        columnPermutation++;
-        rowIndex = rowLimit;
-      }
+          final int maximumRowCount = Math.min(rowCount - rowIndex, VectorizedRowBatch.DEFAULT_SIZE);
+          if (maximumRowCount == 0) {
+            break;
+          }
+          int randomRowCount = 1 + random.nextInt(maximumRowCount);
+          final int rowLimit = rowIndex + randomRowCount;
 
-      // Repeated non-NULL permutations.
-      columnPermutation = 1;
-      while (true) {
-        if (columnPermutation > columnPermutationLimit) {
+          BitSet bitSet = BitSet.valueOf(new long[]{columnPermutation});
+
+          for (int columnNum = bitSet.nextSetBit(0);
+               columnNum >= 0;
+               columnNum = bitSet.nextSetBit(columnNum + 1)) {
+
+            // Repeated NULL fill down column.
+            for (int r = rowIndex; r < rowLimit; r++) {
+              randomRows[r][columnNum] = null;
+            }
+          }
+          vectorBatchPatternList.add(
+              VectorBatchPattern.createRepeatedBatch(
+                  random, randomRowCount, bitSet, asSelected));
+          columnPermutation++;
+          rowIndex = rowLimit;
+        }
+
+        // Repeated non-NULL permutations.
+        columnPermutation = 1;
+        while (true) {
+          if (columnPermutation > columnPermutationLimit) {
+            break;
+          }
+          final int maximumRowCount = Math.min(rowCount - rowIndex, VectorizedRowBatch.DEFAULT_SIZE);
+          if (maximumRowCount == 0) {
+            break;
+          }
+          int randomRowCount = 1 + random.nextInt(maximumRowCount);
+          final int rowLimit = rowIndex + randomRowCount;
+
+          BitSet bitSet = BitSet.valueOf(new long[]{columnPermutation});
+
+          for (int columnNum = bitSet.nextSetBit(0);
+               columnNum >= 0;
+               columnNum = bitSet.nextSetBit(columnNum + 1)) {
+
+            // Repeated non-NULL fill down column.
+            Object repeatedObject = randomRows[rowIndex][columnNum];
+            if (repeatedObject == null) {
+              repeatedObject = nonNullRow[columnNum];
+            }
+            for (int r = rowIndex; r < rowLimit; r++) {
+              randomRows[r][columnNum] = repeatedObject;
+            }
+          }
+          vectorBatchPatternList.add(
+              VectorBatchPattern.createRepeatedBatch(
+                  random, randomRowCount, bitSet, asSelected));
+          columnPermutation++;
+          rowIndex = rowLimit;
+        }
+
+        if (asSelected) {
           break;
         }
-        final int maximumRowCount = Math.min(rowCount - rowIndex, VectorizedRowBatch.DEFAULT_SIZE);
-        if (maximumRowCount == 0) {
-          break;
-        }
-        int randomRowCount = 1 + random.nextInt(maximumRowCount);
-        final int rowLimit = rowIndex + randomRowCount;
-
-        BitSet bitSet = BitSet.valueOf(new long[]{columnPermutation});
-
-        for (int columnNum = bitSet.nextSetBit(0);
-             columnNum >= 0;
-             columnNum = bitSet.nextSetBit(columnNum + 1)) {
-
-          // Repeated non-NULL fill down column.
-          Object repeatedObject = randomRows[rowIndex][columnNum];
-          if (repeatedObject == null) {
-            repeatedObject = nonNullRow[columnNum];
-          }
-          for (int r = rowIndex; r < rowLimit; r++) {
-            randomRows[r][columnNum] = repeatedObject;
-          }
-        }
-        vectorBatchPatternList.add(VectorBatchPattern.createRepeatedBatch(randomRowCount, bitSet));
-        columnPermutation++;
-        rowIndex = rowLimit;
+        asSelected = true;
       }
 
       // Remaining batches.
@@ -216,7 +280,10 @@ public class VectorRandomBatchSource {
           break;
         }
         int randomRowCount = 1 + random.nextInt(maximumRowCount);
-        vectorBatchPatternList.add(VectorBatchPattern.createRegularBatch(randomRowCount));
+        asSelected = random.nextBoolean();
+        vectorBatchPatternList.add(
+            VectorBatchPattern.createRegularBatch(
+                random, randomRowCount, asSelected));
         rowIndex += randomRowCount;
       }
     }
@@ -278,6 +345,9 @@ public class VectorRandomBatchSource {
 
     VectorBatchPattern vectorBatchPattern =
         vectorBatchPatterns.getTectorBatchPatternList().get(batchCount);
+
+    // System.out.println("*DEBUG* vectorBatchPattern " + vectorBatchPattern.toString());
+
     final int batchSize = vectorBatchPattern.getBatchSize();
 
     for (int c = 0; c < columnCount; c++) {
@@ -293,13 +363,25 @@ public class VectorRandomBatchSource {
       }
     }
 
+    int[] selected = vectorBatchPattern.getSelected();
+    boolean selectedInUse = (selected != null);
+    batch.selectedInUse = selectedInUse;
+    if (selectedInUse) {
+      System.arraycopy(selected, 0, batch.selected, 0, batchSize);
+    }
+
     int rowIndex = nextRowIndex;
-    for (int batchIndex = 0; batchIndex < batchSize; batchIndex++) {
+    for (int logicalIndex = 0; logicalIndex < batchSize; logicalIndex++) {
+      final int batchIndex = (selectedInUse ? selected[logicalIndex] : logicalIndex);
       for (int c = 0; c < columnCount; c++) {
-        if (batch.cols[c].isRepeating && batchIndex > 0) {
-          continue;
+        if (batch.cols[c].isRepeating) {
+          if (logicalIndex > 0) {
+            continue;
+          }
+          vectorAssignRow.assignRowColumn(batch, 0, c, randomRows[rowIndex][c]);
+        } else {
+          vectorAssignRow.assignRowColumn(batch, batchIndex, c, randomRows[rowIndex][c]);
         }
-        vectorAssignRow.assignRowColumn(batch, batchIndex, c, randomRows[rowIndex][c]);
       }
       rowIndex++;
     }

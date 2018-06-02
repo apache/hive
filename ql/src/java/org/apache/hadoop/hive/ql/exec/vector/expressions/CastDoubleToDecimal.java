@@ -54,7 +54,7 @@ public class CastDoubleToDecimal extends FuncDoubleToDecimal {
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(1)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.FLOAT)
+            VectorExpressionDescriptor.ArgumentType.DOUBLE)
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();
