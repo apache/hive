@@ -79,7 +79,6 @@ public class TestVectorDateDiff {
     doDateDiffTests(random, "date", "date");
   }
 
-  @Ignore("HIVE-19493")
   @Test
   public void testDateTimestamp() throws Exception {
     Random random = new Random(7743);
@@ -87,7 +86,6 @@ public class TestVectorDateDiff {
     doDateDiffTests(random, "date", "timestamp");
   }
 
-  @Ignore("HIVE-19493")
   @Test
   public void testDateString() throws Exception {
     Random random = new Random(7743);
@@ -95,7 +93,6 @@ public class TestVectorDateDiff {
     doDateDiffTests(random, "date", "string");
   }
 
-  @Ignore("HIVE-19493")
   @Test
   public void testTimestampDate() throws Exception {
     Random random = new Random(82);
@@ -103,7 +100,6 @@ public class TestVectorDateDiff {
     doDateDiffTests(random, "timestamp", "date");
   }
 
-  @Ignore("HIVE-19493")
   @Test
   public void testTimestampTimestamp() throws Exception {
     Random random = new Random(82);
@@ -111,7 +107,6 @@ public class TestVectorDateDiff {
     doDateDiffTests(random, "timestamp", "timestamp");
   }
 
-  @Ignore("HIVE-19493")
   @Test
   public void testTimestampString() throws Exception {
     Random random = new Random(82);
@@ -119,7 +114,6 @@ public class TestVectorDateDiff {
     doDateDiffTests(random, "timestamp", "string");
   }
 
-  @Ignore("HIVE-19493")
   @Test
   public void testStringFamily() throws Exception {
     Random random = new Random(12882);
