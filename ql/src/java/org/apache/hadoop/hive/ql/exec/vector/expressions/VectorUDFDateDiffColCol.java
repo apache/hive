@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 
 public class VectorUDFDateDiffColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -208,24 +209,25 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
   public void copySelected(
       BytesColumnVector input, boolean selectedInUse, int[] sel, int size, LongColumnVector output) {
 
-    // Output has nulls if and only if input has nulls.
-    output.noNulls = input.noNulls;
     output.isRepeating = false;
 
     // Handle repeating case
     if (input.isRepeating) {
-      output.isNull[0] = input.isNull[0];
-      output.isRepeating = true;
-
-      if (!input.isNull[0]) {
+      if (input.noNulls || !input.isNull[0]) {
         String string = new String(input.vector[0], input.start[0], input.length[0]);
         try {
           date.setTime(formatter.parse(string).getTime());
           output.vector[0] = DateWritable.dateToDays(date);
+          output.isNull[0] = false;
         } catch (ParseException e) {
           output.isNull[0] = true;
+          output.noNulls = false;
         }
+      } else {
+        output.isNull[0] = true;
+        output.noNulls = false;
       }
+      output.isRepeating = true;
       return;
     }
 
@@ -234,26 +236,45 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     // Copy data values over
     if (input.noNulls) {
       if (selectedInUse) {
-        for (int j = 0; j < size; j++) {
-          int i = sel[j];
-          setDays(input, output, i);
+        if (!output.noNulls) {
+          for (int j = 0; j < size; j++) {
+            int i = sel[j];
+            output.isNull[i] = false;
+            // setDays resets the isNull[i] to false if there is a parse exception
+            setDays(input, output, i);
+          }
+        } else {
+          for (int j = 0; j < size; j++) {
+            int i = sel[j];
+            // setDays resets the isNull[i] to false if there is a parse exception
+            setDays(input, output, i);
+          }
         }
       } else {
+        if (!output.noNulls) {
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(output.isNull, false);
+          output.noNulls = true;
+        }
         for (int i = 0; i < size; i++) {
           setDays(input, output, i);
         }
       }
-    } else {
+    } else /* there are nulls in our column */ {
+
+      // handle the isNull array first in tight loops
+      output.noNulls = false;
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
           output.isNull[i] = input.isNull[i];
         }
-      }
-      else {
+      } else {
         System.arraycopy(input.isNull, 0, output.isNull, 0, size);
       }
 
+      //now copy over the data where isNull[index] is false
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
@@ -287,19 +308,19 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
   public void copySelected(
       TimestampColumnVector input, boolean selectedInUse, int[] sel, int size, LongColumnVector output) {
 
-    // Output has nulls if and only if input has nulls.
-    output.noNulls = input.noNulls;
     output.isRepeating = false;
 
     // Handle repeating case
     if (input.isRepeating) {
-      output.isNull[0] = input.isNull[0];
-      output.isRepeating = true;
-
-      if (!input.isNull[0]) {
+      if (input.noNulls || !input.isNull[0]) {
         date.setTime(input.getTime(0));
         output.vector[0] = DateWritable.dateToDays(date);
+        output.isNull[0] = false;
+      } else {
+        output.isNull[0] = true;
+        output.noNulls = false;
       }
+      output.isRepeating = true;
       return;
     }
 
@@ -308,28 +329,45 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     // Copy data values over
     if (input.noNulls) {
       if (selectedInUse) {
-        for (int j = 0; j < size; j++) {
-          int i = sel[j];
-          date.setTime(input.getTime(i));
-          output.vector[i] = DateWritable.dateToDays(date);
+        if (!output.noNulls) {
+          // output has noNulls set to false so set the isNull[] to false carefully
+          for (int j=0; j < size; j++) {
+            int i = sel[j];
+            date.setTime(input.getTime(i));
+            output.vector[i] = DateWritable.dateToDays(date);
+            output.isNull[i] = false;
+          }
+        } else {
+          for (int j=0; j < size; j++) {
+            int i = sel[j];
+            date.setTime(input.getTime(i));
+            output.vector[i] = DateWritable.dateToDays(date);
+          }
         }
       } else {
+        if (!output.noNulls) {
+          //output noNulls is set to false, we need to reset the isNull array
+          Arrays.fill(output.isNull, false);
+          output.noNulls = true;
+        }
         for (int i = 0; i < size; i++) {
           date.setTime(input.getTime(i));
           output.vector[i] = DateWritable.dateToDays(date);
         }
       }
-    } else {
+    } else /* there are nulls in our column */ {
+      output.noNulls = false;
+      //handle the isNull array first in tight loops
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
           output.isNull[i] = input.isNull[i];
         }
-      }
-      else {
+      } else {
         System.arraycopy(input.isNull, 0, output.isNull, 0, size);
       }
 
+      //now copy over the data when isNull[index] is false
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
