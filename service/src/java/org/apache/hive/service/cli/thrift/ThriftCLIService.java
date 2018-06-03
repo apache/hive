@@ -216,6 +216,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     if (!isStarted && !isEmbedded) {
       initServer();
       serverThread = new Thread(this);
+      serverThread.setName("Thrift Server");
       serverThread.start();
       isStarted = true;
     }
