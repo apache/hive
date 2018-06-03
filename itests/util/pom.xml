@@ -176,6 +176,11 @@
       <artifactId>hbase-mapreduce</artifactId>
       <version>${hbase.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-api</artifactId>
+      <version>${tez.version}</version>
+    </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
