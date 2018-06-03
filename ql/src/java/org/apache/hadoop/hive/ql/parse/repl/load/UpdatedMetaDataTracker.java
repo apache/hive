@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hive.common.util.HiveStringUtils;
 import java.util.ArrayList;

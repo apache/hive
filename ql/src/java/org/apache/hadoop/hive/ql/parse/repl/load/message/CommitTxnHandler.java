@@ -73,7 +73,8 @@ public class CommitTxnHandler extends AbstractMessageHandler {
         // The data location is created by source, so the location should be formed based on the table name in msg.
         Path location = HiveUtils.getDumpPath(new Path(context.location), actualDBName, actualTblName);
         tblName = context.isTableNameEmpty() ? actualTblName : context.tableName;
-        dbName = (context.isDbNameEmpty() ? actualDBName : context.dbName); // for warehouse level dump, use db name from write event
+        // for warehouse level dump, use db name from write event
+        dbName = (context.isDbNameEmpty() ? actualDBName : context.dbName);
         Context currentContext = new Context(context, dbName, tblName);
         currentContext.setLocation(location.toUri().toString());
 

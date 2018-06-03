@@ -9642,10 +9642,10 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       List<String> parameterVals = new ArrayList<>();
       StringBuilder filterBuilder = new StringBuilder(" txnId == " + Long.toString(txnId));
-      if (dbName != null && !dbName.equals("*")) { // * means get all database, so no need to add filter
+      if (dbName != null && !"*".equals(dbName)) { // * means get all database, so no need to add filter
         appendSimpleCondition(filterBuilder, "database", new String[]{dbName}, parameterVals);
       }
-      if (tableName != null && !tableName.equals("*")) {
+      if (tableName != null && !"*".equals(tableName)) {
         appendSimpleCondition(filterBuilder, "table", new String[]{tableName}, parameterVals);
       }
       query = pm.newQuery(MTxnWriteNotificationLog.class, filterBuilder.toString());
