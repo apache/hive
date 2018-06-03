@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector
 import org.apache.hadoop.hive.serde2.objectinspector.SettableMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableUnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector;
@@ -1590,20 +1591,7 @@ public final class VectorExpressionWriterFactory {
 
       @Override
       public Object writeValue(ColumnVector column, int row) throws HiveException {
-        final StructColumnVector structColVector = (StructColumnVector) column;
-        final SettableStructObjectInspector structOI =
-            (SettableStructObjectInspector) this.objectInspector;
-        final List<? extends StructField> fields = structOI.getAllStructFieldRefs();
-        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
-
-        final int fieldSize = fields.size();
-        for (int i = 0; i < fieldSize; i++) {
-          final StructField structField = fields.get(i);
-          final Object value = vectorExtractRow.extractRowColumn(structColVector.fields[i],
-              fieldTypeInfos.get(i), structField.getFieldObjectInspector(), row);
-          structOI.setStructFieldData(obj, structField, value);
-        }
-        return this.obj;
+        return setValueInternal(obj, column, row);
       }
 
       @Override
@@ -1612,18 +1600,38 @@ public final class VectorExpressionWriterFactory {
           struct = initValue(null);
         }
 
-        final StructColumnVector structColVector = (StructColumnVector) column;
-        final SettableStructObjectInspector structOI =
-            (SettableStructObjectInspector) this.objectInspector;
-        final List<? extends StructField> fields = structOI.getAllStructFieldRefs();
-        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        return setValueInternal(struct, column, row);
+      }
 
-        final int fieldSize = fields.size();
-        for (int i = 0; i < fieldSize; i++) {
-          final StructField structField = fields.get(i);
-          final Object value = vectorExtractRow.extractRowColumn(structColVector.fields[i],
-              fieldTypeInfos.get(i), structField.getFieldObjectInspector(), row);
-          structOI.setStructFieldData(struct, structField, value);
+      private Object setValueInternal(final Object struct, ColumnVector colVector, int batchIndex) {
+        if (colVector == null) {
+          // The planner will not include unneeded columns for reading but other parts of execution
+          // may ask for them..
+          return null;
+        }
+
+        final int adjustedIndex = (colVector.isRepeating ? 0 : batchIndex);
+        if (!colVector.noNulls && colVector.isNull[adjustedIndex]) {
+          return null;
+        }
+
+        final StructColumnVector structColumnVector = (StructColumnVector) colVector;
+        final StandardStructObjectInspector structInspector =
+            (StandardStructObjectInspector) objectInspector;
+        final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        final int size = fieldTypeInfos.size();
+        final List<? extends StructField> structFields =
+            structInspector.getAllStructFieldRefs();
+
+        for (int i = 0; i < size; i++) {
+          final StructField structField = structFields.get(i);
+          final TypeInfo fieldTypeInfo = fieldTypeInfos.get(i);
+          final Object value = vectorExtractRow.extractRowColumn(
+              structColumnVector.fields[i],
+              fieldTypeInfo,
+              structField.getFieldObjectInspector(),
+              adjustedIndex);
+          structInspector.setStructFieldData(struct, structField, value);
         }
         return struct;
       }
