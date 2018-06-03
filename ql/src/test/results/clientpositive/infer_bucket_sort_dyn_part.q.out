@@ -571,7 +571,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -612,7 +612,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-8
     Map Reduce

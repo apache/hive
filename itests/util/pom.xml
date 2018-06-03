@@ -164,6 +164,11 @@
       <version>${hbase.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-api</artifactId>
+      <version>${tez.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.kudu</groupId>
       <artifactId>kudu-test-utils</artifactId>
       <version>${kudu.version}</version>

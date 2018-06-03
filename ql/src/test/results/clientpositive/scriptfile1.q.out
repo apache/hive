@@ -31,11 +31,11 @@ POSTHOOK: Lineage: dest1_n22.value SCRIPT [(src)src.FieldSchema(name:key, type:s
 PREHOOK: query: SELECT dest1_n22.* FROM dest1_n22
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1_n22
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest1_n22.* FROM dest1_n22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n22
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 10	val_10
 100	val_100
 100	val_100

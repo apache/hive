@@ -139,7 +139,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -189,7 +189,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1') 
 SELECT key, count(*) FROM test_table1_n14 GROUP BY key
@@ -561,7 +561,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -611,7 +611,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out_n0 PARTITION (part = '1')
 SELECT /*+ MAPJOIN(a) */ a.key, b.value FROM test_table1_n14 a JOIN test_table2_n13 b ON a.key = b.key

@@ -1,13 +1,12 @@
-PREHOOK: query: create function lookup as 'org.apache.hadoop.hive.ql.udf.UDFFileLookup' using file 'hdfs://### HDFS PATH ###'
+#### A masked pattern was here ####
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:default
 PREHOOK: Output: default.lookup
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: create function lookup as 'org.apache.hadoop.hive.ql.udf.UDFFileLookup' using file 'hdfs://### HDFS PATH ###'
+#### A masked pattern was here ####
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default.lookup
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: create table udf_using (c1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -28,11 +27,11 @@ POSTHOOK: Lineage: udf_using.c1 SIMPLE []
 PREHOOK: query: select c1, lookup(c1) from udf_using
 PREHOOK: type: QUERY
 PREHOOK: Input: default@udf_using
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select c1, lookup(c1) from udf_using
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@udf_using
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 Joe	2
 Joe	2
 PREHOOK: query: drop table udf_using
