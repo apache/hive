@@ -96,9 +96,9 @@ public class TestMetricsCollection {
     long value = taskValue(1, 1, 1);
 
     Metrics metrics1 = new Metrics(value, value, value, value, value, value, value, value, value,
-            value, new InputMetrics(value), null, null);
+            value, new InputMetrics(value, value), null, null);
     Metrics metrics2 = new Metrics(value, value, value, value, value, value, value, value, value,
-            value, new InputMetrics(value), null, null);
+            value, new InputMetrics(value, value), null, null);
 
     collection.addMetrics(1, 1, 1, metrics1);
     collection.addMetrics(1, 1, 2, metrics2);
@@ -110,9 +110,9 @@ public class TestMetricsCollection {
   private Metrics makeMetrics(int jobId, int stageId, long taskId) {
     long value = 1000000 * jobId + 1000 * stageId + taskId;
     return new Metrics(value, value, value, value, value, value, value, value, value, value,
-      new InputMetrics(value),
-      new ShuffleReadMetrics((int) value, (int) value, value, value),
-      new ShuffleWriteMetrics(value, value));
+      new InputMetrics(value, value),
+      new ShuffleReadMetrics((int) value, (int) value, value, value, value, value, value),
+      new ShuffleWriteMetrics(value, value, value));
   }
 
   /**
@@ -160,14 +160,19 @@ public class TestMetricsCollection {
     assertEquals(expected, metrics.taskDurationTime);
 
     assertEquals(expected, metrics.inputMetrics.bytesRead);
+    assertEquals(expected, metrics.inputMetrics.recordsRead);
 
     assertEquals(expected, metrics.shuffleReadMetrics.remoteBlocksFetched);
     assertEquals(expected, metrics.shuffleReadMetrics.localBlocksFetched);
     assertEquals(expected, metrics.shuffleReadMetrics.fetchWaitTime);
     assertEquals(expected, metrics.shuffleReadMetrics.remoteBytesRead);
+    assertEquals(expected, metrics.shuffleReadMetrics.localBytesRead);
+    assertEquals(expected, metrics.shuffleReadMetrics.recordsRead);
+    assertEquals(expected, metrics.shuffleReadMetrics.remoteBytesReadToDisk);
 
     assertEquals(expected, metrics.shuffleWriteMetrics.shuffleBytesWritten);
     assertEquals(expected, metrics.shuffleWriteMetrics.shuffleWriteTime);
+    assertEquals(expected, metrics.shuffleWriteMetrics.shuffleRecordsWritten);
   }
 
 }

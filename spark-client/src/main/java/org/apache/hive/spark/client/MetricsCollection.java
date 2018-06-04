@@ -154,6 +154,7 @@ public class MetricsCollection {
       // Input metrics.
       boolean hasInputMetrics = false;
       long bytesRead = 0L;
+      long recordsRead = 0L;
 
       // Shuffle read metrics.
       boolean hasShuffleReadMetrics = false;
@@ -161,10 +162,14 @@ public class MetricsCollection {
       int localBlocksFetched = 0;
       long fetchWaitTime = 0L;
       long remoteBytesRead = 0L;
+      long localBytesRead = 0L;
+      long remoteBytesReadToDisk = 0L;
+      long shuffleRecordsRead = 0L;
 
       // Shuffle write metrics.
       long shuffleBytesWritten = 0L;
       long shuffleWriteTime = 0L;
+      long shuffleRecordsWritten = 0L;
 
       for (TaskInfo info : Collections2.filter(taskMetrics, filter)) {
         Metrics m = info.metrics;
@@ -182,6 +187,7 @@ public class MetricsCollection {
         if (m.inputMetrics != null) {
           hasInputMetrics = true;
           bytesRead += m.inputMetrics.bytesRead;
+          recordsRead += m.inputMetrics.recordsRead;
         }
 
         if (m.shuffleReadMetrics != null) {
@@ -190,17 +196,21 @@ public class MetricsCollection {
           localBlocksFetched += m.shuffleReadMetrics.localBlocksFetched;
           fetchWaitTime += m.shuffleReadMetrics.fetchWaitTime;
           remoteBytesRead += m.shuffleReadMetrics.remoteBytesRead;
+          localBytesRead += m.shuffleReadMetrics.localBytesRead;
+          remoteBytesReadToDisk += m.shuffleReadMetrics.remoteBytesReadToDisk;
+          shuffleRecordsRead += m.shuffleReadMetrics.recordsRead;
         }
 
         if (m.shuffleWriteMetrics != null) {
           shuffleBytesWritten += m.shuffleWriteMetrics.shuffleBytesWritten;
           shuffleWriteTime += m.shuffleWriteMetrics.shuffleWriteTime;
+          shuffleRecordsWritten += m.shuffleWriteMetrics.shuffleRecordsWritten;
         }
       }
 
       InputMetrics inputMetrics = null;
       if (hasInputMetrics) {
-        inputMetrics = new InputMetrics(bytesRead);
+        inputMetrics = new InputMetrics(bytesRead, recordsRead);
       }
 
       ShuffleReadMetrics shuffleReadMetrics = null;
@@ -209,14 +219,18 @@ public class MetricsCollection {
           remoteBlocksFetched,
           localBlocksFetched,
           fetchWaitTime,
-          remoteBytesRead);
+          remoteBytesRead,
+          localBytesRead,
+          remoteBytesReadToDisk,
+          shuffleRecordsRead);
       }
 
       ShuffleWriteMetrics shuffleWriteMetrics = null;
       if (hasShuffleReadMetrics) {
         shuffleWriteMetrics = new ShuffleWriteMetrics(
           shuffleBytesWritten,
-          shuffleWriteTime);
+          shuffleWriteTime,
+          shuffleRecordsWritten);
       }
 
       return new Metrics(
