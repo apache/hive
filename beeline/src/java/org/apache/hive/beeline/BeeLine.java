@@ -1256,12 +1256,15 @@ public class BeeLine implements Closeable {
 
   private int execute(ConsoleReader reader, boolean exitOnError) {
     int lastExecutionResult = ERRNO_OK;
+    Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
+                       : ConsoleReader.NULL_MASK;
+
     while (!exit) {
       try {
         // Execute one instruction; terminate on executing a script if there is an error
         // in silent mode, prevent the query and prompt being echoed back to terminal
         String line = (getOpts().isSilent() && getOpts().getScriptFile() != null) ? reader
-            .readLine(null, ConsoleReader.NULL_MASK) : reader.readLine(getPrompt());
+            .readLine(null, mask) : reader.readLine(getPrompt());
 
         // trim line
         if (line != null) {
