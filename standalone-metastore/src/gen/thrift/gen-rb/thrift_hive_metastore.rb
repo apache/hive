@@ -60,6 +60,23 @@ module ThriftHiveMetastore
       return
     end
 
+    def alter_catalog(rqst)
+      send_alter_catalog(rqst)
+      recv_alter_catalog()
+    end
+
+    def send_alter_catalog(rqst)
+      send_message('alter_catalog', Alter_catalog_args, :rqst => rqst)
+    end
+
+    def recv_alter_catalog()
+      result = receive_message(Alter_catalog_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
     def get_catalog(catName)
       send_get_catalog(catName)
       return recv_get_catalog()
@@ -3481,6 +3498,21 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'create_catalog', seqid)
     end
 
+    def process_alter_catalog(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_catalog_args)
+      result = Alter_catalog_result.new()
+      begin
+        @handler.alter_catalog(args.rqst)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'alter_catalog', seqid)
+    end
+
     def process_get_catalog(seqid, iprot, oprot)
       args = read_args(iprot, Get_catalog_args)
       result = Get_catalog_result.new()
@@ -6117,6 +6149,42 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_catalog_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AlterCatalogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_catalog_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
     }
 

@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -113,6 +114,7 @@ import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
@@ -1051,6 +1053,51 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("create_catalog", success, ex);
       }
+    }
+
+    @Override
+    public void alter_catalog(AlterCatalogRequest rqst) throws TException {
+      startFunction("alter_catalog " + rqst.getName());
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      GetCatalogResponse oldCat = null;
+
+      try {
+        oldCat = get_catalog(new GetCatalogRequest(rqst.getName()));
+        // Above should have thrown NoSuchObjectException if there is no such catalog
+        assert oldCat != null && oldCat.getCatalog() != null;
+        firePreEvent(new PreAlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), this));
+
+        ms.openTransaction();
+        ms.alterCatalog(rqst.getName(), rqst.getNewCat());
+
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.ALTER_CATALOG,
+                  new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), true, this));
+        }
+
+        success = ms.commitTransaction();
+      } catch (MetaException|NoSuchObjectException e) {
+        ex = e;
+        throw e;
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+
+        if ((null != oldCat) && (!listeners.isEmpty())) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.ALTER_CATALOG,
+              new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), success, this),
+              null, transactionalListenersResponses, ms);
+        }
+        endFunction("alter_catalog", success, ex);
+      }
+
     }
 
     @Override

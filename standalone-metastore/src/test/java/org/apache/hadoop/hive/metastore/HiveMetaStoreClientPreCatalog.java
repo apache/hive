@@ -2903,6 +2903,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void alterCatalog(String catalogName, Catalog newCatalog) throws NoSuchObjectException,
+      InvalidObjectException, MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public List<String> getCatalogs() throws TException {
     throw new UnsupportedOperationException();
   }

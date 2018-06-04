@@ -27,6 +27,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  string getMetaConf(string key)')
   print('  void setMetaConf(string key, string value)')
   print('  void create_catalog(CreateCatalogRequest catalog)')
+  print('  void alter_catalog(AlterCatalogRequest rqst)')
   print('  GetCatalogResponse get_catalog(GetCatalogRequest catName)')
   print('  GetCatalogsResponse get_catalogs()')
   print('  void drop_catalog(DropCatalogRequest catName)')
@@ -316,6 +317,12 @@ elif cmd == 'create_catalog':
     print('create_catalog requires 1 args')
     sys.exit(1)
   pp.pprint(client.create_catalog(eval(args[0]),))
+
+elif cmd == 'alter_catalog':
+  if len(args) != 1:
+    print('alter_catalog requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.alter_catalog(eval(args[0]),))
 
 elif cmd == 'get_catalog':
   if len(args) != 1:

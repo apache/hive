@@ -616,6 +616,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public void alterCatalog(String catalogName, Catalog newCatalog) throws TException {
+    client.alter_catalog(new AlterCatalogRequest(catalogName, newCatalog));
+  }
+
+  @Override
   public Catalog getCatalog(String catName) throws TException {
     GetCatalogResponse rsp = client.get_catalog(new GetCatalogRequest(catName));
     return rsp == null ? null : filterHook.filterCatalog(rsp.getCatalog());

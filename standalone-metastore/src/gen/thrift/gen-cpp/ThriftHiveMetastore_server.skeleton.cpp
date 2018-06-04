@@ -37,6 +37,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_catalog\n");
   }
 
+  void alter_catalog(const AlterCatalogRequest& rqst) {
+    // Your implementation goes here
+    printf("alter_catalog\n");
+  }
+
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) {
     // Your implementation goes here
     printf("get_catalog\n");

@@ -25,6 +25,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void getMetaConf(std::string& _return, const std::string& key) = 0;
   virtual void setMetaConf(const std::string& key, const std::string& value) = 0;
   virtual void create_catalog(const CreateCatalogRequest& catalog) = 0;
+  virtual void alter_catalog(const AlterCatalogRequest& rqst) = 0;
   virtual void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) = 0;
   virtual void get_catalogs(GetCatalogsResponse& _return) = 0;
   virtual void drop_catalog(const DropCatalogRequest& catName) = 0;
@@ -264,6 +265,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void create_catalog(const CreateCatalogRequest& /* catalog */) {
+    return;
+  }
+  void alter_catalog(const AlterCatalogRequest& /* rqst */) {
     return;
   }
   void get_catalog(GetCatalogResponse& /* _return */, const GetCatalogRequest& /* catName */) {
@@ -1243,6 +1247,126 @@ class ThriftHiveMetastore_create_catalog_presult {
   MetaException o3;
 
   _ThriftHiveMetastore_create_catalog_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_catalog_args__isset {
+  _ThriftHiveMetastore_alter_catalog_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_alter_catalog_args__isset;
+
+class ThriftHiveMetastore_alter_catalog_args {
+ public:
+
+  ThriftHiveMetastore_alter_catalog_args(const ThriftHiveMetastore_alter_catalog_args&);
+  ThriftHiveMetastore_alter_catalog_args& operator=(const ThriftHiveMetastore_alter_catalog_args&);
+  ThriftHiveMetastore_alter_catalog_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_catalog_args() throw();
+  AlterCatalogRequest rqst;
+
+  _ThriftHiveMetastore_alter_catalog_args__isset __isset;
+
+  void __set_rqst(const AlterCatalogRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_catalog_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_catalog_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_catalog_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_catalog_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_catalog_pargs() throw();
+  const AlterCatalogRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_catalog_result__isset {
+  _ThriftHiveMetastore_alter_catalog_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_alter_catalog_result__isset;
+
+class ThriftHiveMetastore_alter_catalog_result {
+ public:
+
+  ThriftHiveMetastore_alter_catalog_result(const ThriftHiveMetastore_alter_catalog_result&);
+  ThriftHiveMetastore_alter_catalog_result& operator=(const ThriftHiveMetastore_alter_catalog_result&);
+  ThriftHiveMetastore_alter_catalog_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_catalog_result() throw();
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_alter_catalog_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const InvalidOperationException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_catalog_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_catalog_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_catalog_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_catalog_presult__isset {
+  _ThriftHiveMetastore_alter_catalog_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_alter_catalog_presult__isset;
+
+class ThriftHiveMetastore_alter_catalog_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_catalog_presult() throw();
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_alter_catalog_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -26108,6 +26232,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void create_catalog(const CreateCatalogRequest& catalog);
   void send_create_catalog(const CreateCatalogRequest& catalog);
   void recv_create_catalog();
+  void alter_catalog(const AlterCatalogRequest& rqst);
+  void send_alter_catalog(const AlterCatalogRequest& rqst);
+  void recv_alter_catalog();
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName);
   void send_get_catalog(const GetCatalogRequest& catName);
   void recv_get_catalog(GetCatalogResponse& _return);
@@ -26730,6 +26857,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_getMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_setMetaConf(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_alter_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_catalogs(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -26940,6 +27068,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["getMetaConf"] = &ThriftHiveMetastoreProcessor::process_getMetaConf;
     processMap_["setMetaConf"] = &ThriftHiveMetastoreProcessor::process_setMetaConf;
     processMap_["create_catalog"] = &ThriftHiveMetastoreProcessor::process_create_catalog;
+    processMap_["alter_catalog"] = &ThriftHiveMetastoreProcessor::process_alter_catalog;
     processMap_["get_catalog"] = &ThriftHiveMetastoreProcessor::process_get_catalog;
     processMap_["get_catalogs"] = &ThriftHiveMetastoreProcessor::process_get_catalogs;
     processMap_["drop_catalog"] = &ThriftHiveMetastoreProcessor::process_drop_catalog;
@@ -27202,6 +27331,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->create_catalog(catalog);
     }
     ifaces_[i]->create_catalog(catalog);
+  }
+
+  void alter_catalog(const AlterCatalogRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->alter_catalog(rqst);
+    }
+    ifaces_[i]->alter_catalog(rqst);
   }
 
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) {
@@ -29181,6 +29319,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void create_catalog(const CreateCatalogRequest& catalog);
   int32_t send_create_catalog(const CreateCatalogRequest& catalog);
   void recv_create_catalog(const int32_t seqid);
+  void alter_catalog(const AlterCatalogRequest& rqst);
+  int32_t send_alter_catalog(const AlterCatalogRequest& rqst);
+  void recv_alter_catalog(const int32_t seqid);
   void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName);
   int32_t send_get_catalog(const GetCatalogRequest& catName);
   void recv_get_catalog(GetCatalogResponse& _return, const int32_t seqid);

@@ -291,6 +291,8 @@ class Catalog;
 
 class CreateCatalogRequest;
 
+class AlterCatalogRequest;
+
 class GetCatalogRequest;
 
 class GetCatalogResponse;
@@ -2445,6 +2447,58 @@ class CreateCatalogRequest {
 void swap(CreateCatalogRequest &a, CreateCatalogRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const CreateCatalogRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _AlterCatalogRequest__isset {
+  _AlterCatalogRequest__isset() : name(false), newCat(false) {}
+  bool name :1;
+  bool newCat :1;
+} _AlterCatalogRequest__isset;
+
+class AlterCatalogRequest {
+ public:
+
+  AlterCatalogRequest(const AlterCatalogRequest&);
+  AlterCatalogRequest& operator=(const AlterCatalogRequest&);
+  AlterCatalogRequest() : name() {
+  }
+
+  virtual ~AlterCatalogRequest() throw();
+  std::string name;
+  Catalog newCat;
+
+  _AlterCatalogRequest__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_newCat(const Catalog& val);
+
+  bool operator == (const AlterCatalogRequest & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(newCat == rhs.newCat))
+      return false;
+    return true;
+  }
+  bool operator != (const AlterCatalogRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AlterCatalogRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AlterCatalogRequest &a, AlterCatalogRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AlterCatalogRequest& obj)
 {
   obj.printTo(out);
   return out;
