@@ -59,7 +59,6 @@ public class TestCatalogs extends MetaStoreClientTest {
 
   public TestCatalogs(String name, AbstractMetaStoreService metaStore) throws Exception {
     this.metaStore = metaStore;
-    this.metaStore.start();
   }
 
   @Before
@@ -93,7 +92,11 @@ public class TestCatalogs extends MetaStoreClientTest {
     }
     try {
       if (client != null) {
-        client.close();
+        try {
+          client.close();
+        } catch (Exception e) {
+          // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
+        }
       }
     } finally {
       client = null;
