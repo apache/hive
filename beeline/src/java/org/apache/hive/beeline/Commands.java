@@ -1074,6 +1074,9 @@ public class Commands {
   public String handleMultiLineCmd(String line) throws IOException {
     int[] startQuote = {-1};
     line = HiveStringUtils.removeComments(line, startQuote);
+    Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
+                       : jline.console.ConsoleReader.NULL_MASK;
+
     while (isMultiLine(line) && beeLine.getOpts().isAllowMultiLineCommand()) {
       StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
       if (!beeLine.getOpts().isSilent()) {
@@ -1090,7 +1093,7 @@ public class Commands {
             + "is a multi-line command using -e option and which requires further reading from console");
       }
       if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
-        extra = beeLine.getConsoleReader().readLine(null, jline.console.ConsoleReader.NULL_MASK);
+        extra = beeLine.getConsoleReader().readLine(null, mask);
       } else {
         extra = beeLine.getConsoleReader().readLine(prompt.toString());
       }
