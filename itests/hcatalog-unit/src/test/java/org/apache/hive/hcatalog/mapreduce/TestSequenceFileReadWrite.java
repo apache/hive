@@ -96,7 +96,7 @@ public class TestSequenceFileReadWrite {
       input[i] = i + "," + col1 + "," + col2;
     }
     HcatTestUtils.createTestDataFile(inputFileName, input);
-    server = new PigServer(ExecType.LOCAL);
+    server = HCatBaseTest.createPigServer(false);
   }
   @After
   public void teardown() throws IOException {

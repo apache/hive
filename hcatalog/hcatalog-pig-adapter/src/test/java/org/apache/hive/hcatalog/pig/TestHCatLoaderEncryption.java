@@ -65,8 +65,8 @@ import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.Pair;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.junit.After;
@@ -206,7 +206,7 @@ public class TestHCatLoaderEncryption {
       }
     }
     HcatTestUtils.createTestDataFile(BASIC_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();
     int i = 0;
     server.registerQuery("A = load '" + BASIC_FILE_NAME + "' as (a:int, b:chararray);", ++i);
@@ -300,7 +300,7 @@ public class TestHCatLoaderEncryption {
   @Test
   public void testReadDataFromEncryptedHiveTableByPig() throws IOException {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
 
     server.registerQuery("X = load '" + ENCRYPTED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
     Iterator<Tuple> XIter = server.openIterator("X");

@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.serde2.thrift.test.IntString;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
@@ -93,7 +92,7 @@ public class TestHCatHiveThriftCompatibility extends HCatBaseTest {
         driver.run("alter table test_thrift add partition (year = '2012') location '" +
             intStringSeq.getParent() + "'").getResponseCode());
 
-    PigServer pigServer = new PigServer(ExecType.LOCAL);
+    PigServer pigServer = createPigServer(false);
     pigServer.registerQuery("A = load 'test_thrift' using org.apache.hive.hcatalog.pig.HCatLoader();");
 
     Schema expectedSchema = new Schema();

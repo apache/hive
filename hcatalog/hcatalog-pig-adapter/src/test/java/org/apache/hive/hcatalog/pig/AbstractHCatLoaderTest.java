@@ -52,7 +52,6 @@ import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.Pair;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigRunner;
 import org.apache.pig.PigServer;
 import org.apache.pig.ResourceStatistics;
@@ -584,7 +583,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
     Properties properties = new Properties();
     properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "true");
     properties.put("stop.on.failure", Boolean.TRUE.toString());
-    PigServer server = new PigServer(ExecType.LOCAL, properties);
+    PigServer server = createPigServer(true, properties);
     server.registerQuery(
       "data = load 'test_convert_boolean_to_int' using org.apache.hive.hcatalog.pig.HCatLoader();");
     Schema schema = server.dumpSchema("data");
@@ -689,7 +688,7 @@ public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
       // might be the last one to call HCatContext.INSTANCE.setConf(). Make sure setting is false.
       Properties properties = new Properties();
       properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "false");
-      PigServer server = new PigServer(ExecType.LOCAL, properties);
+      PigServer server = createPigServer(false, properties);
       server.registerQuery("X = load '" + ALL_PRIMITIVE_TYPES_TABLE + "' using " + HCatLoader.class.getName() + "();");
       Iterator<Tuple> XIter = server.openIterator("X");
       int numTuplesRead = 0;

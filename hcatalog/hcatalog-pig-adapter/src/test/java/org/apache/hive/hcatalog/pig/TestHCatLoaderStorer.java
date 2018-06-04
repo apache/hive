@@ -22,7 +22,6 @@ package org.apache.hive.hcatalog.pig;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecJob;
 import org.apache.pig.data.DataType;
@@ -127,7 +126,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     Assert.assertEquals(0, driver.run("load data local inpath '" +
       dataDir.getPath().replaceAll("\\\\", "/") + "' into table " + readTblName).getResponseCode());
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.registerQuery(
       "data = load '" + readTblName + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
 
@@ -186,7 +185,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     Assert.assertEquals(0, driver.run("create table test_tbl" +
       " (my_small_int smallint, my_tiny_int tinyint) stored as rcfile").getResponseCode());
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = HCatBaseTest.createPigServer(false);
     server.setBatchOn();
     server.registerQuery("data = load '" + data +
       "' using PigStorage('\t') as (my_small_int:int, my_tiny_int:int);");
