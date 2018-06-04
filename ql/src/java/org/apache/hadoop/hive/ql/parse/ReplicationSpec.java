@@ -70,7 +70,7 @@ public class ReplicationSpec {
 
   public enum SCOPE { NO_REPL, MD_ONLY, REPL }
 
-  public enum Type { DEFAULT, INCREMENTAL_DUMP, IMPORT }
+  public enum Type { DEFAULT, INCREMENTAL_DUMP, BOOTSTRAP_LOAD, IMPORT }
 
   /**
    * Constructor to construct spec based on either the ASTNode that
@@ -174,11 +174,11 @@ public class ReplicationSpec {
     long replacementReplStateLong = Long.parseLong(replacementReplState.replaceAll("\\D",""));
 
     // Failure handling of IMPORT command and REPL LOAD commands are different.
-    // IMPORT will set the last repl ID before copying data files and hence need to allow
+    // IMPORT/BOOTSTRAP_LOAD will set the last repl ID before copying data files and hence need to allow
     // replacement if loaded from same dump twice after failing to copy in previous attempt.
     // But, REPL LOAD will set the last repl ID only after the successful copy of data files and
     // hence need not allow if same event is applied twice.
-    if (specType == Type.IMPORT) {
+    if ((specType == Type.IMPORT) || (specType == Type.BOOTSTRAP_LOAD)) {
       return (currReplStateLong <= replacementReplStateLong);
     } else {
       return (currReplStateLong < replacementReplStateLong);

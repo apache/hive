@@ -22,6 +22,8 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 import static org.junit.Assert.assertEquals;
@@ -53,6 +55,8 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   private static com.google.common.base.Function<Table,Table> getTableModifier =
       com.google.common.base.Functions.identity();
+  private static com.google.common.base.Function<Partition,Partition> getPartitionModifier =
+          com.google.common.base.Functions.identity();
   private static com.google.common.base.Function<List<String>, List<String>> listPartitionNamesModifier =
           com.google.common.base.Functions.identity();
   private static com.google.common.base.Function<NotificationEventResponse, NotificationEventResponse>
@@ -65,6 +69,15 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   public static void resetGetTableBehaviour(){
     setGetTableBehaviour(null);
+  }
+
+  // Methods to set/reset getPartition modifier
+  public static void setGetPartitionBehaviour(com.google.common.base.Function<Partition,Partition> modifier){
+    getPartitionModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
+  }
+
+  public static void resetGetPartitionBehaviour(){
+    setGetPartitionBehaviour(null);
   }
 
   // Methods to set/reset listPartitionNames modifier
@@ -90,6 +103,12 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   @Override
   public Table getTable(String catName, String dbName, String tableName) throws MetaException {
     return getTableModifier.apply(super.getTable(catName, dbName, tableName));
+  }
+
+  @Override
+  public Partition getPartition(String catName, String dbName, String tableName,
+                                List<String> part_vals) throws NoSuchObjectException, MetaException {
+    return getPartitionModifier.apply(super.getPartition(catName, dbName, tableName, part_vals));
   }
 
   @Override

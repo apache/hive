@@ -29,7 +29,10 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.junit.After;
@@ -53,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -803,6 +807,8 @@ public class TestReplicationScenariosAcrossInstances {
             .verifyResult(tuple.lastReplicationId)
             .run("show tables")
             .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
             .run("select country from t2")
             .verifyResults(Arrays.asList("india", "uk", "us"));
 
@@ -943,5 +949,217 @@ public class TestReplicationScenariosAcrossInstances {
     verifyIfCkptPropMissing(india.getParameters());
 
     replica.run("drop database if exists " + importDbFromReplica + " cascade");
+
+  public void testIfBootstrapReplLoadFailWhenRetryWithAnotherDump() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (id int)")
+            .run("insert into table t1 values (10)")
+            .run("create table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='uk') values ('london')")
+            .run("insert into table t2 partition(country='us') values ('sfo')")
+            .dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+
+    WarehouseInstance.Tuple tuple_2 = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, null);
+
+    // Retry with different dump should fail on non-empty DB but shouldn't impact the state of it.
+    replica.loadFailure(replicatedDbName, tuple_2.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+
+    // Retry with same dump with which it was already loaded should be noop internally and return same state.
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+
+    // Retry from another dump when the database is empty is allowed.
+    replica.run("drop table t1")
+            .run("drop table t2")
+            .load(replicatedDbName, tuple_2.dumpLocation)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple_2.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+
+    // Check if ckpt key-value is updated to new dump location in all the objects created.
+    Database db = replica.getDatabase(replicatedDbName);
+    verifyIfCkptSet(db.getParameters(), tuple_2.dumpLocation);
+    Table t1 = replica.getTable(replicatedDbName, "t1");
+    verifyIfCkptSet(t1.getParameters(), tuple_2.dumpLocation);
+    Table t2 = replica.getTable(replicatedDbName, "t2");
+    verifyIfCkptSet(t2.getParameters(), tuple_2.dumpLocation);
+    Partition india = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("india"));
+    verifyIfCkptSet(india.getParameters(), tuple_2.dumpLocation);
+    Partition us = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("us"));
+    verifyIfCkptSet(us.getParameters(), tuple_2.dumpLocation);
+    Partition uk = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("uk"));
+    verifyIfCkptSet(uk.getParameters(), tuple_2.dumpLocation);
+  }
+
+  @Test
+  public void testBootstrapReplLoadRetryWithAnotherDump() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (id int)")
+            .run("insert into table t1 values (10)")
+            .run("create table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='uk') values ('london')")
+            .run("insert into table t2 partition(country='us') values ('sfo')")
+            .dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+
+    WarehouseInstance.Tuple tuple_2 = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, null);
+
+    // Retry with different dump should fail on non-empty DB but shouldn't impact the state of it.
+    replica.loadFailure(replicatedDbName, tuple_2.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+
+    // Retry with same dump with which it was already loaded should be noop internally and return same state.
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+
+    // Retry from another dump when the database is empty is allowed.
+    replica.run("drop table t1")
+            .run("drop table t2")
+            .load(replicatedDbName, tuple_2.dumpLocation)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple_2.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+
+    // Check if ckpt key-value is updated to new dump location in all the objects created.
+    Database db = replica.getDatabase(replicatedDbName);
+    verifyIfCkptSet(db.getParameters(), tuple_2.dumpLocation);
+    Table t1 = replica.getTable(replicatedDbName, "t1");
+    verifyIfCkptSet(t1.getParameters(), tuple_2.dumpLocation);
+    Table t2 = replica.getTable(replicatedDbName, "t2");
+    verifyIfCkptSet(t2.getParameters(), tuple_2.dumpLocation);
+    Partition india = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("india"));
+    verifyIfCkptSet(india.getParameters(), tuple_2.dumpLocation);
+    Partition us = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("us"));
+    verifyIfCkptSet(us.getParameters(), tuple_2.dumpLocation);
+    Partition uk = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("uk"));
+    verifyIfCkptSet(uk.getParameters(), tuple_2.dumpLocation);
+  }
+
+  @Test
+  public void testBootstrapReplLoadRetryAfterFailure() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (id int)")
+            .run("insert into table t1 values (10)")
+            .run("create table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='uk') values ('london')")
+            .run("insert into table t2 partition(country='us') values ('sfo')")
+            .dump(primaryDbName, null);
+
+    // Inject a behavior where REPL LOAD failed when try to load table "t2" and partition "uk".
+    // So, table "t1" and "t2" will exist and partition "india" will exist, rest failed as operation failed.
+    BehaviourInjection<Partition, Partition> getPartitionStub
+            = new BehaviourInjection<Partition, Partition>(){
+      @Nullable
+      @Override
+      public Partition apply(@Nullable Partition ptn) {
+        if (ptn.getValues().get(0).equals("india")) {
+          injectionPathCalled = true;
+          LOG.warn("####getPartition Stub called");
+          return null;
+        }
+        return ptn;
+      }
+    };
+    InjectableBehaviourObjectStore.setGetPartitionBehaviour(getPartitionStub);
+
+    replica.loadFailure(replicatedDbName, tuple.dumpLocation);
+    getPartitionStub.assertInjectionsPerformed(true, false);
+    InjectableBehaviourObjectStore.resetGetPartitionBehaviour(); // reset the behaviour
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult("null")
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india"));
+
+    // Retry with same dump with which it was already loaded should resume the bootstrap load.
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("10"))
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
   }
 }
