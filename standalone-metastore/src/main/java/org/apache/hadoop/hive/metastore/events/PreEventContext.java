@@ -53,7 +53,8 @@ public abstract class PreEventContext {
     READ_SCHEMA_VERSION,
     CREATE_CATALOG,
     DROP_CATALOG,
-    READ_CATALOG
+    READ_CATALOG,
+    ALTER_CATALOG
   }
 
   private final PreEventType eventType;

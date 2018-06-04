@@ -73,6 +73,7 @@ public abstract class MessageFactory {
   public static final String COMMIT_TXN_EVENT = "COMMIT_TXN";
   public static final String ABORT_TXN_EVENT = "ABORT_TXN";
   public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
+  public static final String ALTER_CATALOG_EVENT = "ALTER_CATALOG";
 
   private static MessageFactory instance = null;
 
@@ -323,4 +324,6 @@ public abstract class MessageFactory {
   public abstract CreateCatalogMessage buildCreateCatalogMessage(Catalog catalog);
 
   public abstract DropCatalogMessage buildDropCatalogMessage(Catalog catalog);
+
+  public abstract AlterCatalogMessage buildAlterCatalogMessage(Catalog oldCat, Catalog newCat);
 }

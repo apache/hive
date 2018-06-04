@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
@@ -204,6 +205,12 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
+  public AlterCatalogMessage buildAlterCatalogMessage(Catalog beforeCat, Catalog afterCat) {
+    return new JSONAlterCatalogMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+        beforeCat, afterCat, now());
+  }
+
+  @Override
   public DropCatalogMessage buildDropCatalogMessage(Catalog catalog) {
     return new JSONDropCatalogMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, catalog.getName(), now());
   }
@@ -274,6 +281,11 @@ public class JSONMessageFactory extends MessageFactory {
   static String createDatabaseObjJson(Database dbObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     return serializer.toString(dbObj, "UTF-8");
+  }
+
+  static String createCatalogObjJson(Catalog catObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(catObj, "UTF-8");
   }
 
   static String createTableObjJson(Table tableObj) throws TException {
