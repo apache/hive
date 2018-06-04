@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-public interface MemoryManager extends LlapOomDebugDump {
+public interface MemoryManager {
   void releaseMemory(long memUsage);
   void updateMaxSize(long maxSize);
   void reserveMemory(long memoryToReserve);

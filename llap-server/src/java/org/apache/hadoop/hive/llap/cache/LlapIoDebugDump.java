@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-public interface LlapOomDebugDump {
-  String debugDumpForOom();
+public interface LlapIoDebugDump {
   void debugDumpShort(StringBuilder sb);
 }

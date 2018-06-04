@@ -179,11 +179,6 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
   }
 
   @Override
-  public void setParentDebugDumper(LlapOomDebugDump dumper) {
-    realPolicy.setParentDebugDumper(dumper);
-  }
-
-  @Override
   public long purge() {
     return realPolicy.purge();
   }
@@ -192,11 +187,6 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
   @Override
   public long evictSomeBlocks(long memoryToReserve) {
     return realPolicy.evictSomeBlocks(memoryToReserve);
-  }
-
-  @Override
-  public String debugDumpForOom() {
-    return realPolicy.debugDumpForOom();
   }
 
   @Override
@@ -209,7 +199,6 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
           .append(state.maxSize);
       }
     }
-    realPolicy.debugDumpShort(sb);
   }
 
   @Override
