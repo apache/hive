@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -230,6 +231,9 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   public void onCreateCatalog(CreateCatalogEvent createCatalogEvent) throws MetaException {
+  }
+
+  public void onAlterCatalog(AlterCatalogEvent alterCatalogEvent) throws MetaException {
   }
 
   public void onDropCatalog(DropCatalogEvent dropCatalogEvent) throws MetaException {

@@ -820,6 +820,24 @@ class CreateCatalogRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class AlterCatalogRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAME = 1
+  NEWCAT = 2
+
+  FIELDS = {
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    NEWCAT => {:type => ::Thrift::Types::STRUCT, :name => 'newCat', :class => ::Catalog}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class GetCatalogRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1

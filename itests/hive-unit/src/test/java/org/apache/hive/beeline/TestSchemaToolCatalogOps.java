@@ -108,13 +108,55 @@ public class TestSchemaToolCatalogOps {
   }
 
   @Test
-  public void createExistingCatalogWithIfNotExists() throws HiveMetaException, TException {
+  public void createExistingCatalogWithIfNotExists() throws HiveMetaException {
     String catName = "my_existing_test_catalog";
     String location = "file:///tmp/my_test_catalog";
     String description = "very descriptive";
     schemaTool.createCatalog(catName, location, description, false);
 
     schemaTool.createCatalog(catName, location, description, true);
+  }
+
+  @Test
+  public void alterCatalog() throws HiveMetaException, TException {
+    String catName = "an_alterable_catalog";
+    String location = "file:///tmp/an_alterable_catalog";
+    String description = "description";
+    schemaTool.createCatalog(catName, location, description, false);
+
+    location = "file:///tmp/somewhere_else";
+    schemaTool.alterCatalog(catName, location, null);
+    Catalog cat = client.getCatalog(catName);
+    Assert.assertEquals(location, cat.getLocationUri());
+    Assert.assertEquals(description, cat.getDescription());
+
+    description = "a better description";
+    schemaTool.alterCatalog(catName, null, description);
+    cat = client.getCatalog(catName);
+    Assert.assertEquals(location, cat.getLocationUri());
+    Assert.assertEquals(description, cat.getDescription());
+
+    location = "file:///tmp/a_third_location";
+    description = "best description yet";
+    schemaTool.alterCatalog(catName, location, description);
+    cat = client.getCatalog(catName);
+    Assert.assertEquals(location, cat.getLocationUri());
+    Assert.assertEquals(description, cat.getDescription());
+  }
+
+  @Test(expected = HiveMetaException.class)
+  public void alterBogusCatalog() throws HiveMetaException {
+    schemaTool.alterCatalog("nosuch", "file:///tmp/somewhere", "whatever");
+  }
+
+  @Test(expected = HiveMetaException.class)
+  public void alterCatalogNoChange() throws HiveMetaException {
+    String catName = "alter_cat_no_change";
+    String location = "file:///tmp/alter_cat_no_change";
+    String description = "description";
+    schemaTool.createCatalog(catName, location, description, false);
+
+    schemaTool.alterCatalog(catName, null, null);
   }
 
   @Test

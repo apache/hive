@@ -921,6 +921,12 @@ public class HiveSchemaTool {
           throw new HiveMetaException("No catalogs found, have you upgraded the database?");
         }
         int catNum = rs.getInt(1) + 1;
+        // We need to stay out of the way of any sequences used by the underlying database.
+        // Otherwise the next time the client tries to add a catalog we'll get an error.
+        // There should never be billions of catalogs, so we'll shift our sequence number up
+        // there to avoid clashes.
+        int floor = 1 << 30;
+        if (catNum < floor) catNum = floor;
 
         String update = "insert into " + quoteIf("CTLGS") +
             "(" + quoteIf("CTLG_ID") + ", " + quoteIf("NAME") + ", " + quoteAlways("DESC") + ", " + quoteIf( "LOCATION_URI") + ") " +
@@ -932,6 +938,61 @@ public class HiveSchemaTool {
       }
     } catch (SQLException e) {
       throw new HiveMetaException("Failed to add catalog", e);
+    } finally {
+      try {
+        if (!success) conn.rollback();
+      } catch (SQLException e) {
+        // Not really much we can do here.
+        LOG.error("Failed to rollback, everything will probably go bad from here.", e);
+      }
+    }
+  }
+
+  @VisibleForTesting
+  void alterCatalog(String catName, String location, String description) throws HiveMetaException {
+    if (location == null && description == null) {
+      throw new HiveMetaException("Asked to update catalog " + catName +
+          " but not given any changes to update");
+    }
+    catName = normalizeIdentifier(catName);
+    System.out.println("Updating catalog " + catName);
+
+    Connection conn = getConnectionToMetastore(true);
+    boolean success = false;
+    try {
+      conn.setAutoCommit(false);
+      try (Statement stmt = conn.createStatement()) {
+        StringBuilder update = new StringBuilder("update ")
+            .append(quoteIf("CTLGS"))
+            .append(" set ");
+        if (location != null) {
+          update.append(quoteIf("LOCATION_URI"))
+              .append(" = '")
+              .append(location)
+              .append("' ");
+        }
+        if (description != null) {
+          if (location != null) update.append(", ");
+          update.append(quoteAlways("DESC"))
+              .append(" = '")
+              .append(description)
+              .append("'");
+        }
+        update.append(" where ")
+            .append(quoteIf("NAME"))
+            .append(" = '")
+            .append(catName)
+            .append("'");
+        LOG.debug("Going to run " + update.toString());
+        int count = stmt.executeUpdate(update.toString());
+        if (count != 1) {
+          throw new HiveMetaException("Failed to find catalog " + catName + " to update");
+        }
+        conn.commit();
+        success = true;
+      }
+    } catch (SQLException e) {
+      throw new HiveMetaException("Failed to update catalog", e);
     } finally {
       try {
         if (!success) conn.rollback();
@@ -1236,6 +1297,10 @@ public class HiveSchemaTool {
         .hasArg()
         .withDescription("Create a catalog, requires --catalogLocation parameter as well")
         .create("createCatalog");
+    Option alterCatalog = OptionBuilder
+        .hasArg()
+        .withDescription("Alter a catalog, requires --catalogLocation and/or --catalogDescription parameter as well")
+        .create("alterCatalog");
     Option moveDatabase = OptionBuilder
         .hasArg()
         .withDescription("Move a database between catalogs.  Argument is the database name. " +
@@ -1249,10 +1314,17 @@ public class HiveSchemaTool {
         .create("moveTable");
 
     OptionGroup optGroup = new OptionGroup();
-    optGroup.addOption(upgradeOpt).addOption(initOpt).
-                addOption(help).addOption(upgradeFromOpt).
-                addOption(initToOpt).addOption(infoOpt).addOption(validateOpt)
-                .addOption(createCatalog).addOption(moveDatabase).addOption(moveTable);
+    optGroup.addOption(upgradeOpt)
+        .addOption(initOpt)
+        .addOption(help)
+        .addOption(upgradeFromOpt)
+        .addOption(initToOpt)
+        .addOption(infoOpt)
+        .addOption(validateOpt)
+        .addOption(createCatalog)
+        .addOption(alterCatalog)
+        .addOption(moveDatabase)
+        .addOption(moveTable);
     optGroup.setRequired(true);
 
     Option userNameOpt = OptionBuilder.withArgName("user")
@@ -1452,6 +1524,9 @@ public class HiveSchemaTool {
         schemaTool.createCatalog(line.getOptionValue("createCatalog"),
             line.getOptionValue("catalogLocation"), line.getOptionValue("catalogDescription"),
             line.hasOption("ifNotExists"));
+      } else if (line.hasOption("alterCatalog")) {
+        schemaTool.alterCatalog(line.getOptionValue("alterCatalog"),
+            line.getOptionValue("catalogLocation"), line.getOptionValue("catalogDescription"));
       } else if (line.hasOption("moveDatabase")) {
         schemaTool.moveDatabase(line.getOptionValue("fromCatalog"),
             line.getOptionValue("toCatalog"), line.getOptionValue("moveDatabase"));
