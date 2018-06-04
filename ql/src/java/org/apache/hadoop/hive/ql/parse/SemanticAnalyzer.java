@@ -14683,6 +14683,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
 
+    // HIVE-19096 - disable for explain analyze
+    if (ctx.getExplainAnalyze() != null) {
+      return false;
+    }
+
     return true;
   }
 
