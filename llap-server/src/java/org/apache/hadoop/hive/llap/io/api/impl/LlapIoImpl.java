@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.CacheContentsTracker;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
-import org.apache.hadoop.hive.llap.cache.LlapOomDebugDump;
+import org.apache.hadoop.hive.llap.cache.LlapIoDebugDump;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
@@ -78,10 +78,13 @@ import org.apache.hive.common.util.FixedSizedObjectPool;
 
 
 
+
+
+
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
+public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   public static final Logger LOG = LoggerFactory.getLogger("LlapIoImpl");
   public static final Logger ORC_LOGGER = LoggerFactory.getLogger("LlapIoOrc");
   public static final Logger CACHE_LOGGER = LoggerFactory.getLogger("LlapIoCache");
@@ -95,12 +98,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private final LlapDaemonIOMetrics ioMetrics;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
-  private final LlapOomDebugDump memoryDump;
   private final FileMetadataCache fileMetadataCache;
   private final LowLevelCache dataCache;
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
-  private LowLevelCachePolicy cachePolicy;
+  private LowLevelCachePolicy cachePolicyWrapper;
+
+  private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
   private LlapIoImpl(Configuration conf) throws IOException {
     this.daemonConf = conf;
@@ -140,51 +144,66 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
       long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       int minAllocSize = (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-      LowLevelCachePolicy cp = useLrfu ? new LowLevelLrfuCachePolicy(
+      LowLevelCachePolicy realCachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
           minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
       boolean trackUsage = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE);
       if (trackUsage) {
-        this.cachePolicy = new CacheContentsTracker(cp);
+        this.cachePolicyWrapper = new CacheContentsTracker(realCachePolicy);
       } else {
-        this.cachePolicy = cp;
+        this.cachePolicyWrapper = realCachePolicy;
       }
       // Allocator uses memory manager to request memory, so create the manager next.
       LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
-          totalMemorySize, cachePolicy, cacheMetrics);
+          totalMemorySize, cachePolicyWrapper, cacheMetrics);
       cacheMetrics.setCacheCapacityTotal(totalMemorySize);
       // Cache uses allocator to allocate and deallocate, create allocator and then caches.
       BuddyAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
       this.allocator = allocator;
-      this.memoryDump = allocator;
       LowLevelCacheImpl cacheImpl = new LowLevelCacheImpl(
-          cacheMetrics, cachePolicy, allocator, true);
+          cacheMetrics, cachePolicyWrapper, allocator, true);
       dataCache = cacheImpl;
       if (isEncodeEnabled) {
         SerDeLowLevelCacheImpl serdeCacheImpl = new SerDeLowLevelCacheImpl(
-            cacheMetrics, cachePolicy, allocator);
+            cacheMetrics, cachePolicyWrapper, allocator);
         serdeCache = serdeCacheImpl;
       }
 
       boolean useGapCache = HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ENABLE_ORC_GAP_CACHE);
       metadataCache = new MetadataCache(
-          allocator, memManager, cachePolicy, useGapCache, cacheMetrics);
+          allocator, memManager, cachePolicyWrapper, useGapCache, cacheMetrics);
       fileMetadataCache = metadataCache;
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
       EvictionDispatcher e = new EvictionDispatcher(
           dataCache, serdeCache, metadataCache, allocator);
-      cachePolicy.setEvictionListener(e);
-      cachePolicy.setParentDebugDumper(e);
+      cachePolicyWrapper.setEvictionListener(e);
 
       cacheImpl.startThreads(); // Start the cache threads.
       bufferManager = bufferManagerOrc = cacheImpl; // Cache also serves as buffer manager.
       bufferManagerGeneric = serdeCache;
+      if (trackUsage) {
+        debugDumpComponents.add(cachePolicyWrapper); // Cache contents tracker.
+      }
+      debugDumpComponents.add(realCachePolicy);
+      debugDumpComponents.add(cacheImpl);
+      if (serdeCache != null) {
+        debugDumpComponents.add(serdeCache);
+      }
+      if (metadataCache != null) {
+        debugDumpComponents.add(metadataCache);
+      }
+      debugDumpComponents.add(allocator);
     } else {
       this.allocator = new SimpleAllocator(conf);
-      memoryDump = null;
       fileMetadataCache = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
       bufferManager = bufferManagerOrc = bufferManagerGeneric = sbm;
       dataCache = sbm;
+      debugDumpComponents.add(new LlapIoDebugDump() {
+        @Override
+        public void debugDumpShort(StringBuilder sb) {
+          sb.append("LLAP IO allocator is not in use!");
+        }
+      });
     }
     // IO thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
@@ -208,16 +227,15 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
   @Override
   public String getMemoryInfo() {
-    if (memoryDump == null) return "\nNot using the allocator";
     StringBuilder sb = new StringBuilder();
-    memoryDump.debugDumpShort(sb);
+    debugDumpShort(sb);
     return sb.toString();
   }
 
   @Override
   public long purge() {
-    if (cachePolicy != null) {
-      return cachePolicy.purge();
+    if (cachePolicyWrapper != null) {
+      return cachePolicyWrapper.purge();
     }
     return 0;
   }
@@ -307,6 +325,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     @Override
     public MemoryBuffer create() {
       return new LlapDataBuffer();
+    }
+  }
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    for (LlapIoDebugDump child : debugDumpComponents) {
+      child.debugDumpShort(sb);
     }
   }
 }

@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapAllocatorBuffer;
-import org.apache.hadoop.hive.llap.cache.LlapOomDebugDump;
+import org.apache.hadoop.hive.llap.cache.LlapIoDebugDump;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
 import org.apache.hadoop.hive.llap.cache.MemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 
-public class MetadataCache implements LlapOomDebugDump, FileMetadataCache {
+public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
   private final ConcurrentHashMap<Object, LlapBufferOrBuffers> metadata =
       new ConcurrentHashMap<>();
 
@@ -121,12 +121,6 @@ public class MetadataCache implements LlapOomDebugDump, FileMetadataCache {
     estimateErrors.remove(buffer.getFileKey());
   }
 
-  @Override
-  public String debugDumpForOom() {
-    StringBuilder sb = new StringBuilder();
-    debugDumpShort(sb);
-    return sb.toString();
-  }
 
   @Override
   public void debugDumpShort(StringBuilder sb) {

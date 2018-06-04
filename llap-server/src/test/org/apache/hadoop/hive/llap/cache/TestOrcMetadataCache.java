@@ -56,11 +56,7 @@ public class TestOrcMetadataCache {
     public void setEvictionListener(EvictionListener listener) {
     }
 
-    public String debugDumpForOom() {
-      return "";
-    }
-
-    public void setParentDebugDumper(LlapOomDebugDump dumper) {
+    public void setParentDebugDumper(LlapIoDebugDump dumper) {
     }
 
     @Override
@@ -88,16 +84,7 @@ public class TestOrcMetadataCache {
     }
 
     @Override
-    public String debugDumpForOom() {
-      return "";
-    }
-
-    @Override
     public void updateMaxSize(long maxSize) {
-    }
-
-    @Override
-    public void debugDumpShort(StringBuilder sb) {
     }
   }
 

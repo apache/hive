@@ -43,7 +43,7 @@ import org.apache.orc.OrcProto.ColumnEncoding;
 
 import com.google.common.base.Function;
 
-public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugDump {
+public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final Allocator allocator;
   private final AtomicInteger newEvictions = new AtomicInteger(0);
@@ -720,24 +720,6 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
   public Allocator getAllocator() {
     return allocator;
   }
-
-  @Override
-  public String debugDumpForOom() {
-    StringBuilder sb = new StringBuilder("File cache state ");
-    for (Map.Entry<Object, FileCache<FileData>> e : cache.entrySet()) {
-      if (!e.getValue().incRef()) continue;
-      try {
-        sb.append("\n  file " + e.getKey());
-        sb.append("\n    [");
-        e.getValue().getCache().toString(sb);
-        sb.append("]");
-      } finally {
-        e.getValue().decRef();
-      }
-    }
-    return sb.toString();
-  }
-
 
   @Override
   public void debugDumpShort(StringBuilder sb) {
