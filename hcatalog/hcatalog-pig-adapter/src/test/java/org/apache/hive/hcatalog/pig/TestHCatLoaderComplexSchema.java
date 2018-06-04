@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.pig.ExecType;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.backend.executionengine.ExecJob;
@@ -224,7 +224,7 @@ public class TestHCatLoaderComplexSchema {
     MockLoader.setData(tablename + "Input", data);
     try {
       createTable(tablename, tableSchema);
-      PigServer server = new PigServer(ExecType.LOCAL);
+      PigServer server = HCatBaseTest.createPigServer(false);
       server.setBatchOn();
       server.registerQuery("A = load '" + tablename + "Input' using org.apache.hive.hcatalog.pig.MockLoader() AS (" + pigSchema + ");");
       Schema dumpedASchema = server.dumpSchema("A");

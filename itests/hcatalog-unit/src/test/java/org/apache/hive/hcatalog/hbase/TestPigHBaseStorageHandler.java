@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.HCatUtil;
-import org.apache.pig.ExecType;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
@@ -195,7 +195,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
     assertTrue(doesTableExist);
 
-    PigServer server = new PigServer(ExecType.LOCAL,hcatConf.getAllProperties());
+    PigServer server = HCatBaseTest.createPigServer(false, hcatConf.getAllProperties());
     server.registerQuery("A = load '"+databaseName+"."+tableName+"' using org.apache.hive.hcatalog.pig.HCatLoader();");
 
     Schema dumpedASchema = server.dumpSchema("A");
@@ -281,7 +281,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
     int index=1;
 
-    PigServer server = new PigServer(ExecType.LOCAL,hcatConf.getAllProperties());
+    PigServer server = HCatBaseTest.createPigServer(false, hcatConf.getAllProperties());
     server.registerQuery("A = load '"+databaseName+"."+tableName+"' using org.apache.hive.hcatalog.pig.HCatLoader();");
     server.registerQuery("B = filter A by key < 5;");
     server.registerQuery("C = foreach B generate key,testqualifier2;");
@@ -351,7 +351,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
 
       createTestDataFile(POPTXT_FILE_NAME);
 
-      PigServer server = new PigServer(ExecType.LOCAL,hcatConf.getAllProperties());
+      PigServer server = HCatBaseTest.createPigServer(false, hcatConf.getAllProperties());
       server.registerQuery("A = load '"+POPTXT_FILE_NAME+"' using PigStorage() as (key:int, testqualifier1:float, testqualifier2:chararray);");
       server.registerQuery("B = filter A by (key > 2) AND (key < 8) ;");
       server.registerQuery("store B into '"+databaseName.toLowerCase()+"."+tableName.toLowerCase()+"' using  org.apache.hive.hcatalog.pig.HCatStorer();");

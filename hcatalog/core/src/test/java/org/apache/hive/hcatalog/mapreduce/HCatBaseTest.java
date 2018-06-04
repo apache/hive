@@ -109,14 +109,18 @@ public abstract class HCatBaseTest {
     server.registerQuery(query, lineNumber);
   }
 
+  public static PigServer createPigServer(boolean stopOnFailure) throws ExecException {
+    return createPigServer(stopOnFailure, new Properties());
+  }
+
   /**
    * creates PigServer in LOCAL mode.
    * http://pig.apache.org/docs/r0.12.0/perf.html#error-handling
    * @param stopOnFailure equivalent of "-stop_on_failure" command line arg, setting to 'true' makes
    *                      debugging easier
    */
-  public static PigServer createPigServer(boolean stopOnFailure) throws ExecException {
-    Properties p = new Properties();
+  public static PigServer createPigServer(boolean stopOnFailure, Properties p) throws
+          ExecException {
     Path workDir = new Path(System.getProperty("test.tmp.dir",
         "target" + File.separator + "test" + File.separator + "tmp"));
     String testId = "HCatBaseTest_" + System.currentTimeMillis();
