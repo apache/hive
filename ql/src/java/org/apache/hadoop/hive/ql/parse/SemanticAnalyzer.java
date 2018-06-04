@@ -10213,62 +10213,62 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     List<Operator<? extends OperatorDesc>> inputOperators =
         new ArrayList<Operator<? extends OperatorDesc>>(ks.size());
-    List<List<ExprNodeDesc>> sprayKeyLists = new ArrayList<List<ExprNodeDesc>>(ks.size());
-    List<List<ExprNodeDesc>> distinctKeyLists = new ArrayList<List<ExprNodeDesc>>(ks.size());
+    // We will try to combine multiple clauses into a smaller number with compatible keys.
+    List<List<ExprNodeDesc>> newSprayKeyLists = new ArrayList<List<ExprNodeDesc>>(ks.size());
+    List<List<ExprNodeDesc>> newDistinctKeyLists = new ArrayList<List<ExprNodeDesc>>(ks.size());
 
     // Iterate over each clause
     for (String dest : ks) {
       Operator input = inputs.get(dest);
       RowResolver inputRR = opParseCtx.get(input).getRowResolver();
 
-      List<ExprNodeDesc> distinctKeys = getDistinctExprs(qbp, dest, inputRR);
-      List<ExprNodeDesc> sprayKeys = new ArrayList<ExprNodeDesc>();
+      // Determine the keys for the current clause.
+      List<ExprNodeDesc> currentDistinctKeys = getDistinctExprs(qbp, dest, inputRR);
+      List<ExprNodeDesc> currentSprayKeys = determineSprayKeys(qbp, dest, inputRR);
 
-      // Add the group by expressions
-      List<ASTNode> grpByExprs = getGroupByForClause(qbp, dest);
-      for (ASTNode grpByExpr : grpByExprs) {
-        ExprNodeDesc exprDesc = genExprNodeDesc(grpByExpr, inputRR);
-        if (ExprNodeDescUtils.indexOf(exprDesc, sprayKeys) < 0) {
-          sprayKeys.add(exprDesc);
-        }
-      }
-
-      // Loop through each of the lists of exprs, looking for a match
+      // Loop through each of the lists of exprs, looking for a match.
       boolean found = false;
-      for (int i = 0; i < sprayKeyLists.size(); i++) {
+      for (int i = 0; i < newSprayKeyLists.size(); i++) {
         if (!input.equals(inputOperators.get(i))) {
           continue;
         }
+        // We will try to merge this clause into one of the previously added ones.
+        List<ExprNodeDesc> targetSprayKeys = newSprayKeyLists.get(i);
+        List<ExprNodeDesc> targetDistinctKeys = newDistinctKeyLists.get(i);
+        if (currentDistinctKeys.isEmpty() != targetDistinctKeys.isEmpty()) {
+          // GBY without distinct keys is not prepared to process distinct key structured rows.
+          continue;
+        }
 
-        if (distinctKeys.isEmpty()) {
+        if (currentDistinctKeys.isEmpty()) {
           // current dest has no distinct keys.
           List<ExprNodeDesc> combinedList = new ArrayList<ExprNodeDesc>();
-          combineExprNodeLists(sprayKeyLists.get(i), distinctKeyLists.get(i), combinedList);
-          if (!matchExprLists(combinedList, sprayKeys)) {
+          combineExprNodeLists(targetSprayKeys, targetDistinctKeys, combinedList);
+          if (!matchExprLists(combinedList, currentSprayKeys)) {
             continue;
           } // else do the common code at the end.
         } else {
-          if (distinctKeyLists.get(i).isEmpty()) {
+          if (targetDistinctKeys.isEmpty()) {
             List<ExprNodeDesc> combinedList = new ArrayList<ExprNodeDesc>();
-            combineExprNodeLists(sprayKeys, distinctKeys, combinedList);
-            if (!matchExprLists(combinedList, sprayKeyLists.get(i))) {
+            combineExprNodeLists(currentSprayKeys, currentDistinctKeys, combinedList);
+            if (!matchExprLists(combinedList, targetSprayKeys)) {
               continue;
             } else {
               // we have found a match. insert this distinct clause to head.
-              distinctKeyLists.remove(i);
-              sprayKeyLists.remove(i);
-              distinctKeyLists.add(i, distinctKeys);
-              sprayKeyLists.add(i, sprayKeys);
+              newDistinctKeyLists.remove(i);
+              newSprayKeyLists.remove(i);
+              newDistinctKeyLists.add(i, currentDistinctKeys);
+              newSprayKeyLists.add(i, currentSprayKeys);
               commonGroupByDestGroups.get(i).add(0, dest);
               found = true;
               break;
             }
           } else {
-            if (!matchExprLists(distinctKeyLists.get(i), distinctKeys)) {
+            if (!matchExprLists(targetDistinctKeys, currentDistinctKeys)) {
               continue;
             }
 
-            if (!matchExprLists(sprayKeyLists.get(i), sprayKeys)) {
+            if (!matchExprLists(targetSprayKeys, currentSprayKeys)) {
               continue;
             }
             // else do common code
@@ -10285,8 +10285,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // No match was found, so create new entries
       if (!found) {
         inputOperators.add(input);
-        sprayKeyLists.add(sprayKeys);
-        distinctKeyLists.add(distinctKeys);
+        newSprayKeyLists.add(currentSprayKeys);
+        newDistinctKeyLists.add(currentDistinctKeys);
         List<String> destGroup = new ArrayList<String>();
         destGroup.add(dest);
         commonGroupByDestGroups.add(destGroup);
@@ -10294,6 +10294,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return commonGroupByDestGroups;
+  }
+
+  protected List<ExprNodeDesc> determineSprayKeys(QBParseInfo qbp, String dest,
+      RowResolver inputRR) throws SemanticException {
+    List<ExprNodeDesc> sprayKeys = new ArrayList<ExprNodeDesc>();
+
+    // Add the group by expressions
+    List<ASTNode> grpByExprs = getGroupByForClause(qbp, dest);
+    for (ASTNode grpByExpr : grpByExprs) {
+      ExprNodeDesc exprDesc = genExprNodeDesc(grpByExpr, inputRR);
+      if (ExprNodeDescUtils.indexOf(exprDesc, sprayKeys) < 0) {
+        sprayKeys.add(exprDesc);
+      }
+    }
+    return sprayKeys;
   }
 
   private void combineExprNodeLists(List<ExprNodeDesc> list, List<ExprNodeDesc> list2,
