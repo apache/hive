@@ -81,7 +81,7 @@ public class TestSparkStatistics {
       List<SparkStatistic> sparkStats = Lists.newArrayList(sparkTask.getSparkStatistics()
               .getStatisticGroup(SparkStatisticsNames.SPARK_GROUP_NAME).getStatistics());
 
-      Assert.assertEquals(18, sparkStats.size());
+      Assert.assertEquals(24, sparkStats.size());
 
       Map<String, String> statsMap = sparkStats.stream().collect(
               Collectors.toMap(SparkStatistic::getName, SparkStatistic::getValue));
