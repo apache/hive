@@ -68,7 +68,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.StoppableAllocator;
  *       Each Buddy Allocator tree can be split up to chunks of size {@link ConfVars#LLAP_ALLOCATOR_MIN_ALLOC} 4KB
  */
 public final class BuddyAllocator
-  implements EvictionAwareAllocator, StoppableAllocator, BuddyAllocatorMXBean, LlapOomDebugDump {
+  implements EvictionAwareAllocator, StoppableAllocator, BuddyAllocatorMXBean, LlapIoDebugDump {
 
   private static final String FAILED_TO_ALLOCATE_MSG =
       "Failed to allocate [{}]X[{}] bytes after [{}] attempt, evicted [{}] bytes and partially allocated [{}] bytes";
@@ -807,7 +807,6 @@ public final class BuddyAllocator
    */
   @Override
   public void debugDumpShort(StringBuilder sb) {
-    memoryManager.debugDumpShort(sb);
     sb.append("\nDefrag counters: ");
     for (int i = 0; i < defragCounters.length; ++i) {
       sb.append(defragCounters[i].get()).append(", ");
@@ -1729,12 +1728,6 @@ public final class BuddyAllocator
       a.testDump(sb);
     }
     return sb.toString();
-  }
-
-  @Override
-  public String debugDumpForOom() {
-    return "\nALLOCATOR STATE:\n" + debugDumpForOomInternal()
-        + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom();
   }
 
   private String debugDumpForOomInternal() {

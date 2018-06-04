@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
  * Actor managing the eviction requests.
  * Cache policy relies notifications from the actual {@link LowLevelCache} to keep track of buffer access.
  */
-public interface LowLevelCachePolicy extends LlapOomDebugDump {
+public interface LowLevelCachePolicy extends LlapIoDebugDump {
   /**
    * Signals to the policy the addition of a new page to the cache directory.
    *
@@ -67,7 +67,6 @@ public interface LowLevelCachePolicy extends LlapOomDebugDump {
    * @param listener eviction listener actor
    */
   void setEvictionListener(EvictionListener listener);
-  void setParentDebugDumper(LlapOomDebugDump dumper);
   /**
    * Signals to the policy to evict all the unlocked used buffers.
    *

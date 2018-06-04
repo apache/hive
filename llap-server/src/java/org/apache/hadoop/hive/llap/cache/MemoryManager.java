@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>
  * Note that it does not know about the actual shape, content or owners of memory, all it cares about is bytes usage.
  */
-public interface MemoryManager extends LlapOomDebugDump {
+public interface MemoryManager {
 
   /**
    * Signals to the Memory manager the release of some memory bytes that are free to be used.

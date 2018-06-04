@@ -112,11 +112,7 @@ public class TestLowLevelCacheImpl {
     public void setEvictionListener(EvictionListener listener) {
     }
 
-    public String debugDumpForOom() {
-      return "";
-    }
-
-    public void setParentDebugDumper(LlapOomDebugDump dumper) {
+    public void setParentDebugDumper(LlapIoDebugDump dumper) {
     }
 
     @Override

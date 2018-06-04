@@ -65,7 +65,6 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   private int heapSize = 0;
   private final int maxHeapSize;
   private EvictionListener evictionListener;
-  private LlapOomDebugDump parentDebugDump;
 
   public LowLevelLrfuCachePolicy(int minBufferSize, long maxSize, Configuration conf) {
     lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
@@ -172,11 +171,6 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   @Override
   public void setEvictionListener(EvictionListener listener) {
     this.evictionListener = listener;
-  }
-
-  @Override
-  public void setParentDebugDumper(LlapOomDebugDump dumper) {
-    this.parentDebugDump = dumper;
   }
 
   @Override
@@ -552,15 +546,6 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public String debugDumpForOom() {
-    String result = debugDumpHeap();
-    if (parentDebugDump != null) {
-      result += "\n" + parentDebugDump.debugDumpForOom();
-    }
-    return result;
-  }
-
-  @Override
   public void debugDumpShort(StringBuilder sb) {
     sb.append("\nLRFU eviction list: ");
     LlapCacheableBuffer listHeadLocal = listHead, listTailLocal = listTail;
@@ -577,8 +562,5 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       sb.append(c + " items");
     }
     sb.append("\nLRFU eviction heap: " + heapSize + " items");
-    if (parentDebugDump != null) {
-      parentDebugDump.debugDumpShort(sb);
-    }
   }
 }
