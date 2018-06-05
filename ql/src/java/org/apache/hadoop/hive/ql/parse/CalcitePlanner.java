@@ -2081,35 +2081,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Add views to planner
       List<RelOptMaterialization> materializations = new ArrayList<>();
       try {
-        // Extract tables used by the query which will in turn be used to generate
-        // the corresponding txn write ids
-        List<String> tablesUsed = new ArrayList<>();
-        new RelVisitor() {
-          @Override
-          public void visit(RelNode node, int ordinal, RelNode parent) {
-            if (node instanceof TableScan) {
-              TableScan ts = (TableScan) node;
-              tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullyQualifiedName());
-            }
-            super.visit(node, ordinal, parent);
-          }
-        }.go(basePlan);
         final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
-        ValidTxnWriteIdList txnWriteIds = null;
-        if (validTxnsList != null && !validTxnsList.isEmpty()) {
-          txnWriteIds = getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
-        }
         if (mvRebuildMode != MaterializationRebuildMode.NONE) {
           // We only retrieve the materialization corresponding to the rebuild. In turn,
           // we pass 'true' for the forceMVContentsUpToDate parameter, as we cannot allow the
           // materialization contents to be stale for a rebuild if we want to use it.
           materializations = Hive.get().getValidMaterializedView(mvRebuildDbName, mvRebuildName,
-              true, txnWriteIds);
+              true, validTxnsList);
         } else {
           // This is not a rebuild, we retrieve all the materializations. In turn, we do not need
           // to force the materialization contents to be up-to-date, as this is not a rebuild, and
           // we apply the user parameters (HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) instead.
-          materializations = Hive.get().getAllValidMaterializedViews(false, txnWriteIds);
+          materializations = Hive.get().getAllValidMaterializedViews(false, validTxnsList);
         }
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
