@@ -110,4 +110,11 @@ public interface SparkClient extends Serializable {
    * Check if remote context is still active.
    */
   boolean isActive();
+
+  /**
+   * Cancel the specified jobId
+   *
+   * @param jobId the jobId to cancel
+   */
+  void cancel(String jobId);
 }
