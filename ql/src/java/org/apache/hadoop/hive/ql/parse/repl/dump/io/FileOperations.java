@@ -30,6 +30,7 @@ import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
+import org.apache.hadoop.hive.shims.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +55,7 @@ public class FileOperations {
   private final Path exportRootDataDir;
   private final String distCpDoAsUser;
   private HiveConf hiveConf;
-  private final FileSystem dataFileSystem, exportFileSystem;
+  private FileSystem exportFileSystem, dataFileSystem;
   private final MmContext mmCtx;
 
   public FileOperations(List<Path> dataPathList, Path exportRootDataDir, String distCpDoAsUser,
@@ -136,18 +138,48 @@ public class FileOperations {
     }
   }
 
-
-
   /**
    * This needs the root data directory to which the data needs to be exported to.
    * The data export here is a list of files either in table/partition that are written to the _files
    * in the exportRootDataDir provided.
    */
-  private void exportFilesAsList() throws SemanticException, IOException {
-    // This is only called for replication that handles MM tables; no need for mmCtx.
-    try (BufferedWriter writer = writer()) {
-      for (Path dataPath : dataPathList) {
-        writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
+  private void exportFilesAsList() throws SemanticException, IOException, LoginException {
+    if (dataPathList.isEmpty()) {
+      return;
+    }
+    boolean done = false;
+    int repeat = 0;
+    while (!done) {
+      // This is only called for replication that handles MM tables; no need for mmCtx.
+      try (BufferedWriter writer = writer()) {
+        for (Path dataPath : dataPathList) {
+          writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
+        }
+        done = true;
+      } catch (IOException e) {
+        repeat++;
+        logger.info("writeFilesList failed", e);
+        if (repeat >= FileUtils.MAX_IO_ERROR_RETRY) {
+          logger.error("exporting data files in dir : " + dataPathList + " to " + exportRootDataDir + " failed");
+          throw e;
+        }
+
+        int sleepTime = FileUtils.getSleepTime(repeat - 1);
+        logger.info(" sleep for {} milliseconds for retry num {} ", sleepTime , repeat);
+        try {
+          Thread.sleep(sleepTime);
+        } catch (InterruptedException timerEx) {
+          logger.info("thread sleep interrupted", timerEx.getMessage());
+        }
+
+        // in case of io error, reset the file system object
+        FileSystem.closeAllForUGI(Utils.getUGI());
+        dataFileSystem = dataPathList.get(0).getFileSystem(hiveConf);
+        exportFileSystem = exportRootDataDir.getFileSystem(hiveConf);
+        Path exportPath = new Path(exportRootDataDir, EximUtil.FILES_NAME);
+        if (exportFileSystem.exists(exportPath)) {
+          exportFileSystem.delete(exportPath, true);
+        }
       }
     }
   }
