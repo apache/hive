@@ -1,5 +1,7 @@
 --! qt:dataset:alltypesorc
-set hive.vectorized.execution.enabled=false;
+set hive.vectorized.execution.enabled=true;
+set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -21,6 +23,9 @@ create table acid_dot(
     ctimestamp2 TIMESTAMP,
     cboolean1 BOOLEAN,
     cboolean2 BOOLEAN) clustered by (cint) into 1 buckets stored as orc location '${system:test.tmp.dir}/delete_orig_table' TBLPROPERTIES ('transactional'='true');
+
+explain vectorization detail
+select count(*) from acid_dot;
 
 select count(*) from acid_dot;
 
