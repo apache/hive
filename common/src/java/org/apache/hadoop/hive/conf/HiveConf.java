@@ -2838,6 +2838,10 @@ public class HiveConf extends Configuration {
         " on the assumption that data changes by external applications may have negative effects" +
         " on these operations."),
 
+    HIVE_STRICT_MANAGED_TABLES("hive.strict.managed.tables", false,
+        "Whether strict managed tables mode is enabled. With this mode enabled, " +
+        "only transactional tables (both full and insert-only) are allowed to be created as managed tables"),
+
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
