@@ -46,6 +46,7 @@ public final class RpcConfiguration {
   private static final Logger LOG = LoggerFactory.getLogger(RpcConfiguration.class);
 
   public static final ImmutableSet<String> HIVE_SPARK_RSC_CONFIGS = ImmutableSet.of(
+    HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT.varname,
     HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname,
     HiveConf.ConfVars.SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT.varname,
     HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname,
@@ -55,6 +56,7 @@ public final class RpcConfiguration {
     HiveConf.ConfVars.SPARK_RPC_SERVER_ADDRESS.varname
   );
   public static final ImmutableSet<String> HIVE_SPARK_TIME_CONFIGS = ImmutableSet.of(
+    HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT.varname,
     HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname,
     HiveConf.ConfVars.SPARK_RPC_CLIENT_HANDSHAKE_TIMEOUT.varname
   );
@@ -69,6 +71,12 @@ public final class RpcConfiguration {
   public RpcConfiguration(Map<String, String> config) {
     // make sure we don't modify the config in RpcConfiguration
     this.config = Collections.unmodifiableMap(config);
+  }
+
+  public long getFutureTimeoutMs() {
+    String value = config.get(HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT.varname);
+    return value != null ? Long.parseLong(value) : DEFAULT_CONF.getTimeVar(
+      HiveConf.ConfVars.SPARK_CLIENT_FUTURE_TIMEOUT, TimeUnit.MILLISECONDS);
   }
 
   long getConnectTimeoutMs() {
