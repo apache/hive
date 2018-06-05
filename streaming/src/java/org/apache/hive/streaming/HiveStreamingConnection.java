@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -64,6 +65,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,6 +200,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     // isolated from the other transaction related RPC calls.
     this.heartbeatMSClient = getMetaStoreClient(conf, metastoreUri, secureMode, "streaming-connection-heartbeat");
     validateTable();
+
     LOG.info("STREAMING CONNECTION INFO: {}", toConnectionInfoString());
   }
 
@@ -326,7 +329,12 @@ public class HiveStreamingConnection implements StreamingConnection {
       if (recordWriter == null) {
         throw new StreamingException("Record writer cannot be null for streaming connection");
       }
-      return new HiveStreamingConnection(this);
+      HiveStreamingConnection streamingConnection = new HiveStreamingConnection(this);
+      // assigning higher priority than FileSystem shutdown hook so that streaming connection gets closed first before
+      // filesystem close (to avoid ClosedChannelException)
+      ShutdownHookManager.addShutdownHook(streamingConnection::close,  FileSystem.SHUTDOWN_HOOK_PRIORITY + 1);
+      Thread.setDefaultUncaughtExceptionHandler((t, e) -> streamingConnection.close());
+      return streamingConnection;
     }
   }
 
@@ -539,7 +547,7 @@ public class HiveStreamingConnection implements StreamingConnection {
         currentTransactionBatch.close();
       }
     } catch (StreamingException e) {
-      LOG.error("Unable to close current transaction batch: " + currentTransactionBatch, e);
+      LOG.warn("Unable to close current transaction batch: " + currentTransactionBatch, e);
     } finally {
       getMSC().close();
       getHeatbeatMSC().close();
@@ -818,21 +826,11 @@ public class HiveStreamingConnection implements StreamingConnection {
      * with the write, we can't continue to write to the same file any as it may be corrupted now (at the tail).
      * This ensures that a client can't ignore these failures and continue to write.
      */
-    private void markDead(boolean success) {
+    private void markDead(boolean success) throws StreamingException {
       if (success) {
         return;
       }
-      isTxnClosed.set(true); //also ensures that heartbeat() is no-op since client is likely doing it async
-      try {
-        abort(true);//abort all remaining txns
-      } catch (Exception ex) {
-        LOG.error("Fatal error on " + toString() + "; cause " + ex.getMessage(), ex);
-      }
-      try {
-        closeImpl();
-      } catch (Exception ex) {
-        LOG.error("Fatal error on " + toString() + "; cause " + ex.getMessage(), ex);
-      }
+      close();
     }
 
 
@@ -957,9 +955,19 @@ public class HiveStreamingConnection implements StreamingConnection {
       if (isTxnClosed.get()) {
         return;
       }
-      isTxnClosed.set(true);
-      abortImpl(true);
-      closeImpl();
+      isTxnClosed.set(true); //also ensures that heartbeat() is no-op since client is likely doing it async
+      try {
+        abort(true);//abort all remaining txns
+      } catch (Exception ex) {
+        LOG.error("Fatal error on " + toString() + "; cause " + ex.getMessage(), ex);
+        throw new StreamingException("Unable to abort", ex);
+      }
+      try {
+        closeImpl();
+      } catch (Exception ex) {
+        LOG.error("Fatal error on " + toString() + "; cause " + ex.getMessage(), ex);
+        throw new StreamingException("Unable to close", ex);
+      }
     }
 
     private void closeImpl() throws StreamingException {
