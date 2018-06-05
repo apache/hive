@@ -675,6 +675,34 @@
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
+            <id>build-spark-exec-bundle</id>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>core-spark</shadedClassifierName>
+              <artifactSet>
+                <includes>
+                  <include>org.apache.hive:hive-exec</include>
+                  <include>com.esotericsoftware.kryo:kryo</include>
+                  <include>com.google.protobuf:protobuf-java</include>
+                </includes>
+              </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>com.esotericsoftware</pattern>
+                  <shadedPattern>org.apache.hive.com.esotericsoftware</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.protobuf</pattern>
+                  <shadedPattern>org.apache.hive.com.google.protobuf</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+          <execution>
             <id>build-exec-bundle</id>
             <phase>package</phase>
             <goals>
