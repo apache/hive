@@ -1,0 +1,224 @@
+PREHOOK: query: DROP TABLE druid_table_with_nulls
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE druid_table_with_nulls
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE druid_table_with_nulls
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
+AS
+SELECT cast(current_timestamp() AS timestamp with local time zone) AS `__time`,
+       cast(username AS string) AS username,
+       cast(double1 AS double) AS double1,
+       cast(int1 AS int) AS int1
+FROM TABLE (
+  VALUES
+    ('alfred', 10.30, 2),
+    ('bob', 3.14, null),
+    ('bonnie', null, 3),
+    ('calvin', null, null),
+    ('charlie', 9.8, 1),
+    ('charlie', 15.8, 1)) as q (username, double1, int1)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@druid_table_with_nulls
+POSTHOOK: query: CREATE TABLE druid_table_with_nulls
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
+AS
+SELECT cast(current_timestamp() AS timestamp with local time zone) AS `__time`,
+       cast(username AS string) AS username,
+       cast(double1 AS double) AS double1,
+       cast(int1 AS int) AS int1
+FROM TABLE (
+  VALUES
+    ('alfred', 10.30, 2),
+    ('bob', 3.14, null),
+    ('bonnie', null, 3),
+    ('calvin', null, null),
+    ('charlie', 9.8, 1),
+    ('charlie', 15.8, 1)) as q (username, double1, int1)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@druid_table_with_nulls
+POSTHOOK: Lineage: druid_table_with_nulls.__time SIMPLE []
+POSTHOOK: Lineage: druid_table_with_nulls.double1 SCRIPT []
+POSTHOOK: Lineage: druid_table_with_nulls.int1 SCRIPT []
+POSTHOOK: Lineage: druid_table_with_nulls.username SCRIPT []
+PREHOOK: query: EXPLAIN SELECT
+username AS `username`,
+SUM(double1) AS `sum_double1`
+FROM
+druid_table_with_nulls `tbl1`
+  JOIN (
+    SELECT
+    username AS `username`,
+    SUM(double1) AS `sum_double2`
+    FROM druid_table_with_nulls
+    GROUP BY `username`
+    ORDER BY `sum_double2`
+    DESC  LIMIT 10
+  )
+  `tbl2`
+    ON (`tbl1`.`username` = `tbl2`.`username`)
+GROUP BY `tbl1`.`username`
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+username AS `username`,
+SUM(double1) AS `sum_double1`
+FROM
+druid_table_with_nulls `tbl1`
+  JOIN (
+    SELECT
+    username AS `username`,
+    SUM(double1) AS `sum_double2`
+    FROM druid_table_with_nulls
+    GROUP BY `username`
+    ORDER BY `sum_double2`
+    DESC  LIMIT 10
+  )
+  `tbl2`
+    ON (`tbl1`.`username` = `tbl2`.`username`)
+GROUP BY `tbl1`.`username`
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl1
+                  properties:
+                    druid.fieldNames username,$f1
+                    druid.fieldTypes string,double
+                    druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_with_nulls","granularity":"all","dimensions":[{"type":"default","dimension":"username","outputName":"username","outputType":"STRING"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f1","direction":"descending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"double1"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+                    druid.query.type groupBy
+                  Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: username (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                    Filter Operator
+                      predicate: _col0 is not null (type: boolean)
+                      Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl1
+                  properties:
+                    druid.fieldNames username,double1
+                    druid.fieldTypes string,double
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_with_nulls","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"username","value":null}},"columns":["username","double1"],"resultFormat":"compactedList"}
+                    druid.query.type scan
+                  Statistics: Num rows: 6 Data size: 1152 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: username (type: string)
+                    sort order: +
+                    Map-reduce partition columns: username (type: string)
+                    Statistics: Num rows: 6 Data size: 1152 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: double1 (type: double)
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 username (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 1267 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: sum(_col1)
+                  keys: _col0 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 6 Data size: 1267 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 6 Data size: 1267 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: double)
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 633 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 633 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT
+username AS `username`,
+SUM(double1) AS `sum_double1`
+FROM
+druid_table_with_nulls `tbl1`
+  JOIN (
+    SELECT
+    username AS `username`,
+    SUM(double1) AS `sum_double2`
+    FROM druid_table_with_nulls
+    GROUP BY `username`
+    ORDER BY `sum_double2`
+    DESC  LIMIT 10
+  )
+  `tbl2`
+    ON (`tbl1`.`username` = `tbl2`.`username`)
+GROUP BY `tbl1`.`username`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_with_nulls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT
+username AS `username`,
+SUM(double1) AS `sum_double1`
+FROM
+druid_table_with_nulls `tbl1`
+  JOIN (
+    SELECT
+    username AS `username`,
+    SUM(double1) AS `sum_double2`
+    FROM druid_table_with_nulls
+    GROUP BY `username`
+    ORDER BY `sum_double2`
+    DESC  LIMIT 10
+  )
+  `tbl2`
+    ON (`tbl1`.`username` = `tbl2`.`username`)
+GROUP BY `tbl1`.`username`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_with_nulls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+alfred	10.300000190734863
+bob	3.140000104904175
+bonnie	0.0
+calvin	0.0
+charlie	25.600000381469727

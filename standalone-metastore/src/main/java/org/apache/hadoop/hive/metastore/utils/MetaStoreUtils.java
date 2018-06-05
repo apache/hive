@@ -1282,7 +1282,10 @@ public class MetaStoreUtils {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
         String key = param.getKey();
         if (schema.get(key) != null &&
-            (key.equals(cols) || key.equals(colTypes) || key.equals(parts))) {
+                (key.equals(cols) || key.equals(colTypes) || key.equals(parts) ||
+                        // skip Druid properties which are used in DruidSerde, since they are also updated
+                        // after SerDeInfo properties are copied.
+                        key.startsWith("druid."))) {
           continue;
         }
         schema.put(key, (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
