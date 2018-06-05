@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +38,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HeapMemoryMonitor;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -99,6 +102,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   protected boolean autoFlush;
   protected float memoryUsageThreshold;
   protected long ingestSizeThreshold;
+  protected FileSystem fs;
 
   public AbstractRecordWriter(final String lineDelimiter) {
     this.lineDelimiter = lineDelimiter == null || lineDelimiter.isEmpty() ?
@@ -134,6 +138,16 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     this.conf = conn.getHiveConf();
     this.defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     this.table = conn.getTable();
+    String location = table.getSd().getLocation();
+    try {
+      URI uri = new URI(location);
+      this.fs = FileSystem.newInstance(uri, conf);
+      LOG.info("Created new filesystem instance: {}", System.identityHashCode(this.fs));
+    } catch (URISyntaxException e) {
+      throw new StreamingException("Unable to create URI from location: " + location, e);
+    } catch (IOException e) {
+      throw new StreamingException("Unable to get filesystem for location: " + location, e);
+    }
     this.inputColumns = table.getSd().getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
     this.inputTypes = table.getSd().getCols().stream().map(FieldSchema::getType).collect(Collectors.toList());
     if (conn.isPartitionedTable() && conn.isDynamicPartitioning()) {
@@ -454,6 +468,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     tblProperties.putAll(table.getParameters());
     return acidOutputFormat.getRecordUpdater(partitionPath,
       new AcidOutputFormat.Options(conf)
+        .filesystem(fs)
         .inspector(outputRowObjectInspector)
         .bucket(bucketId)
         .tableProperties(tblProperties)
