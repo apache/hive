@@ -585,6 +585,8 @@ public enum ErrorMsg {
       "Cannot create Spark client on a closed session {0}", true),
 
   SPARK_JOB_INTERRUPTED(30044, "Spark job was interrupted while executing"),
+  SPARK_GET_JOB_INFO_INTERRUPTED(30045, "Spark job was interrupted while getting job info"),
+  SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}"),
 
   //========================== 40000 range starts here ========================//
 
