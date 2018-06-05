@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -91,6 +92,13 @@ public class MetaStoreListenerNotifier {
             @Override
             public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
               listener.onDropPartition((DropPartitionEvent)event);
+            }
+          })
+          .put(EventType.ALTER_DATABASE, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener,
+                               ListenerEvent event) throws MetaException {
+              listener.onAlterDatabase((AlterDatabaseEvent)event);
             }
           })
           .put(EventType.ALTER_TABLE, new EventNotifier() {

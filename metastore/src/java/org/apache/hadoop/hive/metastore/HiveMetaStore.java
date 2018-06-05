@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
@@ -1003,6 +1004,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("alter_database" + dbName);
       boolean success = false;
       Exception ex = null;
+      RawStore ms = getMS();
+      Database oldDB = null;
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
 
       // Perform the same URI normalization as create_database_core.
       if (newDB.getLocationUri() != null) {
@@ -1010,17 +1014,39 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       try {
-        Database oldDB = get_database_core(dbName);
+        oldDB = get_database_core(dbName);
         if (oldDB == null) {
           throw new MetaException("Could not alter database \"" + dbName + "\". Could not retrieve old definition.");
         }
         firePreEvent(new PreAlterDatabaseEvent(oldDB, newDB, this));
-        getMS().alterDatabase(dbName, newDB);
-        success = true;
+
+        ms.openTransaction();
+        ms.alterDatabase(dbName, newDB);
+
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+                  MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                          EventType.ALTER_DATABASE,
+                          new AlterDatabaseEvent(oldDB, newDB, true, this));
+        }
+
+        success = ms.commitTransaction();
       } catch (Exception e) {
         ex = e;
         rethrowException(e);
       } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+
+        if ((null != oldDB) && (!listeners.isEmpty())) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+                  EventType.ALTER_DATABASE,
+                  new AlterDatabaseEvent(oldDB, newDB, success, this),
+                  null,
+                  transactionalListenersResponses, ms);
+        }
+
         endFunction("alter_database", success, ex);
       }
     }

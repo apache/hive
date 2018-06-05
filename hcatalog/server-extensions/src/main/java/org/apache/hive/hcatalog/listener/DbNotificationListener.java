@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -353,6 +354,21 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.DROP_DATABASE.toString(), msgFactory
             .buildDropDatabaseMessage(db).toString());
     event.setDbName(db.getName());
+    process(event, dbEvent);
+  }
+
+  /**
+   * @param dbEvent alter database event
+   * @throws MetaException
+   */
+  @Override
+  public void onAlterDatabase(AlterDatabaseEvent dbEvent) throws MetaException {
+    Database oldDb = dbEvent.getOldDatabase();
+    Database newDb = dbEvent.getNewDatabase();
+    NotificationEvent event =
+            new NotificationEvent(0, now(), EventType.ALTER_DATABASE.toString(), msgFactory
+                    .buildAlterDatabaseMessage(oldDb, newDb).toString());
+    event.setDbName(oldDb.getName());
     process(event, dbEvent);
   }
 

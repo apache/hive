@@ -151,7 +151,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public boolean alterDatabase(String dbName, Database db)
       throws NoSuchObjectException, MetaException {
-    return objectStore.alterDatabase(dbName, db);
+    if (shouldEventSucceed) {
+      return objectStore.alterDatabase(dbName, db);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override

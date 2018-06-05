@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
@@ -91,6 +92,12 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public CreateDatabaseMessage buildCreateDatabaseMessage(Database db) {
     return new JSONCreateDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db.getName(), now());
+  }
+
+  @Override
+  public AlterDatabaseMessage buildAlterDatabaseMessage(Database beforeDb, Database afterDb) {
+    return new JSONAlterDatabaseMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
+                                        beforeDb, afterDb, now());
   }
 
   @Override
@@ -193,6 +200,11 @@ public class JSONMessageFactory extends MessageFactory {
             return getPartitionKeyValues(table, partition);
           }
         }));
+  }
+
+  static String createDatabaseObjJson(Database dbObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(dbObj, "UTF-8");
   }
 
   static String createTableObjJson(Table tableObj) throws TException {
