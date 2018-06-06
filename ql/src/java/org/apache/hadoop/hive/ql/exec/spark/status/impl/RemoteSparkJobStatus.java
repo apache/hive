@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
 
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,8 +99,8 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Map<String, SparkStageProgress> getSparkStageProgress() throws HiveException {
-    Map<String, SparkStageProgress> stageProgresses = new HashMap<String, SparkStageProgress>();
+  public Map<SparkStage, SparkStageProgress> getSparkStageProgress() throws HiveException {
+    Map<SparkStage, SparkStageProgress> stageProgresses = new HashMap<SparkStage, SparkStageProgress>();
     for (int stageId : getStageIds()) {
       SparkStageInfo sparkStageInfo = getSparkStageInfo(stageId);
       if (sparkStageInfo != null && sparkStageInfo.name() != null) {
@@ -109,8 +110,8 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
         int totalTaskCount = sparkStageInfo.numTasks();
         SparkStageProgress sparkStageProgress = new SparkStageProgress(
             totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount);
-        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_"
-          + sparkStageInfo.currentAttemptId(), sparkStageProgress);
+        SparkStage stage = new SparkStage(sparkStageInfo.stageId(), sparkStageInfo.currentAttemptId());
+        stageProgresses.put(stage, sparkStageProgress);
       }
     }
     return stageProgresses;
