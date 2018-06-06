@@ -61,7 +61,7 @@ public class SparkLauncherSparkClient extends AbstractSparkClient {
           SparkAppHandle.State.KILLED,
           SparkAppHandle.State.LOST);
 
-  private AbstractLauncher<InProcessLauncher> sparkLauncher;
+  private transient AbstractLauncher<InProcessLauncher> sparkLauncher;
 
   SparkLauncherSparkClient(RpcServer rpcServer,
                                    Map<String, String> conf,
