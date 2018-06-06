@@ -360,7 +360,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         createdTable.getSd().getLocation());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = InvalidObjectException.class)
   public void testCreateTableNullDatabase() throws Exception {
     Table table = testTables[0];
     table.setDbName(null);
@@ -895,7 +895,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     }
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = InvalidOperationException.class)
   public void testAlterTableNullDatabaseInNew() throws Exception {
     Table originalTable = testTables[0];
     Table newTable = originalTable.deepCopy();

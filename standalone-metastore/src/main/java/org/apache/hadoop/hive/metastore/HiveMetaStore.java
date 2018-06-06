@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -9034,6 +9035,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     t.start();
   }
 
+
   /**
    * Start threads outside of the thrift service, such as the compactor threads.
    * @param conf Hive configuration object
@@ -9073,6 +9075,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);
           startRemoteOnlyTasks(conf);
+          startStatsUpdater(conf);
         } catch (Throwable e) {
           LOG.error("Failure when starting the compactor, compactions may not happen, " +
               StringUtils.stringifyException(e));
@@ -9086,6 +9089,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     t.setDaemon(true);
     t.setName("Metastore threads starter thread");
     t.start();
+  }
+
+  protected static void startStatsUpdater(Configuration conf) throws Exception {
+    StatsUpdateMode mode = StatsUpdateMode.valueOf(
+        MetastoreConf.getVar(conf, ConfVars.STATS_AUTO_UPDATE).toUpperCase());
+    if (mode == StatsUpdateMode.NONE) return;
+    MetaStoreThread t = instantiateThread("org.apache.hadoop.hive.ql.stats.StatsUpdaterThread");
+    initializeAndStartThread(t, conf);
   }
 
   private static void startCompactorInitiator(Configuration conf) throws Exception {
