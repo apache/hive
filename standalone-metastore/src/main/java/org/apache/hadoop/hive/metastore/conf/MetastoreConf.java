@@ -83,6 +83,10 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String TEST_ENV_WORKAROUND = "metastore.testing.env.workaround.dont.ever.set.this.";
 
+  public static enum StatsUpdateMode {
+    NONE, EXISTING, ALL
+  }
+
   private static class TimeValue {
     final long val;
     final TimeUnit unit;
@@ -727,6 +731,18 @@ public class MetastoreConf {
         "The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is custom type."),
     STATS_DEFAULT_PUBLISHER("metastore.stats.default.publisher", "hive.stats.default.publisher", "",
         "The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is custom type."),
+    STATS_AUTO_UPDATE("metastore.stats.auto.analyze", "hive.metastore.stats.auto.analyze", "none",
+        new EnumValidator(StatsUpdateMode.values()),
+        "Whether to update stats in the background; none - no, all - for all tables, existing - only existing, out of date, stats."),
+    STATS_AUTO_UPDATE_NOOP_WAIT("metastore.stats.auto.analyze.noop.wait",
+        "hive.metastore.stats.auto.analyze.noop.wait", 5L, TimeUnit.MINUTES,
+        new TimeValidator(TimeUnit.MINUTES),
+        "How long to sleep if there were no stats needing update during an update iteration.\n" +
+        "This is a setting to throttle table/partition checks when nothing is being changed; not\n" +
+        "the analyze queries themselves."),
+    STATS_AUTO_UPDATE_WORKER_COUNT("metastore.stats.auto.analyze.worker.count",
+        "hive.metastore.stats.auto.analyze.worker.count", 1,
+        "Number of parallel analyze commands to run for background stats update."),
     STORAGE_SCHEMA_READER_IMPL("metastore.storage.schema.reader.impl", "metastore.storage.schema.reader.impl",
         DefaultStorageSchemaReader.class.getName(),
         "The class to use to read schemas from storage.  It must implement " +

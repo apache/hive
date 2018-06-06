@@ -310,6 +310,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
       } else {
         // operations other than table rename
+
         if (MetaStoreUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
           Database db = msdb.getDatabase(catName, newDbName);
@@ -540,10 +541,11 @@ public class HiveAlterHandler implements AlterHandler {
         }
         success = msdb.commitTransaction();
       } catch (InvalidObjectException e) {
-        throw new InvalidOperationException("alter is not possible");
-      } catch (NoSuchObjectException e){
+        LOG.warn("Alter failed", e);
+        throw new InvalidOperationException("alter is not possible: " + e.getMessage());
+      } catch (NoSuchObjectException e) {
         //old partition does not exist
-        throw new InvalidOperationException("alter is not possible");
+        throw new InvalidOperationException("alter is not possible: " + e.getMessage());
       } finally {
         if(!success) {
           msdb.rollbackTransaction();

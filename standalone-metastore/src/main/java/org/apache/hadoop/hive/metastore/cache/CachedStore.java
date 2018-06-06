@@ -116,6 +116,7 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -2491,5 +2492,21 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
     return rawStore.deleteRuntimeStats(maxRetainSecs);
+  }
+
+  @Override
+  public List<FullTableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
+    return rawStore.getTableNamesWithStats();
+  }
+
+  @Override
+  public List<FullTableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
+    return rawStore.getAllTableNamesForStats();
+  }
+
+  @Override
+  public Map<String, List<String>> getPartitionColsWithStats(String catName,
+      String dbName, String tableName) throws MetaException, NoSuchObjectException {
+    return rawStore.getPartitionColsWithStats(catName, dbName, tableName);
   }
 }

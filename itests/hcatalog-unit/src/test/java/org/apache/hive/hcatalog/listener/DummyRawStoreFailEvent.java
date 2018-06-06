@@ -22,11 +22,13 @@ import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
@@ -88,6 +90,7 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMNullablePool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.thrift.TException;
 
 /**
@@ -1221,4 +1224,22 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
     return objectStore.deleteRuntimeStats(maxRetainSecs);
   }
 
-}
+
+  @Override
+  public List<FullTableName> getTableNamesWithStats() throws MetaException,
+      NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public List<FullTableName> getAllTableNamesForStats() throws MetaException,
+      NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public Map<String, List<String>> getPartitionColsWithStats(String catName,
+      String dbName, String tableName) throws MetaException,
+      NoSuchObjectException {
+    return null;
+  }}

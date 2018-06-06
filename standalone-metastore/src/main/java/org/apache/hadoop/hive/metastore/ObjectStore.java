@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
+
 import javax.jdo.JDOCanRetryException;
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -71,6 +72,7 @@ import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
 import com.google.common.base.Strings;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -211,6 +213,7 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
 import org.datanucleus.AbstractNucleusContext;
@@ -1544,6 +1547,96 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (NoSuchObjectException e) {
       throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
+  }
+
+  @Override
+  public List<FullTableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
+    return new GetListHelper<FullTableName>(null, null, null, true, false) {
+      @Override
+      protected List<FullTableName> getSqlResult(
+          GetHelper<List<FullTableName>> ctx) throws MetaException {
+        return directSql.getTableNamesWithStats();
+      }
+
+      @Override
+      protected List<FullTableName> getJdoResult(
+          GetHelper<List<FullTableName>> ctx) throws MetaException {
+        throw new UnsupportedOperationException("UnsupportedOperationException"); // TODO: implement?
+      }
+    }.run(false);
+  }
+
+  @Override
+  public Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName, String tableName)
+      throws MetaException, NoSuchObjectException {
+    return new GetHelper<Map<String, List<String>>>(catName, dbName, null, true, false) {
+      @Override
+      protected Map<String, List<String>> getSqlResult(
+          GetHelper<Map<String, List<String>>> ctx) throws MetaException {
+        try {
+          return directSql.getColAndPartNamesWithStats(catName, dbName, tableName);
+        } catch (Throwable ex) {
+          LOG.error("DirectSQL failed", ex);
+          throw new MetaException(ex.getMessage());
+        }
+      }
+
+      @Override
+      protected Map<String, List<String>> getJdoResult(
+          GetHelper<Map<String, List<String>>> ctx) throws MetaException {
+        throw new UnsupportedOperationException("UnsupportedOperationException"); // TODO: implement?
+      }
+
+      @Override
+      protected String describeResult() {
+        return results.size() + " partitions";
+      }
+    }.run(false);
+  }
+
+  @Override
+  public List<FullTableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
+    return new GetListHelper<FullTableName>(null, null, null, true, false) {
+      @Override
+      protected List<FullTableName> getSqlResult(
+          GetHelper<List<FullTableName>> ctx) throws MetaException {
+        return directSql.getAllTableNamesForStats();
+      }
+
+      @Override
+      protected List<FullTableName> getJdoResult(
+          GetHelper<List<FullTableName>> ctx) throws MetaException {
+        boolean commited = false;
+        Query query = null;
+        List<FullTableName> result = new ArrayList<>();
+        openTransaction();
+        try {
+          String paramStr = "", whereStr = "";
+          for (int i = 0; i < MetaStoreDirectSql.STATS_TABLE_TYPES.length; ++i) {
+            if (i != 0) {
+              paramStr += ", ";
+              whereStr += "||";
+            }
+            paramStr += "java.lang.String tt" + i;
+            whereStr += " tableType == tt" + i;
+          }
+          query = pm.newQuery(MTable.class, whereStr);
+          query.declareParameters(paramStr);
+          @SuppressWarnings("unchecked")
+          Collection<MTable> tbls = (Collection<MTable>) query.executeWithArray(
+              query, MetaStoreDirectSql.STATS_TABLE_TYPES);
+          pm.retrieveAll(tbls);
+          for (MTable tbl : tbls) {
+            result.add(new FullTableName(
+                tbl.getDatabase().getCatalogName(), tbl.getDatabase().getName(), tbl.getTableName()));
+          }
+          commited = commitTransaction();
+        } finally {
+          rollbackAndCleanup(commited, query);
+        }
+        return result;
+      }
+    }.run(false);
   }
 
   protected List<String> getTablesInternal(String catName, String dbName, String pattern,
@@ -3447,9 +3540,9 @@ public class ObjectStore implements RawStore, Configurable {
                      boolean allowSql, boolean allowJdo) throws MetaException {
       assert allowSql || allowJdo;
       this.allowJdo = allowJdo;
-      this.catName = normalizeIdentifier(catalogName);
-      this.dbName = normalizeIdentifier(dbName);
-      if (tblName != null){
+      this.catName = (catalogName != null) ? normalizeIdentifier(catalogName) : null;
+      this.dbName = (dbName != null) ? normalizeIdentifier(dbName) : null;
+      if (tblName != null) {
         this.tblName = normalizeIdentifier(tblName);
       } else {
         // tblName can be null in cases of Helper being used at a higher
