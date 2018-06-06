@@ -16921,13 +16921,12 @@ void swap(WriteEventInfo &a, WriteEventInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
 WriteEventInfo::WriteEventInfo(const WriteEventInfo& other681) {
   writeId = other681.writeId;
   database = other681.database;
   table = other681.table;
-  partition = other681.partition;
   files = other681.files;
+  partition = other681.partition;
   tableObj = other681.tableObj;
   partitionObj = other681.partitionObj;
   __isset = other681.__isset;
@@ -16936,32 +16935,11 @@ WriteEventInfo& WriteEventInfo::operator=(const WriteEventInfo& other682) {
   writeId = other682.writeId;
   database = other682.database;
   table = other682.table;
-  partition = other682.partition;
   files = other682.files;
+  partition = other682.partition;
   tableObj = other682.tableObj;
   partitionObj = other682.partitionObj;
   __isset = other682.__isset;
-=======
-WriteEventInfo::WriteEventInfo(const WriteEventInfo& other679) {
-  writeId = other679.writeId;
-  database = other679.database;
-  table = other679.table;
-  files = other679.files;
-  partition = other679.partition;
-  tableObj = other679.tableObj;
-  partitionObj = other679.partitionObj;
-  __isset = other679.__isset;
-}
-WriteEventInfo& WriteEventInfo::operator=(const WriteEventInfo& other680) {
-  writeId = other680.writeId;
-  database = other680.database;
-  table = other680.table;
-  files = other680.files;
-  partition = other680.partition;
-  tableObj = other680.tableObj;
-  partitionObj = other680.partitionObj;
-  __isset = other680.__isset;
->>>>>>> HIVE-19267 : Create/Replicate ACID Write event : After review comment fix
   return *this;
 }
 void WriteEventInfo::printTo(std::ostream& out) const {
