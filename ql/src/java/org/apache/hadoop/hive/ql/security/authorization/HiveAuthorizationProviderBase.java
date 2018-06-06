@@ -88,12 +88,21 @@ public abstract class HiveAuthorizationProviderBase implements
       }
     }
 
-    public Database getDatabase(String dbName) throws HiveException {
+    /**
+     * Get the database object
+     * @param catName catalog name.  If null, the default will be pulled from the conf.  This
+     *                means the caller does not have to check isCatNameSet()
+     * @param dbName database name.
+     * @return
+     * @throws HiveException
+     */
+    public Database getDatabase(String catName, String dbName) throws HiveException {
+      catName = catName == null ? MetaStoreUtils.getDefaultCatalog(conf) : catName;
       if (!isRunFromMetaStore()) {
-        return Hive.getWithFastCheck(conf).getDatabase(dbName);
+        return Hive.getWithFastCheck(conf).getDatabase(catName, dbName);
       } else {
         try {
-          return handler.get_database_core(MetaStoreUtils.getDefaultCatalog(conf), dbName);
+          return handler.get_database_core(catName, dbName);
         } catch (NoSuchObjectException e) {
           throw new HiveException(e);
         } catch (MetaException e) {

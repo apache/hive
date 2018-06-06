@@ -685,6 +685,10 @@ public class Table implements Serializable {
     tTable.setPartitionKeys(partCols);
   }
 
+  public String getCatName() {
+    return tTable.getCatName();
+  }
+
   public String getDbName() {
     return tTable.getDbName();
   }

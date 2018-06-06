@@ -173,7 +173,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // the database directory
     if (privExtractor.hasDropPrivilege || requireCreatePrivilege(readRequiredPriv)
         || requireCreatePrivilege(writeRequiredPriv)) {
-      authorize(hive_db.getDatabase(table.getDbName()), new Privilege[] {},
+      authorize(hive_db.getDatabase(table.getCatName(), table.getDbName()), new Privilege[] {},
           new Privilege[] { Privilege.ALTER_DATA });
     }
 
