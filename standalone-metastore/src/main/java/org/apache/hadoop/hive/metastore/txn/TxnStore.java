@@ -154,6 +154,12 @@ public interface TxnStore extends Configurable {
     throws NoSuchTxnException, TxnAbortedException, MetaException;
 
   /**
+   * Called on conversion of existing table to full acid.  Sets initial write ID to a high
+   * enough value so that we can assign unique ROW__IDs to data in existing files.
+   */
+  void seedWriteIdOnAcidConversion(InitializeTableWriteIdsRequest rqst) throws MetaException;
+
+  /**
    * Obtain a lock.
    * @param rqst information on the lock to obtain.  If the requester is part of a transaction
    *             the txn information must be included in the lock request.
