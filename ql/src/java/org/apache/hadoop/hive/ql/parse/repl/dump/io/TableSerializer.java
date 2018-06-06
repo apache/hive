@@ -18,9 +18,11 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -30,6 +32,7 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class TableSerializer implements JsonWriter.Serializer {
@@ -53,7 +56,7 @@ public class TableSerializer implements JsonWriter.Serializer {
     }
 
     Table tTable = tableHandle.getTTable();
-    tTable = addPropertiesToTable(tTable, additionalPropertiesProvider);
+    tTable = updatePropertiesInTable(tTable, additionalPropertiesProvider);
     try {
       TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       writer.jsonGenerator
@@ -65,7 +68,16 @@ public class TableSerializer implements JsonWriter.Serializer {
     }
   }
 
-  private Table addPropertiesToTable(Table table, ReplicationSpec additionalPropertiesProvider) {
+  private Table updatePropertiesInTable(Table table, ReplicationSpec additionalPropertiesProvider) {
+    // Remove all the entries from the parameters which are added by repl tasks internally.
+    Map<String, String> parameters = table.getParameters();
+    if (parameters != null) {
+      Map<String, String> tmpParameters = new HashMap<>(parameters);
+      tmpParameters.entrySet()
+              .removeIf(e -> e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY));
+      table.setParameters(tmpParameters);
+    }
+
     if (additionalPropertiesProvider.isInReplicationScope()) {
       // Current replication state must be set on the Table object only for bootstrap dump.
       // Event replication State will be null in case of bootstrap dump.
@@ -87,7 +99,7 @@ public class TableSerializer implements JsonWriter.Serializer {
       // ReplicationSpec.KEY scopeKey = ReplicationSpec.KEY.REPL_SCOPE;
       // write(out, ",\""+ scopeKey.toString() +"\":\"" + replicationSpec.get(scopeKey) + "\"");
       // TODO: if we want to be explicit about this dump not being a replication dump, we can
-      // uncomment this else section, but currently unnneeded. Will require a lot of golden file
+      // uncomment this else section, but currently unneeded. Will require a lot of golden file
       // regen if we do so.
     }
     return table;
