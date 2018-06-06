@@ -1608,6 +1608,23 @@ public class Hive {
   }
 
   /**
+   * Get the database by name.
+   * @param catName catalog name
+   * @param dbName the name of the database.
+   * @return a Database object if this database exists, null otherwise.
+   * @throws HiveException
+   */
+  public Database getDatabase(String catName, String dbName) throws HiveException {
+    try {
+      return getMSC().getDatabase(catName, dbName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
    * Get the Database object for current database
    * @return a Database object if this database exists, null otherwise.
    * @throws HiveException
