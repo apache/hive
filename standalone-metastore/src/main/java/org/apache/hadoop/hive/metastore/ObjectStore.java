@@ -2765,10 +2765,17 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void dropPartitions(String catName, String dbName, String tblName, List<String> partNames)
       throws MetaException, NoSuchObjectException {
+    dropPartitionsInternal(catName, dbName, tblName, partNames, true, true);
+  }
+
+  @VisibleForTesting
+  void dropPartitionsInternal(String catName, String dbName, String tblName,
+       List<String> partNames, boolean allowSql, boolean allowJdo)
+      throws MetaException, NoSuchObjectException {
     if (CollectionUtils.isEmpty(partNames)) {
       return;
     }
-    new GetListHelper<Void>(catName, dbName, tblName, true, true) {
+    new GetListHelper<Void>(catName, dbName, tblName, allowSql, allowJdo) {
       @Override
       protected List<Void> getSqlResult(GetHelper<List<Void>> ctx) throws MetaException {
         directSql.dropPartitionsViaSqlFilter(catName, dbName, tblName, partNames);

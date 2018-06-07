@@ -77,7 +77,9 @@ import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -237,6 +239,8 @@ class MetaStoreDirectSql {
       initQueries.add(pm.newQuery(MNotificationNextId.class, "nextEventId < -1"));
       initQueries.add(pm.newQuery(MWMResourcePlan.class, "name == ''"));
       initQueries.add(pm.newQuery(MCreationMetadata.class, "dbName == ''"));
+      initQueries.add(pm.newQuery(MPartitionPrivilege.class, "principalName == ''"));
+      initQueries.add(pm.newQuery(MPartitionColumnPrivilege.class, "principalName == ''"));
       Query q;
       while ((q = initQueries.peekFirst()) != null) {
         q.execute();
