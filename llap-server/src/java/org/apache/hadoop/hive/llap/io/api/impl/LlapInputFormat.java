@@ -20,7 +20,7 @@
 package org.apache.hadoop.hive.llap.io.api.impl;
 
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
-
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 import java.io.IOException;
@@ -114,7 +114,10 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       // For non-vectorized operator case, wrap the reader if possible.
       RecordReader<NullWritable, VectorizedRowBatch> result = rr;
       if (!Utilities.getIsVectorized(job)) {
-        result = wrapLlapReader(tableIncludedCols, rr, split);
+        result = null;
+        if (HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED)) {
+          result = wrapLlapReader(tableIncludedCols, rr, split);
+        }
         if (result == null) {
           // Cannot wrap a reader for non-vectorized pipeline.
           return sourceInputFormat.getRecordReader(split, job, reporter);
