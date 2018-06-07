@@ -97,7 +97,7 @@ public class TestStatsUpdaterThread {
     executeQuery("drop table simple_stats3");
   }
 
-  @Test(timeout=20000)
+  @Test(timeout=40000)
   public void testSimpleUpdateWithThreads() throws Exception {
     StatsUpdaterThread su = createUpdater();
     su.startWorkers();
@@ -114,7 +114,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=20000)
+  @Test(timeout=40000)
   public void testMultipleTables() throws Exception {
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
@@ -140,7 +140,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=20000)
+  @Test(timeout=40000)
   public void testExistingOnly() throws Exception {
     hiveConf.set(MetastoreConf.ConfVars.STATS_AUTO_UPDATE.getVarname(), "existing");
     StatsUpdaterThread su = createUpdater();
@@ -162,7 +162,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=60000)
+  @Test(timeout=80000)
   public void testQueueingWithThreads() throws Exception {
     final int PART_COUNT = 12;
     hiveConf.setInt(MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX.getVarname(), 5);
@@ -193,7 +193,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=20000)
+  @Test(timeout=40000)
   public void testAllPartitions() throws Exception {
     final int PART_COUNT = 3;
     StatsUpdaterThread su = createUpdater();
@@ -216,7 +216,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=20000)
+  @Test(timeout=40000)
   public void testPartitionSubset() throws Exception {
     final int NONSTAT_PART_COUNT = 3;
     StatsUpdaterThread su = createUpdater();
@@ -251,7 +251,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=20000)
+  @Test(timeout=40000)
   public void testPartitionsWithDifferentColsAll() throws Exception {
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
@@ -280,7 +280,7 @@ public class TestStatsUpdaterThread {
   }
 
 
-  @Test(timeout=20000)
+  @Test(timeout=45000)
   public void testPartitionsWithDifferentColsExistingOnly() throws Exception {
     hiveConf.set(MetastoreConf.ConfVars.STATS_AUTO_UPDATE.getVarname(), "existing");
     StatsUpdaterThread su = createUpdater();
@@ -316,7 +316,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-  @Test(timeout=20000)
+  @Test(timeout=40000)
   public void testParallelOps() throws Exception {
     // Set high worker count so we get a longer queue.
     hiveConf.setInt(MetastoreConf.ConfVars.STATS_AUTO_UPDATE_WORKER_COUNT.getVarname(), 4);
