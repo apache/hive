@@ -161,7 +161,6 @@
     <httpcomponents.core.version>4.4.4</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
     <jackson.version>2.9.4</jackson.version>
-    <jasper.version>5.5.23</jasper.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
