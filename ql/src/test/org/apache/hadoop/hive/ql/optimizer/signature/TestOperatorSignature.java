@@ -93,7 +93,6 @@ public class TestOperatorSignature {
     Operator<TableScanDesc> t1a = getTsOp(3);
     Operator<TableScanDesc> t2 = getTsOp(4);
 
-    assertTrue(t1.logicalEquals(t1a));
     checkEquals(t1, t1a);
     checkNotEquals(t1, t2);
   }
@@ -149,11 +148,10 @@ public class TestOperatorSignature {
 
   private Operator<TableScanDesc> getTsOp(int i) {
     Table tblMetadata = new Table("db", "table");
-    // FIXME: I think this shouldn't be sensitive to the alias; but currently its included in logicalEquals...check that
-    TableScanDesc desc = new TableScanDesc("alias"/*+ cCtx.nextOperatorId()*/, tblMetadata);
-      List<ExprNodeDesc> as =
+    TableScanDesc desc = new TableScanDesc("alias_" + cCtx.nextOperatorId(), tblMetadata);
+    List<ExprNodeDesc> as =
         Lists.newArrayList(new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, Integer.valueOf(i)),
-          new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "c1", "aa", false));
+            new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo, "c1", "aa", false));
     ExprNodeGenericFuncDesc f1 = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, udf, as);
     desc.setFilterExpr(f1);
     Operator<TableScanDesc> ts = OperatorFactory.get(cCtx, desc);
