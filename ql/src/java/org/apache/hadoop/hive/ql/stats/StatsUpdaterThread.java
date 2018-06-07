@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest2;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -458,10 +460,10 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
 
   private ValidReaderWriteIdList getWriteIds(
       TableName fullTableName) throws NoSuchTxnException, MetaException {
-    GetValidWriteIdsRequest req = new GetValidWriteIdsRequest();
-    req.setFullTableNames(Lists.newArrayList(fullTableName.toString()));
+    GetValidWriteIdsRequest2 req = new GetValidWriteIdsRequest2();
+    req.setFullTableNames(Lists.newArrayList(MetaStoreUtils.tableNameToThriftTableName(fullTableName)));
     return TxnUtils.createValidReaderWriteIdList(
-        txnHandler.getValidWriteIds(req).getTblValidWriteIds().get(0));
+        txnHandler.getValidWriteIds(req).getTblValidWriteIds().get(0), conf);
   }
 
 

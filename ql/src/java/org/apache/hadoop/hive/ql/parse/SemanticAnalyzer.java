@@ -7457,10 +7457,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
             } else {
               // TODO CAT - Fix in HIVE-19791
-              TableName tableName = new TableName(
-                  SessionState.get() == null ? MetaStoreUtils.getDefaultCatalog(conf) :
-                      SessionState.get().getCurrentCatalog(),
-                  tblDesc.getDatabaseName(), tblDesc.getTableName());
+              TableName tableName = TableName.fromString(tblDesc.getTableName(),
+                  SessionState.get() == null ? MetaStoreUtils.getDefaultCatalog(conf) : SessionState.get().getCurrentCatalog(),
+                  SessionState.get() == null ? Warehouse.DEFAULT_DATABASE_NAME : SessionState.get().getCurrentDatabase());
               writeId = txnMgr.getTableWriteId(tableName);
             }
           } catch (LockException ex) {

@@ -339,10 +339,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       // Explain plan doesn't open a txn and hence no need to allocate write id.
       if (x.getCtx().getExplainConfig() == null) {
         // TODO CAT - Fix in HIVE-19791
-        TableName tableName = new TableName(
-            SessionState.get() == null ? Warehouse.DEFAULT_CATALOG_NAME :
-                SessionState.get().getCurrentCatalog(),
-            tblDesc.getDatabaseName(), tblDesc.getTableName());
+        TableName tableName = TableName.fromString(tblDesc.getTableName(),
+            SessionState.get() == null ? Warehouse.DEFAULT_CATALOG_NAME : SessionState.get().getCurrentCatalog(),
+            SessionState.get() == null ? Warehouse.DEFAULT_DATABASE_NAME : SessionState.get().getCurrentDatabase());
         writeId = txnMgr.getTableWriteId(tableName);
         stmtId = txnMgr.getStmtIdAndIncrement();
       }

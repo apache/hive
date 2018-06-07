@@ -464,11 +464,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       TableDesc table, List<InputSplit> result)
           throws IOException {
     // TODO CAT - Fix in HIVE-19791
-    TableName tableName = new TableName(MetaStoreUtils.getDefaultCatalog(conf),
-        table.getDbName() == null ? Warehouse.DEFAULT_DATABASE_NAME : table.getDbName(),
-        table.getTableName());
-    ValidWriteIdList validWriteIdList = AcidUtils.getTableValidWriteIdList(
-        conf, tableName);
+    TableName tableName = table.getTableName() == null ? null :
+        TableName.fromString(table.getTableName(),
+        MetaStoreUtils.getDefaultCatalog(conf), Warehouse.DEFAULT_DATABASE_NAME);
+    ValidWriteIdList validWriteIdList = AcidUtils.getTableValidWriteIdList(conf, tableName);
     ValidWriteIdList validMmWriteIdList = getMmValidWriteIds(conf, table, validWriteIdList);
 
     try {
@@ -567,9 +566,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (!AcidUtils.isInsertOnlyTable(table.getProperties())) return null;
     if (validWriteIdList == null) {
       // TODO CAT - Fix in HIVE-19791
-      TableName tableName = new TableName(MetaStoreUtils.getDefaultCatalog(conf),
-          table.getDbName() == null ? Warehouse.DEFAULT_DATABASE_NAME : table.getDbName(),
-          table.getTableName());
+      // getTableName() returns dbname.tablename when it knows the db
+      TableName tableName = TableName.fromString(table.getTableName(),
+          MetaStoreUtils.getDefaultCatalog(conf), Warehouse.DEFAULT_DATABASE_NAME);
       validWriteIdList = AcidUtils.getTableValidWriteIdList(conf, tableName);
       if (validWriteIdList == null) {
         throw new IOException("Insert-Only table: " + table.getTableName()

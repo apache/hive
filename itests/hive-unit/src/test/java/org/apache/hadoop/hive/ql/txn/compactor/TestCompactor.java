@@ -509,7 +509,7 @@ public class TestCompactor {
       txnBatch.close();
       connection.close();
     }
-    execSelectAndDumpData("select * from " + ci.getFullTableName(), driver, ci.getFullTableName().toString());
+    execSelectAndDumpData("select * from " + ci.getFullTableName().getDbTable(), driver, ci.getFullTableName().toString());
 
     //so now we have written some new data to bkt=0 and it shows up
     CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, CompactionType.MAJOR);

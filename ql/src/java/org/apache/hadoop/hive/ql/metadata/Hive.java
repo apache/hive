@@ -1504,13 +1504,13 @@ public class Hive {
       ValidTxnWriteIdList materializationTxnList) throws LockException {
     // Extract tables used by the query which will in turn be used to generate
     // the corresponding txn write ids
-    List<String> tablesUsed = new ArrayList<>();
+    List<TableName> tablesUsed = new ArrayList<>();
     new RelVisitor() {
       @Override
       public void visit(RelNode node, int ordinal, RelNode parent) {
         if (node instanceof TableScan) {
           TableScan ts = (TableScan) node;
-          tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullyQualifiedName());
+          tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullTableName());
         }
         super.visit(node, ordinal, parent);
       }
