@@ -178,8 +178,8 @@ class LlapRecordReader
 
     this.isVectorized = HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
     if (isAcidScan) {
-      this.acidReader = new VectorizedOrcAcidRowBatchReader((OrcSplit) split, jobConf, Reporter.NULL, null, rbCtx,
-        true);
+      this.acidReader = new VectorizedOrcAcidRowBatchReader(
+          (OrcSplit) split, jobConf, Reporter.NULL, null, rbCtx, true);
     }
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.

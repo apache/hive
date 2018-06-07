@@ -324,8 +324,9 @@ public class VectorizedOrcAcidRowBatchReader
   private static boolean needSyntheticRowIds(boolean isOriginal, boolean hasDeletes, boolean rowIdProjected) {
     return isOriginal && (hasDeletes || rowIdProjected);
   }
+
   private static boolean areRowIdsProjected(VectorizedRowBatchCtx rbCtx) {
-    if(rbCtx.getVirtualColumnCount() == 0) {
+    if (rbCtx.getVirtualColumnCount() == 0) {
       return false;
     }
     for(VirtualColumn vc : rbCtx.getNeededVirtualColumns()) {
@@ -474,6 +475,7 @@ public class VectorizedOrcAcidRowBatchReader
       }
     }
     if (rowIdProjected) {
+      // TODO: could we just do: int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWID); value.cols[ix] = recordIdColumnVector;
       rbCtx.setRecordIdColumnVector(recordIdColumnVector);
     }
     progress = baseReader.getProgress();
