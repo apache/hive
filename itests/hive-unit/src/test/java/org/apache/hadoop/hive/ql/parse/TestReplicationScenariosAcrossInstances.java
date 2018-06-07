@@ -849,6 +849,85 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
+  public void testIfCkptSetForObjectsByBootstrapReplLoad() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (id int)")
+            .run("insert into table t1 values (10)")
+            .run("create table t2 (place string) partitioned by (country string)")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
+            .run("insert into table t2 partition(country='uk') values ('london')")
+            .run("insert into table t2 partition(country='us') values ('sfo')")
+            .dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select country from t2")
+            .verifyResults(Arrays.asList("india", "uk", "us"));
+
+    Database db = replica.getDatabase(replicatedDbName);
+    verifyIfCkptSet(db.getParameters(), tuple.dumpLocation);
+    Table t1 = replica.getTable(replicatedDbName, "t1");
+    verifyIfCkptSet(t1.getParameters(), tuple.dumpLocation);
+    Table t2 = replica.getTable(replicatedDbName, "t2");
+    verifyIfCkptSet(t2.getParameters(), tuple.dumpLocation);
+    Partition india = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("india"));
+    verifyIfCkptSet(india.getParameters(), tuple.dumpLocation);
+    Partition us = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("us"));
+    verifyIfCkptSet(us.getParameters(), tuple.dumpLocation);
+    Partition uk = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("uk"));
+    verifyIfCkptSet(uk.getParameters(), tuple.dumpLocation);
+  }
+
+  @Test
+  public void testIncrementalDumpMultiIteration() throws Throwable {
+    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(bootstrapTuple.lastReplicationId);
+
+    WarehouseInstance.Tuple incremental = primary.run("use " + primaryDbName)
+            .run("create table table1 (id int) partitioned by (country string)")
+            .run("create table table2 (id int)")
+            .run("create table table3 (id int) partitioned by (country string)")
+            .run("insert into table1 partition(country='india') values(1)")
+            .run("insert into table2 values(2)")
+            .run("insert into table3 partition(country='india') values(3)")
+            .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+
+    replica.load(replicatedDbName, incremental.dumpLocation, Arrays.asList("'hive.repl.approx.max.load.tasks'='10'"))
+            .status(replicatedDbName)
+            .verifyResult(incremental.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("select id from table1")
+            .verifyResults(new String[] {"1" })
+            .run("select * from table2")
+            .verifyResults(new String[] {"2" })
+            .run("select id from table3")
+            .verifyResults(new String[] {"3" });
+
+    incremental = primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table4 (i int, j int)")
+            .run("insert into table4 values (1,2)")
+            .dump(primaryDbName, incremental.lastReplicationId,
+                    Arrays.asList("'hive.repl.dump.include.acid.tables'='true'"));
+
+    replica.load(replicatedDbName, incremental.dumpLocation, Arrays.asList("'hive.repl.approx.max.load.tasks'='1'"))
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1", "table2", "table3", "table4" })
+            .run("select i from table4")
+            .verifyResult("1");
+  }
+
+  @Test
   public void testIfCkptAndSourceOfReplPropsIgnoredByReplDump() throws Throwable {
     WarehouseInstance.Tuple tuplePrimary = primary
             .run("use " + primaryDbName)

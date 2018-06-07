@@ -28,7 +28,7 @@ import java.util.List;
 public class AddDependencyToLeaves implements DAGTraversal.Function {
   private List<Task<? extends Serializable>> postDependencyCollectionTasks;
 
-  AddDependencyToLeaves(List<Task<? extends Serializable>> postDependencyCollectionTasks) {
+  public AddDependencyToLeaves(List<Task<? extends Serializable>> postDependencyCollectionTasks) {
     this.postDependencyCollectionTasks = postDependencyCollectionTasks;
   }
 
