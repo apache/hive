@@ -105,8 +105,8 @@ public enum BucketCodec {
   private static final int NUM_BUCKET_ID_BITS = 12;
   private static final int NUM_STATEMENT_ID_BITS = 12;
   private static final int MAX_VERSION = (1 << NUM_VERSION_BITS) - 1;
-  private static final int MAX_BUCKET_ID = (1 << NUM_BUCKET_ID_BITS) - 1;
-  private static final int MAX_STATEMENT_ID = (1 << NUM_STATEMENT_ID_BITS) - 1;
+  public static final int MAX_BUCKET_ID = (1 << NUM_BUCKET_ID_BITS) - 1;
+  public static final int MAX_STATEMENT_ID = (1 << NUM_STATEMENT_ID_BITS) - 1;
 
   public static BucketCodec determineVersion(int bucket) {
     assert 7 << 29 == BucketCodec.TOP3BITS_MASK;

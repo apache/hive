@@ -209,6 +209,9 @@ public class AcidUtils {
         BUCKET_PREFIX + String.format(BUCKET_DIGITS, bucket));
     }
     else {
+      /**
+       * hmm this doesn't seem to match {@link #ORIGINAL_PATTERN}
+       */
       return new Path(subdir,
         String.format(BUCKET_DIGITS, bucket));
     }
@@ -301,6 +304,49 @@ public class AcidUtils {
   }
 
   /**
+   * Represents bucketId and copy_N suffix
+   */
+  public static final class BucketMetaData {
+    private static final BucketMetaData INVALID = new BucketMetaData(-1, 0);
+    /**
+     * @param bucketFileName {@link #ORIGINAL_PATTERN} or {@link #ORIGINAL_PATTERN_COPY}
+     */
+    public static BucketMetaData parse(String bucketFileName) {
+      if (ORIGINAL_PATTERN.matcher(bucketFileName).matches()) {
+        int bucketId = Integer
+            .parseInt(bucketFileName.substring(0, bucketFileName.indexOf('_')));
+        return new BucketMetaData(bucketId, 0);
+      }
+      else if(ORIGINAL_PATTERN_COPY.matcher(bucketFileName).matches()) {
+        int copyNumber = Integer.parseInt(
+            bucketFileName.substring(bucketFileName.lastIndexOf('_') + 1));
+        int bucketId = Integer
+            .parseInt(bucketFileName.substring(0, bucketFileName.indexOf('_')));
+        return new BucketMetaData(bucketId, copyNumber);
+      }
+      else if (bucketFileName.startsWith(BUCKET_PREFIX)) {
+        return new BucketMetaData(Integer
+            .parseInt(bucketFileName.substring(bucketFileName.indexOf('_') + 1)), 0);
+      }
+      return INVALID;
+    }
+    public static BucketMetaData parse(Path bucketFile) {
+      return parse(bucketFile.getName());
+    }
+      /**
+       * -1 if non-standard file name
+       */
+    public final int bucketId;
+    /**
+     * 0 means no copy_N suffix
+     */
+    public final int copyNumber;
+    private BucketMetaData(int bucketId, int copyNumber) {
+      this.bucketId = bucketId;
+      this.copyNumber = copyNumber;
+    }
+  }
+  /**
    * Get the write id from a base directory name.
    * @param path the base directory name
    * @return the maximum write id that is included
@@ -320,13 +366,7 @@ public class AcidUtils {
    * @return - bucket id
    */
   public static int parseBucketId(Path bucketFile) {
-    String filename = bucketFile.getName();
-    if (ORIGINAL_PATTERN.matcher(filename).matches() || ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
-      return Integer.parseInt(filename.substring(0, filename.indexOf('_')));
-    } else if (filename.startsWith(BUCKET_PREFIX)) {
-      return Integer.parseInt(filename.substring(filename.indexOf('_') + 1));
-    }
-    return -1;
+    return BucketMetaData.parse(bucketFile).bucketId;
   }
 
   /**
@@ -341,7 +381,7 @@ public class AcidUtils {
                                                    Configuration conf) throws IOException {
     AcidOutputFormat.Options result = new AcidOutputFormat.Options(conf);
     String filename = bucketFile.getName();
-    int bucket = parseBucketId(bucketFile);
+    int bucket = parseBucketId(bucketFile);//todo: use BucketMetaData
     if (ORIGINAL_PATTERN.matcher(filename).matches()) {
       result
           .setOldStyle(true)

@@ -60,6 +60,7 @@
     <module>spark-client</module>
     <module>kryo-registrator</module>
     <module>testutils</module>
+    <module>upgrade-acid</module>
     <module>packaging</module>
     <module>standalone-metastore</module>
   </modules>
