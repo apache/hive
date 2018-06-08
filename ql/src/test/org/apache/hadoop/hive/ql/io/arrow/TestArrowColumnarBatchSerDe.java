@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -104,36 +105,26 @@ public class TestArrowColumnarBatchSerDe {
       {null, null, null},
   };
 
-  private final static long TIME_IN_MS = TimeUnit.DAYS.toMillis(365 + 31 + 3);
-  private final static long NEGATIVE_TIME_IN_MS = TimeUnit.DAYS.toMillis(-9 * 365 + 31 + 3);
+  private final static long TIME_IN_MILLIS = TimeUnit.DAYS.toMillis(365 + 31 + 3);
+  private final static long NEGATIVE_TIME_IN_MILLIS = TimeUnit.DAYS.toMillis(-9 * 365 + 31 + 3);
   private final static Timestamp TIMESTAMP;
   private final static Timestamp NEGATIVE_TIMESTAMP_WITHOUT_NANOS;
-  private final static Timestamp NEGATIVE_TIMESTAMP_WITH_NANOS;
 
   static {
-    TIMESTAMP = new Timestamp(TIME_IN_MS);
-    TIMESTAMP.setNanos(123456789);
-    NEGATIVE_TIMESTAMP_WITHOUT_NANOS = new Timestamp(NEGATIVE_TIME_IN_MS);
-    NEGATIVE_TIMESTAMP_WITH_NANOS = new Timestamp(NEGATIVE_TIME_IN_MS);
-    NEGATIVE_TIMESTAMP_WITH_NANOS.setNanos(123456789);
+    TIMESTAMP = new Timestamp(TIME_IN_MILLIS);
+    NEGATIVE_TIMESTAMP_WITHOUT_NANOS = new Timestamp(NEGATIVE_TIME_IN_MILLIS);
   }
 
   private final static Object[][] DTI_ROWS = {
       {
-          new DateWritable(DateWritable.millisToDays(TIME_IN_MS)),
+          new DateWritable(DateWritable.millisToDays(TIME_IN_MILLIS)),
           new TimestampWritable(TIMESTAMP),
           new HiveIntervalYearMonthWritable(new HiveIntervalYearMonth(1, 2)),
           new HiveIntervalDayTimeWritable(new HiveIntervalDayTime(1, 2, 3, 4, 5_000_000))
       },
       {
-          new DateWritable(DateWritable.millisToDays(NEGATIVE_TIME_IN_MS)),
+          new DateWritable(DateWritable.millisToDays(NEGATIVE_TIME_IN_MILLIS)),
           new TimestampWritable(NEGATIVE_TIMESTAMP_WITHOUT_NANOS),
-          null,
-          null
-      },
-      {
-          null,
-          new TimestampWritable(NEGATIVE_TIMESTAMP_WITH_NANOS),
           null,
           null
       },
@@ -504,6 +495,25 @@ public class TestArrowColumnarBatchSerDe {
     };
 
     initAndSerializeAndDeserialize(schema, DTI_ROWS);
+  }
+
+  @Test
+  public void testPrimitiveRandomTimestamp() throws SerDeException {
+    String[][] schema = {
+        {"timestamp1", "timestamp"},
+    };
+
+    int size = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE);
+    Random rand = new Random(294722773L);
+    Object[][] rows = new Object[size][];
+    for (int i = 0; i < size; i++) {
+      long millis = ((long) rand.nextInt(Integer.MAX_VALUE)) * 1000;
+      Timestamp timestamp = new Timestamp(rand.nextBoolean() ? millis : -millis);
+      timestamp.setNanos(rand.nextInt(1000) * 1000);
+      rows[i] = new Object[] {new TimestampWritable(timestamp)};
+    }
+
+    initAndSerializeAndDeserialize(schema, rows);
   }
 
   @Test

@@ -217,7 +217,7 @@ public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
     //assertEquals("d", mapVal.get("c"));
     //assertEquals(Integer.valueOf(2), listVal.get(1));
 
-    assertEquals(Timestamp.valueOf("2012-04-22 09:00:00.123456789"), rowValues[16]);
+    assertEquals(Timestamp.valueOf("2012-04-22 09:00:00.123456"), rowValues[16]);
     assertEquals(new BigDecimal("123456789.123456"), rowValues[17]);
     assertArrayEquals("abcd".getBytes("UTF-8"), (byte[]) rowValues[18]);
     assertEquals(Date.valueOf("2013-01-01"), rowValues[19]);
