@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -576,6 +577,82 @@ public class TestStreamingDynamicPartitioning {
     assertEquals(2, res.size());
     assertEquals("1\tfoo\tAsia\t" + defaultPartitionName, res.get(0));
     assertEquals("2\tbar\tEurope\t" + defaultPartitionName, res.get(1));
+  }
+
+  @Test
+  public void testRegexInputStreamDP() throws Exception {
+    String regex = "([^,]*),(.*),(.*),(.*)";
+    StrictRegexWriter writer = StrictRegexWriter.newBuilder()
+      // if unspecified, default one or [\r\n] will be used for line break
+      .withRegex(regex)
+      .build();
+    StreamingConnection connection = HiveStreamingConnection.newBuilder()
+      .withDatabase(dbName)
+      .withTable(tblName)
+      .withAgentInfo("UT_" + Thread.currentThread().getName())
+      .withHiveConf(conf)
+      .withRecordWriter(writer)
+      .connect();
+
+    String rows = "1,foo,Asia,India\r2,bar,Europe,Germany\r3,baz,Asia,China\r4,cat,Australia,";
+    ByteArrayInputStream bais = new ByteArrayInputStream(rows.getBytes());
+    connection.beginTransaction();
+    connection.write(bais);
+    connection.commitTransaction();
+    bais.close();
+    connection.close();
+
+    List<String> rs = queryTable(driver, "select * from " + dbName + "." + tblName + " order by id");
+    Assert.assertEquals(4, rs.size());
+    Assert.assertEquals("1\tfoo\tAsia\tIndia", rs.get(0));
+    Assert.assertEquals("2\tbar\tEurope\tGermany", rs.get(1));
+    Assert.assertEquals("3\tbaz\tAsia\tChina", rs.get(2));
+    Assert.assertEquals("4\tcat\tAustralia\t__HIVE_DEFAULT_PARTITION__", rs.get(3));
+    rs = queryTable(driver, "show partitions " + dbName + "." + tblName);
+    Assert.assertEquals(4, rs.size());
+    Assert.assertTrue(rs.contains("continent=Asia/country=India"));
+    Assert.assertTrue(rs.contains("continent=Asia/country=China"));
+    Assert.assertTrue(rs.contains("continent=Europe/country=Germany"));
+    Assert.assertTrue(rs.contains("continent=Australia/country=__HIVE_DEFAULT_PARTITION__"));
+  }
+
+  @Test
+  public void testJsonInputStreamDP() throws Exception {
+    StrictJsonWriter writer = StrictJsonWriter.newBuilder()
+      .withLineDelimiterPattern("\\|")
+      .build();
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+      .withDatabase(dbName)
+      .withTable(tblName)
+      .withAgentInfo("UT_" + Thread.currentThread().getName())
+      .withRecordWriter(writer)
+      .withHiveConf(conf)
+      .connect();
+
+    // 1st Txn
+    connection.beginTransaction();
+    Assert.assertEquals(HiveStreamingConnection.TxnState.OPEN, connection.getCurrentTransactionState());
+    String records = "{\"id\" : 1, \"msg\": \"Hello streaming\", \"continent\": \"Asia\", \"Country\": \"India\"}|" +
+      "{\"id\" : 2, \"msg\": \"Hello world\", \"continent\": \"Europe\", \"Country\": \"Germany\"}|" +
+      "{\"id\" : 3, \"msg\": \"Hello world!!\", \"continent\": \"Asia\", \"Country\": \"China\"}|" +
+      "{\"id\" : 4, \"msg\": \"Hmm..\", \"continent\": \"Australia\", \"Unknown-field\": \"whatever\"}|";
+    ByteArrayInputStream bais = new ByteArrayInputStream(records.getBytes());
+    connection.write(bais);
+    connection.commitTransaction();
+    bais.close();
+    connection.close();
+    List<String> rs = queryTable(driver, "select * from " + dbName + "." + tblName + " order by id");
+    Assert.assertEquals(4, rs.size());
+    Assert.assertEquals("1\tHello streaming\tAsia\tIndia", rs.get(0));
+    Assert.assertEquals("2\tHello world\tEurope\tGermany", rs.get(1));
+    Assert.assertEquals("3\tHello world!!\tAsia\tChina", rs.get(2));
+    Assert.assertEquals("4\tHmm..\tAustralia\t__HIVE_DEFAULT_PARTITION__", rs.get(3));
+    rs = queryTable(driver, "show partitions " + dbName + "." + tblName);
+    Assert.assertEquals(4, rs.size());
+    Assert.assertTrue(rs.contains("continent=Asia/country=India"));
+    Assert.assertTrue(rs.contains("continent=Asia/country=China"));
+    Assert.assertTrue(rs.contains("continent=Europe/country=Germany"));
+    Assert.assertTrue(rs.contains("continent=Australia/country=__HIVE_DEFAULT_PARTITION__"));
   }
 
   @Test
