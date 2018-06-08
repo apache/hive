@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -45,8 +46,8 @@ public class ReplUtils {
 
   public static final String REPL_CHECKPOINT_KEY = "hive.repl.ckpt.key";
 
-  public enum LoadOpType {
-    LOAD_NEW, LOAD_SKIP, LOAD_REPLACE, LOAD_INVALID
+  public enum ReplLoadOpType {
+    LOAD_NEW, LOAD_SKIP, LOAD_REPLACE
   }
 
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(
@@ -103,10 +104,16 @@ public class ReplUtils {
     return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc), conf);
   }
 
-  public static LoadOpType getLoadOpType(Map<String, String> props, String dumpRoot) {
-    if (props.containsKey(REPL_CHECKPOINT_KEY)) {
-      return props.get(REPL_CHECKPOINT_KEY).equals(dumpRoot) ? LoadOpType.LOAD_SKIP : LoadOpType.LOAD_INVALID;
+  public static boolean replCkptStatus(String dbName, Map<String, String> props, String dumpRoot)
+          throws InvalidOperationException {
+    if ((props != null) && props.containsKey(REPL_CHECKPOINT_KEY)) {
+      if (props.get(REPL_CHECKPOINT_KEY).equals(dumpRoot)) {
+        return true;
+      }
+      throw new InvalidOperationException("REPL LOAD with Dump: " + dumpRoot
+              + " is not allowed as the target DB: " + dbName
+              + " is already bootstrap loaded by another Dump " + props.get(REPL_CHECKPOINT_KEY));
     }
-    return LoadOpType.LOAD_REPLACE;
+    return false;
   }
 }

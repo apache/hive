@@ -30,10 +30,19 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -264,6 +273,15 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
+  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
+          throws Throwable {
+    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    if (!withClauseOptions.isEmpty()) {
+      replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return runFailure(replLoadCmd);
+  }
+
   WarehouseInstance verifyResult(String data) throws IOException {
     verifyResults(data == null ? new String[] {} : new String[] { data });
     return this;
@@ -339,9 +357,21 @@ public class WarehouseInstance implements Closeable {
     }
   }
 
+  public List<String> getAllTables(String dbName) throws Exception {
+    return client.getAllTables(dbName);
+  }
+
   public Table getTable(String dbName, String tableName) throws Exception {
     try {
       return client.getTable(dbName, tableName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+  }
+
+  public List<Partition> getAllPartitions(String dbName, String tableName) throws Exception {
+    try {
+      return client.listPartitions(dbName, tableName, Short.MAX_VALUE);
     } catch (NoSuchObjectException e) {
       return null;
     }
@@ -353,6 +383,23 @@ public class WarehouseInstance implements Closeable {
     } catch (NoSuchObjectException e) {
       return null;
     }
+  }
+
+  public List<SQLPrimaryKey> getPrimaryKeyList(String dbName, String tblName) throws Exception {
+    return client.getPrimaryKeys(new PrimaryKeysRequest(dbName, tblName));
+  }
+
+  public List<SQLForeignKey> getForeignKeyList(String dbName, String tblName) throws Exception {
+    return client.getForeignKeys(new ForeignKeysRequest(null, null, dbName, tblName));
+  }
+
+  public List<SQLUniqueConstraint> getUniqueConstraintList(String dbName, String tblName) throws Exception {
+    return client.getUniqueConstraints(new UniqueConstraintsRequest(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
+  }
+
+  public List<SQLNotNullConstraint> getNotNullConstraintList(String dbName, String tblName) throws Exception {
+    return client.getNotNullConstraints(
+            new NotNullConstraintsRequest(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
   }
 
   ReplicationV1CompatRule getReplivationV1CompatRule(List<String> testsToSkip) {

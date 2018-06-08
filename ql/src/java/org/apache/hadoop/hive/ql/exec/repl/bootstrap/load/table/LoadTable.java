@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils.LoadOpType;
+import org.apache.hadoop.hive.ql.exec.repl.ReplUtils.ReplLoadOpType;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
@@ -111,16 +111,13 @@ public class LoadTable {
       }
 
       Task<?> tblRootTask = null;
-      ReplUtils.LoadOpType opType = getLoadOpType(table, parentDb);
-      switch (opType) {
+      ReplLoadOpType loadTblType = getLoadTableType(table);
+      switch (loadTblType) {
         case LOAD_NEW:
           break;
-        case LOAD_REPLACE: // Table exist and need replace
+        case LOAD_REPLACE:
           tblRootTask = dropTableTask(table);
           break;
-        case LOAD_INVALID:
-          throw new InvalidOperationException("Load not allowed on table " + table.getFullyQualifiedName()
-                  + " as it was already bootstrap loaded from another dump.");
         case LOAD_SKIP:
           return tracker;
       }
@@ -160,18 +157,14 @@ public class LoadTable {
     }
   }
 
-  private LoadOpType getLoadOpType(Table table, Database parentDb) throws HiveException {
+  private ReplLoadOpType getLoadTableType(Table table) throws InvalidOperationException, HiveException {
     if (table == null) {
-      // If table doesn't exist, allow creating a new one only if the database state is older than the update.
-      return ((parentDb == null) || event.replicationSpec().allowReplacementInto(parentDb.getParameters()))
-              ? LoadOpType.LOAD_NEW : LoadOpType.LOAD_SKIP;
+      return ReplLoadOpType.LOAD_NEW;
     }
-    LoadOpType opType = ReplUtils.getLoadOpType(table.getParameters(), context.dumpDirectory);
-    if (opType == LoadOpType.LOAD_REPLACE) {
-      return event.replicationSpec().allowReplacementInto(table.getParameters())
-              ? LoadOpType.LOAD_REPLACE : LoadOpType.LOAD_SKIP;
+    if (ReplUtils.replCkptStatus(table.getDbName(), table.getParameters(), context.dumpDirectory)) {
+      return ReplLoadOpType.LOAD_SKIP;
     }
-    return opType;
+    return ReplLoadOpType.LOAD_REPLACE;
   }
 
   private void newTableTasks(ImportTableDesc tblDesc, Task<?> tblRootTask) throws Exception {

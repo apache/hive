@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils.LoadOpType;
+import org.apache.hadoop.hive.ql.exec.repl.ReplUtils.ReplLoadOpType;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -61,25 +61,18 @@ public class LoadDatabase {
       Database dbInMetadata = readDbMetadata();
       String dbName = dbInMetadata.getName();
       Task<? extends Serializable> dbRootTask = null;
-      LoadOpType opType = getLoadOpType(dbName);
-      switch (opType) {
+      ReplLoadOpType loadDbType = getLoadDbType(dbName);
+      switch (loadDbType) {
         case LOAD_NEW:
           dbRootTask = createDbTask(dbInMetadata);
           break;
         case LOAD_REPLACE:
-        case LOAD_INVALID:
-          // LOAD_INVALID: Even if the Db is check-pointed with different dumpDir and if it is empty,
-          // then should allow load. This is needed for "default" database.
-          if (existEmptyDb(dbName)) {
-            dbRootTask = alterDbTask(dbInMetadata);
-          } else {
-            throw new InvalidOperationException(
-                    "Database " + dbName + " is not empty. One or more tables/functions exist.");
-          }
+          dbRootTask = alterDbTask(dbInMetadata);
           break;
         case LOAD_SKIP:
           return tracker;
       }
+      assert(dbRootTask != null);
       dbRootTask.addDependentTask(setOwnerInfoTask(dbInMetadata));
       tracker.addTask(dbRootTask);
       return tracker;
@@ -92,15 +85,31 @@ public class LoadDatabase {
     return event.dbInMetadata(dbNameToLoadIn);
   }
 
-  private LoadOpType getLoadOpType(String dbName) throws InvalidOperationException, HiveException {
+  private ReplLoadOpType getLoadDbType(String dbName) throws InvalidOperationException, HiveException {
     Database db = context.hiveDb.getDatabase(dbName);
     if (db == null) {
-      return LoadOpType.LOAD_NEW;
+      return ReplLoadOpType.LOAD_NEW;
     }
-    return ReplUtils.getLoadOpType(db.getParameters(), context.dumpDirectory);
+    if (isDbAlreadyBootstrapped(db)) {
+      throw new InvalidOperationException("Bootstrap REPL LOAD is not allowed on Database: " + dbName
+              + " as it was already done.");
+    }
+    if (ReplUtils.replCkptStatus(dbName, db.getParameters(), context.dumpDirectory)) {
+      return ReplLoadOpType.LOAD_SKIP;
+    }
+    if (isDbEmpty(dbName)) {
+      return ReplLoadOpType.LOAD_REPLACE;
+    }
+    throw new InvalidOperationException("Bootstrap REPL LOAD is not allowed on Database: " + dbName
+                    + " as it is not empty. One or more tables/functions exist.");
   }
 
-  private boolean existEmptyDb(String dbName) throws HiveException {
+  private boolean isDbAlreadyBootstrapped(Database db) {
+    Map<String, String> props = db.getParameters();
+    return ((props != null) && props.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()));
+  }
+
+  private boolean isDbEmpty(String dbName) throws HiveException {
     List<String> allTables = context.hiveDb.getAllTables(dbName);
     List<String> allFunctions = context.hiveDb.getFunctions(dbName, "*");
     return allTables.isEmpty() && allFunctions.isEmpty();

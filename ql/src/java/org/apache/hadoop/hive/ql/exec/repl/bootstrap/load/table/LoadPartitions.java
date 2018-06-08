@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.repl.ReplUtils.LoadOpType;
+import org.apache.hadoop.hive.ql.exec.repl.ReplUtils.ReplLoadOpType;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
@@ -328,17 +328,13 @@ public class LoadPartitions {
       AddPartitionDesc addPartitionDesc = partitionIterator.next();
       Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
       Task<?> ptnRootTask = null;
-      LoadOpType opType = getLoadOpType(partSpec);
-      switch (opType) {
+      ReplLoadOpType loadPtnType = getLoadPartitionType(partSpec);
+      switch (loadPtnType) {
         case LOAD_NEW:
           break;
         case LOAD_REPLACE:
           ptnRootTask = dropPartitionTask(table, partSpec);
           break;
-        case LOAD_INVALID:
-          throw new InvalidOperationException("Load not allowed on table " + table.getFullyQualifiedName()
-                  + " for partition " + partSpec
-                  + " as it was already bootstrap loaded from another dump.");
         case LOAD_SKIP:
           continue;
       }
@@ -347,20 +343,15 @@ public class LoadPartitions {
     return tracker;
   }
 
-  private LoadOpType getLoadOpType(Map<String, String> partSpec) throws HiveException {
+  private ReplLoadOpType getLoadPartitionType(Map<String, String> partSpec) throws InvalidOperationException, HiveException {
     Partition ptn = context.hiveDb.getPartition(table, partSpec, false);
     if (ptn == null) {
-      // If partition doesn't exist, allow creating a new one only if the table state is older than the update.
-      assert(table != null);
-      return event.replicationSpec().allowReplacementInto(table.getParameters())
-              ? LoadOpType.LOAD_NEW : LoadOpType.LOAD_SKIP;
+      return ReplLoadOpType.LOAD_NEW;
     }
-    LoadOpType opType = ReplUtils.getLoadOpType(ptn.getParameters(), context.dumpDirectory);
-    if (opType == LoadOpType.LOAD_REPLACE) {
-      return event.replicationSpec().allowReplacementInto(ptn.getParameters())
-              ? LoadOpType.LOAD_REPLACE : LoadOpType.LOAD_SKIP;
+    if (ReplUtils.replCkptStatus(tableContext.dbNameToLoadIn, ptn.getParameters(), context.dumpDirectory)) {
+      return ReplLoadOpType.LOAD_SKIP;
     }
-    return opType;
+    return ReplLoadOpType.LOAD_REPLACE;
   }
 }
 

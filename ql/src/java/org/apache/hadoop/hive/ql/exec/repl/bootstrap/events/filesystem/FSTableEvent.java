@@ -131,9 +131,7 @@ public class FSTableEvent implements TableEvent {
 
   @Override
   public ReplicationSpec replicationSpec() {
-    ReplicationSpec replSpec = metadata.getReplicationSpec();
-    replSpec.setReplSpecType(ReplicationSpec.Type.BOOTSTRAP_LOAD);
-    return replSpec;
+    return metadata.getReplicationSpec();
   }
 
   @Override
