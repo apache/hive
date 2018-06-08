@@ -83,9 +83,13 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   public static final Logger LOG = LoggerFactory.getLogger(ArrowColumnarBatchSerDe.class.getName());
   private static final String DEFAULT_ARROW_FIELD_NAME = "[DEFAULT]";
 
-  static final int MS_PER_SECOND = 1_000;
+  static final int MILLIS_PER_SECOND = 1_000;
+  static final int MICROS_PER_SECOND = 1_000_000;
   static final int NS_PER_SECOND = 1_000_000_000;
-  static final int NS_PER_MS = 1_000_000;
+
+  static final int NS_PER_MILLIS = NS_PER_SECOND / MILLIS_PER_SECOND;
+  static final int NS_PER_MICROS = NS_PER_SECOND / MICROS_PER_SECOND;
+  static final int MICROS_PER_MILLIS = MICROS_PER_SECOND / MILLIS_PER_SECOND;
   static final int SECOND_PER_DAY = 24 * 60 * 60;
 
   BufferAllocator rootAllocator;
