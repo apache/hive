@@ -58,19 +58,19 @@
         <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-metastore</artifactId>
-            <version>2.3.3</version>
+            <version>2.1.0.2.6.5.0-292</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-exec</artifactId>
-            <version>2.3.3</version>
+            <version>2.1.0.2.6.5.0-292</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>2.7.2</version>
+            <version>2.7.3.2.6.5.0-292</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

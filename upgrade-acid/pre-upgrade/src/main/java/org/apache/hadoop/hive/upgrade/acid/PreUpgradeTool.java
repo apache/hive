@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -274,21 +273,6 @@ public class PreUpgradeTool {
     }
   }
 
-  /**
-   * Actualy makes the table transactional
-   */
-  private static void alterTable(Table t, Hive db, boolean isMM)
-      throws HiveException, InvalidOperationException {
-    org.apache.hadoop.hive.ql.metadata.Table metaTable =
-        //clone to make sure new prop doesn't leak
-        new org.apache.hadoop.hive.ql.metadata.Table(t.deepCopy());
-    metaTable.getParameters().put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
-    if(isMM) {
-      metaTable.getParameters()
-          .put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "insert_only");
-    }
-    db.alterTable(Warehouse.getQualifiedName(t), metaTable, false, null);
-  }
 
   /**
    * Generates a set compaction commands to run on pre Hive 3 cluster
