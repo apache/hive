@@ -20,10 +20,13 @@ package org.apache.hive.streaming;
 
 import java.util.Properties;
 
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.JsonSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.io.Text;
+
+import com.google.common.base.Joiner;
 
 /**
  * Streaming Writer handles utf8 encoded Json (Strict syntax).
@@ -64,6 +67,8 @@ public class StrictJsonWriter extends AbstractRecordWriter {
   public JsonSerDe createSerde() throws SerializationError {
     try {
       Properties tableProps = table.getMetadata();
+      tableProps.setProperty(serdeConstants.LIST_COLUMNS, Joiner.on(",").join(inputColumns));
+      tableProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(":").join(inputTypes));
       JsonSerDe serde = new JsonSerDe();
       SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
       this.serde = serde;
