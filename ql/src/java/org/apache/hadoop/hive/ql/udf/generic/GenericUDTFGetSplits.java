@@ -296,6 +296,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         String storageFormatString = getTempTableStorageFormatString(conf);
         String ctas = "create temporary table " + tableName + " " + storageFormatString + " as " + query;
         LOG.info("Materializing the query for LLAPIF; CTAS: " + ctas);
+        driver.releaseLocksAndCommitOrRollback(false);
         driver.releaseResources();
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
         cpr = driver.run(ctas, false);
