@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.upgrade.acid;
+package org.apache.hadoop.hive.ql.util;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -154,7 +154,7 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
         AcidUtils.isInsertOnlyTable(t));
 
     /*make sure we still get the same data and row_ids are assigned and deltas are as expected:
-    * each set of copy_N goes into matching delta_N_N.*/
+     * each set of copy_N goes into matching delta_N_N.*/
     String testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from TAcid order by a, b, ROW__ID";
     String[][] expected = new String[][] {
         {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":1}\t1\t2",
