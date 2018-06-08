@@ -899,6 +899,10 @@ public class HiveStreamingConnection implements StreamingConnection {
     }
 
     private void abortImpl(boolean abortAllRemaining) throws StreamingException {
+      if (minTxnId == null) {
+        return;
+      }
+
       transactionLock.lock();
       try {
         if (abortAllRemaining) {

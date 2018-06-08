@@ -178,7 +178,7 @@ public class JsonSerDe extends AbstractSerDe {
     if (token != JsonToken.FIELD_NAME) {
       throw new IOException("Field name expected");
     }
-    String fieldName = p.getText();
+    String fieldName = p.getText().toLowerCase();
     int fpos = s.getAllStructFieldNames().indexOf(fieldName);
     if (fpos == -1) {
       fpos = getPositionFromHiveInternalColumnName(fieldName);
