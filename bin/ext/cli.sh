@@ -23,7 +23,6 @@ if [ -z "$USE_DEPRECATED_CLI" ] || [ "$USE_DEPRECATED_CLI" != "false" ]; then
 fi
 
 updateCli() {
-  USE_BEELINE_FOR_HIVE_CLI="true"
   if [ "$USE_DEPRECATED_CLI" == "true" ]; then
     export HADOOP_CLIENT_OPTS=" -Dproc_hivecli $HADOOP_CLIENT_OPTS "
     CLASS=org.apache.hadoop.hive.cli.CliDriver

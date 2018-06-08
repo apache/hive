@@ -85,6 +85,7 @@ if [ "$SERVICE" = "" ] ; then
   fi
 fi
 
+USE_BEELINE_FOR_HIVE_CLI="true"
 if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
   SERVICE="beeline"
 fi
