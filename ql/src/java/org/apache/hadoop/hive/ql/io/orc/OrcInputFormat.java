@@ -2076,9 +2076,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
     ValidWriteIdList validWriteIdList
             = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
-    LOG.debug("getReader:: Read ValidWriteIdList: " + validWriteIdList.toString()
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("getReader:: Read ValidWriteIdList: " + validWriteIdList.toString()
             + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
-
+      LOG.debug("Creating merger for {} and {}", split.getPath(), Arrays.toString(deltas));
+    }
     final OrcRawRecordMerger records =
         new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
             validWriteIdList, readOptions, deltas, mergerOptions);
