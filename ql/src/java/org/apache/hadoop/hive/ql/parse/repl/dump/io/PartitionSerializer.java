@@ -27,7 +27,6 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 public class PartitionSerializer implements JsonWriter.Serializer {
@@ -46,10 +45,8 @@ public class PartitionSerializer implements JsonWriter.Serializer {
       // Remove all the entries from the parameters which are added by repl tasks internally.
       Map<String, String> parameters = partition.getParameters();
       if (parameters != null) {
-        Map<String, String> tmpParameters = new HashMap<>(parameters);
-        tmpParameters.entrySet()
+        parameters.entrySet()
                 .removeIf(e -> e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY));
-        partition.setParameters(tmpParameters);
       }
 
       if (additionalPropertiesProvider.isInReplicationScope()) {

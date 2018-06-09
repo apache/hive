@@ -217,6 +217,14 @@ public class WarehouseInstance implements Closeable {
     return dump(dbName, lastReplicationId, Collections.emptyList());
   }
 
+  WarehouseInstance dumpFailure(String dbName, String lastReplicationId) throws Throwable {
+    String dumpCommand =
+            "REPL DUMP " + dbName + (lastReplicationId == null ? "" : " FROM " + lastReplicationId);
+    advanceDumpDir();
+    runFailure(dumpCommand);
+    return this;
+  }
+
   WarehouseInstance load(String replicatedDbName, String dumpLocation) throws Throwable {
     run("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
     printOutput();

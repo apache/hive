@@ -824,7 +824,8 @@ public class TestReplicationScenariosAcrossInstances {
   public void testIfCkptAndSourceOfReplPropsIgnoredByReplDump() throws Throwable {
     WarehouseInstance.Tuple tuplePrimary = primary
             .run("use " + primaryDbName)
-            .run("create table t1 (place string) partitioned by (country string)")
+            .run("create table t1 (place string) partitioned by (country string) "
+                    + " tblproperties('custom.property'='custom.value')")
             .run("insert into table t1 partition(country='india') values ('bangalore')")
             .dump(primaryDbName, null);
 
@@ -832,7 +833,11 @@ public class TestReplicationScenariosAcrossInstances {
     WarehouseInstance.Tuple tupleReplica = replica.load(replicatedDbName, tuplePrimary.dumpLocation)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuplePrimary.lastReplicationId)
-            .run("alter database " + replicatedDbName + " set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')")
+            .run("show tblproperties t1('custom.property')")
+            .verifyResults(new String[] { "custom.value\t " })
+            .dumpFailure(replicatedDbName, null)
+            .run("alter database " + replicatedDbName
+                    + " set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')")
             .dump(replicatedDbName, null);
 
     // Bootstrap Repl B -> C
@@ -844,7 +849,9 @@ public class TestReplicationScenariosAcrossInstances {
             .run("show tables")
             .verifyResults(new String[] { "t1" })
             .run("select country from t1")
-            .verifyResults(Arrays.asList("india"));
+            .verifyResults(Arrays.asList("india"))
+            .run("show tblproperties t1('custom.property')")
+            .verifyResults(new String[] { "custom.value\t " });
 
     // Check if DB/table/partition in C doesn't have repl.source.for props. Also ensure, ckpt property
     // is set to bootstrap dump location used in C.
@@ -881,7 +888,9 @@ public class TestReplicationScenariosAcrossInstances {
     replica.load(replDbFromReplica, tupleReplicaInc.dumpLocation)
             .run("use " + replDbFromReplica)
             .run("repl status " + replDbFromReplica)
-            .verifyResult(tupleReplicaInc.lastReplicationId);
+            .verifyResult(tupleReplicaInc.lastReplicationId)
+            .run("show tblproperties t1('custom.property')")
+            .verifyResults(new String[] { "custom.value\t " });
 
     // Check if DB/table/partition in C doesn't have repl.source.for props. Also ensure, ckpt property
     // in DB is set to bootstrap dump location used in C but for table/partition, it is missing.
