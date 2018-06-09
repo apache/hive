@@ -17,17 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
-import java.util.Set;
-
+import com.google.common.collect.Sets;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.fun.SqlExtractFunction;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeTransforms;
 
-import com.google.common.collect.Sets;
+import java.util.Set;
 
 public class HiveExtractDate extends SqlFunction {
 

@@ -889,6 +889,363 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 6095	2.7308662809692383E7	-1073279343
+PREHOOK: query: explain select unix_timestamp(from_unixtime(1396681200)) from druid_table_n0 limit 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select unix_timestamp(from_unixtime(1396681200)) from druid_table_n0 limit 1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes bigint
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"unix_timestamp(timestamp_format((1396681200 * '1000'),'yyyy-MM-dd HH:mm:ss','US/Pacific'),'yyyy-MM-dd HH:mm:ss')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: bigint)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select unix_timestamp(from_unixtime(1396681200)) from druid_table_n0 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select unix_timestamp(from_unixtime(1396681200)) from druid_table_n0 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1396656000
+PREHOOK: query: explain select unix_timestamp(`__time`) from druid_table_n0 limit 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select unix_timestamp(`__time`) from druid_table_n0 limit 1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes bigint
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"div(\"__time\",1000)","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
+            druid.query.type scan
+          Select Operator
+            expressions: vc (type: bigint)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select unix_timestamp(`__time`) from druid_table_n0 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select unix_timestamp(`__time`) from druid_table_n0 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-60
+PREHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes string
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(\"__time\",'P1Y','','US/Pacific'),'yyyy-MM-dd','US/Pacific')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-01-01
+PREHOOK: query: select TRUNC(cast(`__time` as timestamp), 'YEAR') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YEAR')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TRUNC(cast(`__time` as timestamp), 'YEAR') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YEAR')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-01-01
+PREHOOK: query: select TRUNC(cast(`__time` as timestamp), 'YYYY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YYYY')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TRUNC(cast(`__time` as timestamp), 'YYYY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YYYY')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-01-01
+PREHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'MONTH') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'MONTH')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'MONTH') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'MONTH')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes string
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(\"__time\",'P1M','','US/Pacific'),'yyyy-MM-dd','US/Pacific')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select TRUNC(cast(`__time` as timestamp), 'MONTH') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'MONTH')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TRUNC(cast(`__time` as timestamp), 'MONTH') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'MONTH')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-01
+PREHOOK: query: select TRUNC(cast(`__time` as timestamp), 'MM') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'MM')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TRUNC(cast(`__time` as timestamp), 'MM') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'MM')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-01
+PREHOOK: query: select TRUNC(cast(`__time` as timestamp), 'MON') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'MON')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TRUNC(cast(`__time` as timestamp), 'MON') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'MON')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-01
+PREHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'QUARTER') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'QUARTER')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'QUARTER') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'QUARTER')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes string
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format(timestamp_floor(\"__time\",'P3M','','US/Pacific'),'yyyy-MM-dd','US/Pacific')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select TRUNC(cast(`__time` as timestamp), 'QUARTER') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'QUARTER')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TRUNC(cast(`__time` as timestamp), 'QUARTER') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'QUARTER')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-10-01
+PREHOOK: query: select TRUNC(cast(`__time` as timestamp), 'Q') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'Q')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TRUNC(cast(`__time` as timestamp), 'Q') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'Q')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-10-01
+PREHOOK: query: explain select TO_DATE(`__time`) from druid_table_n0 GROUP BY TO_DATE(`__time`)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select TO_DATE(`__time`) from druid_table_n0 GROUP BY TO_DATE(`__time`)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes date
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(\"__time\",'P1D','','US/Pacific')","outputType":"LONG"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: date)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select TO_DATE(`__time`) from druid_table_n0 GROUP BY TO_DATE(`__time`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TO_DATE(`__time`) from druid_table_n0 GROUP BY TO_DATE(`__time`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31
+PREHOOK: query: EXPLAIN SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table_alias`.`cdouble`)) AS `sum_calculation_4998925219892510720_ok`,
+  CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE) AS `tmn___time_ok`
+FROM `default`.`druid_table_n0` `druid_table_alias`
+GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table_alias`.`cdouble`)) AS `sum_calculation_4998925219892510720_ok`,
+  CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE) AS `tmn___time_ok`
+FROM `default`.`druid_table_n0` `druid_table_alias`
+GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_alias
+          properties:
+            druid.fieldNames vc,$f1
+            druid.fieldTypes date,double
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(timestamp_parse(timestamp_format(timestamp_floor(\"__time\",'P1M','','US/Pacific'),'yyyy-MM-dd','US/Pacific'),'','US/Pacific'),'P1D','','US/Pacific')","outputType":"LONG"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleSum","name":"$f1","expression":"(\"cdouble\" * \"cdouble\")"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: $f1 (type: double), vc (type: date)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table_alias`.`cdouble`)) AS `sum_calculation_4998925219892510720_ok`,
+  CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE) AS `tmn___time_ok`
+FROM `default`.`druid_table_n0` `druid_table_alias`
+GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT SUM((`druid_table_alias`.`cdouble` * `druid_table_alias`.`cdouble`)) AS `sum_calculation_4998925219892510720_ok`,
+  CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE) AS `tmn___time_ok`
+FROM `default`.`druid_table_n0` `druid_table_alias`
+GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DATE)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3.832948323764436E14	1969-12-01
+PREHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_n0  order by date_1, date_2 limit 3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_n0  order by date_1, date_2 limit 3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table_n0
+                  properties:
+                    druid.fieldNames vc,vc0
+                    druid.fieldTypes date,date
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_shift(timestamp_floor(\"__time\",'P1D','','US/Pacific'),'P1D',CAST((\"cdouble\" / CAST(1000, 'DOUBLE')), 'LONG'),'US/Pacific')","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"timestamp_shift(timestamp_floor(\"__time\",'P1D','','US/Pacific'),'P1D',-( CAST((\"cdouble\" / CAST(1000, 'DOUBLE')), 'LONG') ),'US/Pacific')","outputType":"LONG"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
+                    druid.query.type scan
+                  Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: vc (type: date), vc0 (type: date)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: date), _col1 (type: date)
+                      sort order: ++
+                      Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date), KEY.reducesinkkey1 (type: date)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 9173 Data size: 976192 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 3
+                  Statistics: Num rows: 3 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3 Data size: 318 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_n0  order by date_1, date_2 limit 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_n0  order by date_1, date_2 limit 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-02-26	1970-11-04
+1969-03-19	1970-10-14
+1969-11-13	1970-02-17
 PREHOOK: query: DROP TABLE druid_table_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@druid_table_n0
