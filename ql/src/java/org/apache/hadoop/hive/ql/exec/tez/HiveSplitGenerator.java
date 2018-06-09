@@ -29,6 +29,9 @@ import java.util.Set;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.tez.common.counters.TezCounters;
@@ -86,13 +89,15 @@ public class HiveSplitGenerator extends InputInitializer {
   private final MapWork work;
   private final SplitGrouper splitGrouper = new SplitGrouper();
   private final SplitLocationProvider splitLocationProvider;
+  private boolean generateSingleSplit;
 
-  public HiveSplitGenerator(Configuration conf, MapWork work) throws IOException {
+  public HiveSplitGenerator(Configuration conf, MapWork work, final boolean generateSingleSplit) throws IOException {
     super(null);
 
     this.conf = conf;
     this.work = work;
     this.jobConf = new JobConf(conf);
+    this.generateSingleSplit = generateSingleSplit;
 
     // Assuming grouping enabled always.
     userPayloadProto = MRInputUserPayloadProto.newBuilder().setGroupingEnabled(true).build();
@@ -199,8 +204,27 @@ public class HiveSplitGenerator extends InputInitializer {
           conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
             TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
 
-        // Raw splits
-        InputSplit[] splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
+        InputSplit[] splits;
+        if (generateSingleSplit) {
+          splits = new InputSplit[1];
+          List<Path> paths = Utilities.getInputPathsTez(jobConf, Utilities.getMapWork(jobConf));
+          FileSystem fs = paths.get(0).getFileSystem(jobConf);
+          FileStatus[] fileStatuses = fs.listStatus(paths.get(0));
+          FileStatus fileStatus = fileStatuses[0];
+          Preconditions.checkState(paths.size() == 1 && fileStatuses.length == 1, "Requested to generate single " +
+            "split. Paths and fileStatuses are expected to be 1. Got paths: " + paths.size() + " fileStatuses: " +
+            fileStatuses.length);
+          BlockLocation[] locations = fs.getFileBlockLocations(fileStatus, 0, fileStatus.getLen());
+          Set<String> hostsSet = new HashSet<>();
+          for (BlockLocation location : locations) {
+            hostsSet.addAll(Lists.newArrayList(location.getHosts()));
+          }
+          String[] hosts = hostsSet.toArray(new String[0]);
+          splits[0] = new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), hosts);
+        } else {
+          // Raw splits
+          splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
+        }
         // Sort the splits, so that subsequent grouping is consistent.
         Arrays.sort(splits, new InputSplitComparator());
         LOG.info("Number of input splits: " + splits.length + ". " + availableSlots
