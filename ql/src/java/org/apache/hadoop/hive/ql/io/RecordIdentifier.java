@@ -226,6 +226,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
     return "{originalWriteId: " + writeId + ", " + bucketToString() + ", row: " + getRowId() +"}";
   }
   protected String bucketToString() {
+    if (bucketId == -1) return ("bucket: " + bucketId);
     BucketCodec codec =
       BucketCodec.determineVersion(bucketId);
     return  "bucket: " + bucketId + "(" + codec.getVersion() + "." +
