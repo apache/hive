@@ -21,7 +21,7 @@ INSERT OVERWRITE TABLE test_table2_n6 PARTITION (ds = '2') SELECT *
 INSERT OVERWRITE TABLE test_table2_n6 PARTITION (ds = '3') SELECT *;
 
 
-
+set hive.auto.convert.sortmerge.join=false;
 
 -- Create a bucketed table
 CREATE TABLE test_table3_n4 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS;

@@ -43,6 +43,7 @@ SELECT * FROM src WHERE key < 10;
 INSERT OVERWRITE TABLE test_table8
 SELECT * FROM src  WHERE key < 10;
 
+set hive.auto.convert.sortmerge.join=false;
 -- Mapjoin followed by a aggregation should be performed in a single MR job upto 7 tables
 EXPLAIN
 SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)

@@ -608,6 +608,23 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         return false;
       }
       ReduceSinkOperator rsOp = (ReduceSinkOperator) parentOp;
+      List<ExprNodeDesc> keyCols = rsOp.getConf().getKeyCols();
+
+      // For SMB, the key column(s) in RS should be same as bucket column(s) and sort column(s)`
+      List<String> sortCols = rsOp.getOpTraits().getSortCols().get(0);
+      List<String> bucketCols = rsOp.getOpTraits().getBucketColNames().get(0);
+      if (sortCols.size() != keyCols.size() || bucketCols.size() != keyCols.size()) {
+        return false;
+      }
+
+      // Check columns.
+      for (int i = 0; i < sortCols.size(); i++) {
+        ExprNodeDesc sortCol = rsOp.getColumnExprMap().get(sortCols.get(i));
+        ExprNodeDesc bucketCol = rsOp.getColumnExprMap().get(bucketCols.get(i));
+        if (!(sortCol.isSame(keyCols.get(i)) && bucketCol.isSame(keyCols.get(i)))) {
+          return false;
+        }
+      }
 
       if (!checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getSortCols(), rsOp
           .getOpTraits().getSortCols(), rsOp.getColumnExprMap(), false)) {
