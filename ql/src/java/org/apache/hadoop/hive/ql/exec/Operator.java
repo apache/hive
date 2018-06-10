@@ -663,6 +663,18 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public void flush() throws HiveException {
   }
 
+  // Recursive flush to flush all the tree operators
+  public void flushRecursive() throws HiveException {
+    flush();
+    if (childOperators == null) {
+      return;
+    }
+
+    for (Operator<?> child : childOperators) {
+      child.flushRecursive();
+    }
+  }
+
   public void processGroup(int tag) throws HiveException {
     if (childOperators == null || childOperators.isEmpty()) {
       return;
