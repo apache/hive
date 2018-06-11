@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
@@ -52,7 +53,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -75,7 +75,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   private RawStore rs;
   private TxnStore txnHandler;
   /** Full tables, and partitions that currently have analyze commands queued or in progress. */
-  private ConcurrentHashMap<FullTableName, Boolean> tablesInProgress = new ConcurrentHashMap<>();
+  private ConcurrentHashMap<TableName, Boolean> tablesInProgress = new ConcurrentHashMap<>();
   private ConcurrentHashMap<String, Boolean> partsInProgress = new ConcurrentHashMap<>();
   private AtomicInteger itemsInProgress = new AtomicInteger(0);
 
@@ -170,7 +170,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
 
   @VisibleForTesting
   boolean runOneIteration() {
-    List<FullTableName> fullTableNames;
+    List<TableName> fullTableNames;
     try {
       fullTableNames = getTablesToCheck();
     } catch (Throwable t) {
@@ -180,7 +180,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     LOG.debug("Processing {}", fullTableNames);
     boolean hadUpdates = false;
-    for (FullTableName fullTableName : fullTableNames) {
+    for (TableName fullTableName : fullTableNames) {
       try {
         List<AnalyzeWork> commands = processOneTable(fullTableName);
         hadUpdates = hadUpdates || commands != null;
@@ -203,10 +203,10 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
   }
 
-  private List<AnalyzeWork> processOneTable(FullTableName fullTableName)
+  private List<AnalyzeWork> processOneTable(TableName fullTableName)
       throws MetaException, NoSuchTxnException, NoSuchObjectException {
     if (isAnalyzeTableInProgress(fullTableName)) return null;
-    String cat = fullTableName.catalog, db = fullTableName.db, tbl = fullTableName.table;
+    String cat = fullTableName.getCat(), db = fullTableName.getDb(), tbl = fullTableName.getTable();
     Table table = rs.getTable(cat, db, tbl);
     LOG.debug("Processing table {}", table);
 
@@ -262,7 +262,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
   }
 
-  private List<String> findPartitionsToAnalyze(FullTableName fullTableName, String cat, String db,
+  private List<String> findPartitionsToAnalyze(TableName fullTableName, String cat, String db,
       String tbl, List<String> allCols, Map<String, List<String>> partsToAnalyze)
           throws MetaException, NoSuchObjectException {
     // TODO: ideally when col-stats-accurate stuff is stored in some sane structure, this should
@@ -404,7 +404,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     return partColStr;
   }
 
-  private List<String> getExistingNonPartTableStatsToUpdate(FullTableName fullTableName,
+  private List<String> getExistingNonPartTableStatsToUpdate(TableName fullTableName,
       String cat, String db, String tbl, Map<String, String> params,
       List<String> allCols) throws MetaException {
     ColumnStatistics existingStats = null;
@@ -445,7 +445,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     return colsToUpdate;
   }
 
-  private List<FullTableName> getTablesToCheck() throws MetaException, NoSuchObjectException {
+  private List<TableName> getTablesToCheck() throws MetaException, NoSuchObjectException {
     if (isExistingOnly) {
       try {
         return rs.getTableNamesWithStats();
@@ -457,7 +457,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   }
 
   private ValidReaderWriteIdList getWriteIds(
-      FullTableName fullTableName) throws NoSuchTxnException, MetaException {
+      TableName fullTableName) throws NoSuchTxnException, MetaException {
     GetValidWriteIdsRequest req = new GetValidWriteIdsRequest();
     req.setFullTableNames(Lists.newArrayList(fullTableName.toString()));
     return TxnUtils.createValidReaderWriteIdList(
@@ -504,24 +504,24 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
   }
 
-  private boolean isAnalyzeTableInProgress(FullTableName fullTableName) {
+  private boolean isAnalyzeTableInProgress(TableName fullTableName) {
     return tablesInProgress.containsKey(fullTableName);
   }
 
-  private boolean isAnalyzePartInProgress(FullTableName tableName, String partName) {
+  private boolean isAnalyzePartInProgress(TableName tableName, String partName) {
     return partsInProgress.containsKey(makeFullPartName(tableName, partName));
   }
 
-  private static String makeFullPartName(FullTableName tableName, String partName) {
+  private static String makeFullPartName(TableName tableName, String partName) {
     return tableName + "/" + partName;
   }
 
   private final static class AnalyzeWork {
-    FullTableName tableName;
+    TableName tableName;
     String partName, allParts;
     List<String> cols;
 
-    public AnalyzeWork(FullTableName tableName, String partName, String allParts, List<String> cols) {
+    public AnalyzeWork(TableName tableName, String partName, String allParts, List<String> cols) {
       this.tableName = tableName;
       this.partName = partName;
       this.allParts = allParts;
@@ -534,7 +534,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
 
     public String buildCommand() {
       // Catalogs cannot be parsed as part of the query. Seems to be a bug.
-      String cmd = "analyze table " + tableName.db + "." + tableName.table;
+      String cmd = "analyze table " + tableName.getDb() + "." + tableName.getTable();
       assert partName == null || allParts == null;
       if (partName != null) {
         cmd += " partition(" + partName + ")";
