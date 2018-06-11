@@ -57,8 +57,8 @@ public class TestExportImport {
       put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
     }};
     HashMap<String, String> overridesForHiveConfDump = new HashMap<String, String>() {{
-      put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
-      put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
+        put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
+        put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
     }};
     srcHiveWarehouse =
         new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
@@ -125,13 +125,13 @@ public class TestExportImport {
             .run("export table " + dbName + ".t1 to " + exportDataPath)
             .runFailure("export table " + dbName + ".t1 to " + exportDataPathRepl + " for replication('2')");
 
-    destHiveWarehouse.run ("use " + replDbName)
+    destHiveWarehouse.run("use " + replDbName)
             .run("import table " + replDbName + ".t1 from " + exportMDPath)
             .run("show tables like 't1'")
             .verifyResult("t1")
             .run("import table " + replDbName + ".t2 from " + exportDataPath)
             .run("select * from " + replDbName + ".t2")
-            .verifyResults(new String[] { "1", "2" })
+            .verifyResults(new String[] {"1", "2" })
             .runFailure("import table " + replDbName + ".t3 from " + exportDataPathRepl)
             .run("show tables like 't3'")
             .verifyFailure(new String[] {"t3"});
@@ -149,16 +149,16 @@ public class TestExportImport {
             .run("export table " + dbName + ".t1 to " + exportMDPath + " for metadata replication('1')")
             .run("export table " + dbName + ".t1 to " + exportDataPath);
 
-    destHiveWarehouse.run ("use " + replDbName)
+    destHiveWarehouse.run("use " + replDbName)
             .run("import table " + replDbName + ".t1 from " + exportMDPath)
             .run("show tables like 't1'")
             .verifyResult("t1")
             .run("import table " + replDbName + ".t2 from " + exportDataPath)
             .run("select * from " + replDbName + ".t2")
-            .verifyResults(new String[] { "1", "2" })
+            .verifyResults(new String[] {"1", "2" })
             .run("import table " + replDbName + ".t3 from " + exportDataPathRepl)
             .run("select * from " + replDbName + ".t3")
-            .verifyResults(new String[] { "1", "2" });
+            .verifyResults(new String[] {"1", "2" });
   }
 
   @Test
