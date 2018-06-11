@@ -69,12 +69,11 @@ public class LoadDatabase {
         case LOAD_REPLACE:
           dbRootTask = alterDbTask(dbInMetadata);
           break;
-        case LOAD_SKIP:
-          return tracker;
       }
-      assert(dbRootTask != null);
-      dbRootTask.addDependentTask(setOwnerInfoTask(dbInMetadata));
-      tracker.addTask(dbRootTask);
+      if (dbRootTask != null) {
+        dbRootTask.addDependentTask(setOwnerInfoTask(dbInMetadata));
+        tracker.addTask(dbRootTask);
+      }
       return tracker;
     } catch (Exception e) {
       throw new SemanticException(e);

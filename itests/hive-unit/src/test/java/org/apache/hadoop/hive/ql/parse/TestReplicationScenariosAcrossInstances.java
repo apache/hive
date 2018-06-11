@@ -978,7 +978,142 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
-  public void testBootstrapReplLoadRetryAfterFailure() throws Throwable {
+  public void testBootstrapReplLoadRetryAfterFailureForTablesAndConstraints() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t1(a string, b string, primary key (a, b) disable novalidate rely)")
+            .run("create table t2(a string, b string, foreign key (a, b) references t1(a, b) disable novalidate)")
+            .run("create table t3(a string, b string not null disable, unique (a) disable)")
+            .dump(primaryDbName, null);
+
+    WarehouseInstance.Tuple tuple_2 = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, null);
+
+    // Need to drop the primary DB as metastore is shared by both primary/replica. So, constraints
+    // conflict when loaded. Some issue with framework which needs to be relook into later.
+    primary.run("drop database if exists " + primaryDbName + " cascade");
+
+    // Allow create table only on t1. Create should fail for rest of the tables and hence constraints
+    // also not loaded.
+    BehaviourInjection<CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        injectionPathCalled = true;
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.constraintTblName != null)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
+                  + " Constraint Table: " + String.valueOf(args.constraintTblName));
+          return false;
+        }
+        if (args.tblName != null) {
+          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
+          return args.tblName.equals("t1");
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    // Trigger bootstrap dump which just creates table t1 and other tables (t2, t3) and constraints not loaded.
+    List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'");
+    replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+    InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    callerVerifier.assertInjectionsPerformed(true, false);
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult("null")
+            .run("show tables")
+            .verifyResults(new String[] { "t1" });
+    assertEquals(0, replica.getPrimaryKeyList(replicatedDbName, "t1").size());
+    assertEquals(0, replica.getUniqueConstraintList(replicatedDbName, "t3").size());
+    assertEquals(0, replica.getNotNullConstraintList(replicatedDbName, "t3").size());
+    assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
+
+    // Retry with different dump should fail.
+    replica.loadFailure(replicatedDbName, tuple_2.dumpLocation);
+
+    // Verify if create table is not called on table t1 but called for t2 and t3.
+    // Also, allow constraint creation only on t1 and t3. Foreign key creation on t2 fails.
+    callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        injectionPathCalled = true;
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.funcName != null)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName) + " Func: " + String.valueOf(args.funcName));
+          return false;
+        }
+        if (args.tblName != null) {
+          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
+          return (args.tblName.equals("t2") || args.tblName.equals("t3"));
+        }
+        if (args.constraintTblName != null) {
+          LOG.warn("Verifier - Constraint Table: " + String.valueOf(args.constraintTblName));
+          return (args.constraintTblName.equals("t1") || args.constraintTblName.equals("t3"));
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    // Retry with same dump with which it was already loaded should resume the bootstrap load.
+    // This time, it fails when try to load the foreign key constraints. All other constraints are loaded.
+    replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+    InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    callerVerifier.assertInjectionsPerformed(true, false);
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult("null")
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2", "t3" });
+    assertEquals(2, replica.getPrimaryKeyList(replicatedDbName, "t1").size());
+    assertEquals(1, replica.getUniqueConstraintList(replicatedDbName, "t3").size());
+    assertEquals(1, replica.getNotNullConstraintList(replicatedDbName, "t3").size());
+    assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
+
+    // Verify if no create table/function calls. Only add foreign key constraints on table t2.
+    callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        injectionPathCalled = true;
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.tblName != null)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
+                  + " Table: " + String.valueOf(args.tblName));
+          return false;
+        }
+        if (args.constraintTblName != null) {
+          LOG.warn("Verifier - Constraint Table: " + String.valueOf(args.constraintTblName));
+          return args.constraintTblName.equals("t2");
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    // Retry with same dump with which it was already loaded should resume the bootstrap load.
+    // This time, it completes by adding just foreign key constraints for table t2.
+    replica.load(replicatedDbName, tuple.dumpLocation);
+    InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    callerVerifier.assertInjectionsPerformed(true, false);
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2", "t3" });
+    assertEquals(2, replica.getPrimaryKeyList(replicatedDbName, "t1").size());
+    assertEquals(1, replica.getUniqueConstraintList(replicatedDbName, "t3").size());
+    assertEquals(1, replica.getNotNullConstraintList(replicatedDbName, "t3").size());
+    assertEquals(2, replica.getForeignKeyList(replicatedDbName, "t2").size());
+  }
+
+  @Test
+  public void testBootstrapReplLoadRetryAfterFailureForPartitions() throws Throwable {
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create table t1 (id int)")
@@ -988,20 +1123,13 @@ public class TestReplicationScenariosAcrossInstances {
             .run("insert into table t2 partition(country='uk') values ('london')")
             .run("insert into table t2 partition(country='us') values ('sfo')")
             .run("CREATE FUNCTION " + primaryDbName
-              + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
-              + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
-            .run("create table t3(a string, b string, primary key (a, b) disable novalidate rely)")
-            .run("create table t4(a string, b string, foreign key (a, b) references t3(a, b) disable novalidate)")
-            .run("create table t5(a string, b string not null disable, unique (a) disable)")
+                    + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
+                    + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
             .dump(primaryDbName, null);
 
     WarehouseInstance.Tuple tuple_2 = primary
             .run("use " + primaryDbName)
             .dump(primaryDbName, null);
-
-    // Need to drop the primary DB as metastore is shared by both primary/replica.
-    // Some issue with framework which needs to be relook into later.
-    primary.run("drop database if exists " + primaryDbName + " cascade");
 
     // Inject a behavior where REPL LOAD failed when try to load table "t2" and partition "uk".
     // So, table "t1" and "t2" will exist and partition "india" will exist, rest failed as operation failed.
@@ -1022,8 +1150,8 @@ public class TestReplicationScenariosAcrossInstances {
 
     List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'");
     replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
-    getPartitionStub.assertInjectionsPerformed(true, false);
     InjectableBehaviourObjectStore.resetGetPartitionBehaviour(); // reset the behaviour
+    getPartitionStub.assertInjectionsPerformed(true, false);
 
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
@@ -1040,94 +1168,40 @@ public class TestReplicationScenariosAcrossInstances {
     // Retry with different dump should fail.
     replica.loadFailure(replicatedDbName, tuple_2.dumpLocation);
 
-    // Verify if create table is not called on table t1 and t2 and create function is not called.
-    // Also, allow constraint creation only on t3. Other tables it fail.
+    // Verify if no create table/function calls. Only add partitions.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
             = new BehaviourInjection<CallerArguments, Boolean>() {
       @Nullable
       @Override
       public Boolean apply(@Nullable CallerArguments args) {
-        injectionPathCalled = true;
-        if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.funcName != null)) {
-          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName) + " Func: " + String.valueOf(args.funcName));
-          return false;
-        }
-        if (args.tblName != null) {
-          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
-          return (args.tblName.equals("t3") || args.tblName.equals("t4") || args.tblName.equals("t5"));
-        }
-        if (args.constraintTblName != null) {
-          LOG.warn("Verifier - Constraint Table: " + String.valueOf(args.constraintTblName));
-          return args.constraintTblName.equals("t3");
-        }
-        return true;
-      }
-    };
-    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
-
-    // Retry with same dump with which it was already loaded should resume the bootstrap load.
-    // This time, it fails when try to load the foreign key constraints. All other constraints are loaded.
-    replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
-    callerVerifier.assertInjectionsPerformed(true, false);
-    InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
-
-    replica.run("use " + replicatedDbName)
-            .run("repl status " + replicatedDbName)
-            .verifyResult("null")
-            .run("show tables")
-            .verifyResults(new String[] { "t1", "t2", "t3", "t4", "t5" })
-            .run("select id from t1")
-            .verifyResults(Arrays.asList("10"))
-            .run("select country from t2 order by country")
-            .verifyResults(Arrays.asList("india", "uk", "us"))
-            .run("show functions like '" + replicatedDbName + "*'")
-            .verifyResult(replicatedDbName + ".testFunctionOne");
-    assertEquals(2, replica.getPrimaryKeyList(replicatedDbName, "t3").size());
-    assertEquals(1, replica.getUniqueConstraintList(replicatedDbName, "t5").size());
-    assertEquals(1, replica.getNotNullConstraintList(replicatedDbName, "t5").size());
-    assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t4").size());
-
-    // Verify if no create table/function calls. Only add foreign key constraints on table t4.
-    callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
-      @Nullable
-      @Override
-      public Boolean apply(@Nullable CallerArguments args) {
-        injectionPathCalled = true;
         if (!args.dbName.equalsIgnoreCase(replicatedDbName) || (args.tblName != null) || (args.funcName != null)) {
+          injectionPathCalled = true;
           LOG.warn("Verifier - DB: " + String.valueOf(args.dbName)
                   + " Table: " + String.valueOf(args.tblName)
                   + " Func: " + String.valueOf(args.funcName));
           return false;
         }
-        if (args.constraintTblName != null) {
-          LOG.warn("Verifier - Constraint Table: " + String.valueOf(args.constraintTblName));
-          return args.constraintTblName.equals("t4");
-        }
         return true;
       }
     };
     InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
 
     // Retry with same dump with which it was already loaded should resume the bootstrap load.
-    // This time, it completes by adding just constraints for table t4.
+    // This time, it completes by adding remaining partitions.
     replica.load(replicatedDbName, tuple.dumpLocation);
-    callerVerifier.assertInjectionsPerformed(true, false);
     InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+    callerVerifier.assertInjectionsPerformed(false, false);
 
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult(tuple.lastReplicationId)
             .run("show tables")
-            .verifyResults(new String[] { "t1", "t2", "t3", "t4", "t5" })
+            .verifyResults(new String[] { "t1", "t2" })
             .run("select id from t1")
             .verifyResults(Arrays.asList("10"))
             .run("select country from t2 order by country")
             .verifyResults(Arrays.asList("india", "uk", "us"))
             .run("show functions like '" + replicatedDbName + "*'")
             .verifyResult(replicatedDbName + ".testFunctionOne");
-    assertEquals(2, replica.getPrimaryKeyList(replicatedDbName, "t3").size());
-    assertEquals(1, replica.getUniqueConstraintList(replicatedDbName, "t5").size());
-    assertEquals(1, replica.getNotNullConstraintList(replicatedDbName, "t5").size());
-    assertEquals(2, replica.getForeignKeyList(replicatedDbName, "t4").size());
   }
 }
