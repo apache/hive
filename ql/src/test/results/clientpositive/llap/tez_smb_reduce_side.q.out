@@ -1,0 +1,940 @@
+PREHOOK: query: drop table if exists src_10
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists src_10
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists src1_10
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists src1_10
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table src_10 as select * from src limit 2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_10
+POSTHOOK: query: create table src_10 as select * from src limit 2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_10
+POSTHOOK: Lineage: src_10.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table src1_10 as select * from src1 limit 2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src1_10
+POSTHOOK: query: create table src1_10 as select * from src1 limit 2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src1_10
+POSTHOOK: Lineage: src1_10.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_10.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, count(*) from src1_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src1_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+238	1
+	1
+PREHOOK: query: select key, count(*) from src_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+238	1
+86	1
+PREHOOK: query: EXPLAIN
+SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count(value)
+                    keys: key (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: y
+                  Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(value)
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 4 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                Merge Join Operator
+                  condition map:
+                       Right Outer Join 0 to 1
+                  keys:
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: hash(_col0) (type: int), hash(_col1) (type: int), hash(_col2) (type: int), hash(_col3) (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: sum(_col0), sum(_col1), sum(_col2), sum(_col3)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint)
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+49687	1	49687	2
+PREHOOK: query: drop table if exists src_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_10
+PREHOOK: Output: default@src_10
+POSTHOOK: query: drop table if exists src_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_10
+POSTHOOK: Output: default@src_10
+PREHOOK: query: drop table if exists src1_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src1_10
+PREHOOK: Output: default@src1_10
+POSTHOOK: query: drop table if exists src1_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src1_10
+POSTHOOK: Output: default@src1_10
+PREHOOK: query: create table src_10 as select * from src limit 3
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_10
+POSTHOOK: query: create table src_10 as select * from src limit 3
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_10
+POSTHOOK: Lineage: src_10.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table src1_10 as select * from src1 limit 3
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src1_10
+POSTHOOK: query: create table src1_10 as select * from src1 limit 3
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src1_10
+POSTHOOK: Lineage: src1_10.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_10.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, count(*) from src1_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src1_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+238	1
+	1
+311	1
+PREHOOK: query: select key, count(*) from src_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+238	1
+311	1
+86	1
+PREHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+100266	2	100266	3
+PREHOOK: query: drop table if exists src_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_10
+PREHOOK: Output: default@src_10
+POSTHOOK: query: drop table if exists src_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_10
+POSTHOOK: Output: default@src_10
+PREHOOK: query: drop table if exists src1_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src1_10
+PREHOOK: Output: default@src1_10
+POSTHOOK: query: drop table if exists src1_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src1_10
+POSTHOOK: Output: default@src1_10
+PREHOOK: query: create table src_10 as select * from src limit 4
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_10
+POSTHOOK: query: create table src_10 as select * from src limit 4
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_10
+POSTHOOK: Lineage: src_10.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table src1_10 as select * from src1 limit 4
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src1_10
+POSTHOOK: query: create table src1_10 as select * from src1 limit 4
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src1_10
+POSTHOOK: Lineage: src1_10.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_10.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, count(*) from src1_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src1_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+238	1
+	2
+311	1
+PREHOOK: query: select key, count(*) from src_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+238	1
+27	1
+311	1
+86	1
+PREHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+100266	2	100266	4
+PREHOOK: query: drop table if exists src_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_10
+PREHOOK: Output: default@src_10
+POSTHOOK: query: drop table if exists src_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_10
+POSTHOOK: Output: default@src_10
+PREHOOK: query: drop table if exists src1_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src1_10
+PREHOOK: Output: default@src1_10
+POSTHOOK: query: drop table if exists src1_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src1_10
+POSTHOOK: Output: default@src1_10
+PREHOOK: query: create table src_10 as select * from src limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_10
+POSTHOOK: query: create table src_10 as select * from src limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_10
+POSTHOOK: Lineage: src_10.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table src1_10 as select * from src1 limit 5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src1_10
+POSTHOOK: query: create table src1_10 as select * from src1 limit 5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src1_10
+POSTHOOK: Lineage: src1_10.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_10.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, count(*) from src1_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src1_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+238	1
+	3
+311	1
+PREHOOK: query: select key, count(*) from src_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+165	1
+238	1
+27	1
+311	1
+86	1
+PREHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+100266	2	100266	5
+PREHOOK: query: drop table if exists src_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_10
+PREHOOK: Output: default@src_10
+POSTHOOK: query: drop table if exists src_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_10
+POSTHOOK: Output: default@src_10
+PREHOOK: query: drop table if exists src1_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src1_10
+PREHOOK: Output: default@src1_10
+POSTHOOK: query: drop table if exists src1_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src1_10
+POSTHOOK: Output: default@src1_10
+PREHOOK: query: create table src_10 as select * from src limit 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_10
+POSTHOOK: query: create table src_10 as select * from src limit 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_10
+POSTHOOK: Lineage: src_10.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table src1_10 as select * from src1 limit 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src1_10
+POSTHOOK: query: create table src1_10 as select * from src1 limit 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src1_10
+POSTHOOK: Lineage: src1_10.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1_10.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, count(*) from src1_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src1_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+#### A masked pattern was here ####
+238	1
+	5
+255	1
+278	1
+311	1
+98	1
+PREHOOK: query: select key, count(*) from src_10 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(*) from src_10 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+165	1
+238	1
+27	1
+255	1
+409	1
+278	1
+311	1
+484	1
+86	1
+98	1
+PREHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1_10
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(key1)), SUM(HASH(cnt1)), SUM(HASH(key2)), SUM(HASH(cnt2))
+FROM (SELECT a.key AS key1, a.cnt AS cnt1, b.key AS key2, b.cnt AS cnt2
+      FROM (SELECT x.key as key, count(x.value) AS cnt FROM src_10 x group by x.key) a
+        RIGHT OUTER JOIN (SELECT y.key as key, count(y.value) AS cnt FROM src1_10 y group by y.key) b
+          ON (a.key = b.key)) tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1_10
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+201646	5	201646	10
+PREHOOK: query: CREATE TABLE t1 (c1 INT, c2 CHAR(100))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE t1 (c1 INT, c2 CHAR(100))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: INSERT INTO t1 VALUES (1,''), (100,'abcdefghij'), (200, 'aa'), (300, 'bbb')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: INSERT INTO t1 VALUES (1,''), (100,'abcdefghij'), (200, 'aa'), (300, 'bbb')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.c1 SCRIPT []
+POSTHOOK: Lineage: t1.c2 SCRIPT []
+PREHOOK: query: CREATE TABLE t2 (c1 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: CREATE TABLE t2 (c1 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: INSERT INTO t2 VALUES (100), (200)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: INSERT INTO t2 VALUES (100), (200)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.c1 SCRIPT []
+PREHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Reducer 5 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: c1 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(), count(c1)
+                      keys: c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint), _col2 (type: bigint)
+                    Group By Operator
+                      keys: c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                     Left Outer Join 0 to 2
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                  2 _col2 (type: int)
+                outputColumnNames: _col0, _col2, _col3, _col5
+                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: CASE WHEN ((_col2 = 0L)) THEN (true) WHEN (_col2 is null) THEN (true) WHEN (_col5 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col3 < _col2)) THEN (false) ELSE (true) END (type: boolean)
+                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), true (type: boolean)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Merge Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  outputColumnNames: _col1, _col2
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col2 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col2 (type: int)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: boolean)
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+1
+300
+PREHOOK: query: drop table t2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2
+PREHOOK: Output: default@t2
+POSTHOOK: query: drop table t2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: default@t2
+PREHOOK: query: CREATE TABLE t2 (c1 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: CREATE TABLE t2 (c1 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: INSERT INTO t2 VALUES (100), (300)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: INSERT INTO t2 VALUES (100), (300)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.c1 SCRIPT []
+PREHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Reducer 5 (ONE_TO_ONE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: c1 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(), count(c1)
+                      keys: c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint), _col2 (type: bigint)
+                    Group By Operator
+                      keys: c1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                     Left Outer Join 0 to 2
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                  2 _col2 (type: int)
+                outputColumnNames: _col0, _col2, _col3, _col5
+                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: CASE WHEN ((_col2 = 0L)) THEN (true) WHEN (_col2 is null) THEN (true) WHEN (_col5 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col3 < _col2)) THEN (false) ELSE (true) END (type: boolean)
+                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), true (type: boolean)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Merge Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: int)
+                    1 _col0 (type: int)
+                  outputColumnNames: _col1, _col2
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col2 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col2 (type: int)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: boolean)
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c1=t2.c1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+1
+200

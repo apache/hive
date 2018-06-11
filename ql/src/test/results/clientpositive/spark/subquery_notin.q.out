@@ -5912,18 +5912,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c1=t2_n0.c1)
+PREHOOK: query: SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n0
 PREHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c1=t2_n0.c1)
+POSTHOOK: query: SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n0
 POSTHOOK: Input: default@t2_n0
 #### A masked pattern was here ####
-1
 NULL
+1
+2
+100
 PREHOOK: query: DROP TABLE t1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n0
