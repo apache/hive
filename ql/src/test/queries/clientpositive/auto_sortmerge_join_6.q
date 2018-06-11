@@ -53,7 +53,7 @@ select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.k
 explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key;
 select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key;
 
--- A SMB join is being followed by a regular join on a bucketed table on a different key
+-- The join order ensures there is no SMB
 explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value;
 select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value;
 
@@ -71,6 +71,6 @@ select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.k
 explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key;
 select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key;
 
--- A SMB join is being followed by a regular join on a bucketed table on a different key
+-- The join order ensures there is no SMB
 explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value;
 select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value;

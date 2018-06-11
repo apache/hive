@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
 /**
  * Eviction dispatcher - uses double dispatch to route eviction notifications to correct caches.
  */
-public final class EvictionDispatcher implements EvictionListener, LlapOomDebugDump {
+public final class EvictionDispatcher implements EvictionListener {
   private final LowLevelCache dataCache;
   private final SerDeLowLevelCacheImpl serdeCache;
   private final MetadataCache metadataCache;
@@ -62,28 +62,5 @@ public final class EvictionDispatcher implements EvictionListener, LlapOomDebugD
 
   public void notifyEvicted(OrcFileEstimateErrors buffer) {
     metadataCache.notifyEvicted(buffer);
-  }
-
-  @Override
-  public String debugDumpForOom() {
-    StringBuilder sb = new StringBuilder(dataCache.debugDumpForOom());
-    if (serdeCache != null) {
-      sb.append(serdeCache.debugDumpForOom());
-    }
-    if (metadataCache != null) {
-      sb.append(metadataCache.debugDumpForOom());
-    }
-    return sb.toString();
-  }
-
-  @Override
-  public void debugDumpShort(StringBuilder sb) {
-    dataCache.debugDumpShort(sb);
-    if (serdeCache != null) {
-      serdeCache.debugDumpShort(sb);
-    }
-    if (metadataCache != null) {
-      metadataCache.debugDumpShort(sb);
-    }
   }
 }

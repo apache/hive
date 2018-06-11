@@ -90,6 +90,11 @@ public class MapOperator extends AbstractMapOperator {
 
   protected static class MapOpCtx {
 
+    @Override
+    public String toString() {
+      return "[alias=" + alias + ", op=" + op + "]";
+    }
+
     final String alias;
     final Operator<?> op;
     final PartitionDesc partDesc;

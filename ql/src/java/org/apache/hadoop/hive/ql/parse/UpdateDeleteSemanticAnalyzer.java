@@ -34,6 +34,7 @@ import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -277,7 +278,9 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     TableSpec exportTableSpec = new TableSpec(db, conf, tableTree, false, true);
     if(exportTableSpec.getPartSpec() != null) {
       StringBuilder whereClause = null;
+      int partColsIdx = -1; //keep track of corresponding col in partCols
       for(Map.Entry<String, String> ent : exportTableSpec.getPartSpec().entrySet()) {
+        partColsIdx++;
         if(ent.getValue() == null) {
           continue; //partial spec
         }
@@ -288,7 +291,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
           whereClause.append(" AND ");
         }
         whereClause.append(HiveUtils.unparseIdentifier(ent.getKey(), conf))
-            .append(" = ").append(ent.getValue());
+            .append(" = ").append(genPartValueString(partCols.get(partColsIdx).getType(), ent.getValue()));
       }
       if(whereClause != null) {
         rewrittenQueryStr.append(whereClause);
@@ -519,6 +522,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     // references.
     // todo: this may be a perf issue as it prevents the optimizer.. or not
     HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    // Disable LLAP IO wrapper; doesn't propagate extra ACID columns correctly.
+    HiveConf.setBoolVar(conf, ConfVars.LLAP_IO_ROW_WRAPPER_ENABLED, false);
     // Parse the rewritten query string
     Context rewrittenCtx;
     try {

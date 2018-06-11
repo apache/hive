@@ -199,7 +199,11 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   public void tearDown() throws Exception {
     try {
       if (client != null) {
-        client.close();
+        try {
+          client.close();
+        } catch (Exception e) {
+          // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
+        }
       }
     } finally {
       client = null;
@@ -356,7 +360,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         createdTable.getSd().getLocation());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = InvalidObjectException.class)
   public void testCreateTableNullDatabase() throws Exception {
     Table table = testTables[0];
     table.setDbName(null);
@@ -891,7 +895,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     }
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = InvalidOperationException.class)
   public void testAlterTableNullDatabaseInNew() throws Exception {
     Table originalTable = testTables[0];
     Table newTable = originalTable.deepCopy();

@@ -18,10 +18,6 @@
  
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
-import java.nio.charset.StandardCharsets;
-
-import org.apache.hadoop.hive.common.type.<TruncStringHiveType>;
-
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -42,11 +38,11 @@ public class <ClassName> extends VectorExpression {
   private byte[] left;
   private byte[] right;
 
-  public <ClassName>(int colNum, <TruncStringHiveType> left, <TruncStringHiveType> right) {
+  public <ClassName>(int colNum, byte[] left, byte[] right) {
     super();
     this.colNum = colNum;
-    this.left = left.<TruncStringHiveGetBytes>;
-    this.right = right.<TruncStringHiveGetBytes>;
+    this.left = left;
+    this.right = right;
   }
 
   public <ClassName>() {

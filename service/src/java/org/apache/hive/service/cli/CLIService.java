@@ -474,6 +474,8 @@ public class CLIService extends CompositeService implements ICLIService {
     }
     OperationStatus opStatus = operation.getStatus();
     LOG.debug(opHandle + ": getOperationStatus()");
+    long numModifiedRows = operation.getNumModifiedRows();
+    opStatus.setNumModifiedRows(numModifiedRows);
     opStatus.setJobProgressUpdate(progressUpdateLog(getProgressUpdate, operation, conf));
     return opStatus;
   }

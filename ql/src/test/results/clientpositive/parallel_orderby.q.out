@@ -68,7 +68,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 
   Stage: Stage-3
       Create Table Operator:
@@ -134,11 +134,11 @@ Storage Desc Params:
 PREHOOK: query: select * from total_ordered
 PREHOOK: type: QUERY
 PREHOOK: Input: default@total_ordered
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from total_ordered
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@total_ordered
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 128	val_128
 128	val_128
 150	val_150
@@ -245,11 +245,11 @@ Storage Desc Params:
 PREHOOK: query: select * from total_ordered
 PREHOOK: type: QUERY
 PREHOOK: Input: default@total_ordered
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from total_ordered
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@total_ordered
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 128	val_128
 128	val_128
 150	val_150

@@ -408,7 +408,19 @@ public final class Utilities {
    * @throws RuntimeException if the configuration files are not proper or if plan can not be loaded
    */
   private static BaseWork getBaseWork(Configuration conf, String name) {
-    Path path = null;
+
+    Path path = getPlanPath(conf, name);
+    LOG.debug("PLAN PATH = {}", path);
+    if (path == null) { // Map/reduce plan may not be generated
+      return null;
+    }
+
+    BaseWork gWork = gWorkMap.get(conf).get(path);
+    if (gWork != null) {
+      LOG.debug("Found plan in cache for name: {}", name);
+      return gWork;
+    }
+
     InputStream in = null;
     Kryo kryo = SerializationUtilities.borrowKryo();
     try {
@@ -424,73 +436,61 @@ public final class Utilities {
           kryo.setClassLoader(newLoader);
         }
       }
-
-      path = getPlanPath(conf, name);
-      LOG.info("PLAN PATH = {}", path);
-      if (path == null) { // Map/reduce plan may not be generated
-        return null;
-      }
-
-      BaseWork gWork = gWorkMap.get(conf).get(path);
-      if (gWork == null) {
-        Path localPath = path;
-        LOG.debug("local path = {}", localPath);
-        final long serializedSize;
-        final String planMode;
-        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
-          String planStringPath = path.toUri().getPath();
-          LOG.debug("Loading plan from string: {}", planStringPath);
-          String planString = conf.getRaw(planStringPath);
-          if (planString == null) {
-            LOG.info("Could not find plan string in conf");
-            return null;
-          }
-          serializedSize = planString.length();
-          planMode = "RPC";
-          byte[] planBytes = Base64.decodeBase64(planString);
-          in = new ByteArrayInputStream(planBytes);
-          in = new InflaterInputStream(in);
-        } else {
-          LOG.debug("Open file to read in plan: {}", localPath);
-          FileSystem fs = localPath.getFileSystem(conf);
-          in = fs.open(localPath);
-          serializedSize = fs.getFileStatus(localPath).getLen();
-          planMode = "FILE";
+      Path localPath = path;
+      LOG.debug("local path = {}", localPath);
+      final long serializedSize;
+      final String planMode;
+      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
+        String planStringPath = path.toUri().getPath();
+        LOG.debug("Loading plan from string: {}", planStringPath);
+        String planString = conf.getRaw(planStringPath);
+        if (planString == null) {
+          LOG.info("Could not find plan string in conf");
+          return null;
         }
-
-        if(MAP_PLAN_NAME.equals(name)){
-          if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
-          } else if(MergeFileMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
-          } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
-          } else {
-            throw new RuntimeException("unable to determine work from configuration ."
-                + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS)) ;
-          }
-        } else if (REDUCE_PLAN_NAME.equals(name)) {
-          if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
-          } else {
-            throw new RuntimeException("unable to determine work from configuration ."
-                + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
-          }
-        } else if (name.contains(MERGE_PLAN_NAME)) {
-          if (name.startsWith(MAPNAME)) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
-          } else if (name.startsWith(REDUCENAME)) {
-            gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
-          } else {
-            throw new RuntimeException("Unknown work type: " + name);
-          }
-        }
-        LOG.info("Deserialized plan (via {}) - name: {} size: {}", planMode,
-            gWork.getName(), humanReadableByteCount(serializedSize));
-        gWorkMap.get(conf).put(path, gWork);
+        serializedSize = planString.length();
+        planMode = "RPC";
+        byte[] planBytes = Base64.decodeBase64(planString);
+        in = new ByteArrayInputStream(planBytes);
+        in = new InflaterInputStream(in);
       } else {
-        LOG.debug("Found plan in cache for name: {}", name);
+        LOG.debug("Open file to read in plan: {}", localPath);
+        FileSystem fs = localPath.getFileSystem(conf);
+        in = fs.open(localPath);
+        serializedSize = fs.getFileStatus(localPath).getLen();
+        planMode = "FILE";
       }
+
+      if(MAP_PLAN_NAME.equals(name)){
+        if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
+          gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
+        } else if(MergeFileMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, MergeFileWork.class);
+        } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, ColumnTruncateWork.class);
+        } else {
+          throw new RuntimeException("unable to determine work from configuration ."
+              + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS));
+        }
+      } else if (REDUCE_PLAN_NAME.equals(name)) {
+        if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
+        } else {
+          throw new RuntimeException("unable to determine work from configuration ."
+              + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS));
+        }
+      } else if (name.contains(MERGE_PLAN_NAME)) {
+        if (name.startsWith(MAPNAME)) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, MapWork.class);
+        } else if (name.startsWith(REDUCENAME)) {
+          gWork = SerializationUtilities.deserializePlan(kryo, in, ReduceWork.class);
+        } else {
+          throw new RuntimeException("Unknown work type: " + name);
+        }
+      }
+      LOG.info("Deserialized plan (via {}) - name: {} size: {}", planMode,
+          gWork.getName(), humanReadableByteCount(serializedSize));
+      gWorkMap.get(conf).put(path, gWork);
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
@@ -3285,6 +3285,9 @@ public final class Utilities {
   public static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir,
       Context ctx, boolean skipDummy) throws Exception {
 
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_PATHS);
+
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
     LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
@@ -3372,6 +3375,8 @@ public final class Utilities {
         finalPathsToAdd.add(newPath);
       }
     }
+
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_PATHS);
 
     return finalPathsToAdd;
   }

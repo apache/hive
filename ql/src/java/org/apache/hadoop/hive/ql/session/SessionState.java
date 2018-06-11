@@ -818,7 +818,7 @@ public class SessionState {
       return new Path(sessionPathString);
     }
     Preconditions.checkNotNull(ss.hdfsSessionPath,
-        "Non-local session path expected to be non-null");
+       "Non-local session path expected to be non-null");
     return ss.hdfsSessionPath;
   }
 

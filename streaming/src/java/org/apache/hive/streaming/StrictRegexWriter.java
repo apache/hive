@@ -18,14 +18,19 @@
 
 package org.apache.hive.streaming;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.RegexSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.io.Text;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 /**
  * Streaming Writer handles text input data with regex. Uses
@@ -75,7 +80,17 @@ public class StrictRegexWriter extends AbstractRecordWriter {
     try {
       Properties tableProps = table.getMetadata();
       tableProps.setProperty(RegexSerDe.INPUT_REGEX, regex);
-      tableProps.setProperty(serdeConstants.LIST_COLUMNS, StringUtils.join(inputColumns, ","));
+      tableProps.setProperty(serdeConstants.LIST_COLUMNS, Joiner.on(",").join(inputColumns));
+      tableProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(":").join(inputTypes));
+      final String columnComments = tableProps.getProperty("columns.comments");
+      if (columnComments != null) {
+        List<String> comments = Lists.newArrayList(Splitter.on('\0').split(columnComments));
+        int commentsSize = comments.size();
+        for (int i = 0; i < inputColumns.size() - commentsSize; i++) {
+          comments.add("");
+        }
+        tableProps.setProperty("columns.comments", Joiner.on('\0').join(comments));
+      }
       RegexSerDe serde = new RegexSerDe();
       SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
       this.serde = serde;

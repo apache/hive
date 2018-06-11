@@ -60,6 +60,23 @@ module ThriftHiveMetastore
       return
     end
 
+    def alter_catalog(rqst)
+      send_alter_catalog(rqst)
+      recv_alter_catalog()
+    end
+
+    def send_alter_catalog(rqst)
+      send_message('alter_catalog', Alter_catalog_args, :rqst => rqst)
+    end
+
+    def recv_alter_catalog()
+      result = receive_message(Alter_catalog_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
     def get_catalog(catName)
       send_get_catalog(catName)
       return recv_get_catalog()
@@ -2161,13 +2178,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'grant_revoke_privileges failed: unknown result')
     end
 
-    def refresh_privileges(objToRefresh, grantRequest)
-      send_refresh_privileges(objToRefresh, grantRequest)
+    def refresh_privileges(objToRefresh, authorizer, grantRequest)
+      send_refresh_privileges(objToRefresh, authorizer, grantRequest)
       return recv_refresh_privileges()
     end
 
-    def send_refresh_privileges(objToRefresh, grantRequest)
-      send_message('refresh_privileges', Refresh_privileges_args, :objToRefresh => objToRefresh, :grantRequest => grantRequest)
+    def send_refresh_privileges(objToRefresh, authorizer, grantRequest)
+      send_message('refresh_privileges', Refresh_privileges_args, :objToRefresh => objToRefresh, :authorizer => authorizer, :grantRequest => grantRequest)
     end
 
     def recv_refresh_privileges()
@@ -3479,6 +3496,21 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'create_catalog', seqid)
+    end
+
+    def process_alter_catalog(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_catalog_args)
+      result = Alter_catalog_result.new()
+      begin
+        @handler.alter_catalog(args.rqst)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'alter_catalog', seqid)
     end
 
     def process_get_catalog(seqid, iprot, oprot)
@@ -5141,7 +5173,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Refresh_privileges_args)
       result = Refresh_privileges_result.new()
       begin
-        result.success = @handler.refresh_privileges(args.objToRefresh, args.grantRequest)
+        result.success = @handler.refresh_privileges(args.objToRefresh, args.authorizer, args.grantRequest)
       rescue ::MetaException => o1
         result.o1 = o1
       end
@@ -6117,6 +6149,42 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_catalog_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AlterCatalogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_catalog_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
     }
 
@@ -10926,10 +10994,12 @@ module ThriftHiveMetastore
   class Refresh_privileges_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     OBJTOREFRESH = 1
-    GRANTREQUEST = 2
+    AUTHORIZER = 2
+    GRANTREQUEST = 3
 
     FIELDS = {
       OBJTOREFRESH => {:type => ::Thrift::Types::STRUCT, :name => 'objToRefresh', :class => ::HiveObjectRef},
+      AUTHORIZER => {:type => ::Thrift::Types::STRING, :name => 'authorizer'},
       GRANTREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'grantRequest', :class => ::GrantRevokePrivilegeRequest}
     }
 

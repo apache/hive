@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
 public final class BuddyAllocator
-  implements EvictionAwareAllocator, BuddyAllocatorMXBean, LlapOomDebugDump {
+  implements EvictionAwareAllocator, BuddyAllocatorMXBean, LlapIoDebugDump {
   private final Arena[] arenas;
   private final AtomicInteger allocatedArenas = new AtomicInteger(0);
 
@@ -653,7 +653,6 @@ public final class BuddyAllocator
    */
   @Override
   public void debugDumpShort(StringBuilder sb) {
-    memoryManager.debugDumpShort(sb);
     sb.append("\nDefrag counters: ");
     for (int i = 0; i < defragCounters.length; ++i) {
       sb.append(defragCounters[i].get()).append(", ");
@@ -1556,12 +1555,6 @@ public final class BuddyAllocator
       a.testDump(sb);
     }
     return sb.toString();
-  }
-
-  @Override
-  public String debugDumpForOom() {
-    return "\nALLOCATOR STATE:\n" + debugDumpForOomInternal()
-        + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom();
   }
 
   private String debugDumpForOomInternal() {

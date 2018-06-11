@@ -184,6 +184,10 @@ public abstract class Operation {
     this.operationTimeout = operationTimeout;
   }
 
+  public long getNumModifiedRows() {
+    return queryState.getNumModifiedRows();
+  }
+
   protected void setOperationException(HiveSQLException operationException) {
     this.operationException = operationException;
   }

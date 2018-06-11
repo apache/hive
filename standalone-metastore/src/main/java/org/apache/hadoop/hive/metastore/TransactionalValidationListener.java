@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.metastore.api.InitializeTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
@@ -132,24 +134,26 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     }
     if ("true".equalsIgnoreCase(transactionalValue) && !"true".equalsIgnoreCase(oldTransactionalValue)) {
       if(!isTransactionalPropertiesPresent) {
-        normazlieTransactionalPropertyDefault(newTable);
+        normalizeTransactionalPropertyDefault(newTable);
         isTransactionalPropertiesPresent = true;
         transactionalPropertiesValue = DEFAULT_TRANSACTIONAL_PROPERTY;
       }
-      //only need to check conformance if alter table enabled acid
-      if (!conformToAcid(newTable)) {
-        // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing
-        if (transactionalPropertiesValue == null || !"insert_only".equalsIgnoreCase(transactionalPropertiesValue)) {
-          throw new MetaException("The table must be stored using an ACID compliant format (such as ORC): "
-          + Warehouse.getQualifiedName(newTable));
-        }
+      // We only need to check conformance if alter table enabled acid.
+      // INSERT_ONLY tables don't have to conform to ACID requirement like ORC or bucketing.
+      boolean isFullAcid = transactionalPropertiesValue == null
+          || !"insert_only".equalsIgnoreCase(transactionalPropertiesValue);
+      if (isFullAcid && !conformToAcid(newTable)) {
+        throw new MetaException("The table must be stored using an ACID compliant "
+            + "format (such as ORC): " + Warehouse.getQualifiedName(newTable));
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
         throw new MetaException(Warehouse.getQualifiedName(newTable) +
             " cannot be declared transactional because it's an external table");
       }
-      validateTableStructure(context.getHandler(), newTable);
+      if (isFullAcid) {
+        validateTableStructure(context.getHandler(), newTable);
+      }
       hasValidTransactionalValue = true;
     }
 
@@ -188,7 +192,17 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       }
     }
     checkSorted(newTable);
+    if(TxnUtils.isAcidTable(newTable) && !TxnUtils.isAcidTable(oldTable)) {
+      /* we just made an existing table full acid which wasn't acid before and it passed all checks
+      initialize the Write ID sequence so that we can handle assigning ROW_IDs to 'original'
+      files already present in the table. */
+      TxnStore t = TxnUtils.getTxnStore(getConf());
+      //For now assume no partition may have > 10M files.  Perhaps better to count them.
+      t.seedWriteIdOnAcidConversion(new InitializeTableWriteIdsRequest(newTable.getDbName(),
+          newTable.getTableName(), 10000000));
+    }
   }
+
   private void checkSorted(Table newTable) throws MetaException {
     if(!TxnUtils.isAcidTable(newTable)) {
       return;
@@ -309,7 +323,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       // normalize prop name
       parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.TRUE.toString());
       if(transactionalProperties == null) {
-        normazlieTransactionalPropertyDefault(newTable);
+        normalizeTransactionalPropertyDefault(newTable);
       }
       initializeTransactionalProperties(newTable);
       checkSorted(newTable);
@@ -325,7 +339,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
    * transactional_properties should take on the default value.  Easier to make this explicit in
    * table definition than keep checking everywhere if it's set or not.
    */
-  private void normazlieTransactionalPropertyDefault(Table table) {
+  private void normalizeTransactionalPropertyDefault(Table table) {
     table.getParameters().put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
         DEFAULT_TRANSACTIONAL_PROPERTY);
 

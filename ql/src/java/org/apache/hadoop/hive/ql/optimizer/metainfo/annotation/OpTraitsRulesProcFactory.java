@@ -260,23 +260,43 @@ public class OpTraitsRulesProcFactory {
 
   public static class SelectRule implements NodeProcessor {
 
+    boolean processSortCols = false;
+
+    // For bucket columns
+    // If all the columns match to the parent, put them in the bucket cols
+    // else, add empty list.
+    // For sort columns
+    // Keep the subset of all the columns as long as order is maintained.
     public List<List<String>> getConvertedColNames(
         List<List<String>> parentColNames, SelectOperator selOp) {
-      List<List<String>> listBucketCols = new ArrayList<List<String>>();
+      List<List<String>> listBucketCols = new ArrayList<>();
       if (selOp.getColumnExprMap() != null) {
         if (parentColNames != null) {
           for (List<String> colNames : parentColNames) {
-            List<String> bucketColNames = new ArrayList<String>();
+            List<String> bucketColNames = new ArrayList<>();
+            boolean found = false;
             for (String colName : colNames) {
               for (Entry<String, ExprNodeDesc> entry : selOp.getColumnExprMap().entrySet()) {
-                if (entry.getValue() instanceof ExprNodeColumnDesc) {
-                  if (((ExprNodeColumnDesc) (entry.getValue())).getColumn().equals(colName)) {
-                    bucketColNames.add(entry.getKey());
-                  }
+                if ((entry.getValue() instanceof ExprNodeColumnDesc) &&
+                    (((ExprNodeColumnDesc) (entry.getValue())).getColumn().equals(colName))) {
+                  bucketColNames.add(entry.getKey());
+                  found = true;
+                  break;
                 }
               }
+              if (!found) {
+                // Bail out on first missed column.
+                break;
+              }
             }
-            listBucketCols.add(bucketColNames);
+            if (!processSortCols && !found) {
+              // While processing bucket columns, atleast one bucket column
+              // missed. This results in a different bucketing scheme.
+              // Add empty list
+              listBucketCols.add(new ArrayList<>());
+            } else  {
+              listBucketCols.add(bucketColNames);
+            }
           }
         }
       }
@@ -300,6 +320,7 @@ public class OpTraitsRulesProcFactory {
         List<List<String>> parentSortColNames =
             selOp.getParentOperators().get(0).getOpTraits().getSortCols();
         if (parentSortColNames != null) {
+          processSortCols = true;
           listSortCols = getConvertedColNames(parentSortColNames, selOp);
         }
       }
@@ -309,7 +330,11 @@ public class OpTraitsRulesProcFactory {
       int bucketingVersion = -1;
       OpTraits parentOpTraits = selOp.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
-        numBuckets = parentOpTraits.getNumBuckets();
+        // if bucket columns are empty, then numbuckets must be set to -1.
+        if (listBucketCols != null &&
+            !(listBucketCols.isEmpty() || listBucketCols.get(0).isEmpty())) {
+          numBuckets = parentOpTraits.getNumBuckets();
+        }
         numReduceSinks = parentOpTraits.getNumReduceSinks();
         bucketingVersion = parentOpTraits.getBucketingVersion();
       }

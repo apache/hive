@@ -77,7 +77,9 @@ import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
+import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -89,6 +91,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.slf4j.Logger;
@@ -235,6 +238,8 @@ class MetaStoreDirectSql {
       initQueries.add(pm.newQuery(MNotificationNextId.class, "nextEventId < -1"));
       initQueries.add(pm.newQuery(MWMResourcePlan.class, "name == ''"));
       initQueries.add(pm.newQuery(MCreationMetadata.class, "dbName == ''"));
+      initQueries.add(pm.newQuery(MPartitionPrivilege.class, "principalName == ''"));
+      initQueries.add(pm.newQuery(MPartitionColumnPrivilege.class, "principalName == ''"));
       Query q;
       while ((q = initQueries.peekFirst()) != null) {
         q.execute();
@@ -2712,6 +2717,97 @@ class MetaStoreDirectSql {
         LOG.warn("SQL error executing query while dropping dangling col descriptions", sqlException);
         throw new MetaException("Encountered error while dropping col descriptions");
       }
+    }
+  }
+
+  public final static Object[] STATS_TABLE_TYPES = new Object[] {
+    TableType.MANAGED_TABLE.toString(), TableType.MATERIALIZED_VIEW.toString()
+  };
+
+  public List<FullTableName> getTableNamesWithStats() throws MetaException {
+    // Could we also join with ACID tables to only get tables with outdated stats?
+    String queryText0 = "SELECT DISTINCT " + TBLS + ".\"TBL_NAME\", " + DBS + ".\"NAME\", "
+        + DBS + ".\"CTLG_NAME\" FROM " + TBLS + " INNER JOIN " + DBS + " ON "
+        + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\"";
+    String queryText1 = " WHERE " + TBLS + ".\"TBL_TYPE\" IN ("
+        + makeParams(STATS_TABLE_TYPES.length) + ")";
+
+    List<FullTableName> result = new ArrayList<>();
+
+    String queryText = queryText0 + " INNER JOIN " + TAB_COL_STATS
+        + " ON " + TBLS + ".\"TBL_ID\" = " + TAB_COL_STATS + ".\"TBL_ID\"" + queryText1;
+    getStatsTableListResult(queryText, result);
+
+    queryText = queryText0 + " INNER JOIN " + PARTITIONS + " ON " + TBLS + ".\"TBL_ID\" = "
+        + PARTITIONS + ".\"TBL_ID\"" + " INNER JOIN " + PART_COL_STATS + " ON " + PARTITIONS
+        + ".\"PART_ID\" = " + PART_COL_STATS + ".\"PART_ID\"" + queryText1;
+    getStatsTableListResult(queryText, result);
+
+    return result;
+  }
+
+  public Map<String, List<String>> getColAndPartNamesWithStats(
+      String catName, String dbName, String tableName) throws MetaException {
+    // Could we also join with ACID tables to only get tables with outdated stats?
+    String queryText = "SELECT DISTINCT " + PARTITIONS + ".\"PART_NAME\", " + PART_COL_STATS
+        + ".\"COLUMN_NAME\" FROM " + TBLS + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = "
+        + DBS + ".\"DB_ID\" INNER JOIN " + PARTITIONS + " ON " + TBLS + ".\"TBL_ID\" = "
+        + PARTITIONS + ".\"TBL_ID\"  INNER JOIN " + PART_COL_STATS + " ON " + PARTITIONS
+        + ".\"PART_ID\" = " + PART_COL_STATS + ".\"PART_ID\" WHERE " + DBS + ".\"NAME\" = ? AND "
+        + DBS + ".\"CTLG_NAME\" = ? AND " + TBLS + ".\"TBL_NAME\" = ? ORDER BY "
+        + PARTITIONS + ".\"PART_NAME\"";
+
+    LOG.debug("Running {}", queryText);
+    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    try {
+      List<Object[]> sqlResult = ensureList(executeWithArray(
+          query, new Object[] { dbName, catName, tableName }, queryText));
+      Map<String, List<String>> result = new HashMap<>();
+      String lastPartName = null;
+      List<String> cols = null;
+      for (Object[] line : sqlResult) {
+        String col = extractSqlString(line[1]);
+        String part = extractSqlString(line[0]);
+        if (!part.equals(lastPartName)) {
+          if (lastPartName != null) {
+            result.put(lastPartName, cols);
+          }
+          cols = cols == null ? new ArrayList<>() : new ArrayList<>(cols.size());
+          lastPartName = part;
+        }
+        cols.add(col);
+      }
+      if (lastPartName != null) {
+        result.put(lastPartName, cols);
+      }
+      return result;
+    } finally {
+      query.closeAll();
+    }
+  }
+
+  public List<FullTableName> getAllTableNamesForStats() throws MetaException {
+    String queryText = "SELECT " + TBLS + ".\"TBL_NAME\", " + DBS + ".\"NAME\", "
+        + DBS + ".\"CTLG_NAME\" FROM " + TBLS + " INNER JOIN " + DBS + " ON " + TBLS
+        + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+        + " WHERE " + TBLS + ".\"TBL_TYPE\" IN (" + makeParams(STATS_TABLE_TYPES.length) + ")";
+    List<FullTableName> result = new ArrayList<>();
+    getStatsTableListResult(queryText, result);
+    return result;
+  }
+
+  private void getStatsTableListResult(
+      String queryText, List<FullTableName> result) throws MetaException {
+    LOG.debug("Running {}", queryText);
+    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    try {
+      List<Object[]> sqlResult = ensureList(executeWithArray(query, STATS_TABLE_TYPES, queryText));
+      for (Object[] line : sqlResult) {
+        result.add(new FullTableName(
+            extractSqlString(line[2]), extractSqlString(line[1]), extractSqlString(line[0])));
+      }
+    } finally {
+      query.closeAll();
     }
   }
 }

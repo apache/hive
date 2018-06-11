@@ -189,6 +189,21 @@ public interface IMetaStoreClient {
       throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
 
   /**
+   * Alter an existing catalog.
+   * @param catalogName the name of the catalog to alter.
+   * @param newCatalog the new catalog object.  All relevant details of the catalog should be
+   *                   set, don't rely on the system to figure out what you changed and only copy
+   *                   that in.
+   * @throws NoSuchObjectException no catalog of this name exists
+   * @throws InvalidObjectException an attempt was made to make an unsupported change (such as
+   * catalog name).
+   * @throws MetaException usually indicates a database error
+   * @throws TException general thrift exception
+   */
+  void alterCatalog(String catalogName, Catalog newCatalog)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  /**
    * Get a catalog object.
    * @param catName Name of the catalog to fetch.
    * @return The catalog.
@@ -2567,12 +2582,13 @@ public interface IMetaStoreClient {
 
   /**
    * @param revokePrivileges
+   * @param authorizer
    * @param objToRefresh
    * @return true on success
    * @throws MetaException
    * @throws TException
    */
-  boolean refresh_privileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+  boolean refresh_privileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
       throws MetaException, TException;
 
   /**

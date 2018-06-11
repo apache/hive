@@ -59,7 +59,6 @@ public class TestCatalogs extends MetaStoreClientTest {
 
   public TestCatalogs(String name, AbstractMetaStoreService metaStore) throws Exception {
     this.metaStore = metaStore;
-    this.metaStore.start();
   }
 
   @Before
@@ -93,7 +92,11 @@ public class TestCatalogs extends MetaStoreClientTest {
     }
     try {
       if (client != null) {
-        client.close();
+        try {
+          client.close();
+        } catch (Exception e) {
+          // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
+        }
       }
     } finally {
       client = null;
@@ -143,6 +146,26 @@ public class TestCatalogs extends MetaStoreClientTest {
       Assert.assertTrue("Expected " + expected.get(i) + " actual " + catalogs.get(i),
           catalogs.get(i).equalsIgnoreCase(expected.get(i)));
     }
+
+
+    // Update catalogs
+    // Update location
+    Catalog newCat = new Catalog(client.getCatalog(catNames[0]));
+    String newLocation = MetaStoreTestUtils.getTestWarehouseDir("a_different_location");
+    newCat.setLocationUri(newLocation);
+    client.alterCatalog(catNames[0], newCat);
+    Catalog fetchedNewCat = client.getCatalog(catNames[0]);
+    Assert.assertEquals(newLocation, fetchedNewCat.getLocationUri());
+    Assert.assertEquals(description[0], fetchedNewCat.getDescription());
+
+    // Update description
+    newCat = new Catalog(client.getCatalog(catNames[1]));
+    String newDescription = "an even more descriptive description";
+    newCat.setDescription(newDescription);
+    client.alterCatalog(catNames[1], newCat);
+    fetchedNewCat = client.getCatalog(catNames[1]);
+    Assert.assertEquals(location[1], fetchedNewCat.getLocationUri());
+    Assert.assertEquals(newDescription, fetchedNewCat.getDescription());
 
     for (int i = 0; i < catNames.length; i++) {
       client.dropCatalog(catNames[i]);
@@ -213,5 +236,32 @@ public class TestCatalogs extends MetaStoreClientTest {
         .create(client, metaStore.getConf());
 
     client.dropCatalog(catName);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void alterNonExistentCatalog() throws TException {
+    String catName = "alter_no_such_catalog";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+
+    client.alterCatalog(catName, cat);
+  }
+
+  @Test(expected = InvalidOperationException.class)
+  public void alterChangeName() throws TException {
+    String catName = "alter_change_name";
+    String location = MetaStoreTestUtils.getTestWarehouseDir(catName);
+    String description = "I have a bad feeling about this";
+    new CatalogBuilder()
+        .setName(catName)
+        .setLocation(location)
+        .setDescription(description)
+        .create(client);
+
+    Catalog newCat = client.getCatalog(catName);
+    newCat.setName("you_may_call_me_tim");
+    client.alterCatalog(catName, newCat);
   }
 }

@@ -22,6 +22,7 @@ load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO 
 set hive.auto.convert.join=true;
 -- disable hash joins
 set hive.auto.convert.join.noconditionaltask.size=10;
+set hive.auto.convert.sortmerge.join=false;
 explain extended select count(*) FROM bucket_small_n11 a JOIN bucket_big_n11 b ON a.key = b.key;
 select count(*) FROM bucket_small_n11 a JOIN bucket_big_n11 b ON a.key = b.key;
 

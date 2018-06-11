@@ -42,12 +42,10 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
-@Ignore("Flaky. Will be re-enabled by HIVE-19697")
 public class TestReOptimization {
 
   @ClassRule
@@ -206,6 +204,8 @@ public class TestReOptimization {
     {
       // new hs2 instance session
       IDriver driver = createDriver("reoptimize");
+      // loading of metastore stats is async; execute a simple to ensure they are loaded
+      driver.run("select count(*) from tu group by id_uv");
       checkUsageOfRuntimeStats(driver, expectHs2Instance);
     }
   }

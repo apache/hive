@@ -35,7 +35,9 @@ import com.google.common.base.Throwables;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
+import org.apache.hadoop.hive.ql.exec.spark.status.impl.SparkMetricsUtils;
 
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,6 +163,7 @@ public class SparkTask extends Task<SparkWork> {
 
       if (rc == 0) {
         sparkStatistics = sparkJobStatus.getSparkStatistics();
+        printConsoleMetrics();
         printExcessiveGCWarning();
         if (LOG.isInfoEnabled() && sparkStatistics != null) {
           LOG.info(sparkStatisticsToString(sparkStatistics, sparkJobID));
@@ -222,6 +225,79 @@ public class SparkTask extends Task<SparkWork> {
     return rc;
   }
 
+  private void printConsoleMetrics() {
+    SparkStatisticGroup sparkStatisticGroup = sparkStatistics.getStatisticGroup(
+            SparkStatisticsNames.SPARK_GROUP_NAME);
+
+    if (sparkStatisticGroup != null) {
+      String colon = ": ";
+      String forwardSlash = " / ";
+      String separator = ", ";
+
+      String metricsString = String.format("Spark Job[%d] Metrics: ", sparkJobID);
+
+      // Task Duration Time
+      if (sparkStatisticGroup.containsSparkStatistic(SparkStatisticsNames.TASK_DURATION_TIME)) {
+        metricsString += SparkStatisticsNames.TASK_DURATION_TIME + colon +
+                SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+                        SparkStatisticsNames.TASK_DURATION_TIME) + separator;
+      }
+
+      // Executor CPU Time
+      if (sparkStatisticGroup.containsSparkStatistic(SparkStatisticsNames.EXECUTOR_CPU_TIME)) {
+        metricsString += SparkStatisticsNames.EXECUTOR_CPU_TIME + colon +
+                SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+                        SparkStatisticsNames.EXECUTOR_CPU_TIME) + separator;
+      }
+
+      // JCM GC Time
+      if (sparkStatisticGroup.containsSparkStatistic(SparkStatisticsNames.JVM_GC_TIME)) {
+        metricsString += SparkStatisticsNames.JVM_GC_TIME + colon +
+                SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+                        SparkStatisticsNames.JVM_GC_TIME) + separator;
+      }
+
+      // Bytes Read / Records Read
+      if (sparkStatisticGroup.containsSparkStatistic(SparkStatisticsNames.BYTES_READ) &&
+              sparkStatisticGroup.containsSparkStatistic(SparkStatisticsNames.RECORDS_READ)) {
+        metricsString += SparkStatisticsNames.BYTES_READ + forwardSlash +
+                SparkStatisticsNames.RECORDS_READ + colon +
+                SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+                        SparkStatisticsNames.BYTES_READ) + forwardSlash +
+                SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+                        SparkStatisticsNames.RECORDS_READ) + separator;
+      }
+
+      // Shuffle Read Bytes / Shuffle Read Records
+      if (sparkStatisticGroup.containsSparkStatistic(
+              SparkStatisticsNames.SHUFFLE_TOTAL_BYTES_READ) &&
+              sparkStatisticGroup.containsSparkStatistic(
+                      SparkStatisticsNames.SHUFFLE_RECORDS_READ)) {
+        metricsString += SparkStatisticsNames.SHUFFLE_TOTAL_BYTES_READ + forwardSlash +
+                SparkStatisticsNames.SHUFFLE_RECORDS_READ + colon +
+                SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+                        SparkStatisticsNames.SHUFFLE_TOTAL_BYTES_READ) + forwardSlash +
+                SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+                        SparkStatisticsNames.SHUFFLE_RECORDS_READ) + separator;
+      }
+
+      // Shuffle Write Bytes / Shuffle Write Records
+      if (sparkStatisticGroup.containsSparkStatistic(
+              SparkStatisticsNames.SHUFFLE_BYTES_WRITTEN) &&
+              sparkStatisticGroup.containsSparkStatistic(
+                      SparkStatisticsNames.SHUFFLE_RECORDS_WRITTEN)) {
+        metricsString += SparkStatisticsNames.SHUFFLE_BYTES_WRITTEN + forwardSlash +
+                SparkStatisticsNames.SHUFFLE_RECORDS_WRITTEN + colon +
+                SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+                        SparkStatisticsNames.SHUFFLE_BYTES_WRITTEN) + forwardSlash +
+                SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+                        SparkStatisticsNames.SHUFFLE_RECORDS_WRITTEN);
+      }
+
+      console.printInfo(metricsString);
+    }
+  }
+
   /**
    * Use the Spark metrics and calculate how much task executione time was spent performing GC
    * operations. If more than a defined threshold of time is spent, print out a warning on the
@@ -231,10 +307,10 @@ public class SparkTask extends Task<SparkWork> {
     SparkStatisticGroup sparkStatisticGroup = sparkStatistics.getStatisticGroup(
             SparkStatisticsNames.SPARK_GROUP_NAME);
     if (sparkStatisticGroup != null) {
-      long taskDurationTime = Long.parseLong(sparkStatisticGroup.getSparkStatistic(
-              SparkStatisticsNames.TASK_DURATION_TIME).getValue());
-      long jvmGCTime = Long.parseLong(sparkStatisticGroup.getSparkStatistic(
-              SparkStatisticsNames.JVM_GC_TIME).getValue());
+      long taskDurationTime = SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+              SparkStatisticsNames.TASK_DURATION_TIME);
+      long jvmGCTime = SparkMetricsUtils.getSparkStatisticAsLong(sparkStatisticGroup,
+              SparkStatisticsNames.JVM_GC_TIME);
 
       // Threshold percentage to trigger the GC warning
       double threshold = 0.1;
@@ -470,11 +546,11 @@ public class SparkTask extends Task<SparkWork> {
           stageIds.add(stageId);
         }
       }
-      Map<String, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
+      Map<SparkStage, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
       int sumTotal = 0;
       int sumComplete = 0;
       int sumFailed = 0;
-      for (String s : progressMap.keySet()) {
+      for (SparkStage s : progressMap.keySet()) {
         SparkStageProgress progress = progressMap.get(s);
         final int complete = progress.getSucceededTaskCount();
         final int total = progress.getTotalTaskCount();

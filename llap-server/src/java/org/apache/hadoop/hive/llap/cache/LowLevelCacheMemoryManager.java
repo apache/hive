@@ -130,18 +130,6 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   }
 
   @Override
-  public String debugDumpForOom() {
-    if (evictor == null) return null;
-    return "\ncache state\n" + evictor.debugDumpForOom();
-  }
-
-  @Override
-  public void debugDumpShort(StringBuilder sb) {
-    if (evictor == null) return;
-    evictor.debugDumpShort(sb);
-  }
-
-  @Override
   public void updateMaxSize(long maxSize) {
     this.maxSize = maxSize;
   }

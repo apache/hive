@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.<BaseClassName>;
 
-import org.apache.hadoop.hive.common.type.<TruncStringHiveType>;
-
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -34,8 +32,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
  */
 public class <ClassName> extends <BaseClassName> {
 
-  public <ClassName>(<TruncStringHiveType> value, int colNum) {
-    super(value.<TruncStringHiveGetBytes>, colNum);
+  public <ClassName>(byte[] value, int colNum) {
+    super(value, colNum);
   }
 
   public <ClassName>() {

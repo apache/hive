@@ -255,6 +255,7 @@ struct HiveObjectPrivilege {
   2: string principalName,
   3: PrincipalType principalType,
   4: PrivilegeGrantInfo grantInfo,
+  5: string authorizer,
 }
 
 struct PrivilegeBag {
@@ -335,6 +336,11 @@ struct Catalog {
 
 struct CreateCatalogRequest {
   1: Catalog catalog
+}
+
+struct AlterCatalogRequest {
+  1: string name,
+  2: Catalog newCat
 }
 
 struct GetCatalogRequest {
@@ -1610,6 +1616,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void setMetaConf(1:string key, 2:string value) throws(1:MetaException o1)
 
   void create_catalog(1: CreateCatalogRequest catalog) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3: MetaException o3)
+  void alter_catalog(1: AlterCatalogRequest rqst) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   GetCatalogResponse get_catalog(1: GetCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
   GetCatalogsResponse get_catalogs() throws (1:MetaException o1)
   void drop_catalog(1: DropCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
@@ -2022,7 +2029,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
   GrantRevokePrivilegeResponse grant_revoke_privileges(1:GrantRevokePrivilegeRequest request) throws(1:MetaException o1);
   // Revokes all privileges for the object and adds the newly granted privileges for it.
-  GrantRevokePrivilegeResponse refresh_privileges(1:HiveObjectRef objToRefresh, 2:GrantRevokePrivilegeRequest grantRequest) throws(1:MetaException o1);
+  GrantRevokePrivilegeResponse refresh_privileges(1:HiveObjectRef objToRefresh, 2:string authorizer, 3:GrantRevokePrivilegeRequest grantRequest) throws(1:MetaException o1);
 
   // this is used by metastore client to send UGI information to metastore server immediately
   // after setting up a connection.

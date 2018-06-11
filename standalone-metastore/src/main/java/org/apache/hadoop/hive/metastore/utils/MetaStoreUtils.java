@@ -24,6 +24,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.commons.collections.ListUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -64,7 +65,9 @@ import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.MachineList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -718,12 +721,12 @@ public class MetaStoreUtils {
     params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
   }
- 
+
   public static void clearQuickStats(Map<String, String> params) {
     params.remove(StatsSetupConst.NUM_FILES);
     params.remove(StatsSetupConst.TOTAL_SIZE);
   }
- 
+
 
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     return ListUtils.isEqualList(oldCols, newCols);
@@ -1282,7 +1285,10 @@ public class MetaStoreUtils {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
         String key = param.getKey();
         if (schema.get(key) != null &&
-            (key.equals(cols) || key.equals(colTypes) || key.equals(parts))) {
+                (key.equals(cols) || key.equals(colTypes) || key.equals(parts) ||
+                        // skip Druid properties which are used in DruidSerde, since they are also updated
+                        // after SerDeInfo properties are copied.
+                        key.startsWith("druid."))) {
           continue;
         }
         schema.put(key, (param.getValue() != null) ? param.getValue() : StringUtils.EMPTY);
@@ -1796,5 +1802,36 @@ public class MetaStoreUtils {
     String catName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
     return catName;
+  }
+
+
+  public static class FullTableName {
+    public final String catalog, db, table;
+
+    public FullTableName(String catalog, String db, String table) {
+      assert catalog != null && db != null && table != null : catalog + ", " + db + ", " + table;
+      this.catalog = catalog;
+      this.db = db;
+      this.table = table;
+    }
+
+    @Override
+    public String toString() {
+      return catalog + MetaStoreUtils.CATALOG_DB_SEPARATOR + db + "." + table;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      return prime * (prime * (prime + catalog.hashCode()) + db.hashCode()) + table.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null || getClass() != obj.getClass()) return false;
+      FullTableName other = (FullTableName) obj;
+      return catalog.equals(other.catalog) && db.equals(other.db) && table.equals(other.table);
+    }
   }
 }

@@ -163,6 +163,9 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     // Execute generated plan.
     JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();
 
+    // We get the query name for this SparkTask and set it to the description for the associated
+    // Spark job; query names are guaranteed to be unique for each Spark job because the task id
+    // is concatenated to the end of the query name
     sc.setJobGroup("queryId = " + sparkWork.getQueryId(), DagUtils.getQueryName(jobConf));
 
     // We use Spark RDD async action to submit job as it's the only way to get jobId now.

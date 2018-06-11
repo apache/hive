@@ -40,6 +40,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    */
   public function create_catalog(\metastore\CreateCatalogRequest $catalog);
   /**
+   * @param \metastore\AlterCatalogRequest $rqst
+   * @throws \metastore\NoSuchObjectException
+   * @throws \metastore\InvalidOperationException
+   * @throws \metastore\MetaException
+   */
+  public function alter_catalog(\metastore\AlterCatalogRequest $rqst);
+  /**
    * @param \metastore\GetCatalogRequest $catName
    * @return \metastore\GetCatalogResponse
    * @throws \metastore\NoSuchObjectException
@@ -1062,11 +1069,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   public function grant_revoke_privileges(\metastore\GrantRevokePrivilegeRequest $request);
   /**
    * @param \metastore\HiveObjectRef $objToRefresh
+   * @param string $authorizer
    * @param \metastore\GrantRevokePrivilegeRequest $grantRequest
    * @return \metastore\GrantRevokePrivilegeResponse
    * @throws \metastore\MetaException
    */
-  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, \metastore\GrantRevokePrivilegeRequest $grantRequest);
+  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, $authorizer, \metastore\GrantRevokePrivilegeRequest $grantRequest);
   /**
    * @param string $user_name
    * @param string[] $group_names
@@ -1705,6 +1713,63 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw $x;
       }
       $result = new \metastore\ThriftHiveMetastore_create_catalog_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->o1 !== null) {
+      throw $result->o1;
+    }
+    if ($result->o2 !== null) {
+      throw $result->o2;
+    }
+    if ($result->o3 !== null) {
+      throw $result->o3;
+    }
+    return;
+  }
+
+  public function alter_catalog(\metastore\AlterCatalogRequest $rqst)
+  {
+    $this->send_alter_catalog($rqst);
+    $this->recv_alter_catalog();
+  }
+
+  public function send_alter_catalog(\metastore\AlterCatalogRequest $rqst)
+  {
+    $args = new \metastore\ThriftHiveMetastore_alter_catalog_args();
+    $args->rqst = $rqst;
+    $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'alter_catalog', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('alter_catalog', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_alter_catalog()
+  {
+    $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_alter_catalog_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new \metastore\ThriftHiveMetastore_alter_catalog_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -8927,16 +8992,17 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("grant_revoke_privileges failed: unknown result");
   }
 
-  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, \metastore\GrantRevokePrivilegeRequest $grantRequest)
+  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, $authorizer, \metastore\GrantRevokePrivilegeRequest $grantRequest)
   {
-    $this->send_refresh_privileges($objToRefresh, $grantRequest);
+    $this->send_refresh_privileges($objToRefresh, $authorizer, $grantRequest);
     return $this->recv_refresh_privileges();
   }
 
-  public function send_refresh_privileges(\metastore\HiveObjectRef $objToRefresh, \metastore\GrantRevokePrivilegeRequest $grantRequest)
+  public function send_refresh_privileges(\metastore\HiveObjectRef $objToRefresh, $authorizer, \metastore\GrantRevokePrivilegeRequest $grantRequest)
   {
     $args = new \metastore\ThriftHiveMetastore_refresh_privileges_args();
     $args->objToRefresh = $objToRefresh;
+    $args->authorizer = $authorizer;
     $args->grantRequest = $grantRequest;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
@@ -13776,6 +13842,213 @@ class ThriftHiveMetastore_create_catalog_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_catalog_result');
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+      $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+      $xfer += $this->o2->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
+      $xfer += $this->o3->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ThriftHiveMetastore_alter_catalog_args {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\AlterCatalogRequest
+   */
+  public $rqst = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'rqst',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\AlterCatalogRequest',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['rqst'])) {
+        $this->rqst = $vals['rqst'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_alter_catalog_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->rqst = new \metastore\AlterCatalogRequest();
+            $xfer += $this->rqst->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_catalog_args');
+    if ($this->rqst !== null) {
+      if (!is_object($this->rqst)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('rqst', TType::STRUCT, 1);
+      $xfer += $this->rqst->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ThriftHiveMetastore_alter_catalog_result {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\NoSuchObjectException
+   */
+  public $o1 = null;
+  /**
+   * @var \metastore\InvalidOperationException
+   */
+  public $o2 = null;
+  /**
+   * @var \metastore\MetaException
+   */
+  public $o3 = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'o1',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\NoSuchObjectException',
+          ),
+        2 => array(
+          'var' => 'o2',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\InvalidOperationException',
+          ),
+        3 => array(
+          'var' => 'o3',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\MetaException',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
+      }
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
+      }
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_alter_catalog_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->o1 = new \metastore\NoSuchObjectException();
+            $xfer += $this->o1->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->o2 = new \metastore\InvalidOperationException();
+            $xfer += $this->o2->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRUCT) {
+            $this->o3 = new \metastore\MetaException();
+            $xfer += $this->o3->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_catalog_result');
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -44513,6 +44786,10 @@ class ThriftHiveMetastore_refresh_privileges_args {
    */
   public $objToRefresh = null;
   /**
+   * @var string
+   */
+  public $authorizer = null;
+  /**
    * @var \metastore\GrantRevokePrivilegeRequest
    */
   public $grantRequest = null;
@@ -44526,6 +44803,10 @@ class ThriftHiveMetastore_refresh_privileges_args {
           'class' => '\metastore\HiveObjectRef',
           ),
         2 => array(
+          'var' => 'authorizer',
+          'type' => TType::STRING,
+          ),
+        3 => array(
           'var' => 'grantRequest',
           'type' => TType::STRUCT,
           'class' => '\metastore\GrantRevokePrivilegeRequest',
@@ -44535,6 +44816,9 @@ class ThriftHiveMetastore_refresh_privileges_args {
     if (is_array($vals)) {
       if (isset($vals['objToRefresh'])) {
         $this->objToRefresh = $vals['objToRefresh'];
+      }
+      if (isset($vals['authorizer'])) {
+        $this->authorizer = $vals['authorizer'];
       }
       if (isset($vals['grantRequest'])) {
         $this->grantRequest = $vals['grantRequest'];
@@ -44570,6 +44854,13 @@ class ThriftHiveMetastore_refresh_privileges_args {
           }
           break;
         case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->authorizer);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
           if ($ftype == TType::STRUCT) {
             $this->grantRequest = new \metastore\GrantRevokePrivilegeRequest();
             $xfer += $this->grantRequest->read($input);
@@ -44598,11 +44889,16 @@ class ThriftHiveMetastore_refresh_privileges_args {
       $xfer += $this->objToRefresh->write($output);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->authorizer !== null) {
+      $xfer += $output->writeFieldBegin('authorizer', TType::STRING, 2);
+      $xfer += $output->writeString($this->authorizer);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->grantRequest !== null) {
       if (!is_object($this->grantRequest)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('grantRequest', TType::STRUCT, 2);
+      $xfer += $output->writeFieldBegin('grantRequest', TType::STRUCT, 3);
       $xfer += $this->grantRequest->write($output);
       $xfer += $output->writeFieldEnd();
     }

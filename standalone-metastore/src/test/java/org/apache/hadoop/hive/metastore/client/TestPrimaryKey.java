@@ -60,7 +60,6 @@ public class TestPrimaryKey extends MetaStoreClientTest {
 
   public TestPrimaryKey(String name, AbstractMetaStoreService metaStore) throws Exception {
     this.metaStore = metaStore;
-    this.metaStore.start();
   }
 
   @Before
@@ -133,7 +132,11 @@ public class TestPrimaryKey extends MetaStoreClientTest {
   public void tearDown() throws Exception {
     try {
       if (client != null) {
-        client.close();
+        try {
+          client.close();
+        } catch (Exception e) {
+          // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
+        }
       }
     } finally {
       client = null;

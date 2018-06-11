@@ -63,6 +63,7 @@ covar_samp
 crc32
 create_union
 cume_dist
+current_authorizer
 current_database
 current_date
 current_groups
@@ -319,6 +320,7 @@ covar_samp
 crc32
 create_union
 cume_dist
+current_authorizer
 current_database
 current_date
 current_groups

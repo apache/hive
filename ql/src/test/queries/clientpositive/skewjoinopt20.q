@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.optimize.skewjoin.compiletime = true;
+set hive.auto.convert.sortmerge.join=false;
 
 CREATE TABLE T1_n103(key STRING, val STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS

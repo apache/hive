@@ -95,8 +95,10 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @After
   public void tearDown() throws Exception {
     try {
-      if (client != null) {
+      try {
         client.close();
+      } catch (Exception e) {
+        // HIVE-19729: Shallow the exceptions based on the discussion in the Jira
       }
     } finally {
       client = null;

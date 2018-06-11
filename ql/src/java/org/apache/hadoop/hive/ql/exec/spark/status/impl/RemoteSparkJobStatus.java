@@ -21,8 +21,11 @@ package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
 
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Throwables;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
@@ -36,7 +39,6 @@ import org.apache.hive.spark.client.JobContext;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.hive.spark.client.SparkClient;
 import org.apache.hive.spark.counter.SparkCounters;
-
 import org.apache.spark.JobExecutionStatus;
 import org.apache.spark.SparkJobInfo;
 import org.apache.spark.SparkStageInfo;
@@ -46,8 +48,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Used with remove spark client.
@@ -98,8 +102,8 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Map<String, SparkStageProgress> getSparkStageProgress() throws HiveException {
-    Map<String, SparkStageProgress> stageProgresses = new HashMap<String, SparkStageProgress>();
+  public Map<SparkStage, SparkStageProgress> getSparkStageProgress() throws HiveException {
+    Map<SparkStage, SparkStageProgress> stageProgresses = new HashMap<SparkStage, SparkStageProgress>();
     for (int stageId : getStageIds()) {
       SparkStageInfo sparkStageInfo = getSparkStageInfo(stageId);
       if (sparkStageInfo != null && sparkStageInfo.name() != null) {
@@ -109,8 +113,8 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
         int totalTaskCount = sparkStageInfo.numTasks();
         SparkStageProgress sparkStageProgress = new SparkStageProgress(
             totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount);
-        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_"
-          + sparkStageInfo.currentAttemptId(), sparkStageProgress);
+        SparkStage stage = new SparkStage(sparkStageInfo.stageId(), sparkStageInfo.currentAttemptId());
+        stageProgresses.put(stage, sparkStageProgress);
       }
     }
     return stageProgresses;
@@ -197,10 +201,14 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
         new GetJobInfoJob(jobHandle.getClientJobId(), sparkJobId));
     try {
       return getJobInfo.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
-    } catch (Exception e) {
-      LOG.warn("Failed to get job info.", e);
+    } catch (TimeoutException e) {
       throw new HiveException(e, ErrorMsg.SPARK_GET_JOB_INFO_TIMEOUT,
           Long.toString(sparkClientTimeoutInSeconds));
+    } catch (InterruptedException e) {
+      throw new HiveException(e, ErrorMsg.SPARK_GET_JOB_INFO_INTERRUPTED);
+    } catch (ExecutionException e) {
+      throw new HiveException(e, ErrorMsg.SPARK_GET_JOB_INFO_EXECUTIONERROR,
+          Throwables.getRootCause(e).getMessage());
     }
   }
 

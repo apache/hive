@@ -41,7 +41,7 @@ import org.apache.hive.common.util.Ref;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 
-public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, LlapOomDebugDump {
+public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, LlapIoDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final Allocator allocator;
   private final AtomicInteger newEvictions = new AtomicInteger(0);
@@ -445,32 +445,6 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   @Override
   public Allocator getAllocator() {
     return allocator;
-  }
-
-  @Override
-  public String debugDumpForOom() {
-    StringBuilder sb = new StringBuilder("File cache state ");
-    for (Map.Entry<Object, FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> e :
-      cache.entrySet()) {
-      if (!e.getValue().incRef()) continue;
-      try {
-        sb.append("\n  file " + e.getKey());
-        for (Map.Entry<Long, LlapDataBuffer> e2 : e.getValue().getCache().entrySet()) {
-          if (e2.getValue().incRef() < 0) continue;
-          try {
-            sb.append("\n    [").append(e2.getKey()).append(", ")
-              .append(e2.getKey() + e2.getValue().declaredCachedLength)
-              .append(") => ").append(e2.getValue().toString())
-              .append(" alloc ").append(e2.getValue().byteBuffer.position());
-          } finally {
-            e2.getValue().decRef();
-          }
-        }
-      } finally {
-        e.getValue().decRef();
-      }
-    }
-    return sb.toString();
   }
 
   @Override

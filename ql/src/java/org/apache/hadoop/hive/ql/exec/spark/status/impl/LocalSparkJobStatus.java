@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Throwables;
-
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkStage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,8 +104,8 @@ public class LocalSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Map<String, SparkStageProgress> getSparkStageProgress() {
-    Map<String, SparkStageProgress> stageProgresses = new HashMap<String, SparkStageProgress>();
+  public Map<SparkStage, SparkStageProgress> getSparkStageProgress() {
+    Map<SparkStage, SparkStageProgress> stageProgresses = new HashMap<SparkStage, SparkStageProgress>();
     for (int stageId : getStageIds()) {
       SparkStageInfo sparkStageInfo = getStageInfo(stageId);
       if (sparkStageInfo != null) {
@@ -116,8 +115,8 @@ public class LocalSparkJobStatus implements SparkJobStatus {
         int totalTaskCount = sparkStageInfo.numTasks();
         SparkStageProgress sparkStageProgress = new SparkStageProgress(
             totalTaskCount, completedTaskCount, runningTaskCount, failedTaskCount);
-        stageProgresses.put(String.valueOf(sparkStageInfo.stageId()) + "_"
-          + sparkStageInfo.currentAttemptId(), sparkStageProgress);
+        SparkStage stage = new SparkStage(sparkStageInfo.stageId(), sparkStageInfo.currentAttemptId());
+        stageProgresses.put(stage, sparkStageProgress);
       }
     }
     return stageProgresses;

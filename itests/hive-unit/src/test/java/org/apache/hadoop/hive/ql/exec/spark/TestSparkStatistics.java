@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,6 +48,8 @@ public class TestSparkStatistics {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "spark");
     conf.set("spark.master", "local-cluster[1,2,1024]");
+    conf.set("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
+            "TestSparkStatistics-local-dir").toString());
 
     SessionState.start(conf);
 
@@ -78,7 +81,7 @@ public class TestSparkStatistics {
       List<SparkStatistic> sparkStats = Lists.newArrayList(sparkTask.getSparkStatistics()
               .getStatisticGroup(SparkStatisticsNames.SPARK_GROUP_NAME).getStatistics());
 
-      Assert.assertEquals(18, sparkStats.size());
+      Assert.assertEquals(26, sparkStats.size());
 
       Map<String, String> statsMap = sparkStats.stream().collect(
               Collectors.toMap(SparkStatistic::getName, SparkStatistic::getValue));

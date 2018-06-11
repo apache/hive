@@ -68,6 +68,7 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
@@ -177,6 +178,7 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -1340,7 +1342,7 @@ public class Hive {
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
-  public List<RelOptMaterialization> getAllValidMaterializedViews(boolean forceMVContentsUpToDate, ValidTxnWriteIdList txnList)
+  public List<RelOptMaterialization> getAllValidMaterializedViews(boolean forceMVContentsUpToDate, String validTxnsList)
       throws HiveException {
     // Final result
     List<RelOptMaterialization> result = new ArrayList<>();
@@ -1352,7 +1354,7 @@ public class Hive {
           // Bail out: empty list
           continue;
         }
-        result.addAll(getValidMaterializedViews(dbName, materializedViewNames, forceMVContentsUpToDate, txnList));
+        result.addAll(getValidMaterializedViews(dbName, materializedViewNames, forceMVContentsUpToDate, validTxnsList));
       }
       return result;
     } catch (Exception e) {
@@ -1361,12 +1363,12 @@ public class Hive {
   }
 
   public List<RelOptMaterialization> getValidMaterializedView(String dbName, String materializedViewName,
-      boolean forceMVContentsUpToDate, ValidTxnWriteIdList txnList) throws HiveException {
-    return getValidMaterializedViews(dbName, ImmutableList.of(materializedViewName), forceMVContentsUpToDate, txnList);
+      boolean forceMVContentsUpToDate, String validTxnsList) throws HiveException {
+    return getValidMaterializedViews(dbName, ImmutableList.of(materializedViewName), forceMVContentsUpToDate, validTxnsList);
   }
 
   private List<RelOptMaterialization> getValidMaterializedViews(String dbName, List<String> materializedViewNames,
-      boolean forceMVContentsUpToDate, ValidTxnWriteIdList txnList) throws HiveException {
+      boolean forceMVContentsUpToDate, String validTxnsList) throws HiveException {
     final boolean tryIncrementalRewriting =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL);
     final long defaultDiff =
@@ -1421,7 +1423,7 @@ public class Hive {
         }
 
         if (outdated && (!tryIncrementalRewriting || materializationInvInfo == null
-            || txnList == null || materializationInvInfo.isSourceTablesUpdateDeleteModified())) {
+            || validTxnsList == null || materializationInvInfo.isSourceTablesUpdateDeleteModified())) {
           // We will not try partial rewriting either because the config specification, this
           // is a rebuild over some non-transactional table, or there were update/delete
           // operations in the source tables (not supported yet)
@@ -1450,7 +1452,7 @@ public class Hive {
               // We will rewrite it to include the filters on transaction list
               // so we can produce partial rewritings
               materialization = augmentMaterializationWithTimeInformation(
-                  materialization, txnList, new ValidTxnWriteIdList(
+                  materialization, validTxnsList, new ValidTxnWriteIdList(
                       materializationInvInfo.getValidTxnList()));
             }
             result.add(materialization);
@@ -1473,7 +1475,7 @@ public class Hive {
               // We will rewrite it to include the filters on transaction list
               // so we can produce partial rewritings
               materialization = augmentMaterializationWithTimeInformation(
-                  materialization, txnList, new ValidTxnWriteIdList(
+                  materialization, validTxnsList, new ValidTxnWriteIdList(
                       materializationInvInfo.getValidTxnList()));
             }
             result.add(materialization);
@@ -1497,8 +1499,24 @@ public class Hive {
    * its invalidation.
    */
   private static RelOptMaterialization augmentMaterializationWithTimeInformation(
-      RelOptMaterialization materialization, ValidTxnWriteIdList currentTxnList,
-      ValidTxnWriteIdList materializationTxnList) {
+      RelOptMaterialization materialization, String validTxnsList,
+      ValidTxnWriteIdList materializationTxnList) throws LockException {
+    // Extract tables used by the query which will in turn be used to generate
+    // the corresponding txn write ids
+    List<String> tablesUsed = new ArrayList<>();
+    new RelVisitor() {
+      @Override
+      public void visit(RelNode node, int ordinal, RelNode parent) {
+        if (node instanceof TableScan) {
+          TableScan ts = (TableScan) node;
+          tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullyQualifiedName());
+        }
+        super.visit(node, ordinal, parent);
+      }
+    }.go(materialization.queryRel);
+    ValidTxnWriteIdList currentTxnList =
+        SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
+    // Augment
     final RexBuilder rexBuilder = materialization.queryRel.getCluster().getRexBuilder();
     final HepProgramBuilder augmentMaterializationProgram = new HepProgramBuilder()
         .addRuleInstance(new HiveAugmentMaterializationRule(rexBuilder, currentTxnList, materializationTxnList));
@@ -1608,6 +1626,23 @@ public class Hive {
   }
 
   /**
+   * Get the database by name.
+   * @param catName catalog name
+   * @param dbName the name of the database.
+   * @return a Database object if this database exists, null otherwise.
+   * @throws HiveException
+   */
+  public Database getDatabase(String catName, String dbName) throws HiveException {
+    try {
+      return getMSC().getDatabase(catName, dbName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
    * Get the Database object for current database
    * @return a Database object if this database exists, null otherwise.
    * @throws HiveException
@@ -1655,6 +1690,9 @@ public class Hive {
     boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
     try {
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_PARTITION);
+
       // Get the partition object if it already exists
       Partition oldPart = getPartition(tbl, partSpec, false);
       /**
@@ -1690,8 +1728,8 @@ public class Hive {
         newPartPath = oldPartPath;
       }
       List<Path> newFiles = null;
-      PerfLogger perfLogger = SessionState.getPerfLogger();
-      perfLogger.PerfLogBegin("MoveTask", "FileMoves");
+
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
       // If config is set, table is not temporary and partition being inserted exists, capture
       // the list of files added. For not yet existing partitions (insert overwrite to new partition
       // or dynamic partition inserts), the add partition event will capture the list of files added.
@@ -1749,7 +1787,7 @@ public class Hive {
               tbl.getNumBuckets() > 0, isFullAcidTable);
         }
       }
-      perfLogger.PerfLogEnd("MoveTask", "FileMoves");
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
       alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
       validatePartition(newTPart);
@@ -1833,6 +1871,7 @@ public class Hive {
       } else {
         setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
       }
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_PARTITION);
       return newTPart;
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -2125,6 +2164,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       final boolean hasFollowingStatsTask, final AcidUtils.Operation operation,
       boolean isInsertOverwrite) throws HiveException {
 
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+
     final Map<Map<String, String>, Partition> partitionsMap =
         Collections.synchronizedMap(new LinkedHashMap<Map<String, String>, Partition>());
 
@@ -2234,6 +2276,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 AcidUtils.toDataOperationType(operation));
       }
       LOG.info("Loaded " + partitionsMap.size() + " partitions");
+
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
+
       return partitionsMap;
     } catch (TException te) {
       throw new HiveException("Exception updating metastore for acid table "
@@ -2267,6 +2312,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public void loadTable(Path loadPath, String tableName, LoadFileType loadFileType, boolean isSrcLocal,
       boolean isSkewedStoreAsSubdir, boolean isAcidIUDoperation, boolean hasFollowingStatsTask,
       Long writeId, int stmtId, boolean isInsertOverwrite) throws HiveException {
+
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_TABLE);
+
     List<Path> newFiles = null;
     Table tbl = getTable(tableName);
     assert tbl.getPath() != null : "null==getPath() for " + tbl.getTableName();
@@ -2304,6 +2353,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       Utilities.FILE_OP_LOGGER.debug("moving " + loadPath + " to " + tblPath
           + " (replace = " + loadFileType + ")");
+
+      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
+
       if (loadFileType == LoadFileType.REPLACE_ALL && !isTxnTable) {
         //for fullAcid we don't want to delete any files even for OVERWRITE see HIVE-14988/HIVE-17361
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
@@ -2321,6 +2373,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           throw new HiveException("addFiles: filesystem error in check phase", e);
         }
       }
+      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
     }
     if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
@@ -2354,6 +2407,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     alterTable(tbl, environmentContext);
 
     fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
+
+    perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_TABLE);
   }
 
   /**

@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
@@ -78,8 +79,11 @@ import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
+import org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.PolicyProviderContainer;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeSynchonizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
@@ -975,23 +979,38 @@ public class HiveServer2 extends CompositeService {
   }
 
   public void startPrivilegeSynchonizer(HiveConf hiveConf) throws Exception {
-    if (hiveConf.getBoolVar(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER)) {
+
+    PolicyProviderContainer policyContainer = new PolicyProviderContainer();
+    HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
+    if (authorizer.getHivePolicyProvider() != null) {
+      policyContainer.addAuthorizer(authorizer);
+    }
+    if (hiveConf.get(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname()) != null &&
+        hiveConf.get(MetastoreConf.ConfVars.PRE_EVENT_LISTENERS.getVarname()).contains(
+        "org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener") &&
+        hiveConf.get(MetastoreConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.getVarname())!= null) {
+      List<HiveMetastoreAuthorizationProvider> providers = HiveUtils.getMetaStoreAuthorizeProviderManagers(
+          hiveConf, HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER, SessionState.get().getAuthenticator());
+      for (HiveMetastoreAuthorizationProvider provider : providers) {
+        if (provider.getHivePolicyProvider() != null) {
+          policyContainer.addAuthorizationProvider(provider);
+        }
+      }
+    }
+
+    if (policyContainer.size() > 0) {
       zKClientForPrivSync = startZookeeperClient(hiveConf);
       String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
       String path = ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
           + ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + "leader";
       LeaderLatch privilegeSynchonizerLatch = new LeaderLatch(zKClientForPrivSync, path);
       privilegeSynchonizerLatch.start();
-      HiveAuthorizer authorizer = SessionState.get().getAuthorizerV2();
-      if (authorizer.getHivePolicyProvider() == null) {
-        LOG.warn(
-            "Cannot start PrivilegeSynchonizer, policyProvider of " + authorizer.getClass().getName() + " is null");
-        privilegeSynchonizerLatch.close();
-        return;
-      }
       Thread privilegeSynchonizerThread = new Thread(
-          new PrivilegeSynchonizer(privilegeSynchonizerLatch, authorizer, hiveConf), "PrivilegeSynchonizer");
+          new PrivilegeSynchonizer(privilegeSynchonizerLatch, policyContainer, hiveConf), "PrivilegeSynchonizer");
       privilegeSynchonizerThread.start();
+    } else {
+      LOG.warn(
+          "No policy provider found, skip creating PrivilegeSynchonizer");
     }
   }
 

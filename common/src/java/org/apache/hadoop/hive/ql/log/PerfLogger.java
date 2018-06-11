@@ -46,6 +46,7 @@ public class PerfLogger {
   public static final String DO_AUTHORIZATION = "doAuthorization";
   public static final String DRIVER_EXECUTE = "Driver.execute";
   public static final String INPUT_SUMMARY = "getInputSummary";
+  public static final String INPUT_PATHS = "getInputPaths";
   public static final String GET_SPLITS = "getSplits";
   public static final String RUN_TASKS = "runTasks";
   public static final String SERIALIZE_PLAN = "serializePlan";
@@ -84,6 +85,11 @@ public class PerfLogger {
   public static final String SPARK_OPTIMIZE_OPERATOR_TREE = "SparkOptimizeOperatorTree";
   public static final String SPARK_OPTIMIZE_TASK_TREE = "SparkOptimizeTaskTree";
   public static final String SPARK_FLUSH_HASHTABLE = "SparkFlushHashTable.";
+
+  public static final String FILE_MOVES = "FileMoves";
+  public static final String LOAD_TABLE = "LoadTable";
+  public static final String LOAD_PARTITION = "LoadPartition";
+  public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
 
   protected final Map<String, Long> startTimes = new HashMap<String, Long>();
   protected final Map<String, Long> endTimes = new HashMap<String, Long>();

@@ -31,6 +31,7 @@ public class HiveObjectPrivilegeBuilder {
   private String principleName;
   private PrincipalType principalType;
   private PrivilegeGrantInfo grantInfo;
+  private String authorizer;
 
   public HiveObjectPrivilegeBuilder setHiveObjectRef(HiveObjectRef hiveObjectRef) {
     this.hiveObjectRef = hiveObjectRef;
@@ -52,12 +53,17 @@ public class HiveObjectPrivilegeBuilder {
     return this;
   }
 
+  public HiveObjectPrivilegeBuilder setAuthorizer(String authorizer) {
+    this.authorizer = authorizer;
+    return this;
+  }
+
   public HiveObjectPrivilege build() throws MetaException {
     if (hiveObjectRef == null || principleName == null || principalType == null ||
         grantInfo == null) {
       throw new MetaException("hive object reference, principle name and type, and grant info " +
           "must all be provided");
     }
-    return new HiveObjectPrivilege(hiveObjectRef, principleName, principalType, grantInfo);
+    return new HiveObjectPrivilege(hiveObjectRef, principleName, principalType, grantInfo, authorizer);
   }
 }

@@ -82,12 +82,14 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -113,6 +115,7 @@ import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
@@ -814,7 +817,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       PrivilegeBag privs = new PrivilegeBag();
       privs.addToPrivileges(new HiveObjectPrivilege( new HiveObjectRef(HiveObjectType.GLOBAL, null,
         null, null, null), ADMIN, PrincipalType.ROLE, new PrivilegeGrantInfo("All", 0, ADMIN,
-        PrincipalType.ROLE, true)));
+          PrincipalType.ROLE, true), "SQL"));
       try {
         ms.grantPrivileges(privs);
       } catch (InvalidObjectException e) {
@@ -1055,6 +1058,51 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         endFunction("create_catalog", success, ex);
       }
+    }
+
+    @Override
+    public void alter_catalog(AlterCatalogRequest rqst) throws TException {
+      startFunction("alter_catalog " + rqst.getName());
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      GetCatalogResponse oldCat = null;
+
+      try {
+        oldCat = get_catalog(new GetCatalogRequest(rqst.getName()));
+        // Above should have thrown NoSuchObjectException if there is no such catalog
+        assert oldCat != null && oldCat.getCatalog() != null;
+        firePreEvent(new PreAlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), this));
+
+        ms.openTransaction();
+        ms.alterCatalog(rqst.getName(), rqst.getNewCat());
+
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.ALTER_CATALOG,
+                  new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), true, this));
+        }
+
+        success = ms.commitTransaction();
+      } catch (MetaException|NoSuchObjectException e) {
+        ex = e;
+        throw e;
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+
+        if ((null != oldCat) && (!listeners.isEmpty())) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.ALTER_CATALOG,
+              new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), success, this),
+              null, transactionalListenersResponses, ms);
+        }
+        endFunction("alter_catalog", success, ex);
+      }
+
     }
 
     @Override
@@ -6226,14 +6274,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public GrantRevokePrivilegeResponse refresh_privileges(HiveObjectRef objToRefresh,
+    public GrantRevokePrivilegeResponse refresh_privileges(HiveObjectRef objToRefresh, String authorizer,
         GrantRevokePrivilegeRequest grantRequest)
         throws TException {
       incrementCounter("refresh_privileges");
       firePreEvent(new PreAuthorizationCallEvent(this));
       GrantRevokePrivilegeResponse response = new GrantRevokePrivilegeResponse();
       try {
-        boolean result = getMS().refreshPrivileges(objToRefresh, grantRequest.getPrivileges());
+        boolean result = getMS().refreshPrivileges(objToRefresh, authorizer, grantRequest.getPrivileges());
         response.setSuccess(result);
       } catch (MetaException e) {
         throw e;
@@ -8987,6 +9035,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     t.start();
   }
 
+
   /**
    * Start threads outside of the thrift service, such as the compactor threads.
    * @param conf Hive configuration object
@@ -9026,6 +9075,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           startCompactorWorkers(conf);
           startCompactorCleaner(conf);
           startRemoteOnlyTasks(conf);
+          startStatsUpdater(conf);
         } catch (Throwable e) {
           LOG.error("Failure when starting the compactor, compactions may not happen, " +
               StringUtils.stringifyException(e));
@@ -9039,6 +9089,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     t.setDaemon(true);
     t.setName("Metastore threads starter thread");
     t.start();
+  }
+
+  protected static void startStatsUpdater(Configuration conf) throws Exception {
+    StatsUpdateMode mode = StatsUpdateMode.valueOf(
+        MetastoreConf.getVar(conf, ConfVars.STATS_AUTO_UPDATE).toUpperCase());
+    if (mode == StatsUpdateMode.NONE) return;
+    MetaStoreThread t = instantiateThread("org.apache.hadoop.hive.ql.stats.StatsUpdaterThread");
+    initializeAndStartThread(t, conf);
   }
 
   private static void startCompactorInitiator(Configuration conf) throws Exception {

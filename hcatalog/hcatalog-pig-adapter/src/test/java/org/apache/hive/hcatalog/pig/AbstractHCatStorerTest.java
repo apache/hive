@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.EvalFunc;
-import org.apache.pig.ExecType;
 import org.apache.pig.PigException;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.DataByteArray;
@@ -425,7 +424,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       input[i] = i + "\t1";
     }
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
     server.registerQuery("store A into 'default.junit_unparted' using "
         + HCatStorer.class.getName() + "('b=1');");
@@ -460,7 +459,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
             "111239\tSatya\t01/01/2001\tM\tIN\tKL", "111240\tKavya\t01/01/2002\tF\tIN\tAP" };
 
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
-    PigServer pig = new PigServer(ExecType.LOCAL);
+    PigServer pig = createPigServer(false);
     pig.setBatchOn();
     pig.registerQuery("A = LOAD '" + INPUT_FILE_NAME
         + "' USING PigStorage() AS (emp_id:int,emp_name:chararray,emp_start_date:chararray,"
@@ -511,7 +510,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       input[i] = i + "";
     }
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int);");
     server.registerQuery("store A into 'default.junit_unparted' using "
         + HCatStorer.class.getName() + "('b=1');");
@@ -541,7 +540,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   public void testNoAlias() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_parted", driver);
     AbstractHCatLoaderTest.createTable("junit_parted","a int, b string", "ds string", driver, storageFormat);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     boolean errCaught = false;
     try {
       server.setBatchOn();
@@ -601,7 +600,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       }
     }
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
     server.registerQuery("B = filter A by a < 2;");
@@ -648,7 +647,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       }
     }
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
     server.registerQuery("store A into 'default.junit_unparted' using "
@@ -684,7 +683,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       }
     }
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
     server.registerQuery("store A into 'junit_unparted' using " + HCatStorer.class.getName()
@@ -720,7 +719,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       }
     }
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
     server.registerQuery("B = filter A by a > 100;");
@@ -751,7 +750,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
 
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
 
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.setBatchOn();
     server
         .registerQuery("A = load '"
@@ -797,7 +796,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
             + "\tbinary-data";
 
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME
         + "' as (a:int, b:float, c:double, d:long, e:chararray, h:boolean, f:bytearray);");
@@ -854,7 +853,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       }
     }
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
     server.registerQuery("store A into 'default.junit_unparted' using "
@@ -888,7 +887,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
             "111239\tSatya\t01/01/2001\tM\tIN\tKL", "111240\tKavya\t01/01/2002\tF\tIN\tAP" };
 
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
-    PigServer pig = new PigServer(ExecType.LOCAL);
+    PigServer pig = createPigServer(false);
     pig.setBatchOn();
     pig.registerQuery("A = LOAD '" + INPUT_FILE_NAME
         + "' USING PigStorage() AS (emp_id:int,emp_name:chararray,emp_start_date:chararray,"
@@ -921,7 +920,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
             "111239\tSatya\t01/01/2001\tM\tIN\tKL", "111240\tKavya\t01/01/2002\tF\tIN\tAP" };
 
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
-    PigServer pig = new PigServer(ExecType.LOCAL);
+    PigServer pig = createPigServer(false);
     pig.setBatchOn();
     pig.registerQuery("A = LOAD '" + INPUT_FILE_NAME
         + "' USING PigStorage() AS (emp_id:int,emp_name:chararray,emp_start_date:chararray,"
@@ -952,7 +951,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
     String[] inputData = {};
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
 
-    PigServer pig = new PigServer(ExecType.LOCAL);
+    PigServer pig = createPigServer(false);
     pig.setBatchOn();
     pig.registerQuery("A = LOAD '" + INPUT_FILE_NAME
         + "' USING PigStorage() AS (emp_id:int,emp_name:chararray,emp_start_date:chararray,"
@@ -980,7 +979,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
       input[i] = i + "\tmath";
     }
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.setBatchOn();
     server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, c:chararray);");
     server.registerQuery("B = filter A by " + FailEvalFunc.class.getName() + "($0);");

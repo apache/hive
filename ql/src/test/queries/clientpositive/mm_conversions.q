@@ -61,6 +61,17 @@ insert into table part_to_mm partition(key_mm='457') select key from intermediat
 select * from part_to_mm s3 order by key, key_mm;
 drop table part_to_mm;
 
+
+drop table load_to_mm;
+create table load_to_mm (key string, value string) tblproperties("transactional"="false");
+load data local inpath '../../data/files/kv1.txt' into table load_to_mm;
+load data local inpath '../../data/files/kv1.txt' into table load_to_mm;
+select count(*) from load_to_mm s1;
+alter table load_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only");
+select count(*) from load_to_mm s2;
+drop table load_to_mm;
+
+
 set hive.mm.allow.originals=false;
 
 drop table simple_to_mm_text;

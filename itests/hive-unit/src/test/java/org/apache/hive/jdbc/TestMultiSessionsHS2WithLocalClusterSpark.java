@@ -18,6 +18,7 @@
 
 package org.apache.hive.jdbc;
 
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -85,6 +86,8 @@ public class TestMultiSessionsHS2WithLocalClusterSpark {
     // Spark requires Hive to support Hadoop3 first then Spark can start
     // working on Hadoop3 support. Remove this after Spark supports Hadoop3.
     conf.set("dfs.client.datanode-restart.timeout", "30");
+    conf.set("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
+            "TestMultiSessionsHS2WithLocalClusterSpark-local-dir").toString());
     return conf;
   }
 

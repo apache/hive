@@ -190,7 +190,7 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_17]
             Group By Operator [GBY_16] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Merge Join Operator [MERGEJOIN_30] (rows=63 width=8)
+              Merge Join Operator [MERGEJOIN_30] (rows=64 width=8)
                 Conds:RS_12._col0=RS_13._col0(Inner)
               <-Map 6 [SIMPLE_EDGE]
                 SHUFFLE [RS_13]

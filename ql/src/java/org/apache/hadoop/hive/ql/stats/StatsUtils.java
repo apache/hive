@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
@@ -1995,5 +1996,29 @@ public class StatsUtils {
       }
     }
     return null;
+  }
+
+  /**
+   * Are the basic stats for the table up-to-date for query planning.
+   * Can run additional checks compared to the version in StatsSetupConst.
+   */
+  public static boolean areBasicStatsUptoDateForQueryAnswering(Table table, Map<String, String> params) {
+    // HIVE-19332: external tables should not be considered to have up-to-date stats.
+    if (MetaStoreUtils.isExternalTable(table.getTTable())) {
+      return false;
+    }
+    return StatsSetupConst.areBasicStatsUptoDate(params);
+  }
+
+  /**
+   * Are the column stats for the table up-to-date for query planning.
+   * Can run additional checks compared to the version in StatsSetupConst.
+   */
+  public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params, String colName) {
+    // HIVE-19332: external tables should not be considered to have up-to-date stats.
+    if (MetaStoreUtils.isExternalTable(table.getTTable())) {
+      return false;
+    }
+    return StatsSetupConst.areColumnStatsUptoDate(params, colName);
   }
 }
