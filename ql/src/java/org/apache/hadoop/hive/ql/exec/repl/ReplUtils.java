@@ -106,7 +106,8 @@ public class ReplUtils {
 
   public static boolean replCkptStatus(String dbName, Map<String, String> props, String dumpRoot)
           throws InvalidOperationException {
-    if ((props != null) && props.containsKey(REPL_CHECKPOINT_KEY)) {
+    // If ckpt property not set or empty means, bootstrap is not run on this object.
+    if ((props != null) && props.containsKey(REPL_CHECKPOINT_KEY) && !props.get(REPL_CHECKPOINT_KEY).isEmpty()) {
       if (props.get(REPL_CHECKPOINT_KEY).equals(dumpRoot)) {
         return true;
       }

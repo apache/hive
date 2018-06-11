@@ -105,7 +105,9 @@ public class LoadDatabase {
 
   private boolean isDbAlreadyBootstrapped(Database db) {
     Map<String, String> props = db.getParameters();
-    return ((props != null) && props.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()));
+    return ((props != null)
+            && props.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString())
+            && !props.get(ReplicationSpec.KEY.CURR_STATE_ID.toString()).isEmpty());
   }
 
   private boolean isDbEmpty(String dbName) throws HiveException {

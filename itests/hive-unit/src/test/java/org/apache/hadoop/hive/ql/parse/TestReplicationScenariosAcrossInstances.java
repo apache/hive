@@ -441,14 +441,10 @@ public class TestReplicationScenariosAcrossInstances {
        End of additional steps
     */
 
-    // With HIVE-19739, it is not allowed to bootstrap again if Ckpt and last repl ID properties are
-    // set in the database. For warehouse level dump, default database won't able to remove it.
-    // However, testIncrementalDumpOfWarehouse test this case.
-    // This should be fixed by supporting ALTER DATABASE to remove props. Until then, the below
-    // load and verification is commented.
-    /*
+    // Reset ckpt and last repl ID keys to empty set for allowing bootstrap load
     replica.run("show databases")
         .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
+        .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')")
         .load("", tuple.dumpLocation)
         .run("show databases")
         .verifyResults(new String[] { "default", primaryDbName, dbOne, dbTwo })
@@ -462,11 +458,13 @@ public class TestReplicationScenariosAcrossInstances {
         .run("show tables")
         .verifyResults(new String[] { "t1" });
 
-    //Start of cleanup
+    /*
+       Start of cleanup
+    */
+
     replica.run("drop database " + primaryDbName + " cascade");
     replica.run("drop database " + dbOne + " cascade");
     replica.run("drop database " + dbTwo + " cascade");
-    */
 
     /*
        End of cleanup
@@ -515,8 +513,10 @@ public class TestReplicationScenariosAcrossInstances {
       End of additional steps
     */
 
+    // Reset ckpt and last repl ID keys to empty set for allowing bootstrap load
     replica.run("show databases")
         .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
+        .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')")
         .load("", bootstrapTuple.dumpLocation)
         .run("show databases")
         .verifyResults(new String[] { "default", primaryDbName, dbOne })
