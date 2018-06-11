@@ -1,5 +1,5 @@
-Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[29][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[35][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[43][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[12][tables = [src1, src2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
@@ -244,8 +244,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
-Warning: Map Join MAPJOIN[29][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[35][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[43][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[12][tables = [src1, src2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (

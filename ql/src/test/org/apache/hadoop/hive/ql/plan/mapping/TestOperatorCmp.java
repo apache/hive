@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -35,7 +34,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.signature.TestOperatorSignature;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -102,15 +100,19 @@ public class TestOperatorCmp {
     String query = "select u from tu where id_uv = 1 union all select v from tv where id_uv = 1";
 
     PlanMapper pm = getMapperForQuery(driver, query);
-    Iterator<EquivGroup> itG = pm.iterateGroups();
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
     // the same operator is present 2 times
-    fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
     assertEquals(4, fos.size());
 
-    assertTrue("logicalEquals", compareOperators(fos.get(0), fos.get(1)));
-    assertFalse("logicalEquals", compareOperators(fos.get(0), fos.get(2)));
-    assertTrue("logicalEquals", compareOperators(fos.get(2), fos.get(3)));
+    int cnt = 0;
+    for (int i = 0; i < 3; i++) {
+      for (int j = i + 1; j < 4; j++) {
+        if (compareOperators(fos.get(i), fos.get(j))) {
+          cnt++;
+        }
+      }
+    }
+    assertEquals(2, cnt);
 
   }
 
