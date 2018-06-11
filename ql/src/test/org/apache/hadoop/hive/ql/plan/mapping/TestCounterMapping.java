@@ -62,7 +62,13 @@ public class TestCounterMapping {
 
     @Override
     public int compare(Operator<?> o1, Operator<?> o2) {
-      return Objects.compare(o1.getOperatorId(), o2.getOperatorId(), Comparator.naturalOrder());
+      Long id1 = Long.valueOf(o1.getIdentifier());
+      Long id2 = Long.valueOf(o2.getIdentifier());
+      int c0 = Objects.compare(o1.getOperatorName(), o2.getOperatorName(), Comparator.naturalOrder());
+      if (c0 != 0) {
+        return c0;
+      }
+      return Long.compare(id1, id2);
     }
   };
 

@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[149][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[182][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 with ss as
  (select s_store_sk,
