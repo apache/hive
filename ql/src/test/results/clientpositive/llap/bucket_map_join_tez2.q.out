@@ -114,56 +114,56 @@ PREHOOK: Input: default@srcbucket_mapjoin_n18
 PREHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
 PREHOOK: Output: default@srcbucket_mapjoin_n18
 PREHOOK: Output: default@srcbucket_mapjoin_n18@ds=2008-04-08
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: analyze table srcbucket_mapjoin_n18 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_n18
 POSTHOOK: Input: default@srcbucket_mapjoin_n18@ds=2008-04-08
 POSTHOOK: Output: default@srcbucket_mapjoin_n18
 POSTHOOK: Output: default@srcbucket_mapjoin_n18@ds=2008-04-08
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: analyze table srcbucket_mapjoin_part_n20 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcbucket_mapjoin_part_n20
 PREHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
 PREHOOK: Output: default@srcbucket_mapjoin_part_n20
 PREHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: analyze table srcbucket_mapjoin_part_n20 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n20
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
 POSTHOOK: Output: default@srcbucket_mapjoin_part_n20
 POSTHOOK: Output: default@srcbucket_mapjoin_part_n20@ds=2008-04-08
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: analyze table tab_n10 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tab_n10
 PREHOOK: Input: default@tab_n10@ds=2008-04-08
 PREHOOK: Output: default@tab_n10
 PREHOOK: Output: default@tab_n10@ds=2008-04-08
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: analyze table tab_n10 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tab_n10
 POSTHOOK: Input: default@tab_n10@ds=2008-04-08
 POSTHOOK: Output: default@tab_n10
 POSTHOOK: Output: default@tab_n10@ds=2008-04-08
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: analyze table tab_part_n11 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tab_part_n11
 PREHOOK: Input: default@tab_part_n11@ds=2008-04-08
 PREHOOK: Output: default@tab_part_n11
 PREHOOK: Output: default@tab_part_n11@ds=2008-04-08
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: analyze table tab_part_n11 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tab_part_n11
 POSTHOOK: Input: default@tab_part_n11@ds=2008-04-08
 POSTHOOK: Output: default@tab_part_n11
 POSTHOOK: Output: default@tab_part_n11@ds=2008-04-08
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value
@@ -434,12 +434,12 @@ PREHOOK: query: analyze table tab1_n5 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tab1_n5
 PREHOOK: Output: default@tab1_n5
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: analyze table tab1_n5 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tab1_n5
 POSTHOOK: Output: default@tab1_n5
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: explain
 select a.key, a.value, b.value
 from tab1_n5 a join src b on a.key = b.key
@@ -1486,14 +1486,14 @@ PREHOOK: Input: default@tab_part1
 PREHOOK: Input: default@tab_part1@ds=2008-04-08
 PREHOOK: Output: default@tab_part1
 PREHOOK: Output: default@tab_part1@ds=2008-04-08
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: analyze table tab_part1 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tab_part1
 POSTHOOK: Input: default@tab_part1@ds=2008-04-08
 POSTHOOK: Output: default@tab_part1
 POSTHOOK: Output: default@tab_part1@ds=2008-04-08
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: explain
 select count(*)
 from
@@ -1843,14 +1843,14 @@ PREHOOK: Input: default@big
 PREHOOK: Input: default@big@k=1
 PREHOOK: Input: default@big@k=2
 PREHOOK: Input: default@small
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select small.i, big.i from small,big where small.i=big.i order by small.i, big.i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@big
 POSTHOOK: Input: default@big@k=1
 POSTHOOK: Input: default@big@k=2
 POSTHOOK: Input: default@small
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	1
 2	2
 3	3
