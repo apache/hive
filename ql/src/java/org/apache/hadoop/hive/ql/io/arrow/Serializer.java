@@ -573,7 +573,7 @@ class Serializer {
               }
             }
           }
-          return timeStampNanoVector;
+          return timeStampMicroVector;
         }
       case BINARY:
         {
