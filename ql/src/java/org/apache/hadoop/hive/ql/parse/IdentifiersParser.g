@@ -450,9 +450,11 @@ isCondition
     : KW_NULL -> Identifier["isnull"]
     | KW_TRUE -> Identifier["istrue"]
     | KW_FALSE -> Identifier["isfalse"]
+    | KW_UNKNOWN -> Identifier["isnull"]
     | KW_NOT KW_NULL -> Identifier["isnotnull"]
     | KW_NOT KW_TRUE -> Identifier["isnottrue"]
     | KW_NOT KW_FALSE -> Identifier["isnotfalse"]
+    | KW_NOT KW_UNKNOWN -> Identifier["isnotnull"]
     ;
 
 precedenceUnaryPrefixExpression
@@ -663,7 +665,7 @@ precedenceOrExpression
 
 booleanValue
     :
-    KW_TRUE^ | KW_FALSE^
+    KW_TRUE^ | KW_FALSE^ | KW_UNKNOWN^
     ;
 
 booleanValueTok
@@ -835,6 +837,7 @@ nonReserved
     | KW_REOPTIMIZATION
     | KW_RESOURCE | KW_PLAN | KW_PLANS | KW_QUERY_PARALLELISM | KW_ACTIVATE | KW_MOVE | KW_DO
     | KW_POOL | KW_ALLOC_FRACTION | KW_SCHEDULING_POLICY | KW_PATH | KW_MAPPING | KW_WORKLOAD | KW_MANAGEMENT | KW_ACTIVE | KW_UNMANAGED
+    | KW_UNKNOWN
 
 ;
 
