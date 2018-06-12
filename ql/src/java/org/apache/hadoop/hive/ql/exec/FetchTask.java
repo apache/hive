@@ -59,7 +59,6 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   public void setValidWriteIdList(String writeIdStr) {
     fetch.setValidWriteIdList(writeIdStr);
   }
-
   @Override
   public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext ctx,
       CompilationOpContext opContext) {
