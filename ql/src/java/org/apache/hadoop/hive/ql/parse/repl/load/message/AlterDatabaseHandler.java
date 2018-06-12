@@ -17,10 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
@@ -66,7 +68,9 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
           String key = entry.getKey();
           // Ignore the keys which are local to source warehouse
           if (key.startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
-                  || key.equals(ReplicationSpec.KEY.CURR_STATE_ID.toString())) {
+                  || key.equals(ReplicationSpec.KEY.CURR_STATE_ID.toString())
+                  || key.equals(ReplUtils.REPL_CHECKPOINT_KEY)
+                  || key.equals(ReplChangeManager.SOURCE_OF_REPLICATION)) {
             continue;
           }
           newDbProps.put(key, entry.getValue());
