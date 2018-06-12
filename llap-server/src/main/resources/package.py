@@ -82,6 +82,7 @@ def main(args):
 	parser.add_argument("--input", required=True)
 	parser.add_argument("--args", default="")
 	parser.add_argument("--name", default="llap0")
+	parser.add_argument("--user", default="hive")
 	parser.add_argument("--loglevel", default="INFO")
 	parser.add_argument("--logger", default="query-routing")
 	parser.add_argument("--service-am-container-mb", type=int, default=1024)
@@ -112,6 +113,7 @@ def main(args):
 
 	input = args.input
 	output = args.output
+	user = args.user
 	service_am_jvm_heapsize = max(args.service_am_container_mb * 0.8, args.service_am_container_mb - 1024)
 	service_keytab_dir = args.service_keytab_dir
 	service_keytab = args.service_keytab
@@ -131,7 +133,7 @@ def main(args):
 	else:
 		service_keytab_path = service_keytab
 	if service_keytab_path:
-		service_keytab_path = "hdfs:///user/hive/" + service_keytab_path
+		service_keytab_path = "hdfs:///user/" + user + "/" + service_keytab_path
 
 	if not input:
 		print "Cannot find input files"

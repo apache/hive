@@ -63,6 +63,7 @@ public class LlapOptionsProcessor {
   public static final String OPTION_LOGGER = "logger"; // forward as arg
   public static final String OPTION_SERVICE_KEYTAB_DIR = "service-keytab-dir";
   public static final String OPTION_SERVICE_KEYTAB = "service-keytab";
+  public static final String OPTION_USER = "user";
   public static final String OPTION_SERVICE_PRINCIPAL = "service-principal";
   public static final String OPTION_SERVICE_PLACEMENT = "service-placement";
   public static final String OPTION_SERVICE_DEFAULT_KEYTAB = "service-default-keytab";
@@ -224,6 +225,9 @@ public class LlapOptionsProcessor {
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SERVICE_KEYTAB).withLongOpt(OPTION_SERVICE_KEYTAB)
         .withDescription("Service AM keytab file name inside " + OPTION_SERVICE_KEYTAB_DIR).create());
+
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_USER).withLongOpt(OPTION_USER)
+        .withDescription("User the service is being run as " + OPTION_USER).create());
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SERVICE_PRINCIPAL).withLongOpt(OPTION_SERVICE_PRINCIPAL)
         .withDescription("Service AM principal; should be the user running the cluster, e.g. hive@EXAMPLE.COM").create());
