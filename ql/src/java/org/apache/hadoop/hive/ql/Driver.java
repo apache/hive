@@ -64,6 +64,8 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
@@ -809,13 +811,27 @@ public class Driver implements IDriver {
     }
     Set<String> nonSharedLocks = new HashSet<>();
     for (HiveLock lock : ctx.getHiveLocks()) {
-      if (lock.getHiveLockMode() == HiveLockMode.EXCLUSIVE ||
-          lock.getHiveLockMode() == HiveLockMode.SEMI_SHARED) {
-        if (lock.getHiveLockObject().getPaths().length == 2) {
-          // Pos 0 of lock paths array contains dbname, pos 1 contains tblname
-          nonSharedLocks.add(
-              Warehouse.getQualifiedName(
-                  lock.getHiveLockObject().getPaths()[0], lock.getHiveLockObject().getPaths()[1]));
+      if (lock.mayContainComponents()) {
+        // The lock may have multiple components, e.g., DbHiveLock, hence we need
+        // to check for each of them
+        for (LockComponent lckCmp : lock.getHiveLockComponents()) {
+          if (lckCmp.getType() == LockType.EXCLUSIVE ||
+              lckCmp.getType() == LockType.SHARED_WRITE) {
+            nonSharedLocks.add(
+                Warehouse.getQualifiedName(
+                    lckCmp.getDbname(), lckCmp.getTablename()));
+          }
+        }
+      } else {
+        // The lock has a single components, e.g., SimpleHiveLock or ZooKeeperHiveLock
+        if (lock.getHiveLockMode() == HiveLockMode.EXCLUSIVE ||
+            lock.getHiveLockMode() == HiveLockMode.SEMI_SHARED) {
+          if (lock.getHiveLockObject().getPaths().length == 2) {
+            // Pos 0 of lock paths array contains dbname, pos 1 contains tblname
+            nonSharedLocks.add(
+                Warehouse.getQualifiedName(
+                    lock.getHiveLockObject().getPaths()[0], lock.getHiveLockObject().getPaths()[1]));
+          }
         }
       }
     }
@@ -1938,6 +1954,7 @@ public class Driver implements IDriver {
 
       try {
         if (!isValidTxnListState()) {
+          LOG.info("Compiling after acquiring locks");
           // Snapshot was outdated when locks were acquired, hence regenerate context,
           // txn list and retry
           // TODO: Lock acquisition should be moved before analyze, this is a bit hackish.
