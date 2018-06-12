@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.slf4j.Logger;
@@ -114,7 +115,7 @@ public final class DbLockManager implements HiveLockManager{
         res = txnManager.getMS().checkLock(res.getLockid());
       }
       long retryDuration = System.currentTimeMillis() - startRetry;
-      DbHiveLock hl = new DbHiveLock(res.getLockid(), queryId, lock.getTxnid());
+      DbHiveLock hl = new DbHiveLock(res.getLockid(), queryId, lock.getTxnid(), lock.getComponent());
       if(locks.size() > 0) {
         boolean logMsg = false;
         for(DbHiveLock l : locks) {
@@ -310,14 +311,17 @@ public final class DbLockManager implements HiveLockManager{
     long lockId;
     String queryId;
     long txnId;
+    List<LockComponent> components;
 
     DbHiveLock(long id) {
       lockId = id;
     }
-    DbHiveLock(long id, String queryId, long txnId) {
+
+    DbHiveLock(long id, String queryId, long txnId, List<LockComponent> components) {
       lockId = id;
       this.queryId = queryId;
       this.txnId = txnId;
+      this.components = ImmutableList.copyOf(components);
     }
 
     @Override
@@ -328,6 +332,16 @@ public final class DbLockManager implements HiveLockManager{
     @Override
     public HiveLockMode getHiveLockMode() {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean mayContainComponents() {
+      return true;
+    }
+
+    @Override
+    public List<LockComponent> getHiveLockComponents() {
+      return components;
     }
 
     @Override
