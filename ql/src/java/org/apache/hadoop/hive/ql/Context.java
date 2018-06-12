@@ -291,6 +291,7 @@ public class Context {
   public DestClausePrefix addDestNamePrefix(int pos, DestClausePrefix prefix) {
     return insertBranchToNamePrefix.put(pos, prefix);
   }
+
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
   }
@@ -313,6 +314,48 @@ public class Context {
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
+  }
+
+  protected Context(Context ctx) {
+    // This method creates a deep copy of context, but the copy is partial,
+    // hence it needs to be used carefully. In particular, following objects
+    // are ignored:
+    // opContext, pathToCS, cboInfo, cboSucceeded, tokenRewriteStream, viewsTokenRewriteStreams,
+    // rewrittenStatementContexts, cteTables, loadTableOutputMap, planMapper, insertBranchToNamePrefix
+    this.isHDFSCleanup = ctx.isHDFSCleanup;
+    this.resFile = ctx.resFile;
+    this.resDir = ctx.resDir;
+    this.resFs = ctx.resFs;
+    this.resDirPaths = ctx.resDirPaths;
+    this.resDirFilesNum = ctx.resDirFilesNum;
+    this.initialized = ctx.initialized;
+    this.originalTracker = ctx.originalTracker;
+    this.nonLocalScratchPath = ctx.nonLocalScratchPath;
+    this.localScratchDir = ctx.localScratchDir;
+    this.scratchDirPermission = ctx.scratchDirPermission;
+    this.fsScratchDirs.putAll(ctx.fsScratchDirs);
+    this.conf = ctx.conf;
+    this.pathid = ctx.pathid;
+    this.explainConfig = ctx.explainConfig;
+    this.cmd = ctx.cmd;
+    this.executionId = ctx.executionId;
+    this.hiveLocks = ctx.hiveLocks;
+    this.hiveTxnManager = ctx.hiveTxnManager;
+    this.needLockMgr = ctx.needLockMgr;
+    this.sequencer = ctx.sequencer;
+    this.outputLockObjects.putAll(ctx.outputLockObjects);
+    this.stagingDir = ctx.stagingDir;
+    this.heartbeater = ctx.heartbeater;
+    this.skipTableMasking = ctx.skipTableMasking;
+    this.isUpdateDeleteMerge = ctx.isUpdateDeleteMerge;
+    this.isLoadingMaterializedView = ctx.isLoadingMaterializedView;
+    this.operation = ctx.operation;
+    this.wmContext = ctx.wmContext;
+    this.isExplainPlan = ctx.isExplainPlan;
+    this.statsSource = ctx.statsSource;
+    this.executionIndex = ctx.executionIndex;
+    this.viewsTokenRewriteStreams = new HashMap<>();
+    this.rewrittenStatementContexts = new HashSet<>();
   }
 
   public Map<String, Path> getFsScratchDirs() {
