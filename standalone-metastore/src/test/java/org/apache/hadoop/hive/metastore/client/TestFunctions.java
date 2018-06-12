@@ -234,11 +234,9 @@ public class TestFunctions extends MetaStoreClientTest {
       client.createFunction(function);
       // TODO: Should have a check on the server side. Embedded metastore throws
       // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
+      Assert.fail("Expected a NoSuchObjectException to be thrown");
+    } catch (NoSuchObjectException exception) {
+      // Expected exception
     }
   }
 
