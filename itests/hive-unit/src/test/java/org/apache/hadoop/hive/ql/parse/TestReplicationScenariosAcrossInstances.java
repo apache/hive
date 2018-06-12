@@ -986,7 +986,7 @@ public class TestReplicationScenariosAcrossInstances {
             .run("create table t3(a string, b string not null disable, unique (a) disable)")
             .dump(primaryDbName, null);
 
-    WarehouseInstance.Tuple tuple_2 = primary
+    WarehouseInstance.Tuple tuple2 = primary
             .run("use " + primaryDbName)
             .dump(primaryDbName, null);
 
@@ -1033,7 +1033,7 @@ public class TestReplicationScenariosAcrossInstances {
     assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
 
     // Retry with different dump should fail.
-    replica.loadFailure(replicatedDbName, tuple_2.dumpLocation);
+    replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
 
     // Verify if create table is not called on table t1 but called for t2 and t3.
     // Also, allow constraint creation only on t1 and t3. Foreign key creation on t2 fails.
@@ -1127,7 +1127,7 @@ public class TestReplicationScenariosAcrossInstances {
                     + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
             .dump(primaryDbName, null);
 
-    WarehouseInstance.Tuple tuple_2 = primary
+    WarehouseInstance.Tuple tuple2 = primary
             .run("use " + primaryDbName)
             .dump(primaryDbName, null);
 
@@ -1166,7 +1166,7 @@ public class TestReplicationScenariosAcrossInstances {
             .verifyResult(replicatedDbName + ".testFunctionOne");
 
     // Retry with different dump should fail.
-    replica.loadFailure(replicatedDbName, tuple_2.dumpLocation);
+    replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
 
     // Verify if no create table/function calls. Only add partitions.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier

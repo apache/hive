@@ -46,6 +46,9 @@ public class ReplUtils {
 
   public static final String REPL_CHECKPOINT_KEY = "hive.repl.ckpt.key";
 
+  /**
+   * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
+   */
   public enum ReplLoadOpType {
     LOAD_NEW, LOAD_SKIP, LOAD_REPLACE
   }

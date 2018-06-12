@@ -45,8 +45,8 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   /**
    * A utility class that allows people injecting behaviour to determine if their injections occurred.
    */
-  public static abstract class BehaviourInjection<T,F>
-      implements com.google.common.base.Function<T,F>{
+  public static abstract class BehaviourInjection<T, F>
+      implements com.google.common.base.Function<T, F>{
     protected boolean injectionPathCalled = false;
     protected boolean nonInjectedPathCalled = false;
 
@@ -57,33 +57,34 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
     }
   }
 
+  /**
+   * A utility class to pass the arguments of the caller to the stub method.
+   */
   public class CallerArguments {
     public String dbName;
     public String tblName;
     public String funcName;
     public String constraintTblName;
 
-    public CallerArguments() {
-    }
     public CallerArguments(String dbName) {
       this.dbName = dbName;
     }
   }
 
-  private static com.google.common.base.Function<Table,Table> getTableModifier =
+  private static com.google.common.base.Function<Table, Table> getTableModifier =
       com.google.common.base.Functions.identity();
-  private static com.google.common.base.Function<Partition,Partition> getPartitionModifier =
+  private static com.google.common.base.Function<Partition, Partition> getPartitionModifier =
           com.google.common.base.Functions.identity();
   private static com.google.common.base.Function<List<String>, List<String>> listPartitionNamesModifier =
           com.google.common.base.Functions.identity();
   private static com.google.common.base.Function<NotificationEventResponse, NotificationEventResponse>
           getNextNotificationModifier = com.google.common.base.Functions.identity();
 
-  private static com.google.common.base.Function<CallerArguments,Boolean> callerVerifier = null;
+  private static com.google.common.base.Function<CallerArguments, Boolean> callerVerifier = null;
 
   // Methods to set/reset getTable modifier
-  public static void setGetTableBehaviour(com.google.common.base.Function<Table,Table> modifier){
-    getTableModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
+  public static void setGetTableBehaviour(com.google.common.base.Function<Table, Table> modifier){
+    getTableModifier = (modifier == null) ? com.google.common.base.Functions.identity() : modifier;
   }
 
   public static void resetGetTableBehaviour(){
@@ -91,8 +92,8 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   // Methods to set/reset getPartition modifier
-  public static void setGetPartitionBehaviour(com.google.common.base.Function<Partition,Partition> modifier){
-    getPartitionModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
+  public static void setGetPartitionBehaviour(com.google.common.base.Function<Partition, Partition> modifier){
+    getPartitionModifier = (modifier == null) ? com.google.common.base.Functions.identity() : modifier;
   }
 
   public static void resetGetPartitionBehaviour(){
@@ -119,7 +120,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   // Methods to set/reset caller checker
-  public static void setCallerVerifier(com.google.common.base.Function<CallerArguments,Boolean> verifier){
+  public static void setCallerVerifier(com.google.common.base.Function<CallerArguments, Boolean> verifier){
     callerVerifier = verifier;
   }
 
@@ -135,12 +136,13 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   @Override
   public Partition getPartition(String catName, String dbName, String tableName,
-                                List<String> part_vals) throws NoSuchObjectException, MetaException {
-    return getPartitionModifier.apply(super.getPartition(catName, dbName, tableName, part_vals));
+                                List<String> partVals) throws NoSuchObjectException, MetaException {
+    return getPartitionModifier.apply(super.getPartition(catName, dbName, tableName, partVals));
   }
 
   @Override
-  public List<String> listPartitionNames(String catName, String dbName, String tableName, short max) throws MetaException {
+  public List<String> listPartitionNames(String catName, String dbName, String tableName, short max)
+          throws MetaException {
     return listPartitionNamesModifier.apply(super.listPartitionNames(catName, dbName, tableName, max));
   }
 

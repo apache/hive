@@ -120,6 +120,8 @@ public class LoadTable {
           break;
         case LOAD_SKIP:
           return tracker;
+        default:
+          break;
       }
 
       if (tableDesc.getLocation() == null) {

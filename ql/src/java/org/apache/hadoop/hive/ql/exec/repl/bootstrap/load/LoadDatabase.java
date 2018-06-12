@@ -69,6 +69,8 @@ public class LoadDatabase {
         case LOAD_REPLACE:
           dbRootTask = alterDbTask(dbInMetadata);
           break;
+        default:
+          break;
       }
       if (dbRootTask != null) {
         dbRootTask.addDependentTask(setOwnerInfoTask(dbInMetadata));

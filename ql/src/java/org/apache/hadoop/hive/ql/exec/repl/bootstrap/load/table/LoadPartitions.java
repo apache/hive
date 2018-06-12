@@ -337,6 +337,8 @@ public class LoadPartitions {
           break;
         case LOAD_SKIP:
           continue;
+        default:
+          break;
       }
       addPartition(partitionIterator.hasNext(), addPartitionDesc, ptnRootTask);
     }

@@ -363,7 +363,7 @@ public class TestReplicationScenariosAcidTables {
             .run("insert into t2 partition(name='carl') values(10)")
             .dump(primaryDbName, null);
 
-    WarehouseInstance.Tuple tuple_2 = primary
+    WarehouseInstance.Tuple tuple2 = primary
             .run("use " + primaryDbName)
             .dump(primaryDbName, null);
 
@@ -401,7 +401,7 @@ public class TestReplicationScenariosAcidTables {
             .verifyResults(Arrays.asList("1"));
 
     // Retry with different dump should fail.
-    replica.loadFailure(replicatedDbName, tuple_2.dumpLocation);
+    replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
 
     // Verify if no create table on t1. Only table t2 should  be created in retry.
     callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
