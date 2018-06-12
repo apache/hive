@@ -350,11 +350,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return null;
     }
 
-    private static int nextSerialNum = 0;
+    private static AtomicInteger nextSerialNum = new AtomicInteger();
     private static ThreadLocal<Integer> threadLocalId = new ThreadLocal<Integer>() {
       @Override
       protected Integer initialValue() {
-        return nextSerialNum++;
+        return nextSerialNum.getAndIncrement();
       }
     };
 
