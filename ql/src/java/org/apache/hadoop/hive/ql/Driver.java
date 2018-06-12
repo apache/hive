@@ -1027,6 +1027,14 @@ public class Driver implements IDriver {
       throws HiveException, AuthorizationException {
     SessionState ss = SessionState.get();
     Hive db = sem.getDb();
+    
+    if(op.equals(HiveOperation.CREATEDATABASE)){
+      for (WriteEntity e : sem.getOutputs()) {
+        if(e.getType() == Entity.Type.DATABASE && db.databaseExists(e.getName().split(":")[1])){
+          return;
+        }
+      }
+    }
 
     Set<ReadEntity> additionalInputs = new HashSet<ReadEntity>();
     for (Entity e : sem.getInputs()) {
