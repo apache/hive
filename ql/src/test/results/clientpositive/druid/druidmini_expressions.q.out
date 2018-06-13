@@ -955,6 +955,48 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 -60
+PREHOOK: query: explain select FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes string
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format((div(\"__time\",1000) * '1000'),'yyyy-MM-dd HH:mm:ss','US/Pacific')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select FROM_UNIXTIME(UNIX_TIMESTAMP (CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select FROM_UNIXTIME(UNIX_TIMESTAMP (CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00
+1969-12-31 16:00:00
 PREHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
