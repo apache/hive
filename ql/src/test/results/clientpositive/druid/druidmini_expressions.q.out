@@ -90,7 +90,7 @@ FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-19884.64700973034	27373419	14472	8.51628242804E11	851620413654	68151649880
+19884.646918177605	27373419	14472	8.51628242804E11	851620413654	68151649880
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000
 PREHOOK: type: QUERY
@@ -101,7 +101,7 @@ FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-54430.27000427246	-3740445	51268	1.31919188502E11	131922984948	92160895030
+54430.269943237305	-3740445	51268	1.31919188502E11	131922984948	92160895030
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_n0 WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 PREHOOK: type: QUERY
@@ -112,7 +112,7 @@ FROM druid_table_n0 WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--2389.5169917345047	27640645	-5707	7.19705549994E11	719697428706	13774723379
+-2389.517022252083	27640645	-5707	7.19705549994E11	719697428706	13774723379
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_n0 WHERE  SIN(cdouble) > 1
 PREHOOK: type: QUERY
