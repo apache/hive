@@ -20,21 +20,19 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -54,6 +52,8 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MemoryDecider is a simple physical optimizer that adjusts the memory layout of tez tasks.
@@ -129,7 +129,7 @@ public class MemoryDecider implements PhysicalPlanResolver {
       Dispatcher disp = null;
       final Set<MapJoinOperator> mapJoins = new LinkedHashSet<MapJoinOperator>();
 
-      Map<Rule, NodeProcessor> rules = new HashMap<Rule, NodeProcessor>();
+      LinkedHashMap<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
       rules.put(new RuleRegExp("Map join memory estimator",
               MapJoinOperator.getOperatorName() + "%"), new NodeProcessor() {
           @Override

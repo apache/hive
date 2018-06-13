@@ -954,7 +954,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1_n8
 POSTHOOK: Input: default@test2_n5
 #### A masked pattern was here ####
-Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[26][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM test2_n5
@@ -1125,7 +1125,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[26][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
 PREHOOK: query: SELECT *
 FROM test2_n5
 JOIN test1_n8 a ON (a.key+test2_n5.key >= 100)

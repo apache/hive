@@ -753,10 +753,10 @@ Stage-0
         Select Operator [SEL_24] (rows=3 width=87)
           Output:["_col0"]
         <-Reducer 2 [SORT]
-          SORT [RS_23]
-            Select Operator [SEL_5] (rows=1 width=87)
+          SORT [RS_29]
+            Select Operator [SEL_27] (rows=1 width=87)
               Output:["_col0"]
-              Group By Operator [GBY_4] (rows=1 width=8)
+              Group By Operator [GBY_26] (rows=1 width=8)
                 Output:["_col0"],aggregations:["count(VALUE._col0)"]
               <-Map 1 [GROUP]
                 GROUP [RS_3]
@@ -767,17 +767,17 @@ Stage-0
                       TableScan [TS_0] (rows=20 width=80)
                         default@cbo_t3,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
         <-Reducer 5 [SORT]
-          SORT [RS_23]
-            Select Operator [SEL_12] (rows=1 width=87)
+          SORT [RS_33]
+            Select Operator [SEL_31] (rows=1 width=87)
               Output:["_col0"]
-              Group By Operator [GBY_11] (rows=1 width=8)
+              Group By Operator [GBY_30] (rows=1 width=8)
                 Output:["_col0"],aggregations:["count(VALUE._col0)"]
               <- Please refer to the previous Map 1 [GROUP]
         <-Reducer 7 [SORT]
-          SORT [RS_23]
-            Select Operator [SEL_20] (rows=1 width=87)
+          SORT [RS_37]
+            Select Operator [SEL_35] (rows=1 width=87)
               Output:["_col0"]
-              Group By Operator [GBY_19] (rows=1 width=8)
+              Group By Operator [GBY_34] (rows=1 width=8)
                 Output:["_col0"],aggregations:["count(VALUE._col0)"]
               <- Please refer to the previous Map 1 [GROUP]
 
@@ -815,13 +815,13 @@ Stage-0
             Group By Operator [GBY_26] (rows=1 width=95)
               Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
             <-Reducer 2 [GROUP]
-              GROUP [RS_25]
+              GROUP [RS_35]
                 PartitionCols:_col0
-                Group By Operator [GBY_24] (rows=1 width=95)
+                Group By Operator [GBY_34] (rows=1 width=95)
                   Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
-                  Select Operator [SEL_5] (rows=1 width=87)
+                  Select Operator [SEL_32] (rows=1 width=87)
                     Output:["_col0"]
-                    Group By Operator [GBY_4] (rows=1 width=8)
+                    Group By Operator [GBY_31] (rows=1 width=8)
                       Output:["_col0"],aggregations:["count(VALUE._col0)"]
                     <-Map 1 [GROUP]
                       GROUP [RS_3]
@@ -832,23 +832,23 @@ Stage-0
                             TableScan [TS_0] (rows=20 width=80)
                               default@cbo_t3,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
             <-Reducer 6 [GROUP]
-              GROUP [RS_25]
+              GROUP [RS_40]
                 PartitionCols:_col0
-                Group By Operator [GBY_24] (rows=1 width=95)
+                Group By Operator [GBY_39] (rows=1 width=95)
                   Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
-                  Select Operator [SEL_12] (rows=1 width=87)
+                  Select Operator [SEL_37] (rows=1 width=87)
                     Output:["_col0"]
-                    Group By Operator [GBY_11] (rows=1 width=8)
+                    Group By Operator [GBY_36] (rows=1 width=8)
                       Output:["_col0"],aggregations:["count(VALUE._col0)"]
                     <- Please refer to the previous Map 1 [GROUP]
             <-Reducer 8 [GROUP]
-              GROUP [RS_25]
+              GROUP [RS_45]
                 PartitionCols:_col0
-                Group By Operator [GBY_24] (rows=1 width=95)
+                Group By Operator [GBY_44] (rows=1 width=95)
                   Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
-                  Select Operator [SEL_20] (rows=1 width=87)
+                  Select Operator [SEL_42] (rows=1 width=87)
                     Output:["_col0"]
-                    Group By Operator [GBY_19] (rows=1 width=8)
+                    Group By Operator [GBY_41] (rows=1 width=8)
                       Output:["_col0"],aggregations:["count(VALUE._col0)"]
                     <- Please refer to the previous Map 1 [GROUP]
 
@@ -4802,11 +4802,11 @@ Stage-3
                 Select Operator [SEL_5] (rows=26 width=499)
                   Output:["_col1","_col2","_col5","_col7"]
                 <-Reducer 6 [PARTITION-LEVEL SORT]
-                  PARTITION-LEVEL SORT [RS_4]
+                  PARTITION-LEVEL SORT [RS_24]
                     PartitionCols:_col2
-                    PTF Operator [PTF_3] (rows=26 width=499)
+                    PTF Operator [PTF_22] (rows=26 width=499)
                       Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
-                      Select Operator [SEL_2] (rows=26 width=499)
+                      Select Operator [SEL_21] (rows=26 width=499)
                         Output:["_col1","_col2","_col5","_col7"]
                       <-Map 1 [PARTITION-LEVEL SORT]
                         PARTITION-LEVEL SORT [RS_1]
@@ -4832,11 +4832,11 @@ Stage-3
                         Select Operator [SEL_11] (rows=26 width=491)
                           Output:["_col1","_col2","_col5"]
                         <-Reducer 7 [PARTITION-LEVEL SORT]
-                          PARTITION-LEVEL SORT [RS_10]
+                          PARTITION-LEVEL SORT [RS_27]
                             PartitionCols:_col2
-                            PTF Operator [PTF_3] (rows=26 width=499)
+                            PTF Operator [PTF_26] (rows=26 width=499)
                               Function definitions:[{},{"Partition table definition":{"name:":"noop","order by:":"_col1 ASC NULLS FIRST","partition by:":"_col2"}}]
-                              Select Operator [SEL_2] (rows=26 width=499)
+                              Select Operator [SEL_25] (rows=26 width=499)
                                 Output:["_col1","_col2","_col5","_col7"]
                               <- Please refer to the previous Map 1 [PARTITION-LEVEL SORT]
 Stage-4
@@ -5239,9 +5239,9 @@ Stage-2
                             default@src,src2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
         Stage-3
           Map 4
-          File Output Operator [FS_11]
+          File Output Operator [FS_19]
             table:{"name:":"default.dest_j1_n14"}
-            Select Operator [SEL_9] (rows=791 width=95)
+            Select Operator [SEL_18] (rows=791 width=95)
               Output:["_col0","_col1"]
               Map Join Operator [MAPJOIN_16]
                 Conds:TS_14.reducesinkkey0=TS_14.reducesinkkey0(Inner),Output:["_col0","_col2"]
@@ -5250,7 +5250,7 @@ Stage-2
           Map Reduce Local Work
             Stage-5(CONDITIONAL)
               Map 5
-              keys: [HASHTABLESINK_18]
+              keys: [HASHTABLESINK_21]
                 0reducesinkkey0,1reducesinkkey0
                 TableScan [TS_15]
                   Output:["1_VALUE_0","reducesinkkey0"]
@@ -5478,7 +5478,7 @@ Stage-0
     limit:-1
     Stage-2
       Map 4
-      File Output Operator [FS_10]
+      File Output Operator [FS_17]
         Map Join Operator [MAPJOIN_15]
           Conds:TS_13.reducesinkkey0=TS_13.reducesinkkey0(Inner),Output:["_col0","_col1","_col2","_col3"]
         <-TableScan [TS_13]
@@ -5486,7 +5486,7 @@ Stage-0
       Map Reduce Local Work
         Stage-4(CONDITIONAL)
           Map 5
-          keys: [HASHTABLESINK_17]
+          keys: [HASHTABLESINK_19]
             0reducesinkkey0,1reducesinkkey0
             TableScan [TS_14]
               Output:["1_VALUE_0","1_VALUE_1","reducesinkkey0"]

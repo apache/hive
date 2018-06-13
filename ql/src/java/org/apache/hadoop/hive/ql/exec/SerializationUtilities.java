@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.LinkedList;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -30,8 +28,10 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -39,16 +39,14 @@ import java.util.Properties;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -225,6 +223,7 @@ public class SerializationUtilities {
   private static final Object FAKE_REFERENCE = new Object();
 
   private static KryoFactory factory = new KryoFactory() {
+    @Override
     public Kryo create() {
       KryoWithHooks kryo = new KryoWithHooks();
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
@@ -646,8 +645,11 @@ public class SerializationUtilities {
    * @return The clone.
    */
   public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots) {
+    if (roots.isEmpty()) {
+      return new ArrayList<>();
+    }
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    CompilationOpContext ctx = roots.isEmpty() ? null : roots.get(0).getCompilationOpContext();
+    CompilationOpContext ctx = roots.get(0).getCompilationOpContext();
     serializePlan(roots, baos, true);
     @SuppressWarnings("unchecked")
     List<Operator<?>> result =
