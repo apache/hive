@@ -5,7 +5,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
-set hive.auto.convert.join.noconditionaltask.size=10000;
+set hive.auto.convert.join.noconditionaltask.size=30000;
 
 CREATE TABLE srcbucket_mapjoin_n18(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 CREATE TABLE tab_part_n11 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
@@ -34,7 +34,7 @@ analyze table srcbucket_mapjoin_part_n20 compute statistics for columns;
 analyze table tab_n10 compute statistics for columns;
 analyze table tab_part_n11 compute statistics for columns;
 
-set hive.auto.convert.join.noconditionaltask.size=1500;
+set hive.auto.convert.join.noconditionaltask.size=3500;
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value;
 set hive.convert.join.bucket.mapjoin.tez = true;
@@ -56,7 +56,7 @@ explain
 select a.key, a.value, b.value
 from tab1_n5 a join src b on a.key = b.key;
 
-set hive.auto.convert.join.noconditionaltask.size=500;
+set hive.auto.convert.join.noconditionaltask.size=2500;
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
@@ -78,7 +78,7 @@ set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, b.key from (select key from tab_part_n11 where key > 1) a right outer join (select key from tab_part_n11 where key > 2) b on a.key = b.key;
 
-set hive.auto.convert.join.noconditionaltask.size=300;
+set hive.auto.convert.join.noconditionaltask.size=2000;
 set hive.convert.join.bucket.mapjoin.tez = false;
 explain select a.key, b.key from (select distinct key from tab_n10) a join tab_n10 b on b.key = a.key;
 set hive.convert.join.bucket.mapjoin.tez = true;

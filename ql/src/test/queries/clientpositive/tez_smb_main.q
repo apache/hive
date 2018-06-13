@@ -46,7 +46,7 @@ from tab_n11 a join tab_part_n12 b on a.key = b.key;
 select count(*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key;
 
-set hive.auto.convert.join.noconditionaltask.size=2000;
+set hive.auto.convert.join.noconditionaltask.size=4000;
 set hive.mapjoin.hybridgrace.minwbsize=500;
 set hive.mapjoin.hybridgrace.minnumpartitions=4;
 explain
@@ -57,7 +57,7 @@ select count(*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key;
 
 set hive.stats.fetch.column.stats=false;
-set hive.auto.convert.join.noconditionaltask.size=1000;
+set hive.auto.convert.join.noconditionaltask.size=4000;
 set hive.mapjoin.hybridgrace.minwbsize=250;
 set hive.mapjoin.hybridgrace.minnumpartitions=4;
 explain
@@ -68,7 +68,7 @@ select count(*)
 from tab_n11 a join tab_part_n12 b on a.key = b.key;
 
 
-set hive.auto.convert.join.noconditionaltask.size=500;
+set hive.auto.convert.join.noconditionaltask.size=2000;
 set hive.mapjoin.hybridgrace.minwbsize=125;
 set hive.mapjoin.hybridgrace.minnumpartitions=4;
 set hive.llap.memory.oversubscription.max.executors.per.query=0;
@@ -89,7 +89,7 @@ UNION  ALL
 select s2.key as key, s2.value as value from tab_n11 s2
 ) a join tab_part_n12 b on (a.key = b.key);
 
-set hive.auto.convert.join.noconditionaltask.size=10000;
+set hive.auto.convert.join.noconditionaltask.size=20000;
 
 set hive.llap.memory.oversubscription.max.executors.per.query=0;
 explain select count(*) from tab_n11 a join tab_part_n12 b on a.value = b.value;
@@ -108,6 +108,8 @@ select count(*) from (select s1.key as key, s1.value as value from tab_n11 s1 jo
 UNION  ALL
 select s2.key as key, s2.value as value from tab_n11 s2
 ) a join tab_part_n12 b on (a.key = b.key);
+
+set hive.auto.convert.join.noconditionaltask.size=10000;
 
 explain
 select count(*) from
