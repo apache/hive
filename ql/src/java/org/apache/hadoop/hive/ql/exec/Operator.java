@@ -89,6 +89,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected int indexForTezUnion = -1;
   private transient Configuration hconf;
   protected final transient Collection<Future<?>> asyncInitOperations = new HashSet<>();
+  private String marker;
 
   protected int bucketingVersion = -1;
   // It can be optimized later so that an operator operator (init/close) is performed
@@ -134,6 +135,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     initOperatorId();
   }
 
+  /** Kryo ctor. */
   protected Operator() {
     childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
@@ -243,10 +245,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // for output rows of this operator
   protected transient ObjectInspector outputObjInspector;
 
-
-  public void setId(String id) {
-    this.id = id;
-  }
 
   /**
    * This function is not named getId(), to make sure java serialization does
@@ -1167,12 +1165,16 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return operatorId;
   }
 
-  public void initOperatorId() {
-    setOperatorId(getName() + "_" + this.id);
+  public String getMarker() {
+    return marker;
   }
 
-  public void setOperatorId(String operatorId) {
-    this.operatorId = operatorId;
+  public void setMarker(String marker) {
+    this.marker = marker;
+  }
+
+  public void initOperatorId() {
+    this.operatorId = getName() + "_" + this.id;
   }
 
   /*
@@ -1539,7 +1541,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setCompilationOpContext(CompilationOpContext ctx) {
+    if (cContext == ctx) {
+      return;
+    }
     cContext = ctx;
+    id = String.valueOf(ctx.nextOperatorId());
+    initOperatorId();
   }
 
   /** @return Compilation operator context. Only available during compilation. */

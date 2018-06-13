@@ -1026,6 +1026,10 @@ public class Context {
     return opContext;
   }
 
+  public void setOpContext(CompilationOpContext opContext) {
+    this.opContext = opContext;
+  }
+
   public Heartbeater getHeartbeater() {
     return heartbeater;
   }
@@ -1124,4 +1128,5 @@ public class Context {
   public void setTempTableForLoad(Table tempTableForLoad) {
     this.tempTableForLoad = tempTableForLoad;
   }
+
 }
