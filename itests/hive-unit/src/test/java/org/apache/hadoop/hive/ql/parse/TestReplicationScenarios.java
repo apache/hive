@@ -3162,6 +3162,10 @@ public class TestReplicationScenarios {
     String dbName = createDBNonRepl(testName.getMethodName(), driver);
     verifyFail("REPL DUMP " + dbName, driver);
     verifyFail("REPL DUMP " + dbName + " from 1 ", driver);
+    assertTrue(run("REPL DUMP " + dbName + " with ('hive.repl.dump.metadata.only' = 'true')",
+            true, driver));
+    assertTrue(run("REPL DUMP " + dbName + " from 1  with ('hive.repl.dump.metadata.only' = 'true')",
+            true, driver));
     run("alter database " + dbName + " set dbproperties ('repl.source.for' = '1, 2, 3')", driver);
     assertTrue(run("REPL DUMP " + dbName, true, driver));
     assertTrue(run("REPL DUMP " + dbName + " from 1 ", true, driver));
