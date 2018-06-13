@@ -95,8 +95,12 @@ public class DruidSqlOperatorConverter {
       druidOperatorMap.put(HiveToDateSqlOperator.INSTANCE, new DruidToDateOperatorConversion());
       druidOperatorMap.put(HiveFromUnixTimeSqlOperator.INSTANCE, new DruidFormUnixTimeOperatorConversion());
       druidOperatorMap.put(HiveUnixTimestampSqlOperator.INSTANCE, new DruidUnixTimestampOperatorConversion());
-      druidOperatorMap.put(HiveDateAddSqlOperator.INSTANCE, new DruidDateArithmeticOperatorConversion(1, HiveDateAddSqlOperator.INSTANCE));
-      druidOperatorMap.put(HiveDateSubSqlOperator.INSTANCE, new DruidDateArithmeticOperatorConversion(-1, HiveDateSubSqlOperator.INSTANCE));
+      druidOperatorMap.put(HiveDateAddSqlOperator.INSTANCE,
+          new DruidDateArithmeticOperatorConversion(1, HiveDateAddSqlOperator.INSTANCE)
+      );
+      druidOperatorMap.put(HiveDateSubSqlOperator.INSTANCE,
+          new DruidDateArithmeticOperatorConversion(-1, HiveDateSubSqlOperator.INSTANCE)
+      );
     }
     return druidOperatorMap;
   }
@@ -254,7 +258,8 @@ public class DruidSqlOperatorConverter {
       // dealing with String type
       final String format = call.getOperands().size() == 2 ? DruidExpressions
           .toDruidExpression(call.getOperands().get(1), rowType, query) : DEFAULT_TS_FORMAT;
-      return DruidExpressions.functionCall("unix_timestamp", ImmutableList.of(arg0, DruidExpressions.stringLiteral(format)));
+      return DruidExpressions
+          .functionCall("unix_timestamp", ImmutableList.of(arg0, DruidExpressions.stringLiteral(format)));
     }
   }
 
@@ -277,9 +282,12 @@ public class DruidSqlOperatorConverter {
       }
 
       final String numMillis = DruidQuery.format("(%s * '1000')", arg);
-      final String format = call.getOperands().size() == 1 ? DEFAULT_TS_FORMAT : DruidExpressions
-          .toDruidExpression(call.getOperands().get(1), rowType, query);
-      return applyTimestampFormat(numMillis, format, timezoneId(query));
+      final String format =
+          call.getOperands().size() == 1 ? DruidExpressions.stringLiteral(DEFAULT_TS_FORMAT) : DruidExpressions
+              .toDruidExpression(call.getOperands().get(1), rowType, query);
+      return DruidExpressions.functionCall("timestamp_format",
+          ImmutableList.of(numMillis, format, DruidExpressions.stringLiteral(timezoneId(query).getID()))
+      );
     }
   }
 
@@ -321,7 +329,6 @@ public class DruidSqlOperatorConverter {
           ));
     }
   }
-
 
   /**
    * utility function to extract timezone id from Druid query
