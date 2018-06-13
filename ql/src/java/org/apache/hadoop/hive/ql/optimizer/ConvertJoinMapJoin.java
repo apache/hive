@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -73,6 +73,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.math.DoubleMath;
 
 /**
  * ConvertJoinMapJoin is an optimization that replaces a common join
@@ -84,7 +86,7 @@ import com.google.common.annotations.VisibleForTesting;
 public class ConvertJoinMapJoin implements NodeProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConvertJoinMapJoin.class.getName());
-
+  private float hashTableLoadFactor;
 
   @Override
   /*
@@ -97,6 +99,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           throws SemanticException {
 
     OptimizeTezProcContext context = (OptimizeTezProcContext) procCtx;
+
+    hashTableLoadFactor = context.conf.getFloatVar(ConfVars.HIVEHASHTABLELOADFACTOR);
 
     JoinOperator joinOp = (JoinOperator) nd;
     long maxSize = context.conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
@@ -223,11 +227,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         continue;
       }
       Operator<? extends OperatorDesc> parentOp = joinOp.getParentOperators().get(pos);
-      totalSize += parentOp.getStatistics().getDataSize();
+      totalSize += computeOnlineDataSize(parentOp.getStatistics());
     }
 
     // Size of bigtable
-    long bigTableSize = joinOp.getParentOperators().get(mapJoinConversionPos).getStatistics().getDataSize();
+    long bigTableSize = computeOnlineDataSize(joinOp.getParentOperators().get(mapJoinConversionPos).getStatistics());
 
     // Network cost of DPHJ
     long networkCostDPHJ = totalSize + bigTableSize;
@@ -251,6 +255,27 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // fallback to mapjoin no bucket scaling
     LOG.info("Falling back to mapjoin no bucket scaling");
     return false;
+  }
+
+  private long computeOnlineDataSize(Statistics statistics) {
+    // The datastructure doing the actual storage during mapjoins has some per row overhead
+    long onlineDataSize = 0;
+    long memoryOverHeadPerRow = 0;
+    long vLongEstimatedLength = 6; // LazyBinaryUtils.writeVLongToByteArray
+    memoryOverHeadPerRow += vLongEstimatedLength; // offset
+    memoryOverHeadPerRow += vLongEstimatedLength; // length
+
+    long numRows = statistics.getNumRows();
+    if (numRows <= 0) {
+      numRows=1;
+    }
+    long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
+
+    onlineDataSize += statistics.getDataSize();
+    onlineDataSize += memoryOverHeadPerRow * statistics.getNumRows();
+    onlineDataSize += 8 * worstCaseNeededSlots; // every slot is a long
+
+    return onlineDataSize;
   }
 
   @VisibleForTesting
@@ -875,11 +900,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         return -1;
       }
 
-      long inputSize = currInputStat.getDataSize();
+      long inputSize = computeOnlineDataSize(currInputStat);
 
       boolean currentInputNotFittingInMemory = false;
       if ((bigInputStat == null)
-              || (inputSize > bigInputStat.getDataSize())) {
+          || (inputSize > computeOnlineDataSize(bigInputStat))) {
 
         if (foundInputNotFittingInMemory) {
           // cannot convert to map join; we've already chosen a big table
@@ -919,12 +944,13 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       boolean selectedBigTable = bigTableCandidateSet.contains(pos) &&
               (bigInputStat == null || currentInputNotFittingInMemory ||
                       (!foundInputNotFittingInMemory && (currentInputCumulativeCardinality > bigInputCumulativeCardinality ||
-                              (currentInputCumulativeCardinality == bigInputCumulativeCardinality && inputSize > bigInputStat.getDataSize()))));
+                  (currentInputCumulativeCardinality == bigInputCumulativeCardinality
+                      && inputSize > computeOnlineDataSize(bigInputStat)))));
 
       if (bigInputStat != null && selectedBigTable) {
         // We are replacing the current big table with a new one, thus
         // we need to count the current one as a map table then.
-        totalSize += bigInputStat.getDataSize();
+        totalSize += computeOnlineDataSize(bigInputStat);
         // Check if number of distinct keys is greater than given max number of entries
         // for HashMap
         if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, bigTablePosition, context)) {
@@ -1353,7 +1379,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // Evaluate
     ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(position);
     Statistics inputStats = rsOp.getStatistics();
-    long inputSize = inputStats.getDataSize();
+    long inputSize = computeOnlineDataSize(inputStats);
     LOG.debug("Estimated size for input {}: {}; Max size for DPHJ conversion: {}",
         position, inputSize, max);
     if (inputSize > max) {
@@ -1383,7 +1409,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         n = StatsUtils.safeMult(n, ndv);
       }
     }
-    final double nn = (double) n;
+    final double nn = n;
     final double a = (nn - 1d) / nn;
     if (a == 1d) {
       // A under-flows if nn is large.
