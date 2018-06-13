@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -110,14 +109,18 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           initReplDump(ast);
         } catch (HiveException e) {
-          throw new SemanticException("repl dump failed " + e.getMessage());
+          throw new SemanticException(e.getMessage(), e);
         }
         analyzeReplDump(ast);
         break;
       }
       case TOK_REPL_LOAD: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: load");
-        initReplLoad(ast);
+        try {
+          initReplLoad(ast);
+        } catch (HiveException e) {
+          throw new SemanticException(e.getMessage(), e);
+        }
         analyzeReplLoad(ast);
         break;
       }
@@ -141,8 +144,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       Database database = db.getDatabase(dbName);
       if (database != null) {
         if (!ReplChangeManager.isSourceOfReplication(database)) {
-          throw new SemanticException("Cannot dump database " + dbNameOrPattern +
+          LOG.error("Cannot dump database " + dbNameOrPattern +
                   " as it is not a source of replication");
+          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getMsg());
         }
       } else {
         throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
@@ -228,7 +232,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // REPL LOAD
-  private void initReplLoad(ASTNode ast) throws SemanticException {
+  private void initReplLoad(ASTNode ast) throws HiveException {
     path = PlanUtils.stripQuotes(ast.getChild(0).getText());
     int numChildren = ast.getChildCount();
     for (int i = 1; i < numChildren; i++) {
@@ -236,6 +240,16 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (childNode.getToken().getType()) {
         case TOK_DBNAME:
           dbNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
+          for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
+            Database database = db.getDatabase(dbName);
+            if (database != null) {
+              if (ReplChangeManager.isSourceOfReplication(database)) {
+                LOG.error("Cannot load database " + dbName +
+                        " as it is a source of replication");
+                throw new SemanticException(ErrorMsg.REPL_TARGET_IS_THE_SOURCE_OF_REPLICATION.getMsg());
+              }
+            }
+          }
           break;
         case TOK_TABNAME:
           tblNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
@@ -358,7 +372,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (!fs.exists(loadPath)) {
         // supposed dump path does not exist.
-        throw new FileNotFoundException(loadPath.toUri().toString());
+        LOG.error("File not found " + loadPath.toUri().toString());
+        throw new FileNotFoundException(ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getMsg());
       }
 
       // Now, the dumped path can be one of three things:
@@ -504,7 +519,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
-      throw new SemanticException(e);
+      throw new SemanticException(e.getMessage(), e);
     }
   }
 

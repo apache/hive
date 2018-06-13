@@ -499,6 +499,17 @@ public enum ErrorMsg {
           " queue: {1}. Please fix and try again.", true),
   SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
 
+  REPL_TARGET_IS_THE_SOURCE_OF_REPLICATION(20016, "The target database is a source of replication in this warehouse."),
+
+  //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
+  //method in HiveMetaStoreClient
+  REPL_EVENTS_MISSING_IN_METASTORE(20017, "Notification events are missing in the meta store."),
+
+  REPL_SOURCE_PATH_NOT_VALID(20018, "Target database is bootstrapped from some other path."),
+  REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20019, "File is missing from both source and cm path."),
+  REPL_LOAD_PATH_NOT_FOUND(20020, "Load path does not exist."),
+  REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20021, "Source of replication is not set in the database properties."),
+
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
 
@@ -587,6 +598,8 @@ public enum ErrorMsg {
   SPARK_JOB_INTERRUPTED(30044, "Spark job was interrupted while executing"),
   SPARK_GET_JOB_INFO_INTERRUPTED(30045, "Spark job was interrupted while getting job info"),
   SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}"),
+
+  REPL_FILE_SYSTEM_RETRY(30047, "Replication file system retry expired."),
 
   //========================== 40000 range starts here ========================//
 

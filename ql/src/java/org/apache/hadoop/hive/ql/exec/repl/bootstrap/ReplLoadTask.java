@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
@@ -221,7 +222,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     } catch (Exception e) {
       LOG.error("failed replication", e);
       setException(e);
-      return 1;
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     LOG.info("completed load task run : {}", work.executedLoadTask());
     return 0;

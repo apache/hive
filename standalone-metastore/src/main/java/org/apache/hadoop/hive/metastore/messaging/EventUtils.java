@@ -93,7 +93,7 @@ public class EventUtils {
       try {
         return msc.getNextNotification(pos,getBatchSize(), filter).getEvents();
       } catch (TException e) {
-        throw new IOException(e);
+        throw new IOException(e.getMessage(), e);
       }
     }
   }
@@ -179,7 +179,7 @@ public class EventUtils {
         // but throwing the exception is the appropriate result here, and hasNext()
         // signature will only allow RuntimeExceptions. Iterator.hasNext() really
         // should have allowed IOExceptions
-        throw new RuntimeException(e);
+        throw new RuntimeException(e.getMessage(), e);
       }
       // New batch has been fetched. If it's not empty, we have more elements to process.
       return !batch.isEmpty();

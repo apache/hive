@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -161,7 +162,7 @@ public class FileOperations {
         logger.info("writeFilesList failed", e);
         if (repeat >= FileUtils.MAX_IO_ERROR_RETRY) {
           logger.error("exporting data files in dir : " + dataPathList + " to " + exportRootDataDir + " failed");
-          throw e;
+          throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_RETRY.getMsg());
         }
 
         int sleepTime = FileUtils.getSleepTime(repeat - 1);
