@@ -1848,11 +1848,11 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `VERSION` (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@VERSION
 POSTHOOK: Output: database:sys
-PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
+PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: sys@version
-POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
+POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: sys@version
