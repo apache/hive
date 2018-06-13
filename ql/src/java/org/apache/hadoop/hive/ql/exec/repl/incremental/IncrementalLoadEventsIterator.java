@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem;
+package org.apache.hadoop.hive.ql.exec.repl.incremental;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
 
 /**
  * IncrementalLoadEventsIterator
- * Helper class to iterate through even dump directory.
+ * Helper class to iterate through event dump directory.
  */
 public class IncrementalLoadEventsIterator implements Iterator<FileStatus> {
   private FileStatus[] eventDirs;
@@ -43,6 +43,9 @@ public class IncrementalLoadEventsIterator implements Iterator<FileStatus> {
     Path eventPath = new Path(loadPath);
     FileSystem fs = eventPath.getFileSystem(conf);
     eventDirs = fs.listStatus(eventPath, EximUtil.getDirectoryFilter(fs));
+    if ((eventDirs == null) || (eventDirs.length == 0)) {
+      throw new IllegalArgumentException("No data to load in path " + loadPath);
+    }
     // For event dump, each sub-dir is an individual event dump.
     // We need to guarantee that the directory listing we got is in order of event id.
     Arrays.sort(eventDirs, new EventDumpDirComparator());
@@ -52,7 +55,7 @@ public class IncrementalLoadEventsIterator implements Iterator<FileStatus> {
 
   @Override
   public boolean hasNext() {
-    return (eventDirs != null && currentIndex < eventDirs.length);
+    return (eventDirs != null && currentIndex < numEvents);
   }
 
   @Override

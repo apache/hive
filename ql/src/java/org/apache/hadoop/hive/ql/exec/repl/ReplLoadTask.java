@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.Constrain
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadConstraint;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadFunction;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.IncrementalLoad;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.LoadPartitions;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.LoadTable;
@@ -327,8 +327,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   private int executeIncrementalLoad(DriverContext driverContext) {
     try {
-      IncrementalLoad load = work.getIncrementalLoad();
-      childTasks = Collections.singletonList(load.execute(driverContext, getHive(), LOG));
+      IncrementalLoadTasksBuilder load = work.getIncrementalLoad();
+      this.childTasks = Collections.singletonList(load.build(driverContext, getHive(), LOG));
       if (work.getIncrementalIterator().hasNext()) {
         // attach a load task at the tail of task list to start the next iteration.
         createBuilderTask(childTasks);

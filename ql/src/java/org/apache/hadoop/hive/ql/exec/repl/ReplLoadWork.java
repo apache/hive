@@ -21,8 +21,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.IncrementalLoadEventsIterator;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.IncrementalLoad;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIterator;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
 
@@ -41,7 +41,7 @@ public class ReplLoadWork implements Serializable {
   private final transient IncrementalLoadEventsIterator incrementalIterator;
   private int loadTaskRunCount = 0;
   private DatabaseEvent.State state = null;
-  private final transient IncrementalLoad incrementalLoad;
+  private final transient IncrementalLoadTasksBuilder incrementalLoad;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -60,7 +60,7 @@ public class ReplLoadWork implements Serializable {
       incrementalIterator = new IncrementalLoadEventsIterator(dumpDirectory, hiveConf);
       this.bootstrapIterator = null;
       this.constraintsIterator = null;
-      incrementalLoad = new IncrementalLoad(dbNameToLoadIn, tableNameToLoadIn, dumpDirectory,
+      incrementalLoad = new IncrementalLoadTasksBuilder(dbNameToLoadIn, tableNameToLoadIn, dumpDirectory,
               incrementalIterator, hiveConf);
     } else {
       this.bootstrapIterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
@@ -107,7 +107,7 @@ public class ReplLoadWork implements Serializable {
     return incrementalIterator;
   }
 
-  public IncrementalLoad getIncrementalLoad() {
+  public IncrementalLoadTasksBuilder getIncrementalLoad() {
     return incrementalLoad;
   }
 }

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
+package org.apache.hadoop.hive.ql.exec.repl.incremental;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -26,7 +26,8 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.IncrementalLoadEventsIterator;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -58,17 +59,17 @@ import java.util.HashSet;
  * IncrementalLoad
  * Iterate through the dump directory and create tasks to load the events.
  */
-public class IncrementalLoad {
+public class IncrementalLoadTasksBuilder {
   private final String dbName, tableName;
   private final IncrementalLoadEventsIterator iterator;
   private HashSet<ReadEntity> inputs;
   private HashSet<WriteEntity> outputs;
   private Logger log;
   private final HiveConf conf;
-  private final String loadPath;
+  private final ReplLogger replLogger;
 
-  public IncrementalLoad(String dbName, String tableName, String loadPath,
-                         IncrementalLoadEventsIterator iterator, HiveConf conf) {
+  public IncrementalLoadTasksBuilder(String dbName, String tableName, String loadPath,
+                                     IncrementalLoadEventsIterator iterator, HiveConf conf) {
     this.dbName = dbName;
     this.tableName = tableName;
     this.iterator = iterator;
@@ -76,17 +77,15 @@ public class IncrementalLoad {
     outputs = new HashSet<>();
     log = null;
     this.conf = conf;
-    this.loadPath = loadPath;
+    replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents());
   }
 
-  public Task<? extends Serializable> execute(DriverContext driverContext, Hive hive, Logger log) throws Exception {
+  public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log) throws Exception {
     int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
     Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
     Task<? extends Serializable> taskChainTail = evTaskRoot;
     Long lastReplayedEvent = null;
     this.log = log;
-
-    ReplLogger replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents());
 
     while (iterator.hasNext() && maxTasks > 0) {
       FileStatus dir = iterator.next();
@@ -130,15 +129,11 @@ public class IncrementalLoad {
                 dir.getPath().getName(),
                 eventDmd.getDumpType().toString());
         Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork);
-        for (Task<? extends Serializable> t : evTasks) {
-          t.addDependentTask(barrierTask);
-          this.log.debug("Added {}:{} as a precursor of barrier task {}:{}",
-                  t.getClass(), t.getId(), barrierTask.getClass(), barrierTask.getId());
-        }
+        AddDependencyToLeaves function = new AddDependencyToLeaves(barrierTask);
+        maxTasks -= DAGTraversal.traverse(evTasks, function);
         this.log.debug("Updated taskChainTail from {}:{} to {}:{}",
                 taskChainTail.getClass(), taskChainTail.getId(), barrierTask.getClass(), barrierTask.getId());
         taskChainTail = barrierTask;
-        maxTasks -= evTasks.size();
       }
       lastReplayedEvent = eventDmd.getEventTo();
     }

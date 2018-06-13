@@ -29,8 +29,9 @@ import java.util.List;
  * stack overflow's, hence iteration based.
  */
 public class DAGTraversal {
-  public static void traverse(List<Task<? extends Serializable>> tasks, Function function) {
+  public static int traverse(List<Task<? extends Serializable>> tasks, Function function) {
     List<Task<? extends Serializable>> listOfTasks = new ArrayList<>(tasks);
+    int numTasks = 0;
     while (!listOfTasks.isEmpty()) {
       List<Task<? extends Serializable>> children = new ArrayList<>();
       for (Task<? extends Serializable> task : listOfTasks) {
@@ -42,9 +43,11 @@ public class DAGTraversal {
           children.addAll(task.getDependentTasks());
         }
         function.process(task);
+        numTasks++;
       }
       listOfTasks = children;
     }
+    return numTasks;
   }
 
   public interface Function {

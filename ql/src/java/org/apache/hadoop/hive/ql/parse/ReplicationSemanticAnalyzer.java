@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -350,13 +351,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         return;
       }
 
-      FileStatus[] dirsInLoadPath = fs.listStatus(loadPath, EximUtil.getDirectoryFilter(fs));
-
-      if ((dirsInLoadPath == null) || (dirsInLoadPath.length == 0)) {
-        throw new IllegalArgumentException("No data to load in path " + loadPath.toUri().toString());
-      }
-
       if (!evDump){
+        FileStatus[] dirsInLoadPath = fs.listStatus(loadPath, EximUtil.getDirectoryFilter(fs));
+        if ((dirsInLoadPath == null) || (dirsInLoadPath.length == 0)) {
+          throw new IllegalArgumentException("No data to load in path " + loadPath.toUri().toString());
+        }
+
         // not an event dump, not a table dump - thus, a db dump
         if ((dbNameOrPattern != null) && (dirsInLoadPath.length > 1)) {
           LOG.debug("Found multiple dirs when we expected 1:");
