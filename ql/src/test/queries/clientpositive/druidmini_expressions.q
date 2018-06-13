@@ -87,6 +87,14 @@ select unix_timestamp(from_unixtime(1396681200)) from druid_table_n0 limit 1;
 explain select unix_timestamp(`__time`) from druid_table_n0 limit 1;
 select unix_timestamp(`__time`) from druid_table_n0 limit 1;
 
+explain select FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss');
+
+select FROM_UNIXTIME(UNIX_TIMESTAMP (CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss');
+
 explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY');
 select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY');
 select TRUNC(cast(`__time` as timestamp), 'YEAR') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YEAR');
