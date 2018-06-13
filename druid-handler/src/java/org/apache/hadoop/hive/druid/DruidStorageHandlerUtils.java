@@ -50,6 +50,7 @@ import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.DoubleSumAggregatorFactory;
+import io.druid.query.aggregation.FloatSumAggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
 import io.druid.query.expression.LikeExprMacro;
 import io.druid.query.expression.RegexpExtractExprMacro;
@@ -825,6 +826,8 @@ public final class DruidStorageHandlerUtils {
         af = new LongSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
         break;
       case FLOAT:
+        af = new FloatSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
+        break;
       case DOUBLE:
         af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
         break;
