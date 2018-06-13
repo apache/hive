@@ -1178,7 +1178,7 @@ CREATE INDEX "TAB_COL_STATS_N49" ON "TAB_COL_STATS" USING btree ("TBL_ID");
 -- Name: TAB_COL_STATS_IDX; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
 --
 
-CREATE INDEX "TAB_COL_STATS_IDX" ON "TAB_COL_STATS" USING btree ("CAT_NAME", "DB_NAME","TABLE_NAME","COLUMN_NAME");
+CREATE INDEX "TAB_COL_STATS_IDX" ON "TAB_COL_STATS" USING btree ("DB_NAME","TABLE_NAME","COLUMN_NAME");
 
 --
 -- Name: PART_COL_STATS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
