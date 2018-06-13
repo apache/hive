@@ -95,6 +95,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private long queryTimeout;
   private ScheduledExecutorService timeoutExecutor;
   private final boolean runAsync;
+  private final long operationLogCleanupDelayMs;
 
   /**
    * A map to track query count running by each user
@@ -114,6 +115,8 @@ public class SQLOperation extends ExecuteStatementOperation {
     if (timeout > 0 && (queryTimeout <= 0 || timeout < queryTimeout)) {
       this.queryTimeout = timeout;
     }
+    this.operationLogCleanupDelayMs = HiveConf.getTimeVar(queryState.getConf(),
+      HiveConf.ConfVars.HIVE_SERVER2_OPERATION_LOG_CLEANUP_DELAY, TimeUnit.MILLISECONDS);
 
     setupSessionIO(parentSession.getSessionState());
 
@@ -341,7 +344,6 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
-
   /**
    * Returns the current UGI on the stack
    *
@@ -403,7 +405,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       LOG.info("Cancelling the query execution: " + queryId);
     }
     cleanup(stateAfterCancel);
-    cleanupOperationLog();
+    cleanupOperationLog(operationLogCleanupDelayMs);
     if (stateAfterCancel == OperationState.CANCELED) {
       LOG.info("Successfully cancelled the query: " + queryId);
     }
@@ -412,7 +414,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   @Override
   public void close() throws HiveSQLException {
     cleanup(OperationState.CLOSED);
-    cleanupOperationLog();
+    cleanupOperationLog(0);
   }
 
   @Override

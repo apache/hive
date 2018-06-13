@@ -3146,6 +3146,9 @@ public class HiveConf extends Configuration {
         "  EXECUTION: Log completion of tasks\n" +
         "  PERFORMANCE: Execution + Performance logs \n" +
         "  VERBOSE: All logs" ),
+    HIVE_SERVER2_OPERATION_LOG_CLEANUP_DELAY("hive.server2.operation.log.cleanup.delay", "300s",
+      new TimeValidator(TimeUnit.SECONDS), "When a query is cancelled (via kill query, query timeout or triggers),\n" +
+      " operation logs gets cleaned up after this delay"),
 
     // HS2 connections guard rails
     HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER("hive.server2.limit.connections.per.user", 0,
