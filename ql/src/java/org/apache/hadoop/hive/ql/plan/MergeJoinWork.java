@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,7 +49,7 @@ public class MergeJoinWork extends BaseWork {
 
   @Override
   public Set<Operator<?>> getAllRootOperators() {
-    Set<Operator<?>> set = new HashSet<>();
+    Set<Operator<?>> set = new LinkedHashSet<>();
     set.addAll(getMainWork().getAllRootOperators());
     for (BaseWork w : mergeWorkList) {
       set.addAll(w.getAllRootOperators());
@@ -92,7 +92,7 @@ public class MergeJoinWork extends BaseWork {
          * output name in the reduce sink needs to be setup appropriately. In the case of reduce
          * side merge work, we need to ensure that the parent work that provides data to this merge
          * work is setup to point to the right vertex name - the main work name.
-         * 
+         *
          * In this case, if the big table work has already been created, we can hook up the merge
          * work items for the small table correctly.
          */
@@ -176,6 +176,7 @@ public class MergeJoinWork extends BaseWork {
     return getMainWork().getLlapMode();
   }
 
+  @Override
   public void addDummyOp(HashTableDummyOperator dummyOp) {
     getMainWork().addDummyOp(dummyOp);
   }
