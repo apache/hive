@@ -34,8 +34,6 @@ import org.apache.commons.lang3.CharEncoding;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.session.OperationLog;
-import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -148,7 +146,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     setState(OperationState.CLOSED);
     tearDownSessionIO();
     cleanTmpFile();
-    cleanupOperationLog();
+    cleanupOperationLog(0);
   }
 
   /* (non-Javadoc)
