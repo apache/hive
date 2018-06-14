@@ -323,13 +323,15 @@ public interface RawStore extends Configurable {
    * @param catName catalog name.
    * @param dbName database name.
    * @param tableName table name.
+   * @param partKeys list of partition keys used to generate the partition name.
    * @param part_vals list of partition values.
    * @return true if the partition exists, false otherwise.
    * @throws MetaException failure reading RDBMS
    * @throws NoSuchObjectException this is never thrown.
    */
   boolean doesPartitionExist(String catName, String dbName, String tableName,
-      List<String> part_vals) throws MetaException, NoSuchObjectException;
+      List<FieldSchema> partKeys, List<String> part_vals)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Drop a partition.
