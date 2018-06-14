@@ -179,6 +179,46 @@ public class TestLowLevelLrfuCachePolicy {
   }
 
   @Test
+  public void testPurge() {
+    final int HEAP_SIZE = 32;
+    Configuration conf = new Configuration();
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_LAMBDA.varname, 0.2f);
+    EvictionTracker et = new EvictionTracker();
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, HEAP_SIZE, conf);
+    MetricsMock m = createMetricsMock();
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(
+        HEAP_SIZE, lrfu, m.metricsMock);
+    lrfu.setEvictionListener(et);
+    assertEquals(0, lrfu.purge());
+    for (int testSize = 1; testSize <= HEAP_SIZE; ++testSize) {
+      LOG.info("Starting with " + testSize);
+      ArrayList<LlapDataBuffer> purge = new ArrayList<LlapDataBuffer>(testSize),
+        dontPurge = new ArrayList<LlapDataBuffer>(testSize);
+      for (int i = 0; i < testSize; ++i) {
+        LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
+        assertTrue(cache(mm, lrfu, et, buffer));
+        // Lock a few blocks without telling the policy.
+        if ((i + 1) % 3 == 0) {
+          buffer.incRef();
+          dontPurge.add(buffer);
+        } else {
+          purge.add(buffer);
+        }
+      }
+      lrfu.purge();
+      for (LlapDataBuffer buffer : purge) {
+        assertTrue(buffer + " " + testSize, buffer.isInvalid());
+        mm.releaseMemory(buffer.getMemoryUsage());
+      }
+      for (LlapDataBuffer buffer : dontPurge) {
+        assertFalse(buffer.isInvalid());
+        buffer.decRef();
+        mm.releaseMemory(buffer.getMemoryUsage());
+      }
+    }
+  }
+
+  @Test
   public void testDeadlockResolution() {
     int heapSize = 4;
     LOG.info("Testing deadlock resolution");
