@@ -3185,20 +3185,6 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testLoadToDbWithSourceSet() throws IOException {
-    String dbName = createDB(testName.getMethodName(), driver);
-    advanceDumpDir();
-    run("repl dump " + dbName, true, driver);
-    String dumpLocation = getResult(0, 0, driver);
-
-    String dbNameTest = createDB(testName.getMethodName()+"_test", driverMirror);
-
-    CommandProcessorResponse ret = driverMirror.run("REPL LOAD " + dbNameTest + " FROM '" + dumpLocation + "'");
-    assertTrue(ret.getResponseCode() == ErrorMsg.REPL_TARGET_IS_THE_SOURCE_OF_REPLICATION.getErrorCode());
-    run("drop database " + dbName, true, driver);
-  }
-
-  @Test
   public void testDumpNonReplDatabase() throws IOException {
     String dbName = createDBNonRepl(testName.getMethodName(), driver);
     verifyFail("REPL DUMP " + dbName, driver);

@@ -116,11 +116,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       case TOK_REPL_LOAD: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: load");
-        try {
-          initReplLoad(ast);
-        } catch (HiveException e) {
-          throw new SemanticException(e.getMessage(), e);
-        }
+        initReplLoad(ast);
         analyzeReplLoad(ast);
         break;
       }
@@ -145,7 +141,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (database != null) {
         if (!ReplChangeManager.isSourceOfReplication(database)) {
           LOG.error("Cannot dump database " + dbNameOrPattern +
-                  " as it is not a source of replication");
+                  " as it is not a source of replication (repl.source.for)");
           throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getMsg());
         }
       } else {
@@ -232,7 +228,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // REPL LOAD
-  private void initReplLoad(ASTNode ast) throws HiveException {
+  private void initReplLoad(ASTNode ast) throws SemanticException {
     path = PlanUtils.stripQuotes(ast.getChild(0).getText());
     int numChildren = ast.getChildCount();
     for (int i = 1; i < numChildren; i++) {
@@ -240,16 +236,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (childNode.getToken().getType()) {
         case TOK_DBNAME:
           dbNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
-          for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
-            Database database = db.getDatabase(dbName);
-            if (database != null) {
-              if (ReplChangeManager.isSourceOfReplication(database)) {
-                LOG.error("Cannot load database " + dbName +
-                        " as it is a source of replication");
-                throw new SemanticException(ErrorMsg.REPL_TARGET_IS_THE_SOURCE_OF_REPLICATION.getMsg());
-              }
-            }
-          }
           break;
         case TOK_TABNAME:
           tblNameOrPattern = PlanUtils.stripQuotes(childNode.getChild(0).getText());
