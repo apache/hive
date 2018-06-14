@@ -1872,6 +1872,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             && checkConstraints == null) {
           ms.createTable(tbl);
         } else {
+          // Check that constraints have catalog name properly set first
+          if (primaryKeys != null && !primaryKeys.isEmpty() && !primaryKeys.get(0).isSetCatName()) {
+            for (SQLPrimaryKey pkcol : primaryKeys) pkcol.setCatName(tbl.getCatName());
+          }
+          if (foreignKeys != null && !foreignKeys.isEmpty() && !foreignKeys.get(0).isSetCatName()) {
+            for (SQLForeignKey fkcol : foreignKeys) fkcol.setCatName(tbl.getCatName());
+          }
+          if (uniqueConstraints != null && !uniqueConstraints.isEmpty() && !uniqueConstraints.get(0).isSetCatName()) {
+            for (SQLUniqueConstraint uccol : uniqueConstraints) uccol.setCatName(tbl.getCatName());
+          }
+          if (notNullConstraints != null && !notNullConstraints.isEmpty() && !notNullConstraints.get(0).isSetCatName()) {
+            for (SQLNotNullConstraint nncol : notNullConstraints) nncol.setCatName(tbl.getCatName());
+          }
+          if (defaultConstraints != null && !defaultConstraints.isEmpty() && !defaultConstraints.get(0).isSetCatName()) {
+            for (SQLDefaultConstraint dccol : defaultConstraints) dccol.setCatName(tbl.getCatName());
+          }
+          if (checkConstraints != null && !checkConstraints.isEmpty() && !checkConstraints.get(0).isSetCatName()) {
+            for (SQLCheckConstraint cccol : checkConstraints) cccol.setCatName(tbl.getCatName());
+          }
           // Set constraint name if null before sending to listener
           List<String> constraintNames = ms.createTableWithConstraints(tbl, primaryKeys, foreignKeys,
               uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
@@ -1882,6 +1901,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (primaryKeys.get(i).getPk_name() == null) {
                 primaryKeys.get(i).setPk_name(constraintNames.get(i));
               }
+              if (!primaryKeys.get(i).isSetCatName()) primaryKeys.get(i).setCatName(tbl.getCatName());
             }
           }
           int foreignKeySize = 0;
@@ -1891,6 +1911,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (foreignKeys.get(i).getFk_name() == null) {
                 foreignKeys.get(i).setFk_name(constraintNames.get(primaryKeySize + i));
               }
+              if (!foreignKeys.get(i).isSetCatName()) foreignKeys.get(i).setCatName(tbl.getCatName());
             }
           }
           int uniqueConstraintSize = 0;
@@ -1900,6 +1921,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (uniqueConstraints.get(i).getUk_name() == null) {
                 uniqueConstraints.get(i).setUk_name(constraintNames.get(primaryKeySize + foreignKeySize + i));
               }
+              if (!uniqueConstraints.get(i).isSetCatName()) uniqueConstraints.get(i).setCatName(tbl.getCatName());
             }
           }
           int notNullConstraintSize =  0;
@@ -1908,6 +1930,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (notNullConstraints.get(i).getNn_name() == null) {
                 notNullConstraints.get(i).setNn_name(constraintNames.get(primaryKeySize + foreignKeySize + uniqueConstraintSize + i));
               }
+              if (!notNullConstraints.get(i).isSetCatName()) notNullConstraints.get(i).setCatName(tbl.getCatName());
             }
           }
           int defaultConstraintSize =  0;
@@ -1917,6 +1940,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 defaultConstraints.get(i).setDc_name(constraintNames.get(primaryKeySize + foreignKeySize
                     + uniqueConstraintSize + notNullConstraintSize + i));
               }
+              if (!defaultConstraints.get(i).isSetCatName()) defaultConstraints.get(i).setCatName(tbl.getCatName());
             }
           }
           if (checkConstraints!= null) {
@@ -1927,6 +1951,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                                              + defaultConstraintSize
                                                                            + notNullConstraintSize + i));
               }
+              if (!checkConstraints.get(i).isSetCatName()) checkConstraints.get(i).setCatName(tbl.getCatName());
             }
           }
         }
@@ -2109,6 +2134,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_primary_key", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!primaryKeyCols.isEmpty() && !primaryKeyCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        primaryKeyCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2161,6 +2190,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_foreign_key", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!foreignKeyCols.isEmpty() && !foreignKeyCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        foreignKeyCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2213,6 +2246,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_unique_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!uniqueConstraintCols.isEmpty() && !uniqueConstraintCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        uniqueConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2265,6 +2302,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_not_null_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!notNullConstraintCols.isEmpty() && !notNullConstraintCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        notNullConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2317,6 +2358,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_default_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!defaultConstraintCols.isEmpty() && !defaultConstraintCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        defaultConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2370,6 +2415,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_check_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!checkConstraintCols.isEmpty() && !checkConstraintCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        checkConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
