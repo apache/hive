@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -462,7 +463,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 0,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-                  + "     \"robot\" : \"1\",   "
+                  + "     \"robot\" : 1,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -481,7 +482,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 1,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-                  + "     \"robot\" : \"0\",   "
+                  + "     \"robot\" : 0,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -500,7 +501,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 2,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-                  + "     \"robot\" : \"0\",   "
+                  + "     \"robot\" : 0,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -519,7 +520,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 3,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-                  + "     \"robot\" : \"0\",   "
+                  + "     \"robot\" : 0,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -538,7 +539,7 @@ public class TestDruidSerDe {
                   + "    \"offset\" : 4,  "
                   + "    \"event\" : {   "
                   + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-                  + "     \"robot\" : \"0\",   "
+                  + "     \"robot\" : 0,   "
                   + "     \"namespace\" : \"article\",   "
                   + "     \"anonymous\" : \"0\",   "
                   + "     \"unpatrolled\" : \"0\",   "
@@ -556,30 +557,30 @@ public class TestDruidSerDe {
 
   // Select query results as records (types defined by metastore)
   private static final String SELECT_COLUMN_NAMES = "__time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted";
-  private static final String SELECT_COLUMN_TYPES = "timestamp with local time zone,string,string,string,string,string,string,string,string,double,double,float,float,float";
+  private static final String SELECT_COLUMN_TYPES = "timestamp with local time zone,boolean,string,string,string,string,string,string,string,double,double,float,float,float";
   private static final Object[][] SELECT_QUERY_RESULTS_RECORDS = new Object[][] {
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new Text("1"),
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new BooleanWritable(true),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("11._korpus_(NOVJ)"), new Text("sl"), new Text("0"),
                   new Text("EmausBot"),
                   new DoubleWritable(1.0d), new DoubleWritable(39.0d), new FloatWritable(39.0F),
                   new FloatWritable(39.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new Text("0"),
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998400000L).atZone(ZoneOffset.UTC))), new BooleanWritable(false),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("112_U.S._580"), new Text("en"), new Text("1"), new Text("MZMcBride"),
                   new DoubleWritable(1.0d), new DoubleWritable(70.0d), new FloatWritable(70.0F),
                   new FloatWritable(70.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new Text("0"),
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new BooleanWritable(false),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("113_U.S._243"), new Text("en"), new Text("1"), new Text("MZMcBride"),
                   new DoubleWritable(1.0d), new DoubleWritable(77.0d), new FloatWritable(77.0F),
                   new FloatWritable(77.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new Text("0"),
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new BooleanWritable(false),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("113_U.S._73"), new Text("en"), new Text("1"), new Text("MZMcBride"),
                   new DoubleWritable(1.0d), new DoubleWritable(70.0d), new FloatWritable(70.0F),
                   new FloatWritable(70.0F), new FloatWritable(0.0F) },
-          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new Text("0"),
+          new Object[] { new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1356998412000L).atZone(ZoneOffset.UTC))), new BooleanWritable(false),
                   new Text("article"), new Text("0"), new Text("0"),
                   new Text("113_U.S._756"), new Text("en"), new Text("1"), new Text("MZMcBride"),
                   new DoubleWritable(1.0d), new DoubleWritable(68.0d), new FloatWritable(68.0F),

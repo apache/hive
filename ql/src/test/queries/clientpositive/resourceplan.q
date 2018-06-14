@@ -10,7 +10,7 @@ set hive.cbo.enable=false;
 show grant user hive_test_user;
 
 -- Initialize the hive schema.
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.0.0.hive.sql;
+source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.0.hive.sql;
 
 -- SORT_QUERY_RESULTS
 

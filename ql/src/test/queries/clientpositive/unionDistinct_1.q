@@ -158,7 +158,7 @@ set hive.merge.mapfiles=false;
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
-set hive.auto.convert.join.noconditionaltask.size=10000;
+set hive.auto.convert.join.noconditionaltask.size=15000;
 
 -- Since the inputs are small, it should be automatically converted to mapjoin
 
@@ -310,6 +310,7 @@ set hive.stats.fetch.column.stats=false;
 
 -- SORT_QUERY_RESULTS
 
+set hive.auto.convert.join.noconditionaltask.size=20000;
 
 EXPLAIN
 SELECT 

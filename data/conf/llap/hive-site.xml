@@ -163,7 +163,7 @@
 
 <property>
   <name>hive.exec.post.hooks</name>
-  <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter, org.apache.hadoop.hive.ql.hooks.RuntimeStatsPersistenceCheckerHook</value>
+  <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter, org.apache.hadoop.hive.ql.hooks.RuntimeStatsPersistenceCheckerHook, org.apache.hadoop.hive.ql.hooks.NoOperatorReuseCheckerHook</value>
   <description>Post Execute Hook for Tests</description>
 </property>
 

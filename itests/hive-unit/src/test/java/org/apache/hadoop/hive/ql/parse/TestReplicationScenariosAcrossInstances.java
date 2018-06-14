@@ -468,7 +468,7 @@ public class TestReplicationScenariosAcrossInstances {
     String randomOne = RandomStringUtils.random(10, true, false);
     String randomTwo = RandomStringUtils.random(10, true, false);
     String dbOne = primaryDbName + randomOne;
-    primary.run("alter database default set dbproperties ('repl.source.for' = '1, 2, 3')");
+    primary.run("alter database default set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')");
     WarehouseInstance.Tuple bootstrapTuple = primary
         .run("use " + primaryDbName)
         .run("create table t1 (i int, j int)")
@@ -777,6 +777,14 @@ public class TestReplicationScenariosAcrossInstances {
     assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(dumpDir));
   }
 
+  private void verifyIfCkptPropMissing(Map<String, String> props) {
+    assertFalse(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
+  }
+
+  private void verifyIfSrcOfReplPropMissing(Map<String, String> props) {
+    assertFalse(props.containsKey(SOURCE_OF_REPLICATION));
+  }
+
   @Test
   public void testIfCkptSetForObjectsByBootstrapReplLoad() throws Throwable {
     WarehouseInstance.Tuple tuple = primary
@@ -810,5 +818,130 @@ public class TestReplicationScenariosAcrossInstances {
     verifyIfCkptSet(us.getParameters(), tuple.dumpLocation);
     Partition uk = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("uk"));
     verifyIfCkptSet(uk.getParameters(), tuple.dumpLocation);
+  }
+
+  @Test
+  public void testIfCkptAndSourceOfReplPropsIgnoredByReplDump() throws Throwable {
+    WarehouseInstance.Tuple tuplePrimary = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (place string) partitioned by (country string) "
+                    + " tblproperties('custom.property'='custom.value')")
+            .run("insert into table t1 partition(country='india') values ('bangalore')")
+            .dump(primaryDbName, null);
+
+    // Bootstrap Repl A -> B
+    WarehouseInstance.Tuple tupleReplica = replica.load(replicatedDbName, tuplePrimary.dumpLocation)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuplePrimary.lastReplicationId)
+            .run("show tblproperties t1('custom.property')")
+            .verifyResults(new String[] { "custom.value\t " })
+            .dumpFailure(replicatedDbName, null)
+            .run("alter database " + replicatedDbName
+                    + " set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')")
+            .dump(replicatedDbName, null);
+
+    // Bootstrap Repl B -> C
+    String replDbFromReplica = replicatedDbName + "_dupe";
+    replica.load(replDbFromReplica, tupleReplica.dumpLocation)
+            .run("use " + replDbFromReplica)
+            .run("repl status " + replDbFromReplica)
+            .verifyResult(tupleReplica.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1" })
+            .run("select country from t1")
+            .verifyResults(Arrays.asList("india"))
+            .run("show tblproperties t1('custom.property')")
+            .verifyResults(new String[] { "custom.value\t " });
+
+    // Check if DB/table/partition in C doesn't have repl.source.for props. Also ensure, ckpt property
+    // is set to bootstrap dump location used in C.
+    Database db = replica.getDatabase(replDbFromReplica);
+    verifyIfSrcOfReplPropMissing(db.getParameters());
+    verifyIfCkptSet(db.getParameters(), tupleReplica.dumpLocation);
+    Table t1 = replica.getTable(replDbFromReplica, "t1");
+    verifyIfCkptSet(t1.getParameters(), tupleReplica.dumpLocation);
+    Partition india = replica.getPartition(replDbFromReplica, "t1", Collections.singletonList("india"));
+    verifyIfCkptSet(india.getParameters(), tupleReplica.dumpLocation);
+
+    // Perform alters in A for incremental replication
+    WarehouseInstance.Tuple tuplePrimaryInc = primary.run("use " + primaryDbName)
+            .run("alter database " + primaryDbName + " set dbproperties('dummy_key'='dummy_val')")
+            .run("alter table t1 set tblproperties('dummy_key'='dummy_val')")
+            .run("alter table t1 partition(country='india') set fileformat orc")
+            .dump(primaryDbName, tuplePrimary.lastReplicationId);
+
+    // Incremental Repl A -> B with alters on db/table/partition
+    WarehouseInstance.Tuple tupleReplicaInc = replica.load(replicatedDbName, tuplePrimaryInc.dumpLocation)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuplePrimaryInc.lastReplicationId)
+            .dump(replicatedDbName, tupleReplica.lastReplicationId);
+
+    // Check if DB in B have ckpt property is set to bootstrap dump location used in B and missing for table/partition.
+    db = replica.getDatabase(replicatedDbName);
+    verifyIfCkptSet(db.getParameters(), tuplePrimary.dumpLocation);
+    t1 = replica.getTable(replicatedDbName, "t1");
+    verifyIfCkptPropMissing(t1.getParameters());
+    india = replica.getPartition(replicatedDbName, "t1", Collections.singletonList("india"));
+    verifyIfCkptPropMissing(india.getParameters());
+
+    // Incremental Repl B -> C with alters on db/table/partition
+    replica.load(replDbFromReplica, tupleReplicaInc.dumpLocation)
+            .run("use " + replDbFromReplica)
+            .run("repl status " + replDbFromReplica)
+            .verifyResult(tupleReplicaInc.lastReplicationId)
+            .run("show tblproperties t1('custom.property')")
+            .verifyResults(new String[] { "custom.value\t " });
+
+    // Check if DB/table/partition in C doesn't have repl.source.for props. Also ensure, ckpt property
+    // in DB is set to bootstrap dump location used in C but for table/partition, it is missing.
+    db = replica.getDatabase(replDbFromReplica);
+    verifyIfCkptSet(db.getParameters(), tupleReplica.dumpLocation);
+    verifyIfSrcOfReplPropMissing(db.getParameters());
+    t1 = replica.getTable(replDbFromReplica, "t1");
+    verifyIfCkptPropMissing(t1.getParameters());
+    india = replica.getPartition(replDbFromReplica, "t1", Collections.singletonList("india"));
+    verifyIfCkptPropMissing(india.getParameters());
+
+    replica.run("drop database if exists " + replDbFromReplica + " cascade");
+  }
+
+  @Test
+  public void testIfCkptPropIgnoredByExport() throws Throwable {
+    WarehouseInstance.Tuple tuplePrimary = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (place string) partitioned by (country string)")
+            .run("insert into table t1 partition(country='india') values ('bangalore')")
+            .dump(primaryDbName, null);
+
+    // Bootstrap Repl A -> B and then export table t1
+    String path = "hdfs:///tmp/" + replicatedDbName + "/";
+    String exportPath = "'" + path + "1/'";
+    replica.load(replicatedDbName, tuplePrimary.dumpLocation)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuplePrimary.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("export table t1 to " + exportPath);
+
+    // Check if ckpt property set in table/partition in B after bootstrap load.
+    Table t1 = replica.getTable(replicatedDbName, "t1");
+    verifyIfCkptSet(t1.getParameters(), tuplePrimary.dumpLocation);
+    Partition india = replica.getPartition(replicatedDbName, "t1", Collections.singletonList("india"));
+    verifyIfCkptSet(india.getParameters(), tuplePrimary.dumpLocation);
+
+    // Import table t1 to C
+    String importDbFromReplica = replicatedDbName + "_dupe";
+    replica.run("create database " + importDbFromReplica)
+            .run("use " + importDbFromReplica)
+            .run("import table t1 from " + exportPath)
+            .run("select country from t1")
+            .verifyResults(Arrays.asList("india"));
+
+    // Check if table/partition in C doesn't have ckpt property
+    t1 = replica.getTable(importDbFromReplica, "t1");
+    verifyIfCkptPropMissing(t1.getParameters());
+    india = replica.getPartition(importDbFromReplica, "t1", Collections.singletonList("india"));
+    verifyIfCkptPropMissing(india.getParameters());
+
+    replica.run("drop database if exists " + importDbFromReplica + " cascade");
   }
 }

@@ -1004,7 +1004,7 @@ POSTHOOK: Input: default@src1
 4	val_4	NULL	NULL	66	val_66
 35	val_35	NULL	NULL	66	val_66
 12	val_12	NULL	NULL	66	val_66
-Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[26][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
@@ -1175,7 +1175,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
+Warning: Map Join MAPJOIN[26][bigTable=?] in task 'Stage-7:MAPRED' is a cross product
 PREHOOK: query: SELECT *
 FROM src
 JOIN src1 a ON (a.key+src.key >= 100)

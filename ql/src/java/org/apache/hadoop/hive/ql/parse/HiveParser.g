@@ -69,6 +69,7 @@ TOK_OP_NOT;
 TOK_OP_LIKE;
 TOK_TRUE;
 TOK_FALSE;
+TOK_UNKNOWN;
 TOK_TRANSFORM;
 TOK_SERDE;
 TOK_SERDENAME;
@@ -451,6 +452,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     // Keywords
     xlateMap.put("KW_TRUE", "TRUE");
     xlateMap.put("KW_FALSE", "FALSE");
+    xlateMap.put("KW_UNKNOWN", "UNKNOWN");
     xlateMap.put("KW_ALL", "ALL");
     xlateMap.put("KW_NONE", "NONE");
     xlateMap.put("KW_AND", "AND");

@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
+KW_UNKNOWN : 'UNKNOWN';
 KW_ALL : 'ALL';
 KW_NONE: 'NONE';
 KW_AND : 'AND';

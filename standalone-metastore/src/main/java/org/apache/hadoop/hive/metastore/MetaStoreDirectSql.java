@@ -91,7 +91,6 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.slf4j.Logger;
@@ -2724,7 +2723,7 @@ class MetaStoreDirectSql {
     TableType.MANAGED_TABLE.toString(), TableType.MATERIALIZED_VIEW.toString()
   };
 
-  public List<FullTableName> getTableNamesWithStats() throws MetaException {
+  public List<org.apache.hadoop.hive.common.TableName> getTableNamesWithStats() throws MetaException {
     // Could we also join with ACID tables to only get tables with outdated stats?
     String queryText0 = "SELECT DISTINCT " + TBLS + ".\"TBL_NAME\", " + DBS + ".\"NAME\", "
         + DBS + ".\"CTLG_NAME\" FROM " + TBLS + " INNER JOIN " + DBS + " ON "
@@ -2732,7 +2731,7 @@ class MetaStoreDirectSql {
     String queryText1 = " WHERE " + TBLS + ".\"TBL_TYPE\" IN ("
         + makeParams(STATS_TABLE_TYPES.length) + ")";
 
-    List<FullTableName> result = new ArrayList<>();
+    List<org.apache.hadoop.hive.common.TableName> result = new ArrayList<>();
 
     String queryText = queryText0 + " INNER JOIN " + TAB_COL_STATS
         + " ON " + TBLS + ".\"TBL_ID\" = " + TAB_COL_STATS + ".\"TBL_ID\"" + queryText1;
@@ -2786,24 +2785,24 @@ class MetaStoreDirectSql {
     }
   }
 
-  public List<FullTableName> getAllTableNamesForStats() throws MetaException {
+  public List<org.apache.hadoop.hive.common.TableName> getAllTableNamesForStats() throws MetaException {
     String queryText = "SELECT " + TBLS + ".\"TBL_NAME\", " + DBS + ".\"NAME\", "
         + DBS + ".\"CTLG_NAME\" FROM " + TBLS + " INNER JOIN " + DBS + " ON " + TBLS
         + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
         + " WHERE " + TBLS + ".\"TBL_TYPE\" IN (" + makeParams(STATS_TABLE_TYPES.length) + ")";
-    List<FullTableName> result = new ArrayList<>();
+    List<org.apache.hadoop.hive.common.TableName> result = new ArrayList<>();
     getStatsTableListResult(queryText, result);
     return result;
   }
 
   private void getStatsTableListResult(
-      String queryText, List<FullTableName> result) throws MetaException {
+      String queryText, List<org.apache.hadoop.hive.common.TableName> result) throws MetaException {
     LOG.debug("Running {}", queryText);
     Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
     try {
       List<Object[]> sqlResult = ensureList(executeWithArray(query, STATS_TABLE_TYPES, queryText));
       for (Object[] line : sqlResult) {
-        result.add(new FullTableName(
+        result.add(new org.apache.hadoop.hive.common.TableName(
             extractSqlString(line[2]), extractSqlString(line[1]), extractSqlString(line[0])));
       }
     } finally {

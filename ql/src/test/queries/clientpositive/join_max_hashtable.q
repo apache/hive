@@ -2,7 +2,7 @@
 set hive.auto.convert.join=true;
 set hive.optimize.dynamic.partition.hashjoin=true;
 set hive.auto.convert.join.hashtable.max.entries=500;
-set hive.auto.convert.join.shuffle.max.size=100000;
+set hive.auto.convert.join.shuffle.max.size=200000;
 
 -- CONVERT
 EXPLAIN
