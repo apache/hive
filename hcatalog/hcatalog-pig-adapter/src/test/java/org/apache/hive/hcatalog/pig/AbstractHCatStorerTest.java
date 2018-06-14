@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   static Logger LOG = LoggerFactory.getLogger(AbstractHCatStorerTest.class);
   static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
-  String storageFormat;
+  protected String storageFormat;
 
   public AbstractHCatStorerTest() {
     storageFormat = getStorageFormat();

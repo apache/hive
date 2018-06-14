@@ -40,5 +40,8 @@ public class TestStorageFormatDescriptor {
         (new ParquetFileStorageFormatDescriptor()).getNames());
     Assert.assertEquals(Sets.newHashSet(IOConstants.AVRO, IOConstants.AVROFILE),
       (new AvroStorageFormatDescriptor()).getNames());
+    Assert.assertEquals(Sets.newHashSet(IOConstants.JSONFILE),
+        (new JsonFileStorageFormatDescriptor()).getNames());
+
   }
 }

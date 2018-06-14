@@ -86,8 +86,6 @@ public class TestHCatStorer extends AbstractHCatStorerTest {
         }
       };
 
-  private String storageFormat;
-
   @Parameterized.Parameters
   public static Collection<Object[]> generateParameters() {
     return StorageFormats.names();
@@ -99,7 +97,7 @@ public class TestHCatStorer extends AbstractHCatStorerTest {
 
   @Override
   String getStorageFormat() {
-    return null;
+    return this.storageFormat;
   }
 
   @Test
