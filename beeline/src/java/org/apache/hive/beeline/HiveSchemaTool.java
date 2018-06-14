@@ -1558,6 +1558,6 @@ public class HiveSchemaTool {
       System.exit(1);
     }
     System.out.println("schemaTool completed");
-
+    System.exit(0);
   }
 }
