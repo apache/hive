@@ -1104,6 +1104,11 @@ public class BeeLine implements Closeable {
     }
 
     if (beelineSiteParser.configExists()) {
+      String urlFromCommandLineOption = cl.getOptionValue("u");
+      if (urlFromCommandLineOption != null) {
+        throw new BeelineSiteParseException(
+            "Not using beeline-site.xml since the user provided the url: " + urlFromCommandLineOption);
+      }
       // Get the named url from user specific config file if present
       Properties userNamedConnectionURLs = beelineSiteParser.getConnectionProperties();
       if (!userNamedConnectionURLs.isEmpty()) {
@@ -1126,6 +1131,14 @@ public class BeeLine implements Closeable {
     }
 
     if (jdbcConnectionParams != null) {
+      String userName = cl.getOptionValue("n");
+      if (userName != null) {
+        jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_USER, userName);
+      }
+      String password = cl.getOptionValue("p");
+      if (password != null) {
+        jdbcConnectionParams.getSessionVars().put(JdbcConnectionParams.AUTH_PASSWD, password);
+      }
       mergedConnectionProperties =
           HS2ConnectionFileUtils.mergeUserConnectionPropertiesAndBeelineSite(
               userConnectionProperties, jdbcConnectionParams);
