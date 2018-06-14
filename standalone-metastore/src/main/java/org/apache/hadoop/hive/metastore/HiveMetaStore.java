@@ -3904,7 +3904,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throw new MetaException("Partition value cannot be null.");
           }
 
-          boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
+          boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), ifNotExists);
           if (!shouldAdd) {
             existingParts.add(part);
             LOG.info("Not adding partition {} as it already exists", part);
@@ -4196,7 +4196,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throw new MetaException("The partition values cannot be null or empty.");
           }
 
-          boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
+          boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), ifNotExists);
           if (!shouldAdd) {
             LOG.info("Not adding partition {} as it already exists", part);
             continue;
@@ -4304,11 +4304,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private boolean startAddPartition(
-        RawStore ms, Partition part, boolean ifNotExists) throws TException {
+        RawStore ms, Partition part, List<FieldSchema> partitionKeys, boolean ifNotExists)
+        throws TException {
       MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
           partitionValidationPattern);
       boolean doesExist = ms.doesPartitionExist(part.getCatName(),
-          part.getDbName(), part.getTableName(), part.getValues());
+          part.getDbName(), part.getTableName(), partitionKeys, part.getValues());
       if (doesExist && !ifNotExists) {
         throw new AlreadyExistsException("Partition already exists: " + part);
       }
@@ -4434,7 +4435,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (part.getValues() == null || part.getValues().isEmpty()) {
           throw new MetaException("The partition values cannot be null or empty.");
         }
-        boolean shouldAdd = startAddPartition(ms, part, false);
+        boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), false);
         assert shouldAdd; // start would throw if it already existed here
         boolean madeDir = createLocationForAddedPartition(tbl, part);
         try {

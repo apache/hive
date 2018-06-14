@@ -2410,7 +2410,7 @@ public class ObjectStore implements RawStore, Configurable {
           throw new MetaException("Partition does not belong to target table "
               + dbName + "." + tblName + ": " + part);
         }
-        MPartition mpart = convertToMPart(part, true);
+        MPartition mpart = convertToMPart(part, table, true);
         toPersist.add(mpart);
         int now = (int)(System.currentTimeMillis()/1000);
         if (tabGrants != null) {
@@ -2446,11 +2446,11 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private boolean isValidPartition(
-      Partition part, boolean ifNotExists) throws MetaException {
+      Partition part, List<FieldSchema> partitionKeys, boolean ifNotExists) throws MetaException {
     MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
         partitionValidationPattern);
     boolean doesExist = doesPartitionExist(part.getCatName(),
-        part.getDbName(), part.getTableName(), part.getValues());
+        part.getDbName(), part.getTableName(), partitionKeys, part.getValues());
     if (doesExist && !ifNotExists) {
       throw new MetaException("Partition already exists: " + part);
     }
@@ -2481,11 +2481,12 @@ public class ObjectStore implements RawStore, Configurable {
 
       int now = (int)(System.currentTimeMillis()/1000);
 
+      List<FieldSchema> partitionKeys = convertToFieldSchemas(table.getPartitionKeys());
       while (iterator.hasNext()) {
         Partition part = iterator.next();
 
-        if (isValidPartition(part, ifNotExists)) {
-          MPartition mpart = convertToMPart(part, true);
+        if (isValidPartition(part, partitionKeys, ifNotExists)) {
+          MPartition mpart = convertToMPart(part, table, true);
           pm.makePersistent(mpart);
           if (tabGrants != null) {
             for (MTablePrivilege tab : tabGrants) {
@@ -2615,26 +2616,62 @@ public class ObjectStore implements RawStore, Configurable {
     return part;
   }
 
+  /**
+   * Getting MPartition object. Use this method only if the partition name is not available,
+   * since then the table will be queried to get the partition keys.
+   * @param catName The catalogue
+   * @param dbName The database
+   * @param tableName The table
+   * @param part_vals The values defining the partition
+   * @return The MPartition object in the backend database
+   * @throws MetaException
+   */
   private MPartition getMPartition(String catName, String dbName, String tableName, List<String> part_vals)
       throws MetaException {
-    List<MPartition> mparts = null;
-    MPartition ret = null;
-    boolean commited = false;
-    Query query = null;
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    boolean committed = false;
+    MPartition result = null;
     try {
       openTransaction();
-      catName = normalizeIdentifier(catName);
-      dbName = normalizeIdentifier(dbName);
-      tableName = normalizeIdentifier(tableName);
       MTable mtbl = getMTable(catName, dbName, tableName);
       if (mtbl == null) {
-        commited = commitTransaction();
         return null;
       }
       // Change the query to use part_vals instead of the name which is
       // redundant TODO: callers of this often get part_vals out of name for no reason...
       String name =
           Warehouse.makePartName(convertToFieldSchemas(mtbl.getPartitionKeys()), part_vals);
+      result = getMPartition(catName, dbName, tableName, name);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, (Query)null);
+    }
+    return result;
+  }
+
+  /**
+   * Getting MPartition object. Use this method if the partition name is available, so we do not
+   * query the table object again.
+   * @param catName The catalogue
+   * @param dbName The database
+   * @param tableName The table
+   * @param name The partition name
+   * @return The MPartition object in the backend database
+   * @throws MetaException
+   */
+  private MPartition getMPartition(String catName, String dbName, String tableName,
+      String name) throws MetaException {
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    List<MPartition> mparts = null;
+    MPartition ret = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
       query =
           pm.newQuery(MPartition.class,
               "table.tableName == t1 && table.database.name == t2 && partitionName == t3 " +
@@ -2675,7 +2712,7 @@ public class ObjectStore implements RawStore, Configurable {
    * to the same one as the table's storage descriptor.
    * @param part the partition to convert
    * @param useTableCD whether to try to use the parent table's column descriptor.
-   * @return the model partition object
+   * @return the model partition object, and null if the input partition is null.
    * @throws InvalidObjectException
    * @throws MetaException
    */
@@ -2687,15 +2724,31 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     MTable mt = getMTable(part.getCatName(), part.getDbName(), part.getTableName());
+    return convertToMPart(part, mt, useTableCD);
+  }
+
+  /**
+   * Convert a Partition object into an MPartition, which is an object backed by the db
+   * If the Partition's set of columns is the same as the parent table's AND useTableCD
+   * is true, then this partition's storage descriptor's column descriptor will point
+   * to the same one as the table's storage descriptor.
+   * @param part the partition to convert
+   * @param mt the parent table object
+   * @param useTableCD whether to try to use the parent table's column descriptor.
+   * @return the model partition object, and null if the input partition is null.
+   * @throws InvalidObjectException
+   * @throws MetaException
+   */
+  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
+      throws InvalidObjectException, MetaException {
+    if (part == null) {
+      return null;
+    }
     if (mt == null) {
       throw new InvalidObjectException(
           "Partition doesn't have a valid table or database name");
     }
-    return convertToMPart(part, mt, useTableCD);
-  }
 
-  public MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
-      throws MetaException {
     // If this partition's set of columns is the same as the parent table's,
     // use the parent table's, so we do not create a duplicate column descriptor,
     // thereby saving space
@@ -9753,14 +9806,11 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean doesPartitionExist(String catName, String dbName, String tableName, List<String>
-      partVals)
+  public boolean doesPartitionExist(String catName, String dbName, String tableName,
+                                    List<FieldSchema> partKeys, List<String> partVals)
       throws MetaException {
-    try {
-      return this.getPartition(catName, dbName, tableName, partVals) != null;
-    } catch (NoSuchObjectException e) {
-      return false;
-    }
+    String name = Warehouse.makePartName(partKeys, partVals);
+    return this.getMPartition(catName, dbName, tableName, name) != null;
   }
 
   private void debugLog(String message) {
