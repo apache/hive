@@ -740,8 +740,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public boolean doesPartitionExist(String catName, String dbName, String tableName,
-      List<String> partVals) throws MetaException, NoSuchObjectException {
-    return objectStore.doesPartitionExist(catName, dbName, tableName, partVals);
+      List<FieldSchema> partKeys, List<String> partVals)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.doesPartitionExist(catName, dbName, tableName, partKeys, partVals);
   }
 
   @Override

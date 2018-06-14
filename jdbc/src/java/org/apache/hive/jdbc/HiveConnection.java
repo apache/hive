@@ -202,9 +202,9 @@ public class HiveConnection implements java.sql.Connection {
 
     if (isEmbeddedMode) {
       EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
-      embeddedClient.init(null);
+      embeddedClient.init(null, connParams.getHiveConfs());
       client = embeddedClient;
-
+      connParams.getHiveConfs().clear();
       // open client session
       openSession();
       executeInitSql();
