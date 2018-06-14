@@ -72,7 +72,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimeZone;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE;
 import static org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil.createColumnVector;
@@ -180,7 +179,7 @@ class Serializer {
             return Types.MinorType.DATEDAY.getType();
           case TIMESTAMP:
             // HIVE-19853: Prefer timestamp in microsecond with time zone because Spark supports it
-            return new ArrowType.Timestamp(TimeUnit.MICROSECOND, TimeZone.getDefault().getID());
+            return new ArrowType.Timestamp(TimeUnit.MICROSECOND, "UTC");
           case BINARY:
             return Types.MinorType.VARBINARY.getType();
           case DECIMAL:
