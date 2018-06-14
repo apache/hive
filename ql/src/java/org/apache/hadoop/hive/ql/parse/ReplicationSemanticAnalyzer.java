@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -352,9 +351,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // import job in its place.
 
     try {
-
+      assert(path != null);
       Path loadPath = new Path(path);
       final FileSystem fs = loadPath.getFileSystem(conf);
+
+      // Make fully qualified path for further use.
+      loadPath = fs.makeQualified(loadPath);
 
       if (!fs.exists(loadPath)) {
         // supposed dump path does not exist.
