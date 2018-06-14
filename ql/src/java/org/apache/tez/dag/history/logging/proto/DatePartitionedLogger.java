@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.hooks;
+package org.apache.tez.dag.history.logging.proto;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -33,6 +33,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.yarn.util.Clock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
@@ -43,6 +45,7 @@ import com.google.protobuf.Parser;
  * @param <T> The proto message type.
  */
 public class DatePartitionedLogger<T extends MessageLite> {
+  private static final Logger LOG = LoggerFactory.getLogger(DatePartitionedLogger.class.getName());
   // Everyone has permission to write, but with sticky set so that delete is restricted.
   // This is required, since the path is same for all users and everyone writes into it.
   private static final FsPermission DIR_PERMISSION = FsPermission.createImmutable((short)01777);
@@ -51,19 +54,27 @@ public class DatePartitionedLogger<T extends MessageLite> {
   private final Path basePath;
   private final Configuration conf;
   private final Clock clock;
-  private final FileSystem fileSystem;
 
   public DatePartitionedLogger(Parser<T> parser, Path baseDir, Configuration conf, Clock clock)
       throws IOException {
     this.conf = conf;
     this.clock = clock;
     this.parser = parser;
-    this.fileSystem = baseDir.getFileSystem(conf);
-    if (!fileSystem.exists(baseDir)) {
-      fileSystem.mkdirs(baseDir);
-      fileSystem.setPermission(baseDir, DIR_PERMISSION);
+    createDirIfNotExists(baseDir);
+    this.basePath = baseDir.getFileSystem(conf).resolvePath(baseDir);
+  }
+
+  private void createDirIfNotExists(Path path) throws IOException {
+    FileSystem fileSystem = path.getFileSystem(conf);
+    try {
+      if (!fileSystem.exists(path)) {
+        fileSystem.mkdirs(path);
+        fileSystem.setPermission(path, DIR_PERMISSION);
+      }
+    } catch (IOException e) {
+      // Ignore this exception, if there is a problem it'll fail when trying to read or write.
+      LOG.warn("Error while trying to set permission: ", e);
     }
-    this.basePath = fileSystem.resolvePath(baseDir);
   }
 
   /**
@@ -86,10 +97,7 @@ public class DatePartitionedLogger<T extends MessageLite> {
    */
   public Path getPathForDate(LocalDate date, String fileName) throws IOException {
     Path path = new Path(basePath, getDirForDate(date));
-    if (!fileSystem.exists(path)) {
-      fileSystem.mkdirs(path);
-      fileSystem.setPermission(path, DIR_PERMISSION);
-    }
+    createDirIfNotExists(path);
     return new Path(path, fileName);
   }
 
@@ -116,6 +124,7 @@ public class DatePartitionedLogger<T extends MessageLite> {
   public String getNextDirectory(String currentDir) throws IOException {
     // Fast check, if the next day directory exists return it.
     String nextDate = getDirForDate(getDateFromDir(currentDir).plusDays(1));
+    FileSystem fileSystem = basePath.getFileSystem(conf);
     if (fileSystem.exists(new Path(basePath, nextDate))) {
       return nextDate;
     }
@@ -138,6 +147,7 @@ public class DatePartitionedLogger<T extends MessageLite> {
   public List<Path> scanForChangedFiles(String subDir, Map<String, Long> currentOffsets)
       throws IOException {
     Path dirPath = new Path(basePath, subDir);
+    FileSystem fileSystem = basePath.getFileSystem(conf);
     List<Path> newFiles = new ArrayList<>();
     if (!fileSystem.exists(dirPath)) {
       return newFiles;
