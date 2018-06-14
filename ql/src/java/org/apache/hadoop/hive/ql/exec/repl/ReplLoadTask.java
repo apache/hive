@@ -331,7 +331,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       this.childTasks = Collections.singletonList(load.build(driverContext, getHive(), LOG));
       if (work.getIncrementalIterator().hasNext()) {
         // attach a load task at the tail of task list to start the next iteration.
-        createBuilderTask(childTasks);
+        createBuilderTask(this.childTasks);
       }
       return 0;
     } catch (Exception e) {

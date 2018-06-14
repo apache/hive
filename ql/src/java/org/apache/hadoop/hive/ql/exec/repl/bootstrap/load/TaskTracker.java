@@ -66,6 +66,16 @@ public class TaskTracker {
     updateTaskCount(task, visited);
   }
 
+  public void addTaskList(List <Task<? extends Serializable>> taskList) {
+    List <Task<? extends Serializable>> visited = new ArrayList<>();
+    for (Task<? extends Serializable> task : taskList) {
+      if (!visited.contains(task)) {
+        tasks.add(task);
+        updateTaskCount(task, visited);
+      }
+    }
+  }
+
   // This method is used to traverse the DAG created in tasks list and add the dependent task to
   // the tail of each task chain.
   public void addDependentTask(Task<? extends Serializable> dependent) {

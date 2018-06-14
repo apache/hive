@@ -45,6 +45,8 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
+import org.junit.Assert;
 
 import java.io.IOException;
 import java.net.URI;
@@ -77,10 +79,11 @@ public class TestReplicationScenariosAcrossInstances {
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private static WarehouseInstance primary, replica;
   private String primaryDbName, replicatedDbName;
+  private static HiveConf conf;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    Configuration conf = new Configuration();
+    conf = new HiveConf(TestReplicationScenarios.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
@@ -910,21 +913,28 @@ public class TestReplicationScenariosAcrossInstances {
             .verifyResults(new String[] {"2" })
             .run("select id from table3")
             .verifyResults(new String[] {"3" });
+    assert(IncrementalLoadTasksBuilder.numIteration > 1);
+    long numIteration = IncrementalLoadTasksBuilder.numIteration;
 
     incremental = primary.run("use " + primaryDbName)
-            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
-                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table  table5 (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc")
             .run("create table table4 (i int, j int)")
             .run("insert into table4 values (1,2)")
-            .dump(primaryDbName, incremental.lastReplicationId,
-                    Arrays.asList("'hive.repl.dump.include.acid.tables'='true'"));
+            .dump(primaryDbName, incremental.lastReplicationId);
+
+    Path path = new Path(incremental.dumpLocation);
+    FileSystem fs = path.getFileSystem(conf);
+    FileStatus[] fileStatus = fs.listStatus(path);
+    int numEvents = fileStatus.length - 1; //one is metadata file
 
     replica.load(replicatedDbName, incremental.dumpLocation, Arrays.asList("'hive.repl.approx.max.load.tasks'='1'"))
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"acid_table", "table1", "table2", "table3", "table4" })
+            .verifyResults(new String[] {"table1", "table2", "table3", "table4", "table5" })
             .run("select i from table4")
             .verifyResult("1");
+    Assert.assertEquals(IncrementalLoadTasksBuilder.numIteration, numEvents);
   }
 
   @Test

@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -67,6 +68,7 @@ public class IncrementalLoadTasksBuilder {
   private Logger log;
   private final HiveConf conf;
   private final ReplLogger replLogger;
+  public static long numIteration;
 
   public IncrementalLoadTasksBuilder(String dbName, String tableName, String loadPath,
                                      IncrementalLoadEventsIterator iterator, HiveConf conf) {
@@ -78,28 +80,32 @@ public class IncrementalLoadTasksBuilder {
     log = null;
     this.conf = conf;
     replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents());
+    numIteration = 0;
+    replLogger.startLog();
   }
 
   public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log) throws Exception {
-    int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
     Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
     Task<? extends Serializable> taskChainTail = evTaskRoot;
     Long lastReplayedEvent = null;
     this.log = log;
+    numIteration++;
+    this.log.debug("Iteration num " + numIteration);
+    TaskTracker tracker = new TaskTracker(conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS));
 
-    while (iterator.hasNext() && maxTasks > 0) {
+    while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       FileStatus dir = iterator.next();
       String location = dir.getPath().toUri().toString();
       DumpMetaData eventDmd = new DumpMetaData(new Path(location), conf);
 
       if (!shouldReplayEvent(dir, eventDmd.getDumpType(), dbName, tableName)) {
         this.log.debug("Skipping event {} from {} for table {}.{} maxTasks: {}",
-                eventDmd.getDumpType(), dir.getPath().toUri(), dbName, tableName, maxTasks);
+                eventDmd.getDumpType(), dir.getPath().toUri(), dbName, tableName, tracker.numberOfTasks());
         continue;
       }
 
       this.log.debug("Loading event {} from {} for table {}.{} maxTasks: {}",
-              eventDmd.getDumpType(), dir.getPath().toUri(), dbName, tableName, maxTasks);
+              eventDmd.getDumpType(), dir.getPath().toUri(), dbName, tableName, tracker.numberOfTasks());
 
       // event loads will behave similar to table loads, with one crucial difference
       // precursor order is strict, and each event must be processed after the previous one.
@@ -130,9 +136,10 @@ public class IncrementalLoadTasksBuilder {
                 eventDmd.getDumpType().toString());
         Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork);
         AddDependencyToLeaves function = new AddDependencyToLeaves(barrierTask);
-        maxTasks -= DAGTraversal.traverse(evTasks, function);
+        DAGTraversal.traverse(evTasks, function);
         this.log.debug("Updated taskChainTail from {}:{} to {}:{}",
                 taskChainTail.getClass(), taskChainTail.getId(), barrierTask.getClass(), barrierTask.getId());
+        tracker.addTaskList(taskChainTail.getChildTasks());
         taskChainTail = barrierTask;
       }
       lastReplayedEvent = eventDmd.getEventTo();
@@ -148,8 +155,6 @@ public class IncrementalLoadTasksBuilder {
       this.log.debug("Added {}:{} as a precursor of barrier task {}:{}",
               taskChainTail.getClass(), taskChainTail.getId(),
               barrierTask.getClass(), barrierTask.getId());
-
-      replLogger.startLog();
     }
     return evTaskRoot;
   }
