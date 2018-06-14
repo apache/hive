@@ -271,7 +271,6 @@ class Serializer {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private FieldVector write(FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo,
       int size, boolean encode) {
     switch (typeInfo.getCategory()) {
@@ -281,8 +280,12 @@ class Serializer {
         return writeList((ListVector) arrowVector, (ListColumnVector) hiveVector,
             (ListTypeInfo) typeInfo, size, encode);
       case STRUCT:
-        return writeStruct((MapVector) arrowVector, (StructColumnVector) hiveVector,
-            (StructTypeInfo) typeInfo, size, encode);
+        {
+          @SuppressWarnings("unchecked")
+          FieldVector ret = writeStruct((MapVector) arrowVector, (StructColumnVector) hiveVector,
+              (StructTypeInfo) typeInfo, size, encode);
+          return ret;
+        }
       case UNION:
         return writeUnion(arrowVector, hiveVector, typeInfo, size, encode);
       case MAP:
@@ -328,7 +331,6 @@ class Serializer {
     return arrowVector;
   }
 
-  @SuppressWarnings("unchecked")
   private FieldVector writeStruct(MapVector arrowVector, StructColumnVector hiveVector,
       StructTypeInfo typeInfo, int size, boolean encode) {
     final List<String> fieldNames = typeInfo.getAllStructFieldNames();
@@ -356,7 +358,9 @@ class Serializer {
       }
     }
 
-    return (FieldVector) arrowVector;
+    @SuppressWarnings("unchecked")
+    FieldVector ret = (FieldVector) arrowVector;
+    return ret;
   }
 
   private FieldVector writeList(ListVector arrowVector, ListColumnVector hiveVector,
