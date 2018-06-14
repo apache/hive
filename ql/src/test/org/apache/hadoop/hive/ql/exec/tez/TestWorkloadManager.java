@@ -60,6 +60,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@RunWith(RetryTestRunner.class)
 public class TestWorkloadManager {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TestWorkloadManager.class);

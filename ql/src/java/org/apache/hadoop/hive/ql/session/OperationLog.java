@@ -211,4 +211,9 @@ public class OperationLog {
       return logs;
     }
   }
+
+  @Override
+  public String toString() {
+    return logFile.file.toString();
+  }
 }

@@ -133,4 +133,16 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   public void updateMaxSize(long maxSize) {
     this.maxSize = maxSize;
   }
+
+  public long purge() {
+    if (evictor == null) return 0;
+    long evicted = evictor.purge();
+    if (evicted == 0) return 0;
+    long usedMem = -1;
+    do {
+      usedMem = usedMemory.get();
+    } while (!usedMemory.compareAndSet(usedMem, usedMem - evicted));
+    metrics.incrCacheCapacityUsed(-evicted);
+    return evicted;
+  }
 }

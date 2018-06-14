@@ -87,6 +87,14 @@ select unix_timestamp(from_unixtime(1396681200)) from druid_table_n0 limit 1;
 explain select unix_timestamp(`__time`) from druid_table_n0 limit 1;
 select unix_timestamp(`__time`) from druid_table_n0 limit 1;
 
+explain select FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss');
+
+select FROM_UNIXTIME(UNIX_TIMESTAMP (CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss');
+
 explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY');
 select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY');
 select TRUNC(cast(`__time` as timestamp), 'YEAR') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YEAR');
@@ -117,5 +125,13 @@ GROUP BY CAST(TRUNC(CAST(`druid_table_alias`.`__time` AS TIMESTAMP),'MM') AS DAT
 explain SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_n0  order by date_1, date_2 limit 3;
 SELECT DATE_ADD(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_1,  DATE_SUB(cast(`__time` as date), CAST((cdouble / 1000) AS INT)) as date_2 from druid_table_n0  order by date_1, date_2 limit 3;
 
+  -- Boolean Values
+ SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2;
+  
+  -- Expected results of this query are wrong due to https://issues.apache.org/jira/browse/CALCITE-2319
+  -- It should get fixed once we upgrade calcite
+ SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2;
+  
+ EXPLAIN SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2;
 
 DROP TABLE druid_table_n0;

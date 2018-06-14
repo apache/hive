@@ -28,7 +28,7 @@ CREATE TABLE moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint,
 
 show grant user hive_test_user;
 
-source ../../metastore/scripts/upgrade/hive/hive-schema-3.0.0.hive.sql;
+source ../../metastore/scripts/upgrade/hive/hive-schema-3.1.0.hive.sql;
 
 use sys;
 

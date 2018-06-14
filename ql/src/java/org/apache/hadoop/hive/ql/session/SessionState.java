@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
@@ -160,7 +162,7 @@ public class SessionState {
   /**
    * The flag to indicate if the session already started so we can skip the init
    */
-  private boolean isStarted = false;
+  private AtomicBoolean isStarted = new AtomicBoolean(false);
   /*
    * HiveHistory Object
    */
@@ -228,6 +230,8 @@ public class SessionState {
   private TezSessionState tezSessionState;
 
   private String currentDatabase;
+
+  private String currentCatalog;
 
   private final String CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER =
       "hive.internal.ss.authz.settings.applied.marker";
@@ -598,13 +602,14 @@ public class SessionState {
     startSs.tezSessionState.endOpen();
   }
 
-  synchronized private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
+  private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
     setCurrentSessionState(startSs);
 
-    if (startSs.isStarted) {
-      return;
+    synchronized(SessionState.class) {
+      if (!startSs.isStarted.compareAndSet(false, true)) {
+        return;
+      }
     }
-    startSs.isStarted = true;
 
     if (startSs.hiveHist == null){
       if (startSs.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED)) {
@@ -1723,6 +1728,17 @@ public class SessionState {
 
   public void setCurrentDatabase(String currentDatabase) {
     this.currentDatabase = currentDatabase;
+  }
+
+  public String getCurrentCatalog() {
+    if (currentCatalog == null) {
+      currentCatalog = MetaStoreUtils.getDefaultCatalog(getConf());
+    }
+    return currentCatalog;
+  }
+
+  public void setCurrentCatalog(String currentCatalog) {
+    this.currentCatalog = currentCatalog;
   }
 
   public void close() throws IOException {

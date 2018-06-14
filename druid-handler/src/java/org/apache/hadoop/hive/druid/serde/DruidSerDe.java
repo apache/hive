@@ -462,7 +462,11 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
         output.add(new Text(value.toString()));
         break;
       case BOOLEAN:
-        output.add(new BooleanWritable(Boolean.valueOf(value.toString())));
+        if (value instanceof Number) {
+          output.add(new BooleanWritable(((Number) value).intValue() != 0));
+        } else {
+          output.add(new BooleanWritable(Boolean.valueOf(value.toString())));
+        }
         break;
       default:
         throw new SerDeException("Unknown type: " + types[i].getPrimitiveCategory());

@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedDbName;
-import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -82,7 +80,9 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -213,7 +213,6 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
 import org.datanucleus.AbstractNucleusContext;
@@ -1415,7 +1414,7 @@ public class ObjectStore implements RawStore, Configurable {
           deleteTableColumnStatistics(catName, dbName, tableName, null);
         } catch (NoSuchObjectException e) {
           LOG.info("Found no table level column statistics associated with {} to delete",
-              getCatalogQualifiedTableName(catName, dbName, tableName));
+              TableName.getQualified(catName, dbName, tableName));
         }
 
         List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
@@ -1557,17 +1556,17 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<FullTableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
-    return new GetListHelper<FullTableName>(null, null, null, true, false) {
+  public List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
+    return new GetListHelper<TableName>(null, null, null, true, false) {
       @Override
-      protected List<FullTableName> getSqlResult(
-          GetHelper<List<FullTableName>> ctx) throws MetaException {
+      protected List<TableName> getSqlResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
         return directSql.getTableNamesWithStats();
       }
 
       @Override
-      protected List<FullTableName> getJdoResult(
-          GetHelper<List<FullTableName>> ctx) throws MetaException {
+      protected List<TableName> getJdoResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
         throw new UnsupportedOperationException("UnsupportedOperationException"); // TODO: implement?
       }
     }.run(false);
@@ -1602,20 +1601,20 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<FullTableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
-    return new GetListHelper<FullTableName>(null, null, null, true, false) {
+  public List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
+    return new GetListHelper<TableName>(null, null, null, true, false) {
       @Override
-      protected List<FullTableName> getSqlResult(
-          GetHelper<List<FullTableName>> ctx) throws MetaException {
+      protected List<TableName> getSqlResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
         return directSql.getAllTableNamesForStats();
       }
 
       @Override
-      protected List<FullTableName> getJdoResult(
-          GetHelper<List<FullTableName>> ctx) throws MetaException {
+      protected List<TableName> getJdoResult(
+          GetHelper<List<TableName>> ctx) throws MetaException {
         boolean commited = false;
         Query query = null;
-        List<FullTableName> result = new ArrayList<>();
+        List<TableName> result = new ArrayList<>();
         openTransaction();
         try {
           String paramStr = "", whereStr = "";
@@ -1634,7 +1633,7 @@ public class ObjectStore implements RawStore, Configurable {
               query, MetaStoreDirectSql.STATS_TABLE_TYPES);
           pm.retrieveAll(tbls);
           for (MTable tbl : tbls) {
-            result.add(new FullTableName(
+            result.add(new TableName(
                 tbl.getDatabase().getCatalogName(), tbl.getDatabase().getName(), tbl.getTableName()));
           }
           commited = commitTransaction();
@@ -1877,7 +1876,7 @@ public class ObjectStore implements RawStore, Configurable {
           "java.lang.String table, java.lang.String db, java.lang.String catname");
       query.setUnique(true);
       LOG.debug("Executing getMTable for " +
-          getCatalogQualifiedTableName(catName, db, table));
+          TableName.getQualified(catName, db, table));
       mtbl = (MTable) query.execute(table, db, catName);
       pm.retrieve(mtbl);
       // Retrieving CD can be expensive and unnecessary, so do it only when required.
@@ -1935,7 +1934,6 @@ public class ObjectStore implements RawStore, Configurable {
         lowered_tbl_names.add(normalizeIdentifier(t));
       }
       query = pm.newQuery(MTable.class);
-//<<<<<<< HEAD
       query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
       query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
       Collection mtables = (Collection) query.execute(db, catName, lowered_tbl_names);
@@ -1948,7 +1946,7 @@ public class ObjectStore implements RawStore, Configurable {
         String dbNameIfExists = (String) dbExistsQuery.execute(db, catName);
         if (org.apache.commons.lang.StringUtils.isEmpty(dbNameIfExists)) {
           throw new UnknownDBException("Could not find database " +
-              getCatalogQualifiedDbName(catName, db));
+              DatabaseName.getQualified(catName, db));
         }
       } else {
         for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
@@ -2029,7 +2027,7 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (NoSuchObjectException e) {
       LOG.error("Could not convert to MTable", e);
       throw new InvalidObjectException("Database " +
-          getCatalogQualifiedDbName(catName, tbl.getDbName()) + " doesn't exist.");
+          DatabaseName.getQualified(catName, tbl.getDbName()) + " doesn't exist.");
     }
 
     // If the table has property EXTERNAL set, update table type
@@ -2332,7 +2330,7 @@ public class ObjectStore implements RawStore, Configurable {
           throw new MetaException("Partition does not belong to target table "
               + dbName + "." + tblName + ": " + part);
         }
-        MPartition mpart = convertToMPart(part, true);
+        MPartition mpart = convertToMPart(part, table, true);
         toPersist.add(mpart);
         int now = (int)(System.currentTimeMillis()/1000);
         if (tabGrants != null) {
@@ -2368,11 +2366,11 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private boolean isValidPartition(
-      Partition part, boolean ifNotExists) throws MetaException {
+      Partition part, List<FieldSchema> partitionKeys, boolean ifNotExists) throws MetaException {
     MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
         partitionValidationPattern);
     boolean doesExist = doesPartitionExist(part.getCatName(),
-        part.getDbName(), part.getTableName(), part.getValues());
+        part.getDbName(), part.getTableName(), partitionKeys, part.getValues());
     if (doesExist && !ifNotExists) {
       throw new MetaException("Partition already exists: " + part);
     }
@@ -2403,11 +2401,12 @@ public class ObjectStore implements RawStore, Configurable {
 
       int now = (int)(System.currentTimeMillis()/1000);
 
+      List<FieldSchema> partitionKeys = convertToFieldSchemas(table.getPartitionKeys());
       while (iterator.hasNext()) {
         Partition part = iterator.next();
 
-        if (isValidPartition(part, ifNotExists)) {
-          MPartition mpart = convertToMPart(part, true);
+        if (isValidPartition(part, partitionKeys, ifNotExists)) {
+          MPartition mpart = convertToMPart(part, table, true);
           pm.makePersistent(mpart);
           if (tabGrants != null) {
             for (MTablePrivilege tab : tabGrants) {
@@ -2507,26 +2506,62 @@ public class ObjectStore implements RawStore, Configurable {
     return part;
   }
 
+  /**
+   * Getting MPartition object. Use this method only if the partition name is not available,
+   * since then the table will be queried to get the partition keys.
+   * @param catName The catalogue
+   * @param dbName The database
+   * @param tableName The table
+   * @param part_vals The values defining the partition
+   * @return The MPartition object in the backend database
+   * @throws MetaException
+   */
   private MPartition getMPartition(String catName, String dbName, String tableName, List<String> part_vals)
       throws MetaException {
-    List<MPartition> mparts = null;
-    MPartition ret = null;
-    boolean commited = false;
-    Query query = null;
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    boolean committed = false;
+    MPartition result = null;
     try {
       openTransaction();
-      catName = normalizeIdentifier(catName);
-      dbName = normalizeIdentifier(dbName);
-      tableName = normalizeIdentifier(tableName);
       MTable mtbl = getMTable(catName, dbName, tableName);
       if (mtbl == null) {
-        commited = commitTransaction();
         return null;
       }
       // Change the query to use part_vals instead of the name which is
       // redundant TODO: callers of this often get part_vals out of name for no reason...
       String name =
           Warehouse.makePartName(convertToFieldSchemas(mtbl.getPartitionKeys()), part_vals);
+      result = getMPartition(catName, dbName, tableName, name);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, (Query)null);
+    }
+    return result;
+  }
+
+  /**
+   * Getting MPartition object. Use this method if the partition name is available, so we do not
+   * query the table object again.
+   * @param catName The catalogue
+   * @param dbName The database
+   * @param tableName The table
+   * @param name The partition name
+   * @return The MPartition object in the backend database
+   * @throws MetaException
+   */
+  private MPartition getMPartition(String catName, String dbName, String tableName,
+      String name) throws MetaException {
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    List<MPartition> mparts = null;
+    MPartition ret = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
       query =
           pm.newQuery(MPartition.class,
               "table.tableName == t1 && table.database.name == t2 && partitionName == t3 " +
@@ -2567,7 +2602,7 @@ public class ObjectStore implements RawStore, Configurable {
    * to the same one as the table's storage descriptor.
    * @param part the partition to convert
    * @param useTableCD whether to try to use the parent table's column descriptor.
-   * @return the model partition object
+   * @return the model partition object, and null if the input partition is null.
    * @throws InvalidObjectException
    * @throws MetaException
    */
@@ -2577,6 +2612,26 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     MTable mt = getMTable(part.getCatName(), part.getDbName(), part.getTableName());
+    return convertToMPart(part, mt, useTableCD);
+  }
+
+  /**
+   * Convert a Partition object into an MPartition, which is an object backed by the db
+   * If the Partition's set of columns is the same as the parent table's AND useTableCD
+   * is true, then this partition's storage descriptor's column descriptor will point
+   * to the same one as the table's storage descriptor.
+   * @param part the partition to convert
+   * @param mt the parent table object
+   * @param useTableCD whether to try to use the parent table's column descriptor.
+   * @return the model partition object, and null if the input partition is null.
+   * @throws InvalidObjectException
+   * @throws MetaException
+   */
+  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
+      throws InvalidObjectException, MetaException {
+    if (part == null) {
+      return null;
+    }
     if (mt == null) {
       throw new InvalidObjectException(
           "Partition doesn't have a valid table or database name");
@@ -2973,7 +3028,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
 
     LOG.info("Table: {} filter: \"{}\" cols: {}",
-        getCatalogQualifiedTableName(catName, dbName, tableName), filter, cols);
+        TableName.getQualified(catName, dbName, tableName), filter, cols);
     List<String> partitionNames = null;
     List<Partition> partitions = null;
     Table tbl = getTable(catName, dbName, tableName);
@@ -3001,7 +3056,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (partitionNames == null && partitions == null) {
       throw new MetaException("Cannot obtain list of partitions by filter:\"" + filter +
-          "\" for " + getCatalogQualifiedTableName(catName, dbName, tableName));
+          "\" for " + TableName.getQualified(catName, dbName, tableName));
     }
 
     if (!ascending) {
@@ -3193,7 +3248,7 @@ public class ObjectStore implements RawStore, Configurable {
     tableName = normalizeIdentifier(tableName);
     Table table = getTable(catName, dbName, tableName);
     if (table == null) {
-      throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbName, tableName)
+      throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tableName)
           + " table not found");
     }
     String partNameMatcher = MetaStoreUtils.makePartNameMatcher(table, part_vals);
@@ -3913,7 +3968,7 @@ public class ObjectStore implements RawStore, Configurable {
     MTable mtable = getMTable(catName, dbName, tblName);
     if (mtable == null) {
       throw new NoSuchObjectException("Specified catalog.database.table does not exist : "
-          + getCatalogQualifiedTableName(catName, dbName, tblName));
+          + TableName.getQualified(catName, dbName, tblName));
     }
     return mtable;
   }
@@ -4721,7 +4776,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (getPrimaryKeyConstraintName(parentTable.getDatabase().getCatalogName(),
           parentTable.getDatabase().getName(), parentTable.getTableName()) != null) {
         throw new MetaException(" Primary key already exists for: " +
-            getCatalogQualifiedTableName(catName, tableDB, tableName));
+            TableName.getQualified(catName, tableDB, tableName));
       }
       if (pks.get(i).getPk_name() == null) {
         if (pks.get(i).getKey_seq() == 1) {
@@ -8182,7 +8237,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     try {
       LOG.info("Updating table level column statistics for table={}" +
-        " colName={}", getCatalogQualifiedTableName(table), colName);
+        " colName={}", Warehouse.getCatalogQualifiedTableName(table), colName);
       validateTableCols(table, Lists.newArrayList(colName));
 
       if (oldStats != null) {
@@ -8210,7 +8265,7 @@ public class ObjectStore implements RawStore, Configurable {
     String colName = mStatsObj.getColName();
 
     LOG.info("Updating partition level column statistics for table=" +
-        getCatalogQualifiedTableName(catName, dbName, tableName) +
+        TableName.getQualified(catName, dbName, tableName) +
         " partName=" + partName + " colName=" + colName);
 
     boolean foundCol = false;
@@ -8748,7 +8803,7 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistent(mStatsObj);
         } else {
           throw new NoSuchObjectException("Column stats doesn't exist for table="
-              + getCatalogQualifiedTableName(catName, dbName, tableName) +
+              + TableName.getQualified(catName, dbName, tableName) +
               " partition=" + partName + " col=" + colName);
         }
       } else {
@@ -8762,7 +8817,7 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(mStatsObjColl);
         } else {
           throw new NoSuchObjectException("Column stats don't exist for table="
-              + getCatalogQualifiedTableName(catName, dbName, tableName) + " partition" + partName);
+              + TableName.getQualified(catName, dbName, tableName) + " partition" + partName);
         }
       }
       ret = commitTransaction();
@@ -8793,7 +8848,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<MTableColumnStatistics> mStatsObjColl;
       if (mTable == null) {
         throw new NoSuchObjectException("Table " +
-            getCatalogQualifiedTableName(catName, dbName, tableName)
+            TableName.getQualified(catName, dbName, tableName)
             + "  for which stats deletion is requested doesn't exist");
       }
       query = pm.newQuery(MTableColumnStatistics.class);
@@ -9213,14 +9268,11 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean doesPartitionExist(String catName, String dbName, String tableName, List<String>
-      partVals)
+  public boolean doesPartitionExist(String catName, String dbName, String tableName,
+                                    List<FieldSchema> partKeys, List<String> partVals)
       throws MetaException {
-    try {
-      return this.getPartition(catName, dbName, tableName, partVals) != null;
-    } catch (NoSuchObjectException e) {
-      return false;
-    }
+    String name = Warehouse.makePartName(partKeys, partVals);
+    return this.getMPartition(catName, dbName, tableName, name) != null;
   }
 
   private void debugLog(String message) {

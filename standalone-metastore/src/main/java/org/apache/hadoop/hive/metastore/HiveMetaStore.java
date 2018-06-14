@@ -78,6 +78,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -349,11 +350,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return null;
     }
 
-    private static int nextSerialNum = 0;
+    private static AtomicInteger nextSerialNum = new AtomicInteger();
     private static ThreadLocal<Integer> threadLocalId = new ThreadLocal<Integer>() {
       @Override
       protected Integer initialValue() {
-        return nextSerialNum++;
+        return nextSerialNum.getAndIncrement();
       }
     };
 
@@ -913,7 +914,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void startTableFunction(String function, String catName, String db, String tbl) {
       startFunction(function, " : tbl=" +
-          getCatalogQualifiedTableName(catName, db, tbl));
+          TableName.getQualified(catName, db, tbl));
     }
 
     private void startMultiTableFunction(String function, String db, List<String> tbls) {
@@ -924,13 +925,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void startPartitionFunction(String function, String cat, String db, String tbl,
                                         List<String> partVals) {
       startFunction(function, " : tbl=" +
-          getCatalogQualifiedTableName(cat, db, tbl) + "[" + join(partVals, ",") + "]");
+          TableName.getQualified(cat, db, tbl) + "[" + join(partVals, ",") + "]");
     }
 
     private void startPartitionFunction(String function, String catName, String db, String tbl,
                                         Map<String, String> partName) {
       startFunction(function, " : tbl=" +
-          getCatalogQualifiedTableName(catName, db, tbl) + "partition=" + partName);
+          TableName.getQualified(catName, db, tbl) + "partition=" + partName);
     }
 
     private void endFunction(String function, boolean successful, Exception e) {
@@ -1864,6 +1865,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             && checkConstraints == null) {
           ms.createTable(tbl);
         } else {
+          // Check that constraints have catalog name properly set first
+          if (primaryKeys != null && !primaryKeys.isEmpty() && !primaryKeys.get(0).isSetCatName()) {
+            for (SQLPrimaryKey pkcol : primaryKeys) pkcol.setCatName(tbl.getCatName());
+          }
+          if (foreignKeys != null && !foreignKeys.isEmpty() && !foreignKeys.get(0).isSetCatName()) {
+            for (SQLForeignKey fkcol : foreignKeys) fkcol.setCatName(tbl.getCatName());
+          }
+          if (uniqueConstraints != null && !uniqueConstraints.isEmpty() && !uniqueConstraints.get(0).isSetCatName()) {
+            for (SQLUniqueConstraint uccol : uniqueConstraints) uccol.setCatName(tbl.getCatName());
+          }
+          if (notNullConstraints != null && !notNullConstraints.isEmpty() && !notNullConstraints.get(0).isSetCatName()) {
+            for (SQLNotNullConstraint nncol : notNullConstraints) nncol.setCatName(tbl.getCatName());
+          }
+          if (defaultConstraints != null && !defaultConstraints.isEmpty() && !defaultConstraints.get(0).isSetCatName()) {
+            for (SQLDefaultConstraint dccol : defaultConstraints) dccol.setCatName(tbl.getCatName());
+          }
+          if (checkConstraints != null && !checkConstraints.isEmpty() && !checkConstraints.get(0).isSetCatName()) {
+            for (SQLCheckConstraint cccol : checkConstraints) cccol.setCatName(tbl.getCatName());
+          }
           // Set constraint name if null before sending to listener
           List<String> constraintNames = ms.createTableWithConstraints(tbl, primaryKeys, foreignKeys,
               uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
@@ -1874,6 +1894,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (primaryKeys.get(i).getPk_name() == null) {
                 primaryKeys.get(i).setPk_name(constraintNames.get(i));
               }
+              if (!primaryKeys.get(i).isSetCatName()) primaryKeys.get(i).setCatName(tbl.getCatName());
             }
           }
           int foreignKeySize = 0;
@@ -1883,6 +1904,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (foreignKeys.get(i).getFk_name() == null) {
                 foreignKeys.get(i).setFk_name(constraintNames.get(primaryKeySize + i));
               }
+              if (!foreignKeys.get(i).isSetCatName()) foreignKeys.get(i).setCatName(tbl.getCatName());
             }
           }
           int uniqueConstraintSize = 0;
@@ -1892,6 +1914,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (uniqueConstraints.get(i).getUk_name() == null) {
                 uniqueConstraints.get(i).setUk_name(constraintNames.get(primaryKeySize + foreignKeySize + i));
               }
+              if (!uniqueConstraints.get(i).isSetCatName()) uniqueConstraints.get(i).setCatName(tbl.getCatName());
             }
           }
           int notNullConstraintSize =  0;
@@ -1900,6 +1923,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               if (notNullConstraints.get(i).getNn_name() == null) {
                 notNullConstraints.get(i).setNn_name(constraintNames.get(primaryKeySize + foreignKeySize + uniqueConstraintSize + i));
               }
+              if (!notNullConstraints.get(i).isSetCatName()) notNullConstraints.get(i).setCatName(tbl.getCatName());
             }
           }
           int defaultConstraintSize =  0;
@@ -1909,6 +1933,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 defaultConstraints.get(i).setDc_name(constraintNames.get(primaryKeySize + foreignKeySize
                     + uniqueConstraintSize + notNullConstraintSize + i));
               }
+              if (!defaultConstraints.get(i).isSetCatName()) defaultConstraints.get(i).setCatName(tbl.getCatName());
             }
           }
           if (checkConstraints!= null) {
@@ -1919,6 +1944,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                                              + defaultConstraintSize
                                                                            + notNullConstraintSize + i));
               }
+              if (!checkConstraints.get(i).isSetCatName()) checkConstraints.get(i).setCatName(tbl.getCatName());
             }
           }
         }
@@ -2090,6 +2116,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_primary_key", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!primaryKeyCols.isEmpty() && !primaryKeyCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        primaryKeyCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2139,6 +2169,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_foreign_key", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!foreignKeyCols.isEmpty() && !foreignKeyCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        foreignKeyCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2188,6 +2222,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_unique_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!uniqueConstraintCols.isEmpty() && !uniqueConstraintCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        uniqueConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2237,6 +2275,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_not_null_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!notNullConstraintCols.isEmpty() && !notNullConstraintCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        notNullConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2286,6 +2328,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_default_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!defaultConstraintCols.isEmpty() && !defaultConstraintCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        defaultConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2336,6 +2382,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("add_check_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
+      if (!checkConstraintCols.isEmpty() && !checkConstraintCols.get(0).isSetCatName()) {
+        String defaultCat = getDefaultCatalog(conf);
+        checkConstraintCols.forEach(pk -> pk.setCatName(defaultCat));
+      }
       RawStore ms = getMS();
       try {
         ms.openTransaction();
@@ -2429,7 +2479,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.dropConstraint(catName, dbname, name, null, true);
 
         if (!ms.dropTable(catName, dbname, name)) {
-          String tableName = getCatalogQualifiedTableName(catName, dbname, name);
+          String tableName = TableName.getQualified(catName, dbname, name);
           throw new MetaException(indexName == null ? "Unable to drop table " + tableName:
               "Unable to drop index table " + tableName + " for index " + indexName);
         } else {
@@ -2846,7 +2896,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         t = getMS().getTable(catName, dbname, name);
         if (t == null) {
-          throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbname, name) +
+          throw new NoSuchObjectException(TableName.getQualified(catName, dbname, name) +
             " table not found");
         }
       } catch (Exception e) {
@@ -3223,7 +3273,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         tbl = ms.getTable(catName, dbName, tblName);
         if (tbl == null) {
           throw new InvalidObjectException("Unable to add partitions because "
-              + getCatalogQualifiedTableName(catName, dbName, tblName) +
+              + TableName.getQualified(catName, dbName, tblName) +
               " does not exist");
         }
 
@@ -3243,7 +3293,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
             String errorMsg = String.format(
                 "Partition does not belong to target table %s. It belongs to the table %s.%s : %s",
-                getCatalogQualifiedTableName(catName, dbName, tblName), part.getDbName(),
+                TableName.getQualified(catName, dbName, tblName), part.getDbName(),
                 part.getTableName(), part.toString());
             throw new MetaException(errorMsg);
           }
@@ -3254,7 +3304,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throw new MetaException("Partition value cannot be null.");
           }
 
-          boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
+          boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), ifNotExists);
           if (!shouldAdd) {
             existingParts.add(part);
             LOG.info("Not adding partition {} as it already exists", part);
@@ -3520,7 +3570,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throw new MetaException("The partition values cannot be null or empty.");
           }
 
-          boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
+          boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), ifNotExists);
           if (!shouldAdd) {
             LOG.info("Not adding partition {} as it already exists", part);
             continue;
@@ -3628,11 +3678,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private boolean startAddPartition(
-        RawStore ms, Partition part, boolean ifNotExists) throws TException {
+        RawStore ms, Partition part, List<FieldSchema> partitionKeys, boolean ifNotExists)
+        throws TException {
       MetaStoreUtils.validatePartitionNameCharacters(part.getValues(),
           partitionValidationPattern);
       boolean doesExist = ms.doesPartitionExist(part.getCatName(),
-          part.getDbName(), part.getTableName(), part.getValues());
+          part.getDbName(), part.getTableName(), partitionKeys, part.getValues());
       if (doesExist && !ifNotExists) {
         throw new AlreadyExistsException("Partition already exists: " + part);
       }
@@ -3755,7 +3806,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (part.getValues() == null || part.getValues().isEmpty()) {
           throw new MetaException("The partition values cannot be null or empty.");
         }
-        boolean shouldAdd = startAddPartition(ms, part, false);
+        boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), false);
         assert shouldAdd; // start would throw if it already existed here
         boolean madeDir = createLocationForAddedPartition(tbl, part);
         try {
@@ -3881,14 +3932,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.getTable(parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME], destTableName);
       if (destinationTable == null) {
         throw new MetaException( "The destination table " +
-            getCatalogQualifiedTableName(parsedDestDbName[CAT_NAME],
+            TableName.getQualified(parsedDestDbName[CAT_NAME],
                 parsedDestDbName[DB_NAME], destTableName) + " not found");
       }
       Table sourceTable =
           ms.getTable(parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME], sourceTableName);
       if (sourceTable == null) {
         throw new MetaException("The source table " +
-            getCatalogQualifiedTableName(parsedSourceDbName[CAT_NAME],
+            TableName.getQualified(parsedSourceDbName[CAT_NAME],
                 parsedSourceDbName[DB_NAME], sourceTableName) + " not found");
       }
 
@@ -3946,7 +3997,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       if (!isRenameAllowed(parsedDestDbName[CAT_NAME], parsedSourceDbName[DB_NAME], parsedDestDbName[DB_NAME])) {
         throw new MetaException("Exchange partition not allowed for " +
-                getCatalogQualifiedTableName(parsedSourceDbName[CAT_NAME],
+                TableName.getQualified(parsedSourceDbName[CAT_NAME],
                 parsedSourceDbName[DB_NAME], sourceTableName) + " Dest db : " + destDbName);
       }
       try {
@@ -4404,7 +4455,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // metastore api call)
         Table t = getMS().getTable(catName, dbName, tblName);
         if (t == null) {
-          throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbName, tblName)
+          throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName)
               + " table not found");
         }
         firePreEvent(new PreReadTableEvent(t, this));
@@ -4926,7 +4977,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private void alter_table_core(final String catName, final String dbname, final String name,
                                   final Table newTable, final EnvironmentContext envContext)
         throws InvalidOperationException, MetaException {
-      startFunction("alter_table", ": " + getCatalogQualifiedTableName(catName, dbname, name)
+      startFunction("alter_table", ": " + TableName.getQualified(catName, dbname, name)
           + " newtbl=" + newTable.getTableName());
 
       // Update the time if it hasn't been specified.
@@ -4955,7 +5006,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Table oldt = get_table_core(catName, dbname, name);
         if (!isRenameAllowed(catName, dbname, newTable.getDbName())) {
           throw new MetaException("Alter table not allowed for table " +
-                  getCatalogQualifiedTableName(catName, dbname, name) +
+                  TableName.getQualified(catName, dbname, name) +
                   " new table = " + getCatalogQualifiedTableName(newTable));
         }
         firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
@@ -5306,7 +5357,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Partition p = ms.getPartition(catName, db_name, tbl_name, partVals);
 
       if (p == null) {
-        throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, db_name, tbl_name)
+        throw new NoSuchObjectException(TableName.getQualified(catName, db_name, tbl_name)
             + " partition (" + part_name + ") not found");
       }
       return p;
@@ -5318,7 +5369,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       String[] parsedDbName = parseDbName(db_name, conf);
       startFunction("get_partition_by_name", ": tbl=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
           + " part=" + part_name);
       Partition ret = null;
       Exception ex = null;
@@ -5345,7 +5396,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws TException {
       String[] parsedDbName = parseDbName(db_name, conf);
       startFunction("append_partition_by_name", ": tbl="
-          + getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+          + TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tbl_name) + " part=" + part_name);
 
       Partition ret = null;
@@ -5395,7 +5446,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final EnvironmentContext envContext) throws TException {
       String[] parsedDbName = parseDbName(db_name, conf);
       startFunction("drop_partition_by_name", ": tbl=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name)
           + " part=" + part_name);
 
       boolean ret = false;
@@ -5535,7 +5586,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       tableName = tableName.toLowerCase();
       colName = colName.toLowerCase();
       startFunction("get_column_statistics_by_table", ": table=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
               tableName) + " column=" + colName);
       ColumnStatistics statsObj = null;
       try {
@@ -5557,7 +5608,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String dbName = request.getDbName().toLowerCase();
       String tblName = request.getTblName().toLowerCase();
       startFunction("get_table_statistics_req", ": table=" +
-          getCatalogQualifiedTableName(catName, dbName, tblName));
+          TableName.getQualified(catName, dbName, tblName));
       TableStatsResult result = null;
       List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
       for (String colName : request.getColNames()) {
@@ -5582,7 +5633,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       colName = colName.toLowerCase();
       String convertedPartName = lowerCaseConvertPartName(partName);
       startFunction("get_column_statistics_by_partition", ": table=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tableName) + " partition=" + convertedPartName + " column=" + colName);
       ColumnStatistics statsObj = null;
 
@@ -5610,7 +5661,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String dbName = request.getDbName().toLowerCase();
       String tblName = request.getTblName().toLowerCase();
       startFunction("get_partitions_statistics_req", ": table=" +
-          getCatalogQualifiedTableName(catName, dbName, tblName));
+          TableName.getQualified(catName, dbName, tblName));
 
       PartitionsStatsResult result = null;
       List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
@@ -5655,7 +5706,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<ColumnStatisticsObj> statsObjs =  colStats.getStatsObj();
 
       startFunction("write_column_statistics", ":  table=" +
-          Warehouse.getCatalogQualifiedTableName(catName, dbName, tableName));
+          TableName.getQualified(catName, dbName, tableName));
       for (ColumnStatisticsObj statsObj:statsObjs) {
         colName = statsObj.getColName().toLowerCase();
         statsObj.setColName(colName);
@@ -5741,7 +5792,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       String convertedPartName = lowerCaseConvertPartName(partName);
       startFunction("delete_column_statistics_by_partition",": table=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
           " partition=" + convertedPartName + " column=" + colName);
       boolean ret = false;
 
@@ -5767,7 +5818,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         colName = colName.toLowerCase();
       }
       startFunction("delete_column_statistics_by_table", ": table=" +
-          getCatalogQualifiedTableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) + " column=" +
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) + " column=" +
           colName);
 
       boolean ret = false;
@@ -7258,7 +7309,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String dbName = request.getDbName().toLowerCase();
       String tblName = request.getTblName().toLowerCase();
       startFunction("get_aggr_stats_for", ": table=" +
-          getCatalogQualifiedTableName(catName, dbName, tblName));
+          TableName.getQualified(catName, dbName, tblName));
 
       List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
       for (String colName : request.getColNames()) {
@@ -7390,7 +7441,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws MetaException, InvalidObjectException {
       Table t = getMS().getTable(catName, dbName, tableName);
       if (t == null) {
-        throw new InvalidObjectException(getCatalogQualifiedTableName(catName, dbName, tableName)
+        throw new InvalidObjectException(TableName.getQualified(catName, dbName, tableName)
             + " table not found");
       }
       return t;

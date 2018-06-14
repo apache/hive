@@ -38,7 +38,9 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
 import org.apache.hadoop.hive.metastore.ObjectStore;
@@ -116,7 +118,6 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -244,7 +245,7 @@ public class CachedStore implements RawStore, Configurable {
             } catch (NoSuchObjectException e) {
               // Continue with next database
               LOG.warn("Failed to cache database "
-                  + Warehouse.getCatalogQualifiedDbName(catName, dbName) + ", moving on", e);
+                  + DatabaseName.getQualified(catName, dbName) + ", moving on", e);
             }
           }
         } catch (MetaException e) {
@@ -263,7 +264,7 @@ public class CachedStore implements RawStore, Configurable {
           tblNames = rawStore.getAllTables(catName, dbName);
         } catch (MetaException e) {
           LOG.warn("Failed to cache tables for database "
-              + Warehouse.getCatalogQualifiedDbName(catName, dbName) + ", moving on");
+              + DatabaseName.getQualified(catName, dbName) + ", moving on");
           // Continue with next database
           continue;
         }
@@ -970,17 +971,18 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public boolean doesPartitionExist(String catName, String dbName, String tblName,
-      List<String> part_vals) throws MetaException, NoSuchObjectException {
+      List<FieldSchema> partKeys, List<String> part_vals)
+      throws MetaException, NoSuchObjectException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
-      return rawStore.doesPartitionExist(catName, dbName, tblName, part_vals);
+      return rawStore.doesPartitionExist(catName, dbName, tblName, partKeys, part_vals);
     }
     Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (tbl == null) {
       // The table containing the partition is not yet loaded in cache
-      return rawStore.doesPartitionExist(catName, dbName, tblName, part_vals);
+      return rawStore.doesPartitionExist(catName, dbName, tblName, partKeys, part_vals);
     }
     return sharedCache.existPartitionFromCache(catName, dbName, tblName, part_vals);
   }
@@ -2407,7 +2409,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   static boolean isNotInBlackList(String catName, String dbName, String tblName) {
-    String str = Warehouse.getCatalogQualifiedTableName(catName, dbName, tblName);
+    String str = TableName.getQualified(catName, dbName, tblName);
     for (Pattern pattern : blacklistPatterns) {
       LOG.debug("Trying to match: {} against blacklist pattern: {}", str, pattern);
       Matcher matcher = pattern.matcher(str);
@@ -2421,7 +2423,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   private static boolean isInWhitelist(String catName, String dbName, String tblName) {
-    String str = Warehouse.getCatalogQualifiedTableName(catName, dbName, tblName);
+    String str = TableName.getQualified(catName, dbName, tblName);
     for (Pattern pattern : whitelistPatterns) {
       LOG.debug("Trying to match: {} against whitelist pattern: {}", str, pattern);
       Matcher matcher = pattern.matcher(str);
@@ -2495,12 +2497,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<FullTableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
+  public List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
     return rawStore.getTableNamesWithStats();
   }
 
   @Override
-  public List<FullTableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
+  public List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
     return rawStore.getAllTableNamesForStats();
   }
 

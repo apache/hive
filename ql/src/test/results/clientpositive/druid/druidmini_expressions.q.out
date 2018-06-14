@@ -90,7 +90,7 @@ FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-19884.64700973034	27373419	14472	8.51628242804E11	851620413654	68151649880
+19884.646918177605	27373419	14472	8.51628242804E11	851620413654	68151649880
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000
 PREHOOK: type: QUERY
@@ -101,7 +101,7 @@ FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-54430.27000427246	-3740445	51268	1.31919188502E11	131922984948	92160895030
+54430.269943237305	-3740445	51268	1.31919188502E11	131922984948	92160895030
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_n0 WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 PREHOOK: type: QUERY
@@ -112,7 +112,7 @@ FROM druid_table_n0 WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--2389.5169917345047	27640645	-5707	7.19705549994E11	719697428706	13774723379
+-2389.517022252083	27640645	-5707	7.19705549994E11	719697428706	13774723379
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
 FROM druid_table_n0 WHERE  SIN(cdouble) > 1
 PREHOOK: type: QUERY
@@ -955,6 +955,48 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 -60
+PREHOOK: query: explain select FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes string
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_format((div(\"__time\",1000) * '1000'),'yyyy-MM-dd HH:mm:ss','US/Pacific')","outputType":"STRING"}],"limitSpec":{"type":"default"},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select FROM_UNIXTIME(UNIX_TIMESTAMP (CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select FROM_UNIXTIME(UNIX_TIMESTAMP (CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+from druid_table_n0
+GROUP BY FROM_UNIXTIME(UNIX_TIMESTAMP(CAST(`__time` as timestamp ),'yyyy-MM-dd HH:mm:ss' ),'yyyy-MM-dd HH:mm:ss')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1969-12-31 15:59:00
+1969-12-31 16:00:00
 PREHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select TRUNC(cast(`__time` as timestamp), 'YY') from druid_table_n0 GROUP BY TRUNC(cast(`__time` as timestamp), 'YY')
@@ -1246,6 +1288,57 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-02-26	1970-11-04
 1969-03-19	1970-10-14
 1969-11-13	1970-02-17
+PREHOOK: query: -- Boolean Values
+ SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: -- Boolean Values
+ SELECT cboolean2, count(*) from druid_table_n0 GROUP BY cboolean2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	8
+false	3140
+true	2957
+PREHOOK: query: -- Expected results of this query are wrong due to https://issues.apache.org/jira/browse/CALCITE-2319
+  -- It should get fixed once we upgrade calcite
+ SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: -- Expected results of this query are wrong due to https://issues.apache.org/jira/browse/CALCITE-2319
+  -- It should get fixed once we upgrade calcite
+ SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+false	2653
+false	3452
+PREHOOK: query: EXPLAIN SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT ctinyint > 2, count(*) from druid_table_n0 GROUP BY ctinyint > 2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: druid_table_n0
+          properties:
+            druid.fieldNames vc,$f1
+            druid.fieldTypes boolean,bigint
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"(\"ctinyint\" > 2)","outputType":"FLOAT"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"count","name":"$f1"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: boolean), $f1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            ListSink
+
 PREHOOK: query: DROP TABLE druid_table_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@druid_table_n0
