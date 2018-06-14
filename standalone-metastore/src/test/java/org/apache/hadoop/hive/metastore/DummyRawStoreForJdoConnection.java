@@ -750,7 +750,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public boolean doesPartitionExist(String catName, String dbName, String tableName,
-      List<String> partVals) throws MetaException, NoSuchObjectException {
+      List<FieldSchema> partKeys, List<String> partVals)
+      throws MetaException, NoSuchObjectException {
     return false;
   }
 
