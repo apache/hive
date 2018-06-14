@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
@@ -147,11 +148,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (null != replConfigs) {
           for (Map.Entry<String, String> config : replConfigs.entrySet()) {
             conf.set(config.getKey(), config.getValue());
-            if ("hive.repl.dump.metadata.only".equalsIgnoreCase(config.getKey()) &&
-                    "true".equalsIgnoreCase(config.getValue())) {
-              isMetaDataOnly = true;
-            }
           }
+          isMetaDataOnly = HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY);
         }
       } else if (ast.getChild(currNode).getType() == TOK_TABNAME) {
         // optional tblName was specified.
@@ -185,7 +183,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
-        if (!ReplChangeManager.isSourceOfReplication(database) && !isMetaDataOnly) {
+        if (!isMetaDataOnly && !ReplChangeManager.isSourceOfReplication(database)) {
           throw new SemanticException("Cannot dump database " + dbName +
                   " as it is not a source of replication");
         }
