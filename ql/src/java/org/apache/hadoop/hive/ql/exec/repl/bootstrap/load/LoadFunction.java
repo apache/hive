@@ -17,7 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -26,9 +30,11 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.FunctionEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
 import org.slf4j.Logger;
@@ -71,6 +77,9 @@ public class LoadFunction {
     Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
 
     try {
+      if (isFunctionAlreadyLoaded(fromPath)) {
+        return tracker;
+      }
       CreateFunctionHandler handler = new CreateFunctionHandler();
       List<Task<? extends Serializable>> tasks = handler.handle(
           new MessageHandler.Context(
@@ -83,6 +92,23 @@ public class LoadFunction {
     } catch (Exception e) {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
+  }
+
+  private boolean isFunctionAlreadyLoaded(Path funcDumpRoot) throws HiveException, IOException {
+    Path metadataPath = new Path(funcDumpRoot, EximUtil.METADATA_NAME);
+    FileSystem fs = FileSystem.get(metadataPath.toUri(), context.hiveConf);
+    MetaData metadata = EximUtil.readMetaData(fs, metadataPath);
+    Function function;
+    try {
+      String dbName = StringUtils.isBlank(dbNameToLoadIn) ? metadata.function.getDbName() : dbNameToLoadIn;
+      function = context.hiveDb.getFunction(dbName, metadata.function.getFunctionName());
+    } catch (HiveException e) {
+      if (e.getCause() instanceof NoSuchObjectException) {
+        return false;
+      }
+      throw e;
+    }
+    return (function != null);
   }
 
 }

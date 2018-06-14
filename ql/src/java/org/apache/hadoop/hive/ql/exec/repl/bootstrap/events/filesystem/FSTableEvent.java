@@ -54,7 +54,7 @@ public class FSTableEvent implements TableEvent {
   }
 
   public boolean shouldNotReplicate() {
-    ReplicationSpec spec = metadata.getReplicationSpec();
+    ReplicationSpec spec = replicationSpec();
     return spec.isNoop() || !spec.isInReplicationScope();
   }
 
@@ -69,7 +69,7 @@ public class FSTableEvent implements TableEvent {
       Table table = new Table(metadata.getTable());
       ImportTableDesc tableDesc =
           new ImportTableDesc(StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
-      tableDesc.setReplicationSpec(metadata.getReplicationSpec());
+      tableDesc.setReplicationSpec(replicationSpec());
       return tableDesc;
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -122,7 +122,7 @@ public class FSTableEvent implements TableEvent {
       partDesc.setSortCols(partition.getSd().getSortCols());
       partDesc.setLocation(new Path(fromPath,
           Warehouse.makePartName(tblDesc.getPartCols(), partition.getValues())).toString());
-      partsDesc.setReplicationSpec(metadata.getReplicationSpec());
+      partsDesc.setReplicationSpec(replicationSpec());
       return partsDesc;
     } catch (Exception e) {
       throw new SemanticException(e);
