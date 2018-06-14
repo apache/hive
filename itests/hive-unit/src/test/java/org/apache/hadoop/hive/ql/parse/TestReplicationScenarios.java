@@ -3165,6 +3165,7 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int)", driver);
     run("INSERT INTO " + dbName + ".normal values (1)", driver);
 
+    advanceDumpDir();
     run("repl dump " + dbName, true, driver);
     String dumpLocation = getResult(0, 0, driver);
 
@@ -3180,11 +3181,13 @@ public class TestReplicationScenarios {
 
     CommandProcessorResponse ret = driverMirror.run("REPL LOAD " + dbName + " FROM '" + dumpLocation + "'");
     assertTrue(ret.getResponseCode() == ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getErrorCode());
+    run("drop database " + dbName, true, driver);
   }
 
   @Test
   public void testLoadToDbWithSourceSet() throws IOException {
     String dbName = createDB(testName.getMethodName(), driver);
+    advanceDumpDir();
     run("repl dump " + dbName, true, driver);
     String dumpLocation = getResult(0, 0, driver);
 
@@ -3192,6 +3195,7 @@ public class TestReplicationScenarios {
 
     CommandProcessorResponse ret = driverMirror.run("REPL LOAD " + dbNameTest + " FROM '" + dumpLocation + "'");
     assertTrue(ret.getResponseCode() == ErrorMsg.REPL_TARGET_IS_THE_SOURCE_OF_REPLICATION.getErrorCode());
+    run("drop database " + dbName, true, driver);
   }
 
   @Test

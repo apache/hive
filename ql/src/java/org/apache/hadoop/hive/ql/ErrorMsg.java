@@ -505,7 +505,7 @@ public enum ErrorMsg {
   //method in HiveMetaStoreClient
   REPL_EVENTS_MISSING_IN_METASTORE(20017, "Notification events are missing in the meta store."),
 
-  REPL_SOURCE_PATH_NOT_VALID(20018, "Target database is bootstrapped from some other path."),
+  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20018, "Target database is bootstrapped from some other path."),
   REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20019, "File is missing from both source and cm path."),
   REPL_LOAD_PATH_NOT_FOUND(20020, "Load path does not exist."),
   REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20021, "Source of replication is not set in the database properties."),
@@ -599,7 +599,7 @@ public enum ErrorMsg {
   SPARK_GET_JOB_INFO_INTERRUPTED(30045, "Spark job was interrupted while getting job info"),
   SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}"),
 
-  REPL_FILE_SYSTEM_RETRY(30047, "Replication file system retry expired."),
+  REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired."),
 
   //========================== 40000 range starts here ========================//
 

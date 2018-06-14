@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -148,7 +147,7 @@ public class CopyUtils {
     // If still files remains to be copied due to failure/checksum mismatch after several attempts, then throw error
     if (!pathList.isEmpty()) {
       LOG.error("File copy failed even after several attempts. Files list: " + pathList);
-      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_RETRY.getMsg());
+      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
     }
   }
 
