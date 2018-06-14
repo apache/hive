@@ -690,6 +690,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return needResults ? new ArrayList<>() : null;
     }
     Partition part = parts.get(0);
+    // Have to set it for each partition too
+    if (!part.isSetCatName()) {
+      final String defaultCat = getDefaultCatalog(conf);
+      parts.forEach(p -> p.setCatName(defaultCat));
+    }
     AddPartitionsRequest req = new AddPartitionsRequest(
         part.getDbName(), part.getTableName(), parts, ifNotExists);
     req.setCatName(part.isSetCatName() ? part.getCatName() : getDefaultCatalog(conf));
