@@ -102,7 +102,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final LowLevelCache dataCache;
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
-  private LowLevelCachePolicy cachePolicyWrapper;
+  private final LowLevelCacheMemoryManager memoryManager;
 
   private List<LlapIoDebugDump> debugDumpComponents = new ArrayList<>();
 
@@ -147,17 +147,18 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       LowLevelCachePolicy realCachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
           minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
       boolean trackUsage = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE);
+      LowLevelCachePolicy cachePolicyWrapper;
       if (trackUsage) {
-        this.cachePolicyWrapper = new CacheContentsTracker(realCachePolicy);
+        cachePolicyWrapper = new CacheContentsTracker(realCachePolicy);
       } else {
-        this.cachePolicyWrapper = realCachePolicy;
+        cachePolicyWrapper = realCachePolicy;
       }
       // Allocator uses memory manager to request memory, so create the manager next.
-      LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
+      this.memoryManager = new LowLevelCacheMemoryManager(
           totalMemorySize, cachePolicyWrapper, cacheMetrics);
       cacheMetrics.setCacheCapacityTotal(totalMemorySize);
       // Cache uses allocator to allocate and deallocate, create allocator and then caches.
-      BuddyAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
+      BuddyAllocator allocator = new BuddyAllocator(conf, memoryManager, cacheMetrics);
       this.allocator = allocator;
       LowLevelCacheImpl cacheImpl = new LowLevelCacheImpl(
           cacheMetrics, cachePolicyWrapper, allocator, true);
@@ -170,7 +171,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
       boolean useGapCache = HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ENABLE_ORC_GAP_CACHE);
       metadataCache = new MetadataCache(
-          allocator, memManager, cachePolicyWrapper, useGapCache, cacheMetrics);
+          allocator, memoryManager, cachePolicyWrapper, useGapCache, cacheMetrics);
       fileMetadataCache = metadataCache;
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
       EvictionDispatcher e = new EvictionDispatcher(
@@ -198,6 +199,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
       bufferManager = bufferManagerOrc = bufferManagerGeneric = sbm;
       dataCache = sbm;
+      this.memoryManager = null;
       debugDumpComponents.add(new LlapIoDebugDump() {
         @Override
         public void debugDumpShort(StringBuilder sb) {
@@ -234,8 +236,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
 
   @Override
   public long purge() {
-    if (cachePolicyWrapper != null) {
-      return cachePolicyWrapper.purge();
+    if (memoryManager != null) {
+      return memoryManager.purge();
     }
     return 0;
   }
