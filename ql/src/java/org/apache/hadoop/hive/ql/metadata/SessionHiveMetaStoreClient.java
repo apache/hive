@@ -456,6 +456,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
     // Create temp table directory
     Warehouse wh = getWh();
+    if (tbl.getSd().getLocation() == null) {
+      // Temp tables that do not go through SemanticAnalyzer may not have location set - do it here.
+      // For example export of acid tables generates a query plan that creates a temp table.
+      tbl.getSd().setLocation(SessionState.generateTempTableLocation(conf));
+    }
     Path tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
     if (tblPath == null) {
       throw new MetaException("Temp table path not set for " + tbl.getTableName());

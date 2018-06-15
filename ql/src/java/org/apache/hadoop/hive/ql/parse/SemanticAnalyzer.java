@@ -13144,9 +13144,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           // Generate a unique ID for temp table path.
           // This path will be fixed for the life of the temp table.
-          Path path = new Path(SessionState.getTempTableSpace(conf), UUID.randomUUID().toString());
-          path = Warehouse.getDnsPath(path, conf);
-          location = path.toString();
+          location = SessionState.generateTempTableLocation(conf);
         } catch (MetaException err) {
           throw new SemanticException("Error while generating temp table path:", err);
         }
