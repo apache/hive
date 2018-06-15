@@ -404,6 +404,42 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
+  public void testNonReplDBMetadataReplication() throws Throwable {
+    String dbName = primaryDbName + "_metadata";
+    WarehouseInstance.Tuple tuple = primary
+            .run("create database " + dbName)
+            .run("use " + dbName)
+            .run("create table table1 (i int, j int)")
+            .run("create table table2 (a int, city string) partitioned by (country string)")
+            .run("create table table3 (i int, j int)")
+            .run("insert into table1 values (1,2)")
+            .dump(dbName, null, Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"table1", "table2", "table3"})
+            .run("select * from table1")
+            .verifyResults(Collections.emptyList());
+
+    tuple = primary
+            .run("use " + dbName)
+            .run("alter table table1 rename to renamed_table1")
+            .run("insert into table2 partition(country='india') values (1,'mumbai') ")
+            .run("create table table4 (i int, j int)")
+            .dump(dbName, tuple.lastReplicationId, Arrays.asList("'hive.repl.dump.metadata.only'='true'"));
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] { "renamed_table1", "table2", "table3", "table4" })
+            .run("select * from renamed_table1")
+            .verifyResults(Collections.emptyList())
+            .run("select * from table2")
+            .verifyResults(Collections.emptyList());
+  }
+
+    @Test
   public void testBootStrapDumpOfWarehouse() throws Throwable {
     String randomOne = RandomStringUtils.random(10, true, false);
     String randomTwo = RandomStringUtils.random(10, true, false);
