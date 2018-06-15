@@ -360,6 +360,15 @@ public final class MaterializationsInvalidationCache {
 
       final ConcurrentSkipListMap<Long, Long> usedTableModifications =
           tableModifications.get(qNameTableUsed);
+      if (usedTableModifications == null) {
+        // This is not necessarily an error, since the table may be empty. To be safe,
+        // instead of including this materialized view, we just log the information and
+        // skip it (if table is really empty, it will not matter for performance anyway).
+        LOG.warn("No information found in invalidation cache for table {}, possible tables are: {}",
+            qNameTableUsed, tableModifications.keySet());
+        materialization.setInvalidationTime(Long.MIN_VALUE);
+        return;
+      }
       final ConcurrentSkipListSet<Long> usedUDTableModifications =
           updateDeleteTableModifications.get(qNameTableUsed);
       final Entry<Long, Long> tn = usedTableModifications.higherEntry(tableMaterializationTxnList.getHighWatermark());
