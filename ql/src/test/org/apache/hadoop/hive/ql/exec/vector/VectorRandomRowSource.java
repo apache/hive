@@ -20,11 +20,16 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -81,6 +86,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hive.common.util.DateUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.LongWritable;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Charsets;
@@ -114,12 +120,100 @@ public class VectorRandomRowSource {
 
   private StructObjectInspector rowStructObjectInspector;
 
+  private List<GenerationSpec> generationSpecList;
+
   private String[] alphabets;
 
   private boolean allowNull;
 
   private boolean addEscapables;
   private String needsEscapeStr;
+
+  public static class StringGenerationOption {
+
+    private boolean generateSentences;
+    private boolean addPadding;
+
+    public StringGenerationOption(boolean generateSentences, boolean addPadding) {
+      this.generateSentences = generateSentences;
+      this.addPadding = addPadding;
+    }
+
+    public boolean getGenerateSentences() {
+      return generateSentences;
+    }
+
+    public boolean getAddPadding() {
+      return addPadding;
+    }
+  }
+
+  public static class GenerationSpec {
+
+    public static enum GenerationKind {
+      SAME_TYPE,
+      OMIT_GENERATION,
+      STRING_FAMILY,
+      STRING_FAMILY_OTHER_TYPE_VALUE,
+      TIMESTAMP_MILLISECONDS
+    }
+
+    private final GenerationKind generationKind;
+    private final TypeInfo typeInfo;
+    private final TypeInfo sourceTypeInfo;
+    private final StringGenerationOption stringGenerationOption;
+
+    private GenerationSpec(GenerationKind generationKind, TypeInfo typeInfo,
+        TypeInfo sourceTypeInfo, StringGenerationOption stringGenerationOption) {
+      this.generationKind = generationKind;
+      this.typeInfo = typeInfo;
+      this.sourceTypeInfo = sourceTypeInfo;
+      this.stringGenerationOption = stringGenerationOption;
+    }
+
+    public GenerationKind getGenerationKind() {
+      return generationKind;
+    }
+
+    public TypeInfo getTypeInfo() {
+      return typeInfo;
+    }
+
+    public TypeInfo getSourceTypeInfo() {
+      return sourceTypeInfo;
+    }
+
+    public StringGenerationOption getStringGenerationOption() {
+      return stringGenerationOption;
+    }
+
+    public static GenerationSpec createSameType(TypeInfo typeInfo) {
+      return new GenerationSpec(
+          GenerationKind.SAME_TYPE, typeInfo, null, null);
+    }
+
+    public static GenerationSpec createOmitGeneration(TypeInfo typeInfo) {
+      return new GenerationSpec(
+          GenerationKind.OMIT_GENERATION, typeInfo, null, null);
+    }
+
+    public static GenerationSpec createStringFamily(TypeInfo typeInfo,
+        StringGenerationOption stringGenerationOption) {
+      return new GenerationSpec(
+          GenerationKind.STRING_FAMILY, typeInfo, null, stringGenerationOption);
+    }
+
+    public static GenerationSpec createStringFamilyOtherTypeValue(TypeInfo typeInfo,
+        TypeInfo otherTypeTypeInfo) {
+      return new GenerationSpec(
+          GenerationKind.STRING_FAMILY_OTHER_TYPE_VALUE, typeInfo, otherTypeTypeInfo, null);
+    }
+
+    public static GenerationSpec createTimestampMilliseconds(TypeInfo typeInfo) {
+      return new GenerationSpec(
+          GenerationKind.TIMESTAMP_MILLISECONDS, typeInfo, null, null);
+    }
+  }
 
   public List<String> typeNames() {
     return typeNames;
@@ -186,8 +280,26 @@ public class VectorRandomRowSource {
       boolean allowNull, List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList) {
     this.r = r;
     this.allowNull = allowNull;
+
+    List<GenerationSpec> generationSpecList = new ArrayList<GenerationSpec>();
+    for (String explicitTypeName : explicitTypeNameList) {
+      TypeInfo typeInfo =
+          TypeInfoUtils.getTypeInfoFromTypeString(explicitTypeName);
+      generationSpecList.add(
+          GenerationSpec.createSameType(typeInfo));
+    }
+
     chooseSchema(
-        SupportedTypes.ALL, null, explicitTypeNameList, explicitDataTypePhysicalVariationList,
+        SupportedTypes.ALL, null, generationSpecList, explicitDataTypePhysicalVariationList,
+        maxComplexDepth);
+  }
+
+  public void initGenerationSpecSchema(Random r, List<GenerationSpec> generationSpecList, int maxComplexDepth,
+      boolean allowNull, List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList) {
+    this.r = r;
+    this.allowNull = allowNull;
+    chooseSchema(
+        SupportedTypes.ALL, null, generationSpecList, explicitDataTypePhysicalVariationList,
         maxComplexDepth);
   }
 
@@ -418,14 +530,14 @@ public class VectorRandomRowSource {
   }
 
   private void chooseSchema(SupportedTypes supportedTypes, Set<String> allowedTypeNameSet,
-      List<String> explicitTypeNameList,
+      List<GenerationSpec> generationSpecList,
       List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList,
       int maxComplexDepth) {
     HashSet<Integer> hashSet = null;
     final boolean allTypes;
     final boolean onlyOne;
-    if (explicitTypeNameList != null) {
-      columnCount = explicitTypeNameList.size();
+    if (generationSpecList != null) {
+      columnCount = generationSpecList.size();
       allTypes = false;
       onlyOne = false;
     } else if (allowedTypeNameSet != null) {
@@ -472,8 +584,8 @@ public class VectorRandomRowSource {
       final String typeName;
       DataTypePhysicalVariation dataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
 
-      if (explicitTypeNameList != null) {
-        typeName = explicitTypeNameList.get(c);
+      if (generationSpecList != null) {
+        typeName = generationSpecList.get(c).getTypeInfo().getTypeName();
         dataTypePhysicalVariation = explicitDataTypePhysicalVariationList.get(c);
       } else if (onlyOne || allowedTypeNameSet != null) {
         typeName = getRandomTypeName(r, supportedTypes, allowedTypeNameSet);
@@ -563,6 +675,154 @@ public class VectorRandomRowSource {
     rowStructObjectInspector = ObjectInspectorFactory.
         getStandardStructObjectInspector(columnNames, objectInspectorList);
     alphabets = new String[columnCount];
+
+    this.generationSpecList = generationSpecList;
+  }
+
+  private static ThreadLocal<DateFormat> DATE_FORMAT =
+      new ThreadLocal<DateFormat>() {
+        @Override
+        protected DateFormat initialValue() {
+          return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        }
+      };
+
+  private static long MIN_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("0001-01-01 00:00:00");
+  private static long MAX_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("9999-01-01 00:00:00");
+
+  private static long parseToMillis(String s) {
+    try {
+      return DATE_FORMAT.get().parse(s).getTime();
+    } catch (ParseException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  private static String[] randomWords =
+      new String[] {
+    "groovy",
+    "attack",
+    "wacky",
+    "kiss",
+    "to",
+    "the",
+    "a",
+    "thoughtless",
+    "blushing",
+    "pay",
+    "rule",
+    "profuse",
+    "need",
+    "smell",
+    "bucket",
+    "board",
+    "eggs",
+    "laughable",
+    "idiotic",
+    "direful",
+    "thoughtful",
+    "curious",
+    "show",
+    "surge",
+    "opines",
+    "cowl",
+    "signal",
+    ""};
+  private static int randomWordCount = randomWords.length;
+
+  private static Object toStringFamilyObject(TypeInfo typeInfo, String string, boolean isWritable) {
+
+    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+    PrimitiveCategory primitiveCategory =
+        primitiveTypeInfo.getPrimitiveCategory();
+    Object object;
+    switch (primitiveCategory) {
+    case STRING:
+      if (isWritable) {
+        object = new Text(string);
+      } else {
+        object = string;
+      }
+      break;
+    case CHAR:
+      {
+        HiveChar hiveChar =
+            new HiveChar(
+                string, ((CharTypeInfo) typeInfo).getLength());
+        if (isWritable) {
+          object = new HiveCharWritable(hiveChar);
+        } else {
+          object = hiveChar;
+        }
+      }
+      break;
+    case VARCHAR:
+      {
+        HiveVarchar hiveVarchar =
+            new HiveVarchar(
+                string, ((VarcharTypeInfo) typeInfo).getLength());
+        if (isWritable) {
+          object = new HiveVarcharWritable(hiveVarchar);
+        } else {
+          object = hiveVarchar;
+        }
+      }
+      break;
+    default:
+      throw new RuntimeException("Unexpected string family category " + primitiveCategory);
+    }
+    return object;
+  }
+
+  public static Object randomStringFamilyOtherTypeValue(Random random, TypeInfo typeInfo,
+      TypeInfo specialValueTypeInfo, boolean isWritable) {
+    String string;
+    string =
+        VectorRandomRowSource.randomPrimitiveObject(
+            random, (PrimitiveTypeInfo) specialValueTypeInfo).toString();
+    return toStringFamilyObject(typeInfo, string, isWritable);
+  }
+
+  public static Object randomStringFamily(Random random, TypeInfo typeInfo,
+      StringGenerationOption stringGenerationOption, boolean isWritable) {
+
+    String string;
+    if (stringGenerationOption == null) {
+      string =
+          VectorRandomRowSource.randomPrimitiveObject(
+              random, (PrimitiveTypeInfo) typeInfo).toString();
+    } else {
+      boolean generateSentences = stringGenerationOption.getGenerateSentences();
+      boolean addPadding = stringGenerationOption.getAddPadding();
+      StringBuilder sb = new StringBuilder();
+      if (addPadding && random.nextBoolean()) {
+        sb.append(StringUtils.leftPad("", random.nextInt(5)));
+      }
+      if (generateSentences) {
+        boolean capitalizeFirstWord = random.nextBoolean();
+        final int n = random.nextInt(10);
+        for (int i = 0; i < n; i++) {
+          String randomWord = randomWords[random.nextInt(randomWordCount)];
+          if (randomWord.length() > 0 &&
+              ((i == 0 && capitalizeFirstWord) || random.nextInt(20) == 0)) {
+            randomWord = Character.toUpperCase(randomWord.charAt(0)) + randomWord.substring(1);
+          }
+          if (i > 0) {
+            sb.append(" ");
+          }
+          sb.append(randomWord);
+        }
+      } else {
+        sb.append(
+            VectorRandomRowSource.randomPrimitiveObject(
+                random, (PrimitiveTypeInfo) typeInfo).toString());
+      }
+      if (addPadding && random.nextBoolean()) {
+        sb.append(StringUtils.leftPad("", random.nextInt(5)));
+      }
+      string = sb.toString();
+    }
+    return toStringFamilyObject(typeInfo, string, isWritable);
   }
 
   public Object[][] randomRows(int n) {
@@ -577,8 +837,64 @@ public class VectorRandomRowSource {
   public Object[] randomRow() {
 
     final Object row[] = new Object[columnCount];
-    for (int c = 0; c < columnCount; c++) {
-      row[c] = randomWritable(c);
+
+    if (generationSpecList == null) {
+      for (int c = 0; c < columnCount; c++) {
+        row[c] = randomWritable(c);
+      }
+    } else {
+      for (int c = 0; c < columnCount; c++) {
+        GenerationSpec generationSpec = generationSpecList.get(c);
+        GenerationSpec.GenerationKind generationKind = generationSpec.getGenerationKind();
+        Object object;
+        switch (generationKind) {
+        case SAME_TYPE:
+          object = randomWritable(c);
+          break;
+        case OMIT_GENERATION:
+          object = null;
+          break;
+        case STRING_FAMILY:
+        {
+          TypeInfo typeInfo = generationSpec.getTypeInfo();
+          StringGenerationOption stringGenerationOption =
+              generationSpec.getStringGenerationOption();
+          object = randomStringFamily(
+              r, typeInfo, stringGenerationOption, true);
+        }
+        break;
+        case STRING_FAMILY_OTHER_TYPE_VALUE:
+          {
+            TypeInfo typeInfo = generationSpec.getTypeInfo();
+            TypeInfo otherTypeTypeInfo = generationSpec.getSourceTypeInfo();
+            object = randomStringFamilyOtherTypeValue(
+                r, typeInfo, otherTypeTypeInfo, true);
+          }
+          break;
+        case TIMESTAMP_MILLISECONDS:
+          {
+            LongWritable longWritable = (LongWritable) randomWritable(c);
+            if (longWritable != null) {
+
+              while (true) {
+                long longValue = longWritable.get();
+                if (longValue >= MIN_FOUR_DIGIT_YEAR_MILLIS &&
+                    longValue <= MAX_FOUR_DIGIT_YEAR_MILLIS) {
+                  break;
+                }
+                longWritable.set(
+                    (Long) VectorRandomRowSource.randomPrimitiveObject(
+                        r, (PrimitiveTypeInfo) TypeInfoFactory.longTypeInfo));
+              }
+            }
+            object = longWritable;
+          }
+          break;
+        default:
+          throw new RuntimeException("Unexpected generationKind " + generationKind);
+        }
+        row[c] = object;
+      }
     }
     return row;
   }

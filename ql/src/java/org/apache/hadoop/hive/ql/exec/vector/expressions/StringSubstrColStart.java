@@ -146,12 +146,7 @@ public class StringSubstrColStart extends VectorExpression {
     outputColVector.isRepeating = false;
 
     if (inV.isRepeating) {
-      if (!inV.noNulls && inV.isNull[0]) {
-        outputIsNull[0] = true;
-        outputColVector.noNulls = false;
-        outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
-        return;
-      } else {
+      if (inV.noNulls || !inV.isNull[0]) {
         outputIsNull[0] = false;
         int offset = getSubstrStartOffset(vector[0], start[0], len[0], startIdx);
         if (offset != -1) {
@@ -159,6 +154,10 @@ public class StringSubstrColStart extends VectorExpression {
         } else {
           outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
         }
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+        outputColVector.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
       }
       outputColVector.isRepeating = true;
       return;
