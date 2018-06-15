@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.TestVectorDateAddSub.ColumnScalarMode;
@@ -86,8 +87,6 @@ import org.junit.Test;
 
 public class TestVectorTimestampExtract {
 
-  private static final boolean corruptTimestampStrings = false;
-
   @Test
   public void testTimestamp() throws Exception {
     Random random = new Random(7436);
@@ -130,53 +129,6 @@ public class TestVectorTimestampExtract {
     doIfTestOneTimestampExtract(random, typeName, "year");
   }
 
-  private static final String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-  private Object randomTimestampStringFamily(
-      Random random, TypeInfo dateTimeStringTypeInfo, boolean wantWritable) {
-
-    String randomTimestampString =
-        VectorRandomRowSource.randomPrimitiveTimestampStringObject(random);
-    if (corruptTimestampStrings && random.nextInt(40) == 39) {
-
-      // Randomly corrupt.
-      int index = random.nextInt(randomTimestampString.length());
-      char[] chars = randomTimestampString.toCharArray();
-      chars[index] = alphabet.charAt(random.nextInt(alphabet.length()));
-      randomTimestampString = String.valueOf(chars);
-    }
-
-    PrimitiveCategory dateTimeStringPrimitiveCategory =
-        ((PrimitiveTypeInfo) dateTimeStringTypeInfo).getPrimitiveCategory();
-    switch (dateTimeStringPrimitiveCategory) {
-    case STRING:
-      return randomTimestampString;
-    case CHAR:
-      {
-        HiveChar hiveChar =
-            new HiveChar(randomTimestampString, ((CharTypeInfo) dateTimeStringTypeInfo).getLength());
-        if (wantWritable) {
-          return new HiveCharWritable(hiveChar);
-        } else {
-          return hiveChar;
-        }
-      }
-    case VARCHAR:
-      {
-        HiveVarchar hiveVarchar =
-            new HiveVarchar(
-                randomTimestampString, ((VarcharTypeInfo) dateTimeStringTypeInfo).getLength());
-        if (wantWritable) {
-          return new HiveVarcharWritable(hiveVarchar);
-        } else {
-          return hiveVarchar;
-        }
-      }
-    default:
-      throw new RuntimeException("Unexpected string family category " + dateTimeStringPrimitiveCategory);
-    }
-  }
-
   private void doIfTestOneTimestampExtract(Random random, String dateTimeStringTypeName,
       String extractFunctionName)
           throws Exception {
@@ -190,14 +142,21 @@ public class TestVectorTimestampExtract {
          dateTimeStringPrimitiveCategory == PrimitiveCategory.CHAR ||
          dateTimeStringPrimitiveCategory == PrimitiveCategory.VARCHAR);
 
-    List<String> explicitTypeNameList = new ArrayList<String>();
+    List<GenerationSpec> generationSpecList = new ArrayList<GenerationSpec>();
     List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList =
         new ArrayList<DataTypePhysicalVariation>();
 
     List<String> columns = new ArrayList<String>();
     int columnNum = 0;
     ExprNodeDesc col1Expr;
-    explicitTypeNameList.add(dateTimeStringTypeName);
+    if (!isStringFamily) {
+      generationSpecList.add(
+          GenerationSpec.createSameType(dateTimeStringTypeInfo));
+    } else {
+      generationSpecList.add(
+          GenerationSpec.createStringFamilyOtherTypeValue(
+              dateTimeStringTypeInfo, TypeInfoFactory.timestampTypeInfo));
+    }
     explicitDataTypePhysicalVariationList.add(DataTypePhysicalVariation.NONE);
 
     String columnName = "col" + (columnNum++);
@@ -206,8 +165,8 @@ public class TestVectorTimestampExtract {
 
     VectorRandomRowSource rowSource = new VectorRandomRowSource();
 
-    rowSource.initExplicitSchema(
-        random, explicitTypeNameList, /* maxComplexDepth */ 0, /* allowNull */ true,
+    rowSource.initGenerationSpecSchema(
+        random, generationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
         explicitDataTypePhysicalVariationList);
 
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
@@ -218,18 +177,6 @@ public class TestVectorTimestampExtract {
     String[] columnNames = columns.toArray(new String[0]);
 
     Object[][] randomRows = rowSource.randomRows(100000);
-
-    if (isStringFamily) {
-      for (int i = 0; i < randomRows.length; i++) {
-        Object[] row = randomRows[i];
-        Object object = row[columnNum - 1];
-        if (row[0] != null) {
-          row[0] =
-              randomTimestampStringFamily(
-                  random, dateTimeStringTypeInfo, /* wantWritable */ true);
-        }
-      }
-    }
 
     VectorRandomBatchSource batchSource =
         VectorRandomBatchSource.createInterestingBatches(
@@ -405,9 +352,11 @@ public class TestVectorTimestampExtract {
           Text text;
           if (object == null) {
             text = null;
-          } else {
+          } else if (object instanceof String) {
             text = new Text();
             text.set((String) object);
+          } else {
+            text = (Text) object;
           }
           result = evaluator.evaluate(text);
         }
