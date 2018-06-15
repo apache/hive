@@ -8,8 +8,9 @@ PREHOOK: query: CREATE TABLE druid_kafka_test(`__time` timestamp, page string, `
         "druid.kafka.ingestion.useEarliestOffset" = "true",
         "druid.kafka.ingestion.maxRowsInMemory" = "5",
         "druid.kafka.ingestion.startDelay" = "PT1S",
-        "druid.kafka.ingestion.taskDuration" = "PT20S",
-        "druid.kafka.ingestion.period" = "PT1S"
+        "druid.kafka.ingestion.taskDuration" = "PT60S",
+        "druid.kafka.ingestion.period" = "PT1S",
+        "druid.kafka.ingestion.consumer.retries" = "2"
         )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -24,8 +25,9 @@ POSTHOOK: query: CREATE TABLE druid_kafka_test(`__time` timestamp, page string, 
         "druid.kafka.ingestion.useEarliestOffset" = "true",
         "druid.kafka.ingestion.maxRowsInMemory" = "5",
         "druid.kafka.ingestion.startDelay" = "PT1S",
-        "druid.kafka.ingestion.taskDuration" = "PT20S",
-        "druid.kafka.ingestion.period" = "PT1S"
+        "druid.kafka.ingestion.taskDuration" = "PT60S",
+        "druid.kafka.ingestion.period" = "PT1S",
+        "druid.kafka.ingestion.consumer.retries" = "2"
         )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -141,7 +143,7 @@ kafkaPartitions=1
 activeTasks=[]	 	 
 publishingTasks=[]	 	 
 latestOffsets={0=10}	 	 
-minimumLag={}	 	 
+minimumLag={0=0}	 	 
 aggregateLag=0	 	 
 #### A masked pattern was here ####
 PREHOOK: query: Select count(*) FROM druid_kafka_test
@@ -346,10 +348,11 @@ STAGE PLANS:
                     druid.datasource default.druid_kafka_test
                     druid.fieldNames language,user
                     druid.fieldTypes string,string
+                    druid.kafka.ingestion.consumer.retries 2
                     druid.kafka.ingestion.maxRowsInMemory 5
                     druid.kafka.ingestion.period PT1S
                     druid.kafka.ingestion.startDelay PT1S
-                    druid.kafka.ingestion.taskDuration PT20S
+                    druid.kafka.ingestion.taskDuration PT60S
                     druid.kafka.ingestion.useEarliestOffset true
                     druid.query.granularity MINUTE
                     druid.query.json {"queryType":"scan","dataSource":"default.druid_kafka_test","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"language","value":null}},"columns":["language","user"],"resultFormat":"compactedList"}
@@ -385,10 +388,11 @@ STAGE PLANS:
                       druid.datasource default.druid_kafka_test
                       druid.fieldNames language,user
                       druid.fieldTypes string,string
+                      druid.kafka.ingestion.consumer.retries 2
                       druid.kafka.ingestion.maxRowsInMemory 5
                       druid.kafka.ingestion.period PT1S
                       druid.kafka.ingestion.startDelay PT1S
-                      druid.kafka.ingestion.taskDuration PT20S
+                      druid.kafka.ingestion.taskDuration PT60S
                       druid.kafka.ingestion.useEarliestOffset true
                       druid.query.granularity MINUTE
                       druid.query.json {"queryType":"scan","dataSource":"default.druid_kafka_test","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"not","field":{"type":"selector","dimension":"language","value":null}},"columns":["language","user"],"resultFormat":"compactedList"}
