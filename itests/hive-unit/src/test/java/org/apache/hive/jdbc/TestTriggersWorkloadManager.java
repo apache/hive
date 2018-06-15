@@ -35,10 +35,19 @@ import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 import com.google.common.collect.Lists;
 
 public class TestTriggersWorkloadManager extends TestTriggersTezSessionPoolManager {
+  @Rule
+  public TestName testName = new TestName();
+
+  @Override
+  public String getTestName() {
+    return getClass().getSimpleName() + "#" + testName.getMethodName();
+  }
 
   @BeforeClass
   public static void beforeTest() throws Exception {
