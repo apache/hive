@@ -107,7 +107,7 @@ public class ReplLoadWork implements Serializable {
     return incrementalIterator;
   }
 
-  public IncrementalLoadTasksBuilder getIncrementalLoad() {
+  public IncrementalLoadTasksBuilder getIncrementalLoadTaskBuilder() {
     return incrementalLoad;
   }
 }

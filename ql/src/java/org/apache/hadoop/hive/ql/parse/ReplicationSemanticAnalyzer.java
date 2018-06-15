@@ -351,37 +351,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         return;
       }
 
-      if (!evDump){
-        FileStatus[] dirsInLoadPath = fs.listStatus(loadPath, EximUtil.getDirectoryFilter(fs));
-        if ((dirsInLoadPath == null) || (dirsInLoadPath.length == 0)) {
-          throw new IllegalArgumentException("No data to load in path " + loadPath.toUri().toString());
-        }
-
-        // not an event dump, not a table dump - thus, a db dump
-        if ((dbNameOrPattern != null) && (dirsInLoadPath.length > 1)) {
-          LOG.debug("Found multiple dirs when we expected 1:");
-          for (FileStatus d : dirsInLoadPath) {
-            LOG.debug("> " + d.getPath().toUri().toString());
-          }
-          throw new IllegalArgumentException(
-              "Multiple dirs in "
-                  + loadPath.toUri().toString()
-                  + " does not correspond to REPL LOAD expecting to load to a singular destination point.");
-        }
-
-        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-                queryState.getLineageState());
-        rootTasks.add(TaskFactory.get(replLoadWork, conf));
-        //
-        //        for (FileStatus dir : dirsInLoadPath) {
-        //          analyzeDatabaseLoad(dbNameOrPattern, fs, dir);
-        //        }
-      } else {
-        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-                tblNameOrPattern, queryState.getLineageState(), true);
-        rootTasks.add(TaskFactory.get(replLoadWork, conf));
-        return;
-      }
+      ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
+              tblNameOrPattern, queryState.getLineageState(), evDump);
+      rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e);

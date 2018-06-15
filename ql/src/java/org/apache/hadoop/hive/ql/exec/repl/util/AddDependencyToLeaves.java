@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.repl.bootstrap;
+package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
