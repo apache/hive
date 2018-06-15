@@ -4541,8 +4541,8 @@ public class TestVectorStringExpressions {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
-    StringGroupColConcatCharScalar expr =
-        new StringGroupColConcatCharScalar(
+    StringGroupColConcatStringScalar expr =
+        new StringGroupColConcatStringScalar(
             0, new HiveChar(new String(red), 6).getStrippedValue().getBytes(), 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
@@ -4605,7 +4605,9 @@ public class TestVectorStringExpressions {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
-    StringGroupColConcatVarCharScalar expr = new StringGroupColConcatVarCharScalar(0, new HiveVarchar(new String(red), 14), 1);
+    StringGroupColConcatStringScalar expr =
+        new StringGroupColConcatStringScalar(
+            0, new HiveVarchar(new String(red), 14).getValue().getBytes(), 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
 
@@ -4729,8 +4731,8 @@ public class TestVectorStringExpressions {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
-    CharScalarConcatStringGroupCol expr =
-        new CharScalarConcatStringGroupCol(
+    StringScalarConcatStringGroupCol expr =
+        new StringScalarConcatStringGroupCol(
             new HiveChar(new String(red), 6).getStrippedValue().getBytes(), 0, 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
@@ -4793,7 +4795,9 @@ public class TestVectorStringExpressions {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
-    VarCharScalarConcatStringGroupCol expr = new VarCharScalarConcatStringGroupCol(new HiveVarchar(new String(red), 14), 0, 1);
+    StringScalarConcatStringGroupCol expr =
+        new StringScalarConcatStringGroupCol(
+            new HiveVarchar(new String(red), 14).getValue().getBytes(), 0, 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
 

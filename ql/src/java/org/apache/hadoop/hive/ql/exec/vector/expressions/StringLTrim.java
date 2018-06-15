@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 public class StringLTrim extends StringUnaryUDFDirect {
   private static final long serialVersionUID = 1L;
 
+  private static final byte[] EMPTY_BYTES = new byte[0];
+
   public StringLTrim(int inputColumn, int outputColumnNum) {
     super(inputColumn, outputColumnNum);
   }
@@ -36,14 +38,23 @@ public class StringLTrim extends StringUnaryUDFDirect {
    * Operate on the data in place, and set the output by reference
    * to improve performance. Ignore null handling. That will be handled separately.
    */
-  protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length, int i) {
-    int j = start[i];
+  protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length,
+      int batchIndex) {
+    byte[] bytes = vector[batchIndex];
+    final int startIndex = start[batchIndex];
 
-    // skip past blank characters
-    while(j < start[i] + vector[i].length && vector[i][j] == 0x20) {
-      j++;
+    // Skip past blank characters.
+    final int end = startIndex + length[batchIndex];
+    int index = startIndex;
+    while(index < end && bytes[index] == 0x20) {
+      index++;
     }
 
-    outV.setVal(i, vector[i], j, length[i] - (j - start[i]));
+    final int resultLength = end - index;
+    if (resultLength == 0) {
+      outV.setVal(batchIndex, EMPTY_BYTES, 0, 0);
+      return;
+    }
+    outV.setVal(batchIndex, bytes, index, resultLength);
   }
 }
