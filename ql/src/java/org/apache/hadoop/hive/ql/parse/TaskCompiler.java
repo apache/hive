@@ -434,8 +434,10 @@ public abstract class TaskCompiler {
   private Path getDefaultCtasLocation(final ParseContext pCtx) throws SemanticException {
     try {
       String protoName = null;
+      boolean isExternal = false;
       if (pCtx.getQueryProperties().isCTAS()) {
         protoName = pCtx.getCreateTable().getTableName();
+        isExternal = pCtx.getCreateTable().isExternal();
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
       }
@@ -444,7 +446,7 @@ public abstract class TaskCompiler {
         throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
       }
       Warehouse wh = new Warehouse(conf);
-      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1]);
+      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1], isExternal);
     } catch (HiveException e) {
       throw new SemanticException(e);
     } catch (MetaException e) {
