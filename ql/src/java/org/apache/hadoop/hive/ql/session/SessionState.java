@@ -59,7 +59,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -842,6 +844,12 @@ public class SessionState {
     Preconditions.checkNotNull(this.hdfsTmpTableSpace,
         "Temp table path expected to be non-null");
     return this.hdfsTmpTableSpace;
+  }
+
+  public static String generateTempTableLocation(Configuration conf) throws MetaException {
+    Path path = new Path(SessionState.getTempTableSpace(conf), UUID.randomUUID().toString());
+    path = Warehouse.getDnsPath(path, conf);
+    return path.toString();
   }
 
   @VisibleForTesting
