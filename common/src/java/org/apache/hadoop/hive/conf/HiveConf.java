@@ -646,6 +646,11 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", "/user/hive/warehouse",
         "location of default database for the warehouse"),
+
+    HIVE_METASTORE_WAREHOUSE_EXTERNAL("hive.metastore.warehouse.external.dir", null,
+        "Default location for external tables created in the warehouse. " +
+        "If not set or null, then the normal warehouse location will be used as the default location."),
+
     /**
      * @deprecated Use MetastoreConf.THRIFT_URIS
      */

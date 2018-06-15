@@ -206,12 +206,11 @@ public class LoadTable {
   private String location(ImportTableDesc tblDesc, Database parentDb)
       throws MetaException, SemanticException {
     if (!tableContext.waitOnPrecursor()) {
-      return context.warehouse.getDefaultTablePath(parentDb, tblDesc.getTableName()).toString();
+      return context.warehouse.getDefaultTablePath(
+          parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString();
     } else {
-      Path tablePath = new Path(
-          context.warehouse.getDefaultDatabasePath(tblDesc.getDatabaseName()),
-          MetaStoreUtils.encodeTableName(tblDesc.getTableName().toLowerCase())
-      );
+      Path tablePath = context.warehouse.getDefaultTablePath(
+          tblDesc.getDatabaseName(), tblDesc.getTableName(), tblDesc.isExternal());
       return context.warehouse.getDnsPath(tablePath).toString();
     }
   }

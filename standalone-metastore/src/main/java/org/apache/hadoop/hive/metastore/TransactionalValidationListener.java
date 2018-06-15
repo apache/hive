@@ -440,7 +440,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         String catName = table.isSetCatName() ? table.getCatName() :
             MetaStoreUtils.getDefaultCatalog(getConf());
         tablePath = wh.getDefaultTablePath(hmsHandler.getMS().getDatabase(
-            catName, table.getDbName()), table.getTableName());
+            catName, table.getDbName()), table);
       } else {
         tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
       }

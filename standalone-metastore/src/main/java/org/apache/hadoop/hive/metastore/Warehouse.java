@@ -69,8 +69,10 @@ public class Warehouse {
   private static final String CAT_DB_TABLE_SEPARATOR = ".";
 
   private Path whRoot;
+  private Path whRootExternal;
   private final Configuration conf;
   private final String whRootString;
+  private final String whRootExternalString;
 
   public static final Logger LOG = LoggerFactory.getLogger("hive.metastore.warehouse");
 
@@ -85,6 +87,7 @@ public class Warehouse {
       throw new MetaException(ConfVars.WAREHOUSE.getVarname()
           + " is not set in the config or blank");
     }
+    whRootExternalString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
     fsHandler = getMetaStoreFsHandler(conf);
     cm = ReplChangeManager.getInstance(conf);
     storageAuthCheck = MetastoreConf.getBoolVar(conf, ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS);
@@ -159,6 +162,18 @@ public class Warehouse {
     return whRoot;
   }
 
+  public Path getWhRootExternal() throws MetaException {
+    if (whRootExternal != null) {
+      return whRootExternal;
+    }
+    if (!hasExternalWarehouseRoot()) {
+      whRootExternal = getWhRoot();
+    } else {
+      whRootExternal = getDnsPath(new Path(whRootExternalString));
+    }
+    return whRootExternal;
+  }
+
   /**
    * Build the database path based on catalog name and database name.  This should only be used
    * when a database is being created or altered.  If you just want to find out the path a
@@ -218,6 +233,17 @@ public class Warehouse {
     return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
+  public Path getDefaultExternalDatabasePath(String dbName) throws MetaException {
+    if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+      return getWhRootExternal();
+    }
+    return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+  }
+
+  private boolean hasExternalWarehouseRoot() {
+    return !StringUtils.isBlank(whRootExternalString);
+  }
+
   /**
    * Returns the default location of the table path using the parent database's location
    * @param db Database where the table is created
@@ -225,10 +251,37 @@ public class Warehouse {
    * @return
    * @throws MetaException
    */
+  @Deprecated
   public Path getDefaultTablePath(Database db, String tableName)
       throws MetaException {
-    return getDnsPath(new Path(getDatabasePath(db),
-        MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+    return getDefaultTablePath(db, tableName, false);
+  }
+
+  public Path getDefaultTablePath(Database db, String tableName, boolean isExternal) throws MetaException {
+    Path dbPath = null;
+    if (isExternal && hasExternalWarehouseRoot()) {
+      dbPath = getDefaultExternalDatabasePath(db.getName());
+    } else {
+      dbPath = getDatabasePath(db);
+    }
+    return getDnsPath(
+        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+  }
+
+  // A few situations where we need the default table path, without a DB object
+  public Path getDefaultTablePath(String dbName, String tableName, boolean isExternal) throws MetaException {
+    Path dbPath = null;
+    if (isExternal && hasExternalWarehouseRoot()) {
+      dbPath = getDefaultExternalDatabasePath(dbName);
+    } else {
+      dbPath = getDefaultDatabasePath(dbName);
+    }
+    return getDnsPath(
+        new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+  }
+
+  public Path getDefaultTablePath(Database db, Table table) throws MetaException {
+    return getDefaultTablePath(db, table.getTableName(), MetaStoreUtils.isExternalTable(table));
   }
 
   @Deprecated // Use TableName
@@ -539,9 +592,9 @@ public class Warehouse {
    * @return
    * @throws MetaException
    */
-  public Path getDefaultPartitionPath(Database db, String tableName,
+  public Path getDefaultPartitionPath(Database db, Table table,
       Map<String, String> pm) throws MetaException {
-    return getPartitionPath(getDefaultTablePath(db, tableName), pm);
+    return getPartitionPath(getDefaultTablePath(db, table), pm);
   }
 
   /**
@@ -585,7 +638,7 @@ public class Warehouse {
     if (table.getSd().getLocation() != null) {
       return getPartitionPath(getDnsPath(new Path(table.getSd().getLocation())), pm);
     } else {
-      return getDefaultPartitionPath(db, table.getTableName(), pm);
+      return getDefaultPartitionPath(db, table, pm);
     }
   }
 

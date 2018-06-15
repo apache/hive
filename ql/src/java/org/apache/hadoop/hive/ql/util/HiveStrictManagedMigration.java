@@ -470,7 +470,7 @@ public class HiveStrictManagedMigration {
       throws IOException, MetaException {
     String tableName = tableObj.getTableName();
     String partLocation = partObj.getSd().getLocation();
-    Path oldDefaultPartLocation = oldWh.getDefaultPartitionPath(dbObj, tableName, partSpec);
+    Path oldDefaultPartLocation = oldWh.getDefaultPartitionPath(dbObj, tableObj, partSpec);
     return arePathsEqual(conf, partLocation, oldDefaultPartLocation.toString());
   }
 
