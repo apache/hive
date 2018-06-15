@@ -812,33 +812,35 @@ public class Driver implements IDriver {
         // The lock may have multiple components, e.g., DbHiveLock, hence we need
         // to check for each of them
         for (LockComponent lckCmp : lock.getHiveLockComponents()) {
-          if (lckCmp.getType() == LockType.EXCLUSIVE ||
-              lckCmp.getType() == LockType.SHARED_WRITE) {
+          // We only consider tables for which we hold either an exclusive
+          // or a shared write lock
+          if ((lckCmp.getType() == LockType.EXCLUSIVE ||
+              lckCmp.getType() == LockType.SHARED_WRITE) &&
+              lckCmp.getTablename() != null) {
             nonSharedLocks.add(
                 Warehouse.getQualifiedName(
                     lckCmp.getDbname(), lckCmp.getTablename()));
           }
         }
       } else {
-        // The lock has a single components, e.g., SimpleHiveLock or ZooKeeperHiveLock
-        if (lock.getHiveLockMode() == HiveLockMode.EXCLUSIVE ||
-            lock.getHiveLockMode() == HiveLockMode.SEMI_SHARED) {
-          if (lock.getHiveLockObject().getPaths().length == 2) {
-            // Pos 0 of lock paths array contains dbname, pos 1 contains tblname
-            nonSharedLocks.add(
-                Warehouse.getQualifiedName(
-                    lock.getHiveLockObject().getPaths()[0], lock.getHiveLockObject().getPaths()[1]));
-          }
+        // The lock has a single components, e.g., SimpleHiveLock or ZooKeeperHiveLock.
+        // Pos 0 of lock paths array contains dbname, pos 1 contains tblname
+        if ((lock.getHiveLockMode() == HiveLockMode.EXCLUSIVE ||
+            lock.getHiveLockMode() == HiveLockMode.SEMI_SHARED) &&
+            lock.getHiveLockObject().getPaths().length == 2) {
+          nonSharedLocks.add(
+              Warehouse.getQualifiedName(
+                  lock.getHiveLockObject().getPaths()[0], lock.getHiveLockObject().getPaths()[1]));
         }
       }
     }
     // 3) Get txn tables that are being written
-    ValidTxnWriteIdList txnWriteIdList =
-        new ValidTxnWriteIdList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-    if (txnWriteIdList == null) {
+    String txnWriteIdListStr = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    if (txnWriteIdListStr == null || txnWriteIdListStr.length() == 0) {
       // Nothing to check
       return true;
     }
+    ValidTxnWriteIdList txnWriteIdList = new ValidTxnWriteIdList(txnWriteIdListStr);
     List<Pair<String, Table>> writtenTables = getWrittenTableList(plan);
     ValidTxnWriteIdList currentTxnWriteIds =
         queryTxnMgr.getValidWriteIds(
