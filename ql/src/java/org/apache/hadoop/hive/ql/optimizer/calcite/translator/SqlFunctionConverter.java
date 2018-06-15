@@ -447,7 +447,6 @@ public class SqlFunctionConverter {
       );
       registerFunction("trunc", HiveTruncSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "trunc"));
       registerFunction("to_date", HiveToDateSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "to_date"));
-      registerFunction("date_add", SqlStdOperatorTable.DATETIME_PLUS, hToken(HiveParser.Identifier, "date_add"));
       registerFunction("to_unix_timestamp", HiveUnixTimestampSqlOperator.INSTANCE,
           hToken(HiveParser.Identifier, "to_unix_timestamp")
       );
