@@ -103,12 +103,11 @@ public class LoadPartitions {
   private String location() throws MetaException, HiveException {
     Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
     if (!tableContext.waitOnPrecursor()) {
-      return context.warehouse.getDefaultTablePath(parentDb, tableDesc.getTableName()).toString();
+      return context.warehouse.getDefaultTablePath(
+          parentDb, tableDesc.getTableName(), tableDesc.isExternal()).toString();
     } else {
-      Path tablePath = new Path(
-          context.warehouse.getDefaultDatabasePath(tableDesc.getDatabaseName()),
-          MetaStoreUtils.encodeTableName(tableDesc.getTableName().toLowerCase())
-      );
+      Path tablePath = context.warehouse.getDefaultTablePath(
+          tableDesc.getDatabaseName(), tableDesc.getTableName(), tableDesc.isExternal());
       return context.warehouse.getDnsPath(tablePath).toString();
     }
   }
@@ -285,7 +284,8 @@ public class LoadPartitions {
       if (table.getDataLocation() == null) {
         Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
         return new Path(
-            context.warehouse.getDefaultTablePath(parentDb, tableDesc.getTableName()), child);
+            context.warehouse.getDefaultTablePath(parentDb, tableDesc.getTableName(), tableDesc.isExternal()),
+            child);
       } else {
         return new Path(table.getDataLocation().toString(), child);
       }
