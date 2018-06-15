@@ -822,7 +822,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
     if (DDLTask.doesTableNeedLocation(tbl)) {
       // If location is specified - ensure that it is a full qualified name
-      DDLTask.makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tableName, conf);
+      DDLTask.makeLocationQualified(tbl.getDbName(), tbl, conf);
     }
 
     if (isExternal()) {
