@@ -51,8 +51,8 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.text.ChoiceFormat;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -75,11 +75,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
-import jline.console.completer.FileNameCompleter;
-import jline.console.ConsoleReader;
-import jline.console.history.FileHistory;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -91,21 +86,26 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
-import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.beeline.hs2connection.BeelineConfFileParseException;
 import org.apache.hive.beeline.hs2connection.BeelineSiteParseException;
 import org.apache.hive.beeline.hs2connection.BeelineSiteParser;
-import org.apache.hive.beeline.hs2connection.HS2ConnectionFileUtils;
-import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
 import org.apache.hive.beeline.hs2connection.HS2ConnectionFileParser;
+import org.apache.hive.beeline.hs2connection.HS2ConnectionFileUtils;
 import org.apache.hive.beeline.hs2connection.HiveSiteHS2ConnectionFileParser;
+import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
+import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.jdbc.JdbcUriParseException;
+import org.apache.hive.jdbc.Utils;
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.thrift.transport.TTransportException;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.apache.hive.jdbc.JdbcUriParseException;
-import org.apache.hive.jdbc.Utils;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.completer.FileNameCompleter;
+import jline.console.completer.StringsCompleter;
+import jline.console.history.FileHistory;
 
 /**
  * A console SQL shell with command completion.
@@ -900,7 +900,11 @@ public class BeeLine implements Closeable {
         comForDebug = constructCmdUrl(url, user, driver, true);
       }
       debug(comForDebug);
-      return dispatch(com);
+      if (!dispatch(com)) {
+        exit = true;
+        return false;
+      }
+      return true;
     }
     // load property file
     String propertyFile = cl.getOptionValue("property-file");
@@ -1286,7 +1290,9 @@ public class BeeLine implements Closeable {
 
         if (!dispatch(line)) {
           lastExecutionResult = ERRNO_OTHER;
-          if (exitOnError) break;
+          if (exitOnError) {
+            break;
+          }
         } else if (line != null) {
           lastExecutionResult = ERRNO_OK;
         }
@@ -2222,7 +2228,7 @@ public class BeeLine implements Closeable {
     }
     info("scan complete in "
         + (System.currentTimeMillis() - start) + "ms");
-    return (Driver[]) driverClasses.toArray(new Driver[0]);
+    return driverClasses.toArray(new Driver[0]);
   }
 
   // /////////////////////////////////////
