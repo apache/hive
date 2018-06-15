@@ -772,7 +772,7 @@ public class QTestUtil {
       cleanUp();
     }
 
-    if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
+    if (clusterType.getCoreClusterType() == CoreClusterType.TEZ && SessionState.get().getTezSession() != null) {
       SessionState.get().getTezSession().destroy();
     }
     if (druidCluster != null) {

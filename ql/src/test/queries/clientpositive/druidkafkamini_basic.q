@@ -9,8 +9,9 @@ CREATE TABLE druid_kafka_test(`__time` timestamp, page string, `user` string, la
         "druid.kafka.ingestion.useEarliestOffset" = "true",
         "druid.kafka.ingestion.maxRowsInMemory" = "5",
         "druid.kafka.ingestion.startDelay" = "PT1S",
-        "druid.kafka.ingestion.taskDuration" = "PT20S",
-        "druid.kafka.ingestion.period" = "PT1S"
+        "druid.kafka.ingestion.taskDuration" = "PT60S",
+        "druid.kafka.ingestion.period" = "PT1S",
+        "druid.kafka.ingestion.consumer.retries" = "2"
         );
 
 ALTER TABLE druid_kafka_test SET TBLPROPERTIES('druid.kafka.ingestion' = 'START');
