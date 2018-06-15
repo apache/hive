@@ -356,6 +356,7 @@ public class Context {
     this.executionIndex = ctx.executionIndex;
     this.viewsTokenRewriteStreams = new HashMap<>();
     this.rewrittenStatementContexts = new HashSet<>();
+    this.opContext = new CompilationOpContext();
   }
 
   public Map<String, Path> getFsScratchDirs() {
