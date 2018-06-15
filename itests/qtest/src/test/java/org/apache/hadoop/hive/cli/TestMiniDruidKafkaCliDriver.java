@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.cli.control.CliConfigs;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
@@ -32,7 +31,6 @@ import org.junit.runners.Parameterized.Parameters;
 import java.io.File;
 import java.util.List;
 
-@Ignore("HIVE-19509: Disable tests that are failing continuously")
 @RunWith(Parameterized.class)
 public class TestMiniDruidKafkaCliDriver {
 

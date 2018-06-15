@@ -407,8 +407,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
               getIntegerProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "replicas"),
               getIntegerProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskCount"),
               getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "taskDuration"),
-              ImmutableMap.of(KafkaSupervisorIOConfig.BOOTSTRAP_SERVERS_KEY,
-                  kafka_servers), // Mandatory Property
+              getKafkaConsumerProperties(table, kafka_servers), // Mandatory Property
               getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "startDelay"),
               getPeriodProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "period"),
               getBooleanProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "useEarliestOffset"),
@@ -418,6 +417,19 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
               getBooleanProperty(table, Constants.DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "skipOffsetGaps")),
           new HashMap<String, Object>()
       );
+  }
+
+  private static Map<String, String> getKafkaConsumerProperties(Table table, String kafka_servers) {
+    ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+    builder.put(KafkaSupervisorIOConfig.BOOTSTRAP_SERVERS_KEY, kafka_servers);
+    for (Map.Entry<String, String> entry : table.getParameters().entrySet()) {
+      if (entry.getKey().startsWith(Constants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX)) {
+        String propertyName = entry.getKey()
+                .substring(Constants.DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX.length());
+        builder.put(propertyName, entry.getValue());
+      }
+    }
+    return builder.build();
   }
 
   private static void updateKafkaIngestionSpec(String overlordAddress, KafkaSupervisorSpec spec) {
