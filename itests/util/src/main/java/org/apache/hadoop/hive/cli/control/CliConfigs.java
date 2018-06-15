@@ -199,8 +199,6 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "druid.kafka.query.files");
 
-        excludeQuery("druidkafkamini_basic.q"); // Disabled in HIVE-19509
-
         setResultsDir("ql/src/test/results/clientpositive/druid");
         setLogDir("itests/qtest/target/tmp/log");
 

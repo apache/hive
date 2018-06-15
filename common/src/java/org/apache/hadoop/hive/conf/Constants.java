@@ -53,6 +53,7 @@ public class Constants {
   public static final String KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
 
   public static final String DRUID_KAFKA_INGESTION_PROPERTY_PREFIX = "druid.kafka.ingestion.";
+  public static final String DRUID_KAFKA_CONSUMER_PROPERTY_PREFIX = DRUID_KAFKA_INGESTION_PROPERTY_PREFIX + "consumer.";
   /* Kafka Ingestion state - valid values - START/STOP/RESET */
   public static final String DRUID_KAFKA_INGESTION = "druid.kafka.ingestion";
 
