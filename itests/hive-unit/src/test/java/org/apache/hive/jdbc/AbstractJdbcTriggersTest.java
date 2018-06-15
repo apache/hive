@@ -47,8 +47,11 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractJdbcTriggersTest {
+  private final Logger LOG = LoggerFactory.getLogger(getClass().getName());
   protected static MiniHS2 miniHS2 = null;
   protected static String dataFileDir;
   static Path kvDataFilePath;
@@ -100,11 +103,13 @@ public abstract class AbstractJdbcTriggersTest {
   }
 
   @AfterClass
-  public static void afterTest() throws Exception {
+  public static void afterTest() {
     if (miniHS2.isStarted()) {
       miniHS2.stop();
     }
   }
+
+  public abstract String getTestName();
 
   private void createSleepUDF() throws SQLException {
     String udfName = TestJdbcWithMiniHS2.SleepMsUDF.class.getName();
@@ -115,8 +120,40 @@ public abstract class AbstractJdbcTriggersTest {
   }
 
   void runQueryWithTrigger(final String query, final List<String> setCmds,
-    final String expect) throws Exception {
-    runQueryWithTrigger(query, setCmds, expect, null);
+    final String expect, final int queryTimeoutSecs) throws Exception {
+    String testName = getTestName();
+    long start = System.currentTimeMillis();
+    LOG.info("Start of test: {}", testName);
+    Connection con = hs2Conn;
+    BaseJdbcWithMiniLlap.createTestTable(con, null, tableName, kvDataFilePath.toString());
+    createSleepUDF();
+    final Statement selStmt = con.createStatement();
+    Throwable throwable = null;
+    try {
+      if (queryTimeoutSecs > 0) {
+        selStmt.setQueryTimeout(queryTimeoutSecs);
+      }
+      if (setCmds != null) {
+        for (String setCmd : setCmds) {
+          selStmt.execute(setCmd);
+        }
+      }
+      selStmt.execute(query);
+    } catch (SQLException e) {
+      throwable = e;
+    }
+    selStmt.close();
+
+    if (expect == null) {
+      assertNull("Expected query to succeed", throwable);
+    } else {
+      assertNotNull("Expected non-null throwable", throwable);
+      assertEquals(SQLException.class, throwable.getClass());
+      assertTrue(expect + " is not contained in " + throwable.getMessage(),
+        throwable.getMessage().contains(expect));
+    }
+    long end = System.currentTimeMillis();
+    LOG.info("End of test: {} time: {} ms", testName, (end - start));
   }
 
   void runQueryWithTrigger(final String query, final List<String> setCmds,
@@ -130,32 +167,27 @@ public abstract class AbstractJdbcTriggersTest {
     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
     System.setErr(new PrintStream(baos)); // capture stderr
     final Statement selStmt = con.createStatement();
-    final Throwable[] throwable = new Throwable[1];
+    Throwable throwable = null;
     try {
-      Thread queryThread = new Thread(() -> {
-        try {
-          if (setCmds != null) {
-            for (String setCmd : setCmds) {
-              selStmt.execute(setCmd);
-            }
+      try {
+        if (setCmds != null) {
+          for (String setCmd : setCmds) {
+            selStmt.execute(setCmd);
           }
-          selStmt.execute(query);
-        } catch (SQLException e) {
-          throwable[0] = e;
         }
-      });
-      queryThread.start();
-
-      queryThread.join();
+        selStmt.execute(query);
+      } catch (SQLException e) {
+        throwable = e;
+      }
       selStmt.close();
 
       if (expect == null) {
-        assertNull("Expected query to succeed", throwable[0]);
+        assertNull("Expected query to succeed", throwable);
       } else {
-        assertNotNull("Expected non-null throwable", throwable[0]);
-        assertEquals(SQLException.class, throwable[0].getClass());
-        assertTrue(expect + " is not contained in " + throwable[0].getMessage(),
-          throwable[0].getMessage().contains(expect));
+        assertNotNull("Expected non-null throwable", throwable);
+        assertEquals(SQLException.class, throwable.getClass());
+        assertTrue(expect + " is not contained in " + throwable.getMessage(),
+          throwable.getMessage().contains(expect));
       }
 
       if (errCaptureExpect != null && !errCaptureExpect.isEmpty()) {
@@ -173,7 +205,6 @@ public abstract class AbstractJdbcTriggersTest {
     } finally {
       baos.close();
     }
-
   }
 
   abstract void setupTriggers(final List<Trigger> triggers) throws Exception;
@@ -181,10 +212,10 @@ public abstract class AbstractJdbcTriggersTest {
   List<String> getConfigs(String... more) {
     List<String> setCmds = new ArrayList<>();
     setCmds.add("set hive.exec.dynamic.partition.mode=nonstrict");
-    setCmds.add("set mapred.min.split.size=100");
-    setCmds.add("set mapred.max.split.size=100");
-    setCmds.add("set tez.grouping.min-size=100");
-    setCmds.add("set tez.grouping.max-size=100");
+    setCmds.add("set mapred.min.split.size=200");
+    setCmds.add("set mapred.max.split.size=200");
+    setCmds.add("set tez.grouping.min-size=200");
+    setCmds.add("set tez.grouping.max-size=200");
     if (more != null) {
       setCmds.addAll(Arrays.asList(more));
     }

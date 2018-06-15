@@ -16,23 +16,32 @@
 
 package org.apache.hive.jdbc;
 
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.wm.Action;
 import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.ql.wm.Expression;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
 import org.apache.hadoop.hive.ql.wm.Trigger;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
+
 import com.google.common.collect.Lists;
 
 public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest {
+  @Rule
+  public TestName testName = new TestName();
+
+  @Override
+  public String getTestName() {
+    return getClass().getSimpleName() + "#" + testName.getMethodName();
+  }
 
   @Test(timeout = 120000)
   public void testTriggerSlowQueryElapsedTime() throws Exception {
@@ -41,7 +50,10 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, trigger + " violated");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -51,7 +63,10 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, trigger + " violated");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -61,7 +76,10 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, trigger + " violated");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -71,12 +89,14 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(trigger));
     List<String> cmds = new ArrayList<>();
     cmds.add("set hive.auto.convert.join=false");
+    cmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    cmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     // to slow down the reducer so that SHUFFLE_BYTES publishing and validation can happen, adding sleep between
     // multiple reduce stages
     String query = "select count(distinct t.under_col), sleep(t.under_col, 10) from (select t1.under_col from " +
       tableName + " t1 " + "join " + tableName + " t2 on t1.under_col=t2.under_col order by sleep(t1.under_col, 0))" +
       " t group by t.under_col";
-    runQueryWithTrigger(query, cmds, trigger + " violated");
+    runQueryWithTrigger(query, cmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -86,7 +106,10 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, trigger + " violated");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -96,17 +119,23 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, trigger + " violated");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
   public void testTriggerTotalTasks() throws Exception {
-    Expression expression = ExpressionFactory.fromString("VERTEX_TOTAL_TASKS > 50");
+    Expression expression = ExpressionFactory.fromString("VERTEX_TOTAL_TASKS > 20");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, getConfigs(), trigger + " violated");
+    List<String> setCmds = getConfigs();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -116,7 +145,10 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, getConfigs(), trigger + " violated");
+    List<String> setCmds = getConfigs();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -126,18 +158,22 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, getConfigs(), trigger + " violated");
+    List<String> setCmds = getConfigs();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
   public void testTriggerCustomCreatedFiles() throws Exception {
     List<String> cmds = getConfigs();
-
+    cmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    cmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     Expression expression = ExpressionFactory.fromString("CREATED_FILES > 5");
     Trigger trigger = new ExecutionTrigger("high_read_ops", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "create table testtab2 as select * from " + tableName;
-    runQueryWithTrigger(query, cmds, trigger + " violated");
+    runQueryWithTrigger(query, cmds, trigger + " violated", 110);
 
     // partitioned insert
     expression = ExpressionFactory.fromString("CREATED_FILES > 10");
@@ -147,7 +183,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     cmds.add("create table src3 (key int) partitioned by (value string)");
     query = "insert overwrite table src3 partition (value) select sleep(under_col, 10), value from " + tableName +
       " where under_col < 100";
-    runQueryWithTrigger(query, cmds, trigger + " violated");
+    runQueryWithTrigger(query, cmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 240000)
@@ -155,40 +191,41 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     List<String> cmds = getConfigs();
     cmds.add("drop table src2");
     cmds.add("create table src2 (key int) partitioned by (value string)");
-
+    cmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    cmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     // query will get cancelled before creating 57 partitions
     String query =
       "insert overwrite table src2 partition (value) select * from " + tableName + " where under_col < 100";
     Expression expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 20");
     Trigger trigger = new ExecutionTrigger("high_read_ops", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    runQueryWithTrigger(query, cmds, trigger + " violated");
+    runQueryWithTrigger(query, cmds, trigger + " violated", 110);
 
     cmds = getConfigs();
     // let it create 57 partitions without any triggers
     query = "insert overwrite table src2 partition (value) select under_col, value from " + tableName +
       " where under_col < 100";
     setupTriggers(Lists.newArrayList());
-    runQueryWithTrigger(query, cmds, null);
+    runQueryWithTrigger(query, cmds, null, 110);
 
     // query will try to add 64 more partitions to already existing 57 partitions but will get cancelled for violation
     query = "insert into table src2 partition (value) select * from " + tableName + " where under_col < 200";
     expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 30");
     trigger = new ExecutionTrigger("high_read_ops", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    runQueryWithTrigger(query, cmds, trigger + " violated");
+    runQueryWithTrigger(query, cmds, trigger + " violated", 110);
 
     // let it create 64 more partitions (total 57 + 64 = 121) without any triggers
     query = "insert into table src2 partition (value) select * from " + tableName + " where under_col < 200";
     setupTriggers(Lists.newArrayList());
-    runQueryWithTrigger(query, cmds, null);
+    runQueryWithTrigger(query, cmds, null, 110);
 
     // re-run insert into but this time no new partitions will be created, so there will be no violation
     query = "insert into table src2 partition (value) select * from " + tableName + " where under_col < 200";
     expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 10");
     trigger = new ExecutionTrigger("high_read_ops", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    runQueryWithTrigger(query, cmds, null);
+    runQueryWithTrigger(query, cmds, null, 110);
   }
 
   @Test(timeout = 120000)
@@ -198,7 +235,8 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     cmds.add("drop table src3");
     cmds.add("create table src2 (key int) partitioned by (value string)");
     cmds.add("create table src3 (key int) partitioned by (value string)");
-
+    cmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    cmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     String query =
       "from " + tableName +
         " insert overwrite table src2 partition (value) select * where under_col < 100 " +
@@ -206,7 +244,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 70");
     Trigger trigger = new ExecutionTrigger("high_partitions", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    runQueryWithTrigger(query, cmds, trigger + " violated");
+    runQueryWithTrigger(query, cmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -214,7 +252,8 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     List<String> cmds = getConfigs();
     cmds.add("drop table src2");
     cmds.add("create table src2 (key int) partitioned by (value string)");
-
+    cmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    cmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     // query will get cancelled before creating 57 partitions
     String query =
       "insert overwrite table src2 partition (value) " +
@@ -225,7 +264,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     Expression expression = ExpressionFactory.fromString("CREATED_DYNAMIC_PARTITIONS > 70");
     Trigger trigger = new ExecutionTrigger("high_partitions", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
-    runQueryWithTrigger(query, cmds, trigger + " violated");
+    runQueryWithTrigger(query, cmds, trigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -235,55 +274,70 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(trigger));
     String query =
       "select l.under_col, l.value from " + tableName + " l join " + tableName + " r on l.under_col>=r.under_col";
-    runQueryWithTrigger(query, null, null);
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, null, 110);
   }
 
   @Test(timeout = 120000)
   public void testTriggerDagRawInputSplitsKill() throws Exception {
-    // Map 1 - 55 splits
-    // Map 3 - 55 splits
-    Expression expression = ExpressionFactory.fromString("DAG_RAW_INPUT_SPLITS > 100");
+    // Map 1 - 28 splits
+    // Map 3 - 28 splits
+    Expression expression = ExpressionFactory.fromString("DAG_RAW_INPUT_SPLITS > 50");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
+    List<String> setCmds = getConfigs();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, "Query was cancelled", 110);
   }
 
   @Test(timeout = 120000)
   public void testTriggerVertexRawInputSplitsNoKill() throws Exception {
-    // Map 1 - 55 splits
-    // Map 3 - 55 splits
-    Expression expression = ExpressionFactory.fromString("VERTEX_RAW_INPUT_SPLITS > 100");
-    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
-    setupTriggers(Lists.newArrayList(trigger));
-    String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
-      " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, getConfigs(), null);
-  }
-
-  @Test(timeout = 120000)
-  public void testTriggerVertexRawInputSplitsKill() throws Exception {
-    // Map 1 - 55 splits
-    // Map 3 - 55 splits
+    // Map 1 - 28 splits
+    // Map 3 - 28 splits
     Expression expression = ExpressionFactory.fromString("VERTEX_RAW_INPUT_SPLITS > 50");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, null, 110);
   }
 
   @Test(timeout = 120000)
-  public void testTriggerDefaultRawInputSplits() throws Exception {
-    // Map 1 - 55 splits
-    // Map 3 - 55 splits
-    Expression expression = ExpressionFactory.fromString("RAW_INPUT_SPLITS > 50");
+  public void testTriggerVertexRawInputSplitsKill() throws Exception {
+    // Map 1 - 28 splits
+    // Map 3 - 28 splits
+    Expression expression = ExpressionFactory.fromString("VERTEX_RAW_INPUT_SPLITS > 20");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
+    List<String> setCmds = getConfigs();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, "Query was cancelled", 110);
+  }
+
+  @Test(timeout = 120000)
+  public void testTriggerDefaultRawInputSplits() throws Exception {
+    // Map 1 - 28 splits
+    // Map 3 - 28 splits
+    Expression expression = ExpressionFactory.fromString("RAW_INPUT_SPLITS > 20");
+    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select t1.under_col, t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    List<String> setCmds = getConfigs();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, "Query was cancelled", 110);
   }
 
   @Test(timeout = 120000)
@@ -295,7 +349,10 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(shuffleTrigger, execTimeTrigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, execTimeTrigger + " violated");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, execTimeTrigger + " violated", 110);
   }
 
   @Test(timeout = 120000)
@@ -307,7 +364,10 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     setupTriggers(Lists.newArrayList(shuffleTrigger, execTimeTrigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
       " t2 on t1.under_col>=t2.under_col";
-    runQueryWithTrigger(query, null, shuffleTrigger + " violated");
+    List<String> setCmds = new ArrayList<>();
+    setCmds.add("set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
+    runQueryWithTrigger(query, setCmds, shuffleTrigger + " violated", 110);
   }
 
   @Override
