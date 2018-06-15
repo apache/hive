@@ -5086,7 +5086,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // If location is specified - ensure that it is a full qualified name
     if (DDLTask.doesTableNeedLocation(tbl)) {
-      makeLocationQualified(tbl.getDbName(), tbl.getTTable().getSd(), tbl.getTableName(), conf);
+      makeLocationQualified(tbl.getDbName(), tbl, conf);
     }
 
     if (crtTbl.getLocation() == null && !tbl.isPartitioned()
@@ -5263,17 +5263,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param name
    *          Object name.
    */
-  public static void makeLocationQualified(String databaseName, StorageDescriptor sd,
-      String name, HiveConf conf) throws HiveException {
+  public static void makeLocationQualified(String databaseName, Table table, HiveConf conf) throws HiveException {
     Path path = null;
+    StorageDescriptor sd = table.getTTable().getSd();
+    String name = table.getTableName();
     if (!sd.isSetLocation())
     {
-      // Location is not set, leave it as-is if this is not a default DB
-      if (databaseName.equalsIgnoreCase(Warehouse.DEFAULT_DATABASE_NAME))
-      {
-        // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
-        // instead
-        path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(name.toLowerCase()));
+      // Leave temp tables as-is, default location will be handled by SessionHiveMetastoreClient.
+      if (!table.isTemporary()) {
+        // Location is not set, leave it as-is if this is not a default DB
+        if (databaseName.equalsIgnoreCase(Warehouse.DEFAULT_DATABASE_NAME))
+        {
+          // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
+          // instead
+          path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(name.toLowerCase()));
+        }
       }
     }
     else
