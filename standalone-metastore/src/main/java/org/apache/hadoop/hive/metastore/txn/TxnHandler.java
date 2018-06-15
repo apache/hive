@@ -838,11 +838,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     throws NoSuchTxnException, TxnAbortedException, MetaException {
     MaterializationsRebuildLockHandler materializationsRebuildLockHandler =
         MaterializationsRebuildLockHandler.get();
-    String fullyQualifiedName = null;
-    String dbName = null;
-    String tblName = null;
-    long writeId = 0L;
-    long timestamp = 0L;
+    List<TransactionRegistryInfo> txnComponents = new ArrayList<>();
     boolean isUpdateDelete = false;
     long txnid = rqst.getTxnid();
     long sourceTxnId = -1;
@@ -1007,12 +1003,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         s = "select ctc_database, ctc_table, ctc_writeid, ctc_timestamp from COMPLETED_TXN_COMPONENTS where ctc_txnid = " + txnid;
         LOG.debug("Going to extract table modification information for invalidation cache <" + s + ">");
         rs = stmt.executeQuery(s);
-        if (rs.next()) {
-          dbName = rs.getString(1);
-          tblName = rs.getString(2);
-          fullyQualifiedName = Warehouse.getQualifiedName(dbName, tblName);
-          writeId = rs.getLong(3);
-          timestamp = rs.getTimestamp(4, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime();
+        while (rs.next()) {
+          // We only enter in this loop if the transaction actually affected any table
+          txnComponents.add(new TransactionRegistryInfo(rs.getString(1), rs.getString(2),
+              rs.getLong(3), rs.getTimestamp(4, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime()));
         }
         s = "delete from TXN_COMPONENTS where tc_txnid = " + txnid;
         LOG.debug("Going to execute update <" + s + ">");
@@ -1042,18 +1036,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         MaterializationsInvalidationCache materializationsInvalidationCache =
             MaterializationsInvalidationCache.get();
-        if (materializationsInvalidationCache.containsMaterialization(dbName, tblName) &&
-            !materializationsRebuildLockHandler.readyToCommitResource(dbName, tblName, txnid)) {
-          throw new MetaException(
-              "Another process is rebuilding the materialized view " + fullyQualifiedName);
+        for (TransactionRegistryInfo info : txnComponents) {
+          if (materializationsInvalidationCache.containsMaterialization(info.dbName, info.tblName) &&
+              !materializationsRebuildLockHandler.readyToCommitResource(info.dbName, info.tblName, txnid)) {
+            throw new MetaException(
+                "Another process is rebuilding the materialized view " + info.fullyQualifiedName);
+          }
         }
         LOG.debug("Going to commit");
         close(rs);
         dbConn.commit();
 
         // Update registry with modifications
-        materializationsInvalidationCache.notifyTableModification(
-            dbName, tblName, writeId, timestamp, isUpdateDelete);
+        for (TransactionRegistryInfo info : txnComponents) {
+          materializationsInvalidationCache.notifyTableModification(
+              info.dbName, info.tblName, info.writeId, info.timestamp, isUpdateDelete);
+        }
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -1064,8 +1062,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         close(commitIdRs);
         close(lockHandle, stmt, dbConn);
         unlockInternal();
-        if (fullyQualifiedName != null) {
-          materializationsRebuildLockHandler.unlockResource(dbName, tblName, txnid);
+        for (TransactionRegistryInfo info : txnComponents) {
+          materializationsRebuildLockHandler.unlockResource(info.dbName, info.tblName, txnid);
         }
       }
     } catch (RetryException e) {
@@ -4783,4 +4781,21 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       throw new UnsupportedOperationException();
     }
   };
+
+  private class TransactionRegistryInfo {
+    final String dbName;
+    final String tblName;
+    final String fullyQualifiedName;
+    final long writeId;
+    final long timestamp;
+
+    public TransactionRegistryInfo (String dbName, String tblName, long writeId, long timestamp) {
+      this.dbName = dbName;
+      this.tblName = tblName;
+      this.fullyQualifiedName = Warehouse.getQualifiedName(dbName, tblName);
+      this.writeId = writeId;
+      this.timestamp = timestamp;
+    }
+  }
+
 }
