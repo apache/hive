@@ -2576,8 +2576,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     if (haveSchemaEvolutionProperties) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using schema evolution configuration variables schema.evolution.columns " +
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Using schema evolution configuration variables schema.evolution.columns " +
             schemaEvolutionColumnNames.toString() +
             " / schema.evolution.columns.types " +
             schemaEvolutionTypeDescrs.toString() +
@@ -2619,8 +2619,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         schemaEvolutionTypeDescrs = Lists.newArrayList(schemaEvolutionTypeDescrs.subList(0, virtualColumnClipNum));
       }
 
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using column configuration variables columns " +
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Using column configuration variables columns " +
                 schemaEvolutionColumnNames.toString() +
                 " / columns.types " +
                 schemaEvolutionTypeDescrs.toString() +
