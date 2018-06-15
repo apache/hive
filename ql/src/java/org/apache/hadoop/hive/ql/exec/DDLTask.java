@@ -5266,21 +5266,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   public static void makeLocationQualified(String databaseName, Table table, HiveConf conf) throws HiveException {
     Path path = null;
     StorageDescriptor sd = table.getTTable().getSd();
-    String name = table.getTableName();
-    if (!sd.isSetLocation())
-    {
-      // Leave temp tables as-is, default location will be handled by SessionHiveMetastoreClient.
-      if (!table.isTemporary()) {
-        // Location is not set, leave it as-is if this is not a default DB
-        if (databaseName.equalsIgnoreCase(Warehouse.DEFAULT_DATABASE_NAME))
-        {
-          // Default database name path is always ignored, use METASTOREWAREHOUSE and object name
-          // instead
-          path = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE), org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(name.toLowerCase()));
-        }
-      }
-    }
-    else
+    // If the table's location is currently unset, it is left unset, allowing the metastore to
+    // fill in the table's location.
+    // Note that the previous logic for some reason would make a special case if the DB was the
+    // default database, and actually attempt to generate a  location.
+    // This seems incorrect and uncessary, since the metastore is just as able to fill in the
+    // default table location in the case of the default DB, as it is for non-default DBs.
+    if (sd.isSetLocation())
     {
       path = new Path(sd.getLocation());
     }
