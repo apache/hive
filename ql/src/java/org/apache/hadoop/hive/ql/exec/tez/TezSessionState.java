@@ -132,7 +132,7 @@ public class TezSessionState {
     }
     /** A directory that will contain resources related to DAGs and specified in configs. */
     public final Path dagResourcesDir;
-    public final Set<String> additionalFilesNotFromConf = new HashSet<>();
+    public final Map<String, LocalResource> additionalFilesNotFromConf = new HashMap<String, LocalResource>();
     /** Localized resources of this session; both from conf and not from conf (above). */
     public final Set<LocalResource> localizedResources = new HashSet<>();
 
@@ -678,7 +678,7 @@ public class TezSessionState {
       boolean hasResources = !resources.additionalFilesNotFromConf.isEmpty();
       if (hasResources) {
         for (String s : newFilesNotFromConf) {
-          hasResources = resources.additionalFilesNotFromConf.contains(s);
+          hasResources = resources.additionalFilesNotFromConf.keySet().contains(s);
           if (!hasResources) {
             break;
           }
@@ -690,9 +690,11 @@ public class TezSessionState {
         if (newResources != null) {
           resources.localizedResources.addAll(newResources);
         }
-        for (String fullName : newFilesNotFromConf) {
-          resources.additionalFilesNotFromConf.add(fullName);
+        for (int i=0;i<newFilesNotFromConf.length;i++) {
+          resources.additionalFilesNotFromConf.put(newFilesNotFromConf[i], newResources.get(i));
         }
+      } else {
+        resources.localizedResources.addAll(resources.additionalFilesNotFromConf.values());
       }
     }
 
