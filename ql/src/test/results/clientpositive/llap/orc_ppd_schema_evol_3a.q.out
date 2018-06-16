@@ -80,11 +80,13 @@ STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.c
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_ppd_staging_n2
-PREHOOK: query: insert overwrite table orc_ppd_staging_n2 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging_n8 order by t, s
+PREHOOK: query: insert overwrite table orc_ppd_staging_n2 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, cast(ts as date) as da, `dec`, bin from staging_n8 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging_n8
 PREHOOK: Output: default@orc_ppd_staging_n2
-POSTHOOK: query: insert overwrite table orc_ppd_staging_n2 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging_n8 order by t, s
+POSTHOOK: query: insert overwrite table orc_ppd_staging_n2 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, cast(ts as date) as da, `dec`, bin from staging_n8 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging_n8
 POSTHOOK: Output: default@orc_ppd_staging_n2
@@ -177,11 +179,13 @@ STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.c
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_ppd_n3
-PREHOOK: query: insert overwrite table orc_ppd_n3 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging_n2 order by t, s
+PREHOOK: query: insert overwrite table orc_ppd_n3 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, da, `dec`, bin from orc_ppd_staging_n2 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_staging_n2
 PREHOOK: Output: default@orc_ppd_n3
-POSTHOOK: query: insert overwrite table orc_ppd_n3 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging_n2 order by t, s
+POSTHOOK: query: insert overwrite table orc_ppd_n3 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, da, `dec`, bin from orc_ppd_staging_n2 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_ppd_staging_n2
 POSTHOOK: Output: default@orc_ppd_n3
@@ -203,7 +207,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 17011
+   HDFS_BYTES_READ: 17010
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 7
    HDFS_LARGE_READ_OPS: 0
@@ -1071,7 +1075,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 16901
+   HDFS_BYTES_READ: 16900
    HDFS_BYTES_WRITTEN: 104
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1103,7 +1107,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 17731
+   HDFS_BYTES_READ: 17730
    HDFS_BYTES_WRITTEN: 104
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1135,7 +1139,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 16901
+   HDFS_BYTES_READ: 16900
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1167,7 +1171,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 17731
+   HDFS_BYTES_READ: 17730
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1199,7 +1203,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 16901
+   HDFS_BYTES_READ: 16900
    HDFS_BYTES_WRITTEN: 102
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1231,7 +1235,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 17731
+   HDFS_BYTES_READ: 17730
    HDFS_BYTES_WRITTEN: 102
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1263,7 +1267,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 4912
+   HDFS_BYTES_READ: 4896
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 4
    HDFS_LARGE_READ_OPS: 0
@@ -1286,7 +1290,7 @@ Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 524288
    ALLOCATED_USED_BYTES: 8527
    CACHE_HIT_BYTES: 24
-   CACHE_MISS_BYTES: 4912
+   CACHE_MISS_BYTES: 4896
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
    NUM_VECTOR_BATCHES: 3
@@ -1303,7 +1307,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 1751
+   HDFS_BYTES_READ: 1750
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 4
    HDFS_LARGE_READ_OPS: 0
@@ -1325,8 +1329,8 @@ Stage-1 HIVE COUNTERS:
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 262144
    ALLOCATED_USED_BYTES: 2376
-   CACHE_HIT_BYTES: 4936
-   CACHE_MISS_BYTES: 1751
+   CACHE_HIT_BYTES: 4920
+   CACHE_MISS_BYTES: 1750
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
    NUM_VECTOR_BATCHES: 1
@@ -1347,7 +1351,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 21461
+   HDFS_BYTES_READ: 21443
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1379,7 +1383,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 23339
+   HDFS_BYTES_READ: 23321
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1415,7 +1419,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 21461
+   HDFS_BYTES_READ: 21443
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1447,7 +1451,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 23339
+   HDFS_BYTES_READ: 23321
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1479,7 +1483,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 4099
+   HDFS_BYTES_READ: 4322
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 4
    HDFS_LARGE_READ_OPS: 0
@@ -1500,9 +1504,9 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_TS_0: 2100
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 1048576
-   ALLOCATED_USED_BYTES: 11420
+   ALLOCATED_USED_BYTES: 11434
    CACHE_HIT_BYTES: 24
-   CACHE_MISS_BYTES: 4099
+   CACHE_MISS_BYTES: 4322
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
    NUM_VECTOR_BATCHES: 3
@@ -1519,7 +1523,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 1592
+   HDFS_BYTES_READ: 1589
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 4
    HDFS_LARGE_READ_OPS: 0
@@ -1541,8 +1545,8 @@ Stage-1 HIVE COUNTERS:
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 262144
    ALLOCATED_USED_BYTES: 2376
-   CACHE_HIT_BYTES: 4123
-   CACHE_MISS_BYTES: 1592
+   CACHE_HIT_BYTES: 4346
+   CACHE_MISS_BYTES: 1589
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
    NUM_VECTOR_BATCHES: 3
@@ -1563,7 +1567,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 20632
+   HDFS_BYTES_READ: 20860
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1595,7 +1599,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 22367
+   HDFS_BYTES_READ: 22586
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1651,7 +1655,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_2: 6
    RECORDS_OUT_OPERATOR_TS_0: 2100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 4123
+   CACHE_HIT_BYTES: 4346
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
@@ -1689,7 +1693,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_2: 6
    RECORDS_OUT_OPERATOR_TS_0: 2100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
@@ -1711,7 +1715,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 20632
+   HDFS_BYTES_READ: 20860
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1743,7 +1747,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 22367
+   HDFS_BYTES_READ: 22586
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1799,7 +1803,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_2: 6
    RECORDS_OUT_OPERATOR_TS_0: 2100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 4123
+   CACHE_HIT_BYTES: 4346
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
@@ -1837,7 +1841,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_2: 6
    RECORDS_OUT_OPERATOR_TS_0: 2100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
@@ -1859,7 +1863,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 2183
+   HDFS_BYTES_READ: 2062
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 4
    HDFS_LARGE_READ_OPS: 0
@@ -1880,9 +1884,9 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_TS_0: 2100
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 786432
-   ALLOCATED_USED_BYTES: 4293
+   ALLOCATED_USED_BYTES: 4264
    CACHE_HIT_BYTES: 24
-   CACHE_MISS_BYTES: 2183
+   CACHE_MISS_BYTES: 2062
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
    NUM_VECTOR_BATCHES: 3
@@ -1899,7 +1903,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 18750
+   HDFS_BYTES_READ: 18628
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -1931,7 +1935,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 1217
+   HDFS_BYTES_READ: 1215
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 4
    HDFS_LARGE_READ_OPS: 0
@@ -1953,8 +1957,8 @@ Stage-1 HIVE COUNTERS:
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 262144
    ALLOCATED_USED_BYTES: 2376
-   CACHE_HIT_BYTES: 2207
-   CACHE_MISS_BYTES: 1217
+   CACHE_HIT_BYTES: 2086
+   CACHE_MISS_BYTES: 1215
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
    NUM_VECTOR_BATCHES: 1
@@ -1971,7 +1975,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 20076
+   HDFS_BYTES_READ: 19952
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0

@@ -23,13 +23,20 @@ CREATE TABLE orc_llap_n0(
     ctimestamp1 TIMESTAMP,
     ctimestamp2 TIMESTAMP,
     cboolean1 BOOLEAN,
-    cboolean2 BOOLEAN)
+    cboolean2 BOOLEAN,
+    cdecimal1 decimal(10,2),
+    cdecimal2 decimal(38,5))
     STORED AS ORC tblproperties ("orc.compress"="NONE");
 
 insert into table orc_llap_n0
-select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
-from alltypesorc;
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2,
+ cast("3.345" as decimal(10,2)), cast("5.56789" as decimal(38,5)) from alltypesorc;
 
+alter table orc_llap_n0 set tblproperties ("orc.compress"="NONE", 'orc.write.format'='UNSTABLE-PRE-2.0');
+
+insert into table orc_llap_n0
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2,
+ cast("3.345" as decimal(10,2)), cast("5.56789" as decimal(38,5)) from alltypesorc;
 
 SET hive.llap.io.enabled=true;
 

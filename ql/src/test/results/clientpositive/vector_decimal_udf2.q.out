@@ -83,12 +83,12 @@ STAGE PLANS:
             Statistics: Num rows: 39 Data size: 4072 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:key:decimal(14,5), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterDecimalColEqualDecimalScalar(col 0:decimal(14,5), val 10)
+                  predicateExpression: FilterDecimal64ColEqualDecimal64Scalar(col 0:decimal(14,5)/DECIMAL_64, val 1000000)
               predicate: (key = 10) (type: boolean)
               Statistics: Num rows: 19 Data size: 1983 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -114,8 +114,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: false
@@ -123,7 +123,7 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 2
               includeColumns: [0]
-              dataColumns: key:decimal(14,5), value:int
+              dataColumns: key:decimal(14,5)/DECIMAL_64, value:int
               partitionColumnCount: 0
               scratchColumnTypeNames: [double, double, double, double, double, double, double]
 
@@ -188,12 +188,12 @@ STAGE PLANS:
             Statistics: Num rows: 39 Data size: 4072 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:key:decimal(14,5), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterDecimalColEqualDecimalScalar(col 0:decimal(14,5), val 10)
+                  predicateExpression: FilterDecimal64ColEqualDecimal64Scalar(col 0:decimal(14,5)/DECIMAL_64, val 1000000)
               predicate: (key = 10) (type: boolean)
               Statistics: Num rows: 19 Data size: 1983 Basic stats: COMPLETE Column stats: NONE
               Select Operator
@@ -219,8 +219,8 @@ STAGE PLANS:
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-          inputFormatFeatureSupport: []
-          featureSupportInUse: []
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
           allNative: false
           usesVectorUDFAdaptor: true
@@ -228,7 +228,7 @@ STAGE PLANS:
           rowBatchContext:
               dataColumnCount: 2
               includeColumns: [0, 1]
-              dataColumns: key:decimal(14,5), value:int
+              dataColumns: key:decimal(14,5)/DECIMAL_64, value:int
               partitionColumnCount: 0
               scratchColumnTypeNames: [double, double, double, double, double, double, double, double]
 

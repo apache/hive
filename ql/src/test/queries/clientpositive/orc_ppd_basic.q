@@ -39,7 +39,8 @@ CREATE TABLE orc_ppd_staging_n1(t tinyint,
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*");
 
-insert overwrite table orc_ppd_staging_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging_n7 order by t, s;
+insert overwrite table orc_ppd_staging_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, cast(ts as date) as da, `dec`, bin from staging_n7 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin;
 
 -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
 -- which makes it hard to test bloom filters
@@ -61,7 +62,9 @@ CREATE TABLE orc_ppd_n2(t tinyint,
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*");
 
-insert overwrite table orc_ppd_n2 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging_n1 order by t, s;
+insert overwrite table orc_ppd_n2 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, da, `dec`, bin from orc_ppd_staging_n1 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin;
+
 
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 

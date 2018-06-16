@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.io.orc.encoded;
 
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
+import org.apache.orc.OrcFile;
 import org.apache.orc.impl.RunLengthByteReader;
 
 import java.io.IOException;
@@ -1200,6 +1202,147 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
+  protected static class Decimal64StreamReader extends Decimal64TreeReader implements SettableTreeReader {
+    private boolean _isFileCompressed;
+    private SettableUncompressedStream _presentStream;
+    private SettableUncompressedStream _valueStream;
+    private List<ColumnVector> vectors;
+    private int vectorIndex = 0;
+
+    private Decimal64StreamReader(int columnId, int precision, int scale,
+      SettableUncompressedStream presentStream,
+      SettableUncompressedStream valueStream,
+      boolean isFileCompressed,
+      OrcProto.ColumnEncoding encoding, TreeReaderFactory.Context context,
+      List<ColumnVector> vectors) throws IOException {
+      super(columnId, presentStream, valueStream, encoding,
+        precision, scale, context);
+      this._isFileCompressed = isFileCompressed;
+      this._presentStream = presentStream;
+      this._valueStream = valueStream;
+      this.vectors = vectors;
+    }
+
+    @Override
+    public void seek(PositionProvider index) throws IOException {
+      if (vectors != null) return;
+      if (present != null) {
+        if (_isFileCompressed) {
+          index.getNext();
+        }
+        present.seek(index);
+      }
+
+      // data stream could be empty stream or already reached end of stream before present stream.
+      // This can happen if all values in stream are nulls or last row group values are all null.
+      skipCompressedIndex(_isFileCompressed, index);
+      if (_valueStream.available() > 0) {
+        valueReader.seek(index);
+      } else {
+        skipSeek(index);
+      }
+    }
+
+    @Override
+    public void nextVector(
+      ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+      if (vectors == null) {
+        super.nextVector(previousVector, isNull, batchSize);
+        return;
+      }
+      vectors.get(vectorIndex++).shallowCopyTo(previousVector);
+      if (vectorIndex == vectors.size()) {
+        vectors = null;
+      }
+    }
+
+    @Override
+    public void setBuffers(EncodedColumnBatch<OrcBatchKey> batch, boolean sameStripe) {
+      assert vectors == null; // See the comment in TimestampStreamReader.setBuffers.
+      ColumnStreamData[] streamsData = batch.getColumnData(columnId);
+      if (_presentStream != null) {
+        _presentStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
+      }
+      if (_valueStream != null) {
+        _valueStream.setBuffers(StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
+      }
+    }
+
+    public static class StreamReaderBuilder {
+      private int columnIndex;
+      private ColumnStreamData presentStream;
+      private ColumnStreamData valueStream;
+      private int scale;
+      private int precision;
+      private CompressionCodec compressionCodec;
+      private OrcProto.ColumnEncoding columnEncoding;
+      private List<ColumnVector> vectors;
+      private TreeReaderFactory.Context context;
+
+      public StreamReaderBuilder setColumnIndex(int columnIndex) {
+        this.columnIndex = columnIndex;
+        return this;
+      }
+
+      public StreamReaderBuilder setPrecision(int precision) {
+        this.precision = precision;
+        return this;
+      }
+
+      public StreamReaderBuilder setScale(int scale) {
+        this.scale = scale;
+        return this;
+      }
+
+      public StreamReaderBuilder setContext(TreeReaderFactory.Context context) {
+        this.context = context;
+        return this;
+      }
+
+      public StreamReaderBuilder setPresentStream(ColumnStreamData presentStream) {
+        this.presentStream = presentStream;
+        return this;
+      }
+
+      public StreamReaderBuilder setValueStream(ColumnStreamData valueStream) {
+        this.valueStream = valueStream;
+        return this;
+      }
+
+
+      public StreamReaderBuilder setCompressionCodec(CompressionCodec compressionCodec) {
+        this.compressionCodec = compressionCodec;
+        return this;
+      }
+
+      public StreamReaderBuilder setColumnEncoding(OrcProto.ColumnEncoding encoding) {
+        this.columnEncoding = encoding;
+        return this;
+      }
+
+      public Decimal64StreamReader build() throws IOException {
+        SettableUncompressedStream presentInStream = StreamUtils.createSettableUncompressedStream(
+          OrcProto.Stream.Kind.PRESENT.name(), presentStream);
+
+        SettableUncompressedStream valueInStream = StreamUtils.createSettableUncompressedStream(
+          OrcProto.Stream.Kind.DATA.name(), valueStream);
+
+        boolean isFileCompressed = compressionCodec != null;
+        return new Decimal64StreamReader(columnIndex, precision, scale, presentInStream,
+          valueInStream, isFileCompressed, columnEncoding, context, vectors);
+      }
+
+      public StreamReaderBuilder setVectors(List<ColumnVector> vectors) {
+        this.vectors = vectors;
+        return this;
+      }
+    }
+
+    public static StreamReaderBuilder builder() {
+      return new StreamReaderBuilder();
+    }
+  }
+
   protected static class DateStreamReader extends DateTreeReader implements SettableTreeReader {
     private boolean isFileCompressed;
     private SettableUncompressedStream _presentStream;
@@ -2101,8 +2244,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
   }
 
   public static StructTreeReader createRootTreeReader(TypeDescription[] batchSchemas,
-       List<OrcProto.ColumnEncoding> encodings, OrcEncodedColumnBatch batch,
-       CompressionCodec codec, TreeReaderFactory.Context context) throws IOException {
+    List<OrcProto.ColumnEncoding> encodings, OrcEncodedColumnBatch batch,
+    CompressionCodec codec, Context context, final boolean useDecimal64ColumnVectors) throws IOException {
     // Note: we only look at the schema here to deal with complex types. Somebody has set up the
     //       reader with whatever ideas they had to the schema and we just trust the reader to
     //       produce the CVBs that was asked for. However, we only need to look at top level columns.
@@ -2117,7 +2260,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       if (!batch.hasData(batchColIx) && !batch.hasVectors(batchColIx)) {
         throw new AssertionError("No data for column " + batchColIx + ": " + batchSchemas[i]);
       }
-      childReaders[i] = createEncodedTreeReader(batchSchemas[i], encodings, batch, codec, context);
+      childReaders[i] = createEncodedTreeReader(batchSchemas[i], encodings, batch, codec, context, useDecimal64ColumnVectors);
     }
 
     // TODO: do we actually need this reader? the caller just extracts child readers.
@@ -2138,8 +2281,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
 
   private static TreeReader createEncodedTreeReader(TypeDescription schema,
-      List<OrcProto.ColumnEncoding> encodings, OrcEncodedColumnBatch batch,
-      CompressionCodec codec, TreeReaderFactory.Context context) throws IOException {
+    List<OrcProto.ColumnEncoding> encodings, OrcEncodedColumnBatch batch,
+    CompressionCodec codec, Context context, final boolean useDecimal64ColumnVectors) throws IOException {
     int columnIndex = schema.getId();
     ColumnStreamData[] streamBuffers = null;
     List<ColumnVector> vectors = null;
@@ -2200,12 +2343,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       case TIMESTAMP:
       case DATE:
         return getPrimitiveTreeReader(columnIndex, schema, codec, columnEncoding,
-            present, data, dictionary, lengths, secondary, context, vectors);
+            present, data, dictionary, lengths, secondary, context, vectors, useDecimal64ColumnVectors);
       case LIST:
         assert vectors == null; // Not currently supported.
         TypeDescription elementType = schema.getChildren().get(0);
         TreeReader elementReader = createEncodedTreeReader(
-            elementType, encodings, batch, codec, context);
+            elementType, encodings, batch, codec, context, useDecimal64ColumnVectors);
         return ListStreamReader.builder()
             .setColumnIndex(columnIndex)
             .setColumnEncoding(columnEncoding)
@@ -2220,9 +2363,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         TypeDescription keyType = schema.getChildren().get(0);
         TypeDescription valueType = schema.getChildren().get(1);
         TreeReader keyReader = createEncodedTreeReader(
-            keyType, encodings, batch, codec, context);
+            keyType, encodings, batch, codec, context, useDecimal64ColumnVectors);
         TreeReader valueReader = createEncodedTreeReader(
-            valueType, encodings, batch, codec, context);
+            valueType, encodings, batch, codec, context, useDecimal64ColumnVectors);
         return MapStreamReader.builder()
             .setColumnIndex(columnIndex)
             .setColumnEncoding(columnEncoding)
@@ -2240,7 +2383,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         for (int i = 0; i < childCount; i++) {
           TypeDescription childType = schema.getChildren().get(i);
           childReaders[i] = createEncodedTreeReader(
-              childType, encodings, batch, codec, context);
+              childType, encodings, batch, codec, context, useDecimal64ColumnVectors);
         }
         return StructStreamReader.builder()
             .setColumnIndex(columnIndex)
@@ -2258,7 +2401,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         for (int i = 0; i < childCount; i++) {
           TypeDescription childType = schema.getChildren().get(i);
           childReaders[i] = createEncodedTreeReader(
-              childType, encodings, batch, codec, context);
+              childType, encodings, batch, codec, context, useDecimal64ColumnVectors);
         }
         return UnionStreamReader.builder()
               .setColumnIndex(columnIndex)
@@ -2276,10 +2419,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
   }
 
   private static TreeReader getPrimitiveTreeReader(final int columnIndex,
-      TypeDescription columnType, CompressionCodec codec, OrcProto.ColumnEncoding columnEncoding,
-      ColumnStreamData present, ColumnStreamData data, ColumnStreamData dictionary,
-      ColumnStreamData lengths, ColumnStreamData secondary, TreeReaderFactory.Context context,
-      List<ColumnVector> vectors) throws IOException {
+    TypeDescription columnType, CompressionCodec codec, OrcProto.ColumnEncoding columnEncoding,
+    ColumnStreamData present, ColumnStreamData data, ColumnStreamData dictionary,
+    ColumnStreamData lengths, ColumnStreamData secondary, Context context,
+    List<ColumnVector> vectors, final boolean useDecimal64ColumnVectors) throws IOException {
     switch (columnType.getCategory()) {
       case BINARY:
         return BinaryStreamReader.builder()
@@ -2390,7 +2533,36 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setVectors(vectors)
             .build();
       case DECIMAL:
-        return DecimalStreamReader.builder()
+        // special handling for serde reader (text) in llap IO.
+        // if file format version is null, then we are processing text IF in LLAP IO, in which case
+        // we get vectors instead of streams. If vectors contain instance of Decimal64ColumnVector we
+        // should use Decimal64StreamReader (which acts as a wrapper around vectors)
+        boolean useDecimal64Reader = context.getFileFormat() == null && vectors != null && useDecimal64ColumnVectors;
+        if (useDecimal64Reader) {
+          boolean containDecimal64CV = false;
+          for (ColumnVector vector : vectors) {
+            if (vector instanceof Decimal64ColumnVector) {
+              containDecimal64CV = true;
+              break;
+            }
+          }
+          useDecimal64Reader &= containDecimal64CV;
+        }
+        if ((context.getFileFormat() == OrcFile.Version.UNSTABLE_PRE_2_0 || useDecimal64Reader) &&
+          columnType.getPrecision() <= TypeDescription.MAX_DECIMAL64_PRECISION) {
+          return Decimal64StreamReader.builder()
+            .setColumnIndex(columnIndex)
+            .setPrecision(columnType.getPrecision())
+            .setScale(columnType.getScale())
+            .setPresentStream(present)
+            .setValueStream(data)
+            .setCompressionCodec(codec)
+            .setColumnEncoding(columnEncoding)
+            .setVectors(vectors)
+            .setContext(context)
+            .build();
+        } else {
+          return DecimalStreamReader.builder()
             .setColumnIndex(columnIndex)
             .setPrecision(columnType.getPrecision())
             .setScale(columnType.getScale())
@@ -2402,6 +2574,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setVectors(vectors)
             .setContext(context)
             .build();
+        }
       case TIMESTAMP:
         return TimestampStreamReader.builder()
             .setColumnIndex(columnIndex)

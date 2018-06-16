@@ -163,6 +163,11 @@ public class VectorizedRowBatchCtx {
     return rowDataTypePhysicalVariations;
   }
 
+  public void setRowDataTypePhysicalVariations(
+    final DataTypePhysicalVariation[] rowDataTypePhysicalVariations) {
+    this.rowDataTypePhysicalVariations = rowDataTypePhysicalVariations;
+  }
+
   public int[] getDataColumnNums() {
     return dataColumnNums;
   }

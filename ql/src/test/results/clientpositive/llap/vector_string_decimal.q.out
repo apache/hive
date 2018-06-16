@@ -70,7 +70,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColumnInList(col 2:double, values [1.0E8, 2.0E8])(children: CastDecimalToDouble(col 0:decimal(18,0)) -> 2:double)
+                        predicateExpression: FilterDoubleColumnInList(col 3:double, values [1.0E8, 2.0E8])(children: CastDecimalToDouble(col 2:decimal(18,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(18,0)/DECIMAL_64) -> 2:decimal(18,0)) -> 3:double)
                     predicate: (UDFToDouble(id)) IN (1.0E8D, 2.0E8D) (type: boolean)
                     Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -96,8 +96,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

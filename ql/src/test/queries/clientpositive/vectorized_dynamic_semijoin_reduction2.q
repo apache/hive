@@ -38,7 +38,7 @@ EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_bigint
 select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_bigint = b.partkey_bigint);
 
 -- single key (decimal)
-EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal);
+EXPLAIN VECTORIZATION DETAIL select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal);
 select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_decimal = b.partkey_decimal);
 
 -- single key (double)

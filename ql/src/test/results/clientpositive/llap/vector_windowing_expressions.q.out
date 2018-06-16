@@ -102,8 +102,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -296,8 +295,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -438,7 +436,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: t (type: tinyint), bo (type: boolean), s (type: string), si (type: smallint), f (type: float)
                     sort order: ++++-
@@ -457,8 +455,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -466,7 +463,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [0, 1, 4, 6, 7]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -662,7 +659,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: si (type: smallint), i (type: int), s (type: string)
                     sort order: +++
@@ -681,8 +678,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -690,7 +686,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [1, 2, 7]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -886,7 +882,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: b (type: bigint), si (type: smallint), s (type: string), d (type: double)
                     sort order: ++++
@@ -905,8 +901,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -914,7 +909,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [1, 3, 5, 7]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -1110,7 +1105,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: f (type: float), b (type: bigint)
                     sort order: ++
@@ -1130,8 +1125,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1139,7 +1133,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [3, 4, 7]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -1354,8 +1348,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1533,8 +1526,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1680,7 +1672,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: ts (type: timestamp), i (type: int)
                     sort order: ++
@@ -1700,8 +1692,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1709,7 +1700,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 11
                     includeColumns: [2, 7, 8]
-                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2), bin:binary
+                    dataColumns: t:tinyint, si:smallint, i:int, b:bigint, f:float, d:double, bo:boolean, s:string, ts:timestamp, dec:decimal(4,2)/DECIMAL_64, bin:binary
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -1944,8 +1935,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false

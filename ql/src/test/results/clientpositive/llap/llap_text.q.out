@@ -1,0 +1,1082 @@
+PREHOOK: query: DROP TABLE text_llap
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE text_llap
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE text_llap(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN)
+row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
+
+ outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@text_llap
+POSTHOOK: query: CREATE TABLE text_llap(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN)
+row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
+
+ outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@text_llap
+PREHOOK: query: insert into table text_llap
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 from alltypesorc 
+where cboolean2 is not null or cstring1 is not null or ctinyint is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@text_llap
+POSTHOOK: query: insert into table text_llap
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 from alltypesorc 
+where cboolean2 is not null or cstring1 is not null or ctinyint is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@text_llap
+POSTHOOK: Lineage: text_llap.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: text_llap.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: text_llap.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: text_llap.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: text_llap.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: text_llap.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: text_llap.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: text_llap.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: text_llap.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: text_llap.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: text_llap.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: text_llap.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: create table text_llap2(
+          t tinyint,
+          si smallint,
+          i int,
+          b bigint,
+          f float,
+          d double,
+          bo boolean,
+          s string,
+          ts timestamp, 
+          `dec` decimal,  
+          bin binary)
+row format delimited fields terminated by '|'
+stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
+
+outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@text_llap2
+POSTHOOK: query: create table text_llap2(
+          t tinyint,
+          si smallint,
+          i int,
+          b bigint,
+          f float,
+          d double,
+          bo boolean,
+          s string,
+          ts timestamp, 
+          `dec` decimal,  
+          bin binary)
+row format delimited fields terminated by '|'
+stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
+
+outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@text_llap2
+PREHOOK: query: load data local inpath '../../data/files/over10k.gz' into table text_llap2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@text_llap2
+POSTHOOK: query: load data local inpath '../../data/files/over10k.gz' into table text_llap2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@text_llap2
+PREHOOK: query: create table text_llap1 like text_llap
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@text_llap1
+POSTHOOK: query: create table text_llap1 like text_llap
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@text_llap1
+PREHOOK: query: create table text_llap100 like text_llap
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@text_llap100
+POSTHOOK: query: create table text_llap100 like text_llap
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@text_llap100
+PREHOOK: query: create table text_llap1000 like text_llap
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@text_llap1000
+POSTHOOK: query: create table text_llap1000 like text_llap
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@text_llap1000
+PREHOOK: query: insert into table text_llap1
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 from alltypesorc 
+where cboolean2 is not null or cstring1 is not null or ctinyint is not null limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@text_llap1
+POSTHOOK: query: insert into table text_llap1
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 from alltypesorc 
+where cboolean2 is not null or cstring1 is not null or ctinyint is not null limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@text_llap1
+POSTHOOK: Lineage: text_llap1.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: text_llap1.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: text_llap1.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: text_llap1.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: text_llap1.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: text_llap1.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: text_llap1.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: text_llap1.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: text_llap1.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: text_llap1.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: text_llap1.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: text_llap1.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: insert into table text_llap100
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 from alltypesorc 
+where cboolean2 is not null or cstring1 is not null or ctinyint is not null limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@text_llap100
+POSTHOOK: query: insert into table text_llap100
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 from alltypesorc 
+where cboolean2 is not null or cstring1 is not null or ctinyint is not null limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@text_llap100
+POSTHOOK: Lineage: text_llap100.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: text_llap100.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: text_llap100.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: text_llap100.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: text_llap100.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: text_llap100.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: text_llap100.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: text_llap100.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: text_llap100.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: text_llap100.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: text_llap100.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: text_llap100.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: insert into table text_llap1000
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 from alltypesorc 
+where cboolean2 is not null or cstring1 is not null or ctinyint is not null limit 1000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@text_llap1000
+POSTHOOK: query: insert into table text_llap1000
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 from alltypesorc 
+where cboolean2 is not null or cstring1 is not null or ctinyint is not null limit 1000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@text_llap1000
+POSTHOOK: Lineage: text_llap1000.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: text_llap1000.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select t, s, ts from text_llap2 order by t, s, ts limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@text_llap2
+#### A masked pattern was here ####
+POSTHOOK: query: select t, s, ts from text_llap2 order by t, s, ts limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@text_llap2
+#### A masked pattern was here ####
+-2	alice carson	2013-03-01 09:11:58.703074
+-2	alice nixon	2013-03-01 09:11:58.703321
+-2	alice underhill	2013-03-01 09:11:58.703122
+-2	alice underhill	2013-03-01 09:11:58.703127
+-2	alice xylophone	2013-03-01 09:11:58.703105
+-2	bob falkner	2013-03-01 09:11:58.703071
+-2	bob king	2013-03-01 09:11:58.703236
+-2	bob ovid	2013-03-01 09:11:58.703285
+-2	bob van buren	2013-03-01 09:11:58.703218
+-2	bob xylophone	2013-03-01 09:11:58.703219
+-2	calvin xylophone	2013-03-01 09:11:58.703083
+-2	david falkner	2013-03-01 09:11:58.703254
+-2	david laertes	2013-03-01 09:11:58.703076
+-2	david miller	2013-03-01 09:11:58.703238
+-3	alice allen	2013-03-01 09:11:58.703323
+-3	alice davidson	2013-03-01 09:11:58.703226
+-3	alice falkner	2013-03-01 09:11:58.703304
+-3	alice king	2013-03-01 09:11:58.70314
+-3	alice king	2013-03-01 09:11:58.703247
+-3	alice xylophone	2013-03-01 09:11:58.703129
+-3	bob ellison	2013-03-01 09:11:58.703261
+-3	bob falkner	2013-03-01 09:11:58.70328
+-3	bob ichabod	2013-03-01 09:11:58.70324
+-3	bob johnson	2013-03-01 09:11:58.703204
+-3	bob polk	2013-03-01 09:11:58.703128
+-3	bob underhill	2013-03-01 09:11:58.703176
+-3	bob underhill	2013-03-01 09:11:58.703188
+-3	bob van buren	2013-03-01 09:11:58.703199
+-3	calvin ichabod	2013-03-01 09:11:58.703213
+-3	calvin white	2013-03-01 09:11:58.703295
+-3	david carson	2013-03-01 09:11:58.703136
+-3	david falkner	2013-03-01 09:11:58.703305
+-3	david garcia	2013-03-01 09:11:58.70319
+-3	david hernandez	2013-03-01 09:11:58.703252
+-3	ethan steinbeck	2013-03-01 09:11:58.703079
+-3	ethan underhill	2013-03-01 09:11:58.703138
+-3	fred ellison	2013-03-01 09:11:58.703233
+-3	gabriella brown	2013-03-01 09:11:58.703288
+-3	holly nixon	2013-03-01 09:11:58.703262
+-3	holly polk	2013-03-01 09:11:58.703273
+-3	holly steinbeck	2013-03-01 09:11:58.703242
+-3	holly thompson	2013-03-01 09:11:58.703073
+-3	holly underhill	2013-03-01 09:11:58.703219
+-3	irene ellison	2013-03-01 09:11:58.703092
+-3	irene underhill	2013-03-01 09:11:58.703298
+-3	irene young	2013-03-01 09:11:58.703084
+-3	jessica johnson	2013-03-01 09:11:58.703319
+-3	jessica king	2013-03-01 09:11:58.703279
+-3	jessica miller	2013-03-01 09:11:58.703245
+-3	jessica white	2013-03-01 09:11:58.703199
+-3	katie ichabod	2013-03-01 09:11:58.703139
+-3	luke garcia	2013-03-01 09:11:58.703076
+-3	luke ichabod	2013-03-01 09:11:58.703294
+-3	luke king	2013-03-01 09:11:58.703207
+-3	luke young	2013-03-01 09:11:58.703182
+-3	mike allen	2013-03-01 09:11:58.703292
+-3	mike king	2013-03-01 09:11:58.703214
+-3	mike polk	2013-03-01 09:11:58.70319
+-3	mike white	2013-03-01 09:11:58.703087
+-3	mike xylophone	2013-03-01 09:11:58.703308
+-3	nick nixon	2013-03-01 09:11:58.703083
+-3	nick robinson	2013-03-01 09:11:58.703147
+-3	oscar davidson	2013-03-01 09:11:58.703071
+-3	oscar garcia	2013-03-01 09:11:58.703282
+-3	oscar johnson	2013-03-01 09:11:58.70311
+-3	oscar johnson	2013-03-01 09:11:58.703133
+-3	oscar miller	2013-03-01 09:11:58.70332
+-3	priscilla laertes	2013-03-01 09:11:58.70325
+-3	priscilla quirinius	2013-03-01 09:11:58.703228
+-3	priscilla zipper	2013-03-01 09:11:58.703321
+-3	quinn ellison	2013-03-01 09:11:58.703232
+-3	quinn polk	2013-03-01 09:11:58.703244
+-3	rachel davidson	2013-03-01 09:11:58.703316
+-3	rachel thompson	2013-03-01 09:11:58.703276
+-3	sarah miller	2013-03-01 09:11:58.70316
+-3	sarah robinson	2013-03-01 09:11:58.703288
+-3	sarah xylophone	2013-03-01 09:11:58.703112
+-3	sarah zipper	2013-03-01 09:11:58.703289
+-3	tom hernandez	2013-03-01 09:11:58.703108
+-3	tom hernandez	2013-03-01 09:11:58.703188
+-3	tom polk	2013-03-01 09:11:58.703217
+-3	tom steinbeck	2013-03-01 09:11:58.703251
+-3	ulysses carson	2013-03-01 09:11:58.703253
+-3	ulysses ellison	2013-03-01 09:11:58.703197
+-3	ulysses quirinius	2013-03-01 09:11:58.703189
+-3	ulysses robinson	2013-03-01 09:11:58.703227
+-3	ulysses steinbeck	2013-03-01 09:11:58.703259
+-3	victor allen	2013-03-01 09:11:58.703155
+-3	victor hernandez	2013-03-01 09:11:58.703176
+-3	victor robinson	2013-03-01 09:11:58.703305
+-3	victor thompson	2013-03-01 09:11:58.703299
+-3	victor xylophone	2013-03-01 09:11:58.703135
+-3	wendy quirinius	2013-03-01 09:11:58.703266
+-3	wendy robinson	2013-03-01 09:11:58.703294
+-3	wendy xylophone	2013-03-01 09:11:58.703191
+-3	xavier garcia	2013-03-01 09:11:58.703194
+-3	xavier ovid	2013-03-01 09:11:58.703148
+-3	yuri xylophone	2013-03-01 09:11:58.703258
+-3	zach thompson	2013-03-01 09:11:58.703252
+-3	zach young	2013-03-01 09:11:58.703191
+PREHOOK: query: select * from text_llap2 order by t, s, ts limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@text_llap2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from text_llap2 order by t, s, ts limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@text_llap2
+#### A masked pattern was here ####
+-2	305	65767	4294967529	76.54	4.72	true	calvin xylophone	2013-03-01 09:11:58.703083	69	quiet hour
+-2	331	65707	4294967335	67.12	13.51	false	bob ovid	2013-03-01 09:11:58.703285	62	joggying
+-2	373	65548	4294967423	16.98	43.6	true	alice nixon	2013-03-01 09:11:58.703321	53	debate
+-2	378	65553	4294967461	9.81	10.36	true	bob king	2013-03-01 09:11:58.703236	91	opthamology
+-2	389	65706	4294967488	26.68	17.93	false	alice underhill	2013-03-01 09:11:58.703122	87	forestry
+-2	389	65738	4294967520	99.45	26.26	true	bob falkner	2013-03-01 09:11:58.703071	17	nap time
+-2	393	65715	4294967305	48.3	1.85	true	alice xylophone	2013-03-01 09:11:58.703105	30	values clariffication
+-2	406	65582	4294967311	20.94	35.74	false	bob van buren	2013-03-01 09:11:58.703218	25	opthamology
+-2	406	65762	4294967443	1.79	33.42	false	david falkner	2013-03-01 09:11:58.703254	58	opthamology
+-2	407	65612	4294967318	25.48	41.56	true	david laertes	2013-03-01 09:11:58.703076	40	forestry
+-2	427	65666	4294967465	19.69	33.24	true	bob xylophone	2013-03-01 09:11:58.703219	33	joggying
+-2	446	65790	4294967302	6.49	10.81	false	alice underhill	2013-03-01 09:11:58.703127	44	undecided
+-2	450	65727	4294967487	94.57	30.4	false	david miller	2013-03-01 09:11:58.703238	40	religion
+-2	473	65565	4294967320	87.78	12.26	true	alice carson	2013-03-01 09:11:58.703074	90	xylophone band
+-3	260	65595	4294967545	59.07	6.75	false	bob falkner	2013-03-01 09:11:58.70328	37	chemistry
+-3	264	65776	4294967398	20.95	5.97	false	bob polk	2013-03-01 09:11:58.703128	93	joggying
+-3	266	65736	4294967397	19.94	10.01	false	quinn ellison	2013-03-01 09:11:58.703232	89	forestry
+-3	268	65710	4294967448	82.74	12.48	true	holly polk	2013-03-01 09:11:58.703273	15	undecided
+-3	270	65702	4294967512	38.05	1.07	true	david carson	2013-03-01 09:11:58.703136	28	philosophy
+-3	275	65543	4294967522	74.92	17.29	false	mike king	2013-03-01 09:11:58.703214	53	opthamology
+-3	275	65575	4294967441	38.22	2.43	true	sarah xylophone	2013-03-01 09:11:58.703112	93	wind surfing
+-3	275	65622	4294967302	71.78	8.49	false	wendy robinson	2013-03-01 09:11:58.703294	95	undecided
+-3	279	65661	4294967536	25.5	0.02	false	wendy quirinius	2013-03-01 09:11:58.703266	75	undecided
+-3	280	65548	4294967350	52.3	33.06	true	calvin white	2013-03-01 09:11:58.703295	30	quiet hour
+-3	280	65597	4294967377	18.44	49.8	true	alice falkner	2013-03-01 09:11:58.703304	74	zync studies
+-3	280	65769	4294967324	28.78	35.05	true	xavier ovid	2013-03-01 09:11:58.703148	43	kindergarten
+-3	284	65566	4294967400	62.81	39.1	false	jessica white	2013-03-01 09:11:58.703199	70	opthamology
+-3	286	65573	4294967493	18.27	23.71	false	zach young	2013-03-01 09:11:58.703191	22	kindergarten
+-3	289	65757	4294967528	56.2	44.24	true	luke ichabod	2013-03-01 09:11:58.703294	7	yard duty
+-3	298	65720	4294967305	34.6	39.7	false	ethan steinbeck	2013-03-01 09:11:58.703079	35	kindergarten
+-3	299	65763	4294967542	85.96	10.45	true	jessica miller	2013-03-01 09:11:58.703245	26	mathematics
+-3	303	65617	4294967473	10.26	1.41	false	ulysses quirinius	2013-03-01 09:11:58.703189	84	chemistry
+-3	307	65634	4294967546	90.3	28.44	false	irene underhill	2013-03-01 09:11:58.703298	85	forestry
+-3	311	65569	4294967460	3.82	35.45	false	luke garcia	2013-03-01 09:11:58.703076	93	chemistry
+-3	313	65540	4294967316	25.67	39.88	false	ulysses robinson	2013-03-01 09:11:58.703227	61	religion
+-3	314	65670	4294967330	13.67	34.86	false	wendy xylophone	2013-03-01 09:11:58.703191	85	mathematics
+-3	315	65671	4294967412	94.22	25.96	true	oscar johnson	2013-03-01 09:11:58.703133	89	nap time
+-3	316	65696	4294967445	22.0	43.41	false	priscilla laertes	2013-03-01 09:11:58.70325	51	values clariffication
+-3	318	65553	4294967452	9.86	32.77	false	holly underhill	2013-03-01 09:11:58.703219	47	wind surfing
+-3	320	65644	4294967434	84.39	48.0	false	sarah robinson	2013-03-01 09:11:58.703288	72	wind surfing
+-3	324	65773	4294967296	11.07	25.95	true	oscar miller	2013-03-01 09:11:58.70332	57	opthamology
+-3	333	65562	4294967359	22.34	35.58	false	ulysses steinbeck	2013-03-01 09:11:58.703259	87	xylophone band
+-3	335	65696	4294967333	72.26	9.66	true	nick nixon	2013-03-01 09:11:58.703083	85	philosophy
+-3	337	65629	4294967521	55.59	6.54	true	luke king	2013-03-01 09:11:58.703207	59	industrial engineering
+-3	337	65658	4294967361	43.4	12.05	false	victor allen	2013-03-01 09:11:58.703155	45	topology
+-3	339	65671	4294967311	8.37	15.98	true	bob ellison	2013-03-01 09:11:58.703261	14	linguistics
+-3	339	65737	4294967453	14.23	26.66	true	ethan underhill	2013-03-01 09:11:58.703138	95	xylophone band
+-3	343	65783	4294967378	7.1	18.16	true	ulysses carson	2013-03-01 09:11:58.703253	97	mathematics
+-3	344	65733	4294967363	0.56	11.96	true	rachel thompson	2013-03-01 09:11:58.703276	88	wind surfing
+-3	344	65756	4294967378	52.13	18.95	true	victor thompson	2013-03-01 09:11:58.703299	81	topology
+-3	346	65752	4294967298	56.05	34.03	false	tom polk	2013-03-01 09:11:58.703217	49	zync studies
+-3	350	65566	4294967434	23.22	6.68	true	nick robinson	2013-03-01 09:11:58.703147	24	education
+-3	362	65712	4294967325	43.73	48.74	false	oscar garcia	2013-03-01 09:11:58.703282	30	chemistry
+-3	374	65731	4294967388	22.35	22.71	true	bob johnson	2013-03-01 09:11:58.703204	80	biology
+-3	376	65548	4294967431	96.78	43.23	false	fred ellison	2013-03-01 09:11:58.703233	75	education
+-3	376	65766	4294967326	97.88	5.58	true	sarah zipper	2013-03-01 09:11:58.703289	49	study skills
+-3	381	65640	4294967379	59.34	7.97	false	ulysses ellison	2013-03-01 09:11:58.703197	32	undecided
+-3	384	65613	4294967470	63.49	45.85	false	holly steinbeck	2013-03-01 09:11:58.703242	54	chemistry
+-3	384	65676	4294967453	71.97	31.52	false	alice davidson	2013-03-01 09:11:58.703226	14	xylophone band
+-3	386	65611	4294967331	58.81	22.43	true	sarah miller	2013-03-01 09:11:58.70316	75	mathematics
+-3	386	65716	4294967496	12.12	2.37	false	zach thompson	2013-03-01 09:11:58.703252	16	linguistics
+-3	387	65550	4294967355	84.75	22.75	true	holly thompson	2013-03-01 09:11:58.703073	52	biology
+-3	400	65557	4294967503	76.31	29.44	false	alice allen	2013-03-01 09:11:58.703323	19	debate
+-3	408	65667	4294967509	81.68	45.9	true	david hernandez	2013-03-01 09:11:58.703252	52	topology
+-3	414	65608	4294967338	81.39	49.09	true	tom steinbeck	2013-03-01 09:11:58.703251	11	xylophone band
+-3	415	65571	4294967536	61.81	24.24	true	victor robinson	2013-03-01 09:11:58.703305	23	american history
+-3	423	65646	4294967378	63.19	34.04	false	priscilla quirinius	2013-03-01 09:11:58.703228	35	xylophone band
+-3	430	65667	4294967469	65.5	40.46	true	yuri xylophone	2013-03-01 09:11:58.703258	31	american history
+-3	431	65635	4294967500	29.06	0.34	false	calvin ichabod	2013-03-01 09:11:58.703213	29	undecided
+-3	432	65646	4294967492	0.83	27.18	true	oscar davidson	2013-03-01 09:11:58.703071	56	linguistics
+-3	433	65654	4294967455	6.83	5.33	false	bob van buren	2013-03-01 09:11:58.703199	29	yard duty
+-3	438	65618	4294967398	62.39	4.62	false	victor xylophone	2013-03-01 09:11:58.703135	88	values clariffication
+-3	447	65755	4294967320	43.69	20.03	false	victor hernandez	2013-03-01 09:11:58.703176	14	forestry
+-3	448	65610	4294967314	81.97	31.11	true	mike xylophone	2013-03-01 09:11:58.703308	79	opthamology
+-3	451	65696	4294967532	6.8	40.07	false	luke young	2013-03-01 09:11:58.703182	27	biology
+-3	454	65627	4294967481	17.6	35.72	false	bob underhill	2013-03-01 09:11:58.703188	67	religion
+-3	454	65705	4294967468	62.12	14.32	true	mike white	2013-03-01 09:11:58.703087	40	joggying
+-3	454	65733	4294967544	73.83	18.42	false	bob ichabod	2013-03-01 09:11:58.70324	96	debate
+-3	455	65570	4294967304	2.48	30.76	false	alice king	2013-03-01 09:11:58.70314	42	forestry
+-3	458	65563	4294967315	62.77	41.5	false	alice king	2013-03-01 09:11:58.703247	3	mathematics
+-3	458	65679	4294967331	64.29	43.8	true	irene young	2013-03-01 09:11:58.703084	3	american history
+-3	458	65696	4294967418	45.24	8.49	false	irene ellison	2013-03-01 09:11:58.703092	54	american history
+-3	459	65644	4294967456	92.71	0.08	false	jessica king	2013-03-01 09:11:58.703279	53	joggying
+-3	465	65551	4294967457	83.39	46.64	true	mike allen	2013-03-01 09:11:58.703292	53	values clariffication
+-3	465	65735	4294967298	72.3	22.58	false	bob underhill	2013-03-01 09:11:58.703176	81	joggying
+-3	467	65575	4294967437	81.64	23.53	true	tom hernandez	2013-03-01 09:11:58.703188	33	study skills
+-3	469	65577	4294967451	88.78	32.96	true	katie ichabod	2013-03-01 09:11:58.703139	69	undecided
+-3	469	65698	4294967357	47.51	49.22	true	david falkner	2013-03-01 09:11:58.703305	78	joggying
+-3	469	65752	4294967350	55.41	32.11	true	oscar johnson	2013-03-01 09:11:58.70311	47	philosophy
+-3	477	65785	4294967464	97.51	10.84	true	tom hernandez	2013-03-01 09:11:58.703108	7	history
+-3	485	65661	4294967441	26.21	16.19	false	alice xylophone	2013-03-01 09:11:58.703129	97	topology
+-3	485	65669	4294967428	21.34	13.07	false	priscilla zipper	2013-03-01 09:11:58.703321	28	quiet hour
+-3	485	65684	4294967483	11.83	8.04	false	david garcia	2013-03-01 09:11:58.70319	63	wind surfing
+-3	493	65662	4294967482	28.75	30.21	false	xavier garcia	2013-03-01 09:11:58.703194	5	education
+-3	494	65589	4294967369	48.09	14.4	false	jessica johnson	2013-03-01 09:11:58.703319	79	nap time
+-3	498	65751	4294967331	80.65	0.28	true	gabriella brown	2013-03-01 09:11:58.703288	61	opthamology
+-3	500	65704	4294967480	2.26	28.79	true	mike polk	2013-03-01 09:11:58.70319	4	nap time
+-3	505	65565	4294967407	68.73	4.65	true	holly nixon	2013-03-01 09:11:58.703262	15	debate
+-3	507	65671	4294967305	60.28	41.5	false	quinn polk	2013-03-01 09:11:58.703244	77	industrial engineering
+-3	507	65728	4294967525	81.95	47.14	true	rachel davidson	2013-03-01 09:11:58.703316	31	study skills
+PREHOOK: query: select t, f, s from text_llap2 order by t, s, f limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@text_llap2
+#### A masked pattern was here ####
+POSTHOOK: query: select t, f, s from text_llap2 order by t, s, f limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@text_llap2
+#### A masked pattern was here ####
+-2	1.79	david falkner
+-2	16.98	alice nixon
+-2	19.69	bob xylophone
+-2	20.94	bob van buren
+-2	25.48	david laertes
+-2	26.68	alice underhill
+-2	48.3	alice xylophone
+-2	6.49	alice underhill
+-2	67.12	bob ovid
+-2	76.54	calvin xylophone
+-2	87.78	alice carson
+-2	9.81	bob king
+-2	94.57	david miller
+-2	99.45	bob falkner
+-3	0.56	rachel thompson
+-3	0.83	oscar davidson
+-3	10.26	ulysses quirinius
+-3	11.07	oscar miller
+-3	11.83	david garcia
+-3	12.12	zach thompson
+-3	13.67	wendy xylophone
+-3	14.23	ethan underhill
+-3	17.6	bob underhill
+-3	18.27	zach young
+-3	18.44	alice falkner
+-3	19.94	quinn ellison
+-3	2.26	mike polk
+-3	2.48	alice king
+-3	20.95	bob polk
+-3	21.34	priscilla zipper
+-3	22.0	priscilla laertes
+-3	22.34	ulysses steinbeck
+-3	22.35	bob johnson
+-3	23.22	nick robinson
+-3	25.5	wendy quirinius
+-3	25.67	ulysses robinson
+-3	26.21	alice xylophone
+-3	28.75	xavier garcia
+-3	28.78	xavier ovid
+-3	29.06	calvin ichabod
+-3	3.82	luke garcia
+-3	34.6	ethan steinbeck
+-3	38.05	david carson
+-3	38.22	sarah xylophone
+-3	43.4	victor allen
+-3	43.69	victor hernandez
+-3	43.73	oscar garcia
+-3	45.24	irene ellison
+-3	47.51	david falkner
+-3	48.09	jessica johnson
+-3	52.13	victor thompson
+-3	52.3	calvin white
+-3	55.41	oscar johnson
+-3	55.59	luke king
+-3	56.05	tom polk
+-3	56.2	luke ichabod
+-3	58.81	sarah miller
+-3	59.07	bob falkner
+-3	59.34	ulysses ellison
+-3	6.8	luke young
+-3	6.83	bob van buren
+-3	60.28	quinn polk
+-3	61.81	victor robinson
+-3	62.12	mike white
+-3	62.39	victor xylophone
+-3	62.77	alice king
+-3	62.81	jessica white
+-3	63.19	priscilla quirinius
+-3	63.49	holly steinbeck
+-3	64.29	irene young
+-3	65.5	yuri xylophone
+-3	68.73	holly nixon
+-3	7.1	ulysses carson
+-3	71.78	wendy robinson
+-3	71.97	alice davidson
+-3	72.26	nick nixon
+-3	72.3	bob underhill
+-3	73.83	bob ichabod
+-3	74.92	mike king
+-3	76.31	alice allen
+-3	8.37	bob ellison
+-3	80.65	gabriella brown
+-3	81.39	tom steinbeck
+-3	81.64	tom hernandez
+-3	81.68	david hernandez
+-3	81.95	rachel davidson
+-3	81.97	mike xylophone
+-3	82.74	holly polk
+-3	83.39	mike allen
+-3	84.39	sarah robinson
+-3	84.75	holly thompson
+-3	85.96	jessica miller
+-3	88.78	katie ichabod
+-3	9.86	holly underhill
+-3	90.3	irene underhill
+-3	92.71	jessica king
+-3	94.22	oscar johnson
+-3	96.78	fred ellison
+-3	97.51	tom hernandez
+-3	97.88	sarah zipper
+PREHOOK: query: select ctinyint, cstring1, cboolean2 from text_llap100 order by ctinyint, cstring1, cboolean2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@text_llap100
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint, cstring1, cboolean2 from text_llap100 order by ctinyint, cstring1, cboolean2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@text_llap100
+#### A masked pattern was here ####
+-1	cvLH6Eat2yFsyy7p	NULL
+-11	cvLH6Eat2yFsyy7p	NULL
+-11	cvLH6Eat2yFsyy7p	NULL
+-11	cvLH6Eat2yFsyy7p	NULL
+-12	cvLH6Eat2yFsyy7p	NULL
+-13	cvLH6Eat2yFsyy7p	NULL
+-16	cvLH6Eat2yFsyy7p	NULL
+-16	cvLH6Eat2yFsyy7p	NULL
+-19	cvLH6Eat2yFsyy7p	NULL
+-21	cvLH6Eat2yFsyy7p	NULL
+-21	cvLH6Eat2yFsyy7p	NULL
+-22	cvLH6Eat2yFsyy7p	NULL
+-22	cvLH6Eat2yFsyy7p	NULL
+-22	cvLH6Eat2yFsyy7p	NULL
+-23	cvLH6Eat2yFsyy7p	NULL
+-23	cvLH6Eat2yFsyy7p	NULL
+-23	cvLH6Eat2yFsyy7p	NULL
+-24	cvLH6Eat2yFsyy7p	NULL
+-28	cvLH6Eat2yFsyy7p	NULL
+-28	cvLH6Eat2yFsyy7p	NULL
+-30	cvLH6Eat2yFsyy7p	NULL
+-32	cvLH6Eat2yFsyy7p	NULL
+-33	cvLH6Eat2yFsyy7p	NULL
+-33	cvLH6Eat2yFsyy7p	NULL
+-34	cvLH6Eat2yFsyy7p	NULL
+-34	cvLH6Eat2yFsyy7p	NULL
+-36	cvLH6Eat2yFsyy7p	NULL
+-37	cvLH6Eat2yFsyy7p	NULL
+-4	cvLH6Eat2yFsyy7p	NULL
+-4	cvLH6Eat2yFsyy7p	NULL
+-40	cvLH6Eat2yFsyy7p	NULL
+-43	cvLH6Eat2yFsyy7p	NULL
+-44	cvLH6Eat2yFsyy7p	NULL
+-45	cvLH6Eat2yFsyy7p	NULL
+-45	cvLH6Eat2yFsyy7p	NULL
+-47	cvLH6Eat2yFsyy7p	NULL
+-48	cvLH6Eat2yFsyy7p	NULL
+-48	cvLH6Eat2yFsyy7p	NULL
+-5	cvLH6Eat2yFsyy7p	NULL
+-5	cvLH6Eat2yFsyy7p	NULL
+-5	cvLH6Eat2yFsyy7p	NULL
+-50	cvLH6Eat2yFsyy7p	NULL
+-51	cvLH6Eat2yFsyy7p	NULL
+-53	cvLH6Eat2yFsyy7p	NULL
+-54	cvLH6Eat2yFsyy7p	NULL
+-55	cvLH6Eat2yFsyy7p	NULL
+-55	cvLH6Eat2yFsyy7p	NULL
+-56	cvLH6Eat2yFsyy7p	NULL
+-56	cvLH6Eat2yFsyy7p	NULL
+-57	cvLH6Eat2yFsyy7p	NULL
+-59	cvLH6Eat2yFsyy7p	NULL
+-62	cvLH6Eat2yFsyy7p	NULL
+-7	cvLH6Eat2yFsyy7p	NULL
+0	cvLH6Eat2yFsyy7p	NULL
+0	cvLH6Eat2yFsyy7p	NULL
+10	cvLH6Eat2yFsyy7p	NULL
+13	cvLH6Eat2yFsyy7p	NULL
+16	cvLH6Eat2yFsyy7p	NULL
+18	cvLH6Eat2yFsyy7p	NULL
+19	cvLH6Eat2yFsyy7p	NULL
+2	cvLH6Eat2yFsyy7p	NULL
+21	cvLH6Eat2yFsyy7p	NULL
+24	cvLH6Eat2yFsyy7p	NULL
+24	cvLH6Eat2yFsyy7p	NULL
+26	cvLH6Eat2yFsyy7p	NULL
+27	cvLH6Eat2yFsyy7p	NULL
+27	cvLH6Eat2yFsyy7p	NULL
+28	cvLH6Eat2yFsyy7p	NULL
+29	cvLH6Eat2yFsyy7p	NULL
+29	cvLH6Eat2yFsyy7p	NULL
+30	cvLH6Eat2yFsyy7p	NULL
+31	cvLH6Eat2yFsyy7p	NULL
+31	cvLH6Eat2yFsyy7p	NULL
+34	cvLH6Eat2yFsyy7p	NULL
+34	cvLH6Eat2yFsyy7p	NULL
+36	cvLH6Eat2yFsyy7p	NULL
+36	cvLH6Eat2yFsyy7p	NULL
+38	cvLH6Eat2yFsyy7p	NULL
+38	cvLH6Eat2yFsyy7p	NULL
+38	cvLH6Eat2yFsyy7p	NULL
+39	cvLH6Eat2yFsyy7p	NULL
+4	cvLH6Eat2yFsyy7p	NULL
+40	cvLH6Eat2yFsyy7p	NULL
+40	cvLH6Eat2yFsyy7p	NULL
+41	cvLH6Eat2yFsyy7p	NULL
+43	cvLH6Eat2yFsyy7p	NULL
+46	cvLH6Eat2yFsyy7p	NULL
+5	cvLH6Eat2yFsyy7p	NULL
+51	cvLH6Eat2yFsyy7p	NULL
+51	cvLH6Eat2yFsyy7p	NULL
+53	cvLH6Eat2yFsyy7p	NULL
+53	cvLH6Eat2yFsyy7p	NULL
+61	cvLH6Eat2yFsyy7p	NULL
+61	cvLH6Eat2yFsyy7p	NULL
+61	cvLH6Eat2yFsyy7p	NULL
+62	cvLH6Eat2yFsyy7p	NULL
+8	cvLH6Eat2yFsyy7p	NULL
+9	cvLH6Eat2yFsyy7p	NULL
+NULL	cvLH6Eat2yFsyy7p	NULL
+NULL	cvLH6Eat2yFsyy7p	NULL
+PREHOOK: query: select * from text_llap100 order by cint, cstring1, cstring2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@text_llap100
+#### A masked pattern was here ####
+POSTHOOK: query: select * from text_llap100 order by cint, cstring1, cstring2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@text_llap100
+#### A masked pattern was here ####
+-1	-75	528534767	NULL	-1.389	-863.257	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:49.331	1969-12-31 16:00:07.585	true	NULL
+-11	-15431	528534767	NULL	-11.0	-15431.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.176	1969-12-31 16:00:07.787	true	NULL
+-11	7476	528534767	NULL	-11.0	7476.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.551	1969-12-31 15:59:57.567	true	NULL
+-11	9472	528534767	NULL	-11.0	9472.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:47.917	1969-12-31 16:00:03.716	true	NULL
+-12	-2013	528534767	NULL	-12.0	-2013.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:14.907	1969-12-31 15:59:58.789	true	NULL
+-13	-13372	528534767	NULL	-13.0	-13372.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:08.499	1969-12-31 15:59:48.221	true	NULL
+-16	-6922	528534767	NULL	-16.0	-6922.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:08.402	1969-12-31 15:59:50.561	true	NULL
+-16	-7964	528534767	NULL	-16.0	-7964.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:08.035	1969-12-31 16:00:12.464	true	NULL
+-19	1206	528534767	NULL	-19.0	1206.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:04.587	1969-12-31 16:00:08.381	true	NULL
+-21	-7183	528534767	NULL	-21.0	-7183.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.035	1969-12-31 16:00:06.182	true	NULL
+-21	3168	528534767	NULL	-21.0	3168.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:56.834	1969-12-31 16:00:13.331	true	NULL
+-22	3856	528534767	NULL	-22.0	3856.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:48.508	1969-12-31 15:59:54.534	true	NULL
+-22	77	528534767	NULL	-22.0	77.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.928	1969-12-31 15:59:43.621	true	NULL
+-22	8499	528534767	NULL	-22.0	8499.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:15.626	1969-12-31 16:00:10.923	true	NULL
+-23	-10154	528534767	NULL	-23.0	-10154.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:44.088	1969-12-31 15:59:56.086	true	NULL
+-23	13026	528534767	NULL	-23.0	13026.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:14.625	1969-12-31 16:00:10.77	true	NULL
+-23	4587	528534767	NULL	-23.0	4587.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:49.732	1969-12-31 15:59:48.52	true	NULL
+-24	163	528534767	NULL	-24.0	163.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:55.51	1969-12-31 16:00:04.014	true	NULL
+-28	-15813	528534767	NULL	-28.0	-15813.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:55.787	1969-12-31 16:00:01.546	true	NULL
+-28	6453	528534767	NULL	-28.0	6453.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:01.475	1969-12-31 16:00:07.828	true	NULL
+-30	834	528534767	NULL	-30.0	834.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:14.072	1969-12-31 16:00:03.004	true	NULL
+-32	11242	528534767	NULL	-32.0	11242.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:49.091	1969-12-31 15:59:55.681	true	NULL
+-33	14072	528534767	NULL	-33.0	14072.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:03.168	1969-12-31 15:59:55.836	true	NULL
+-33	7350	528534767	NULL	-33.0	7350.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:07.952	1969-12-31 15:59:48.183	true	NULL
+-34	15007	528534767	NULL	-34.0	15007.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:50.434	1969-12-31 16:00:13.352	true	NULL
+-34	4181	528534767	NULL	-34.0	4181.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:06.557	1969-12-31 16:00:04.869	true	NULL
+-36	1639	528534767	NULL	-36.0	1639.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:00.186	1969-12-31 16:00:13.098	true	NULL
+-37	-12472	528534767	NULL	-37.0	-12472.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:13.3	1969-12-31 15:59:55.998	true	NULL
+-4	-1027	528534767	NULL	-4.0	-1027.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:46.628	1969-12-31 16:00:11.413	true	NULL
+-4	2617	528534767	NULL	-4.0	2617.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:44.21	1969-12-31 15:59:44.733	true	NULL
+-40	-4463	528534767	NULL	-40.0	-4463.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.647	1969-12-31 15:59:46.254	true	NULL
+-43	486	528534767	NULL	-43.0	486.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:01.345	1969-12-31 15:59:52.667	true	NULL
+-44	-1299	528534767	NULL	-44.0	-1299.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:00.163	1969-12-31 15:59:47.687	true	NULL
+-45	-14072	528534767	NULL	-45.0	-14072.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.621	1969-12-31 15:59:45.914	true	NULL
+-45	5521	528534767	NULL	-45.0	5521.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:00.01	1969-12-31 15:59:48.553	true	NULL
+-47	-2468	528534767	NULL	-47.0	-2468.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:48.68	1969-12-31 16:00:02.94	true	NULL
+-48	-7735	528534767	NULL	-48.0	-7735.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:09.472	1969-12-31 16:00:00.8	true	NULL
+-48	13300	528534767	NULL	-48.0	13300.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:00.077	1969-12-31 15:59:45.827	true	NULL
+-5	-13229	528534767	NULL	-5.0	-13229.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:00.834	1969-12-31 16:00:00.388	true	NULL
+-5	-14379	528534767	NULL	-5.0	-14379.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:00.037	1969-12-31 15:59:49.141	true	NULL
+-5	12422	528534767	NULL	-5.0	12422.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:55.745	1969-12-31 15:59:48.802	true	NULL
+-50	-13326	528534767	NULL	-50.0	-13326.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:46.674	1969-12-31 16:00:08.875	true	NULL
+-51	-12083	528534767	NULL	-51.0	-12083.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:13.026	1969-12-31 16:00:02.52	true	NULL
+-53	-3419	528534767	NULL	-53.0	-3419.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:46.771	1969-12-31 15:59:53.744	true	NULL
+-54	-10268	528534767	NULL	-54.0	-10268.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:53.417	1969-12-31 16:00:00.687	true	NULL
+-55	-7353	528534767	NULL	-55.0	-7353.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:44.941	1969-12-31 15:59:54.268	true	NULL
+-55	-7449	528534767	NULL	-55.0	-7449.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:49.846	1969-12-31 15:59:55.75	true	NULL
+-56	8353	528534767	NULL	-56.0	8353.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:11.242	1969-12-31 15:59:46.526	true	NULL
+-56	8402	528534767	NULL	-56.0	8402.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.01	1969-12-31 16:00:05.146	true	NULL
+-57	-11492	528534767	NULL	-57.0	-11492.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.261	1969-12-31 16:00:05.306	true	NULL
+-59	10688	528534767	NULL	-59.0	10688.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.746	1969-12-31 16:00:15.489	true	NULL
+-62	10	528534767	NULL	-62.0	10.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.265	1969-12-31 15:59:56.584	true	NULL
+-7	2541	528534767	NULL	-7.0	2541.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:08.353	1969-12-31 15:59:57.374	true	NULL
+0	-3166	528534767	NULL	0.0	-3166.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:10.688	1969-12-31 16:00:01.385	true	NULL
+0	15626	528534767	NULL	0.0	15626.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:09.566	1969-12-31 16:00:15.217	true	NULL
+10	9366	528534767	NULL	10.0	9366.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:01.358	1969-12-31 15:59:50.592	true	NULL
+13	1358	528534767	NULL	13.0	1358.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:06.453	1969-12-31 16:00:00.423	true	NULL
+16	5780	528534767	NULL	16.0	5780.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:44.451	1969-12-31 16:00:12.752	true	NULL
+18	-3045	528534767	NULL	18.0	-3045.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:47.829	1969-12-31 16:00:05.045	true	NULL
+19	7952	528534767	NULL	19.0	7952.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:12.161	1969-12-31 16:00:00.95	true	NULL
+2	1345	528534767	NULL	2.0	1345.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:55.333	1969-12-31 16:00:00.517	true	NULL
+21	11737	528534767	NULL	21.0	11737.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:55.537	1969-12-31 15:59:45.022	true	NULL
+24	-4812	528534767	NULL	24.0	-4812.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:07.86	1969-12-31 15:59:55	true	NULL
+24	4432	528534767	NULL	24.0	4432.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:02.541	1969-12-31 16:00:10.895	true	NULL
+26	3961	528534767	NULL	26.0	3961.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:57.987	1969-12-31 15:59:52.232	true	NULL
+27	-14965	528534767	NULL	27.0	-14965.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:12.422	1969-12-31 16:00:09.517	true	NULL
+27	-7824	528534767	NULL	27.0	-7824.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:04.963	1969-12-31 15:59:56.474	true	NULL
+28	8035	528534767	NULL	28.0	8035.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:03.856	1969-12-31 15:59:55.95	true	NULL
+29	-1990	528534767	NULL	29.0	-1990.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:06.958	1969-12-31 15:59:52.902	true	NULL
+29	7021	528534767	NULL	29.0	7021.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:15.007	1969-12-31 16:00:15.148	true	NULL
+30	-814	528534767	NULL	30.0	-814.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:56.955	1969-12-31 16:00:11.799	true	NULL
+31	-9566	528534767	NULL	31.0	-9566.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:44.187	1969-12-31 16:00:06.961	true	NULL
+31	4963	528534767	NULL	31.0	4963.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:07.021	1969-12-31 16:00:02.997	true	NULL
+34	-15059	528534767	NULL	34.0	-15059.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:01.639	1969-12-31 16:00:13.206	true	NULL
+34	-4255	528534767	NULL	34.0	-4255.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:56.581	1969-12-31 15:59:57.88	true	NULL
+36	-15912	528534767	NULL	36.0	-15912.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:04.432	1969-12-31 16:00:04.376	true	NULL
+36	14907	528534767	NULL	36.0	14907.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:47.528	1969-12-31 15:59:47.206	true	NULL
+38	-11320	528534767	NULL	38.0	-11320.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:09.169	1969-12-31 16:00:03.822	true	NULL
+38	-4667	528534767	NULL	38.0	-4667.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:09.366	1969-12-31 15:59:52.334	true	NULL
+38	-6583	528534767	NULL	38.0	-6583.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:53.078	1969-12-31 16:00:06.722	true	NULL
+39	-10909	528534767	NULL	39.0	-10909.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.276	1969-12-31 16:00:12.738	true	NULL
+4	-14739	528534767	NULL	4.0	-14739.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:55.188	1969-12-31 16:00:15.26	true	NULL
+40	-1724	528534767	NULL	40.0	-1724.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:05.521	1969-12-31 15:59:57.835	true	NULL
+40	-7984	528534767	NULL	40.0	-7984.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:01.206	1969-12-31 16:00:02.59	true	NULL
+41	37	528534767	NULL	41.0	37.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.817	1969-12-31 15:59:53.672	true	NULL
+43	1475	528534767	NULL	43.0	1475.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:56.988	1969-12-31 16:00:03.442	true	NULL
+46	6958	528534767	NULL	46.0	6958.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.036	1969-12-31 16:00:10.191	true	NULL
+5	14625	528534767	NULL	5.0	14625.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:05.78	1969-12-31 16:00:15.34	true	NULL
+51	-15790	528534767	NULL	51.0	-15790.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:49.871	1969-12-31 15:59:57.821	true	NULL
+51	-4490	528534767	NULL	51.0	-4490.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:07.476	1969-12-31 15:59:49.318	true	NULL
+53	-10129	528534767	NULL	53.0	-10129.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:04.181	1969-12-31 16:00:08.061	true	NULL
+53	-12171	528534767	NULL	53.0	-12171.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:07.35	1969-12-31 15:59:57.549	true	NULL
+61	-1254	528534767	NULL	61.0	-1254.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:11.737	1969-12-31 16:00:12.004	true	NULL
+61	-15549	528534767	NULL	61.0	-15549.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:44.569	1969-12-31 15:59:51.665	true	NULL
+61	12161	528534767	NULL	61.0	12161.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:02.617	1969-12-31 16:00:10.536	true	NULL
+62	6557	528534767	NULL	62.0	6557.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.016	1969-12-31 16:00:00.367	true	NULL
+8	7860	528534767	NULL	8.0	7860.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.701	1969-12-31 16:00:01.97	true	NULL
+9	9169	528534767	NULL	9.0	9169.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:03.961	1969-12-31 16:00:14.126	true	NULL
+NULL	-3012	528534767	NULL	NULL	-3012.0	cvLH6Eat2yFsyy7p	NULL	NULL	1969-12-31 16:00:03.756	true	NULL
+NULL	-4213	528534767	NULL	NULL	-4213.0	cvLH6Eat2yFsyy7p	NULL	NULL	1969-12-31 16:00:13.589	true	NULL
+PREHOOK: query: select csmallint, cstring1, cboolean2 from text_llap100 order by csmallint, cstring1, cboolean2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@text_llap100
+#### A masked pattern was here ####
+POSTHOOK: query: select csmallint, cstring1, cboolean2 from text_llap100 order by csmallint, cstring1, cboolean2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@text_llap100
+#### A masked pattern was here ####
+-10129	cvLH6Eat2yFsyy7p	NULL
+-10154	cvLH6Eat2yFsyy7p	NULL
+-10268	cvLH6Eat2yFsyy7p	NULL
+-1027	cvLH6Eat2yFsyy7p	NULL
+-10909	cvLH6Eat2yFsyy7p	NULL
+-11320	cvLH6Eat2yFsyy7p	NULL
+-11492	cvLH6Eat2yFsyy7p	NULL
+-12083	cvLH6Eat2yFsyy7p	NULL
+-12171	cvLH6Eat2yFsyy7p	NULL
+-12472	cvLH6Eat2yFsyy7p	NULL
+-1254	cvLH6Eat2yFsyy7p	NULL
+-1299	cvLH6Eat2yFsyy7p	NULL
+-13229	cvLH6Eat2yFsyy7p	NULL
+-13326	cvLH6Eat2yFsyy7p	NULL
+-13372	cvLH6Eat2yFsyy7p	NULL
+-14072	cvLH6Eat2yFsyy7p	NULL
+-14379	cvLH6Eat2yFsyy7p	NULL
+-14739	cvLH6Eat2yFsyy7p	NULL
+-14965	cvLH6Eat2yFsyy7p	NULL
+-15059	cvLH6Eat2yFsyy7p	NULL
+-15431	cvLH6Eat2yFsyy7p	NULL
+-15549	cvLH6Eat2yFsyy7p	NULL
+-15790	cvLH6Eat2yFsyy7p	NULL
+-15813	cvLH6Eat2yFsyy7p	NULL
+-15912	cvLH6Eat2yFsyy7p	NULL
+-1724	cvLH6Eat2yFsyy7p	NULL
+-1990	cvLH6Eat2yFsyy7p	NULL
+-2013	cvLH6Eat2yFsyy7p	NULL
+-2468	cvLH6Eat2yFsyy7p	NULL
+-3012	cvLH6Eat2yFsyy7p	NULL
+-3045	cvLH6Eat2yFsyy7p	NULL
+-3166	cvLH6Eat2yFsyy7p	NULL
+-3419	cvLH6Eat2yFsyy7p	NULL
+-4213	cvLH6Eat2yFsyy7p	NULL
+-4255	cvLH6Eat2yFsyy7p	NULL
+-4463	cvLH6Eat2yFsyy7p	NULL
+-4490	cvLH6Eat2yFsyy7p	NULL
+-4667	cvLH6Eat2yFsyy7p	NULL
+-4812	cvLH6Eat2yFsyy7p	NULL
+-6583	cvLH6Eat2yFsyy7p	NULL
+-6922	cvLH6Eat2yFsyy7p	NULL
+-7183	cvLH6Eat2yFsyy7p	NULL
+-7353	cvLH6Eat2yFsyy7p	NULL
+-7449	cvLH6Eat2yFsyy7p	NULL
+-75	cvLH6Eat2yFsyy7p	NULL
+-7735	cvLH6Eat2yFsyy7p	NULL
+-7824	cvLH6Eat2yFsyy7p	NULL
+-7964	cvLH6Eat2yFsyy7p	NULL
+-7984	cvLH6Eat2yFsyy7p	NULL
+-814	cvLH6Eat2yFsyy7p	NULL
+-9566	cvLH6Eat2yFsyy7p	NULL
+10	cvLH6Eat2yFsyy7p	NULL
+10688	cvLH6Eat2yFsyy7p	NULL
+11242	cvLH6Eat2yFsyy7p	NULL
+11737	cvLH6Eat2yFsyy7p	NULL
+1206	cvLH6Eat2yFsyy7p	NULL
+12161	cvLH6Eat2yFsyy7p	NULL
+12422	cvLH6Eat2yFsyy7p	NULL
+13026	cvLH6Eat2yFsyy7p	NULL
+13300	cvLH6Eat2yFsyy7p	NULL
+1345	cvLH6Eat2yFsyy7p	NULL
+1358	cvLH6Eat2yFsyy7p	NULL
+14072	cvLH6Eat2yFsyy7p	NULL
+14625	cvLH6Eat2yFsyy7p	NULL
+1475	cvLH6Eat2yFsyy7p	NULL
+14907	cvLH6Eat2yFsyy7p	NULL
+15007	cvLH6Eat2yFsyy7p	NULL
+15626	cvLH6Eat2yFsyy7p	NULL
+163	cvLH6Eat2yFsyy7p	NULL
+1639	cvLH6Eat2yFsyy7p	NULL
+2541	cvLH6Eat2yFsyy7p	NULL
+2617	cvLH6Eat2yFsyy7p	NULL
+3168	cvLH6Eat2yFsyy7p	NULL
+37	cvLH6Eat2yFsyy7p	NULL
+3856	cvLH6Eat2yFsyy7p	NULL
+3961	cvLH6Eat2yFsyy7p	NULL
+4181	cvLH6Eat2yFsyy7p	NULL
+4432	cvLH6Eat2yFsyy7p	NULL
+4587	cvLH6Eat2yFsyy7p	NULL
+486	cvLH6Eat2yFsyy7p	NULL
+4963	cvLH6Eat2yFsyy7p	NULL
+5521	cvLH6Eat2yFsyy7p	NULL
+5780	cvLH6Eat2yFsyy7p	NULL
+6453	cvLH6Eat2yFsyy7p	NULL
+6557	cvLH6Eat2yFsyy7p	NULL
+6958	cvLH6Eat2yFsyy7p	NULL
+7021	cvLH6Eat2yFsyy7p	NULL
+7350	cvLH6Eat2yFsyy7p	NULL
+7476	cvLH6Eat2yFsyy7p	NULL
+77	cvLH6Eat2yFsyy7p	NULL
+7860	cvLH6Eat2yFsyy7p	NULL
+7952	cvLH6Eat2yFsyy7p	NULL
+8035	cvLH6Eat2yFsyy7p	NULL
+834	cvLH6Eat2yFsyy7p	NULL
+8353	cvLH6Eat2yFsyy7p	NULL
+8402	cvLH6Eat2yFsyy7p	NULL
+8499	cvLH6Eat2yFsyy7p	NULL
+9169	cvLH6Eat2yFsyy7p	NULL
+9366	cvLH6Eat2yFsyy7p	NULL
+9472	cvLH6Eat2yFsyy7p	NULL
+PREHOOK: query: select t, s, ts from text_llap2 order by t, s, ts limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@text_llap2
+#### A masked pattern was here ####
+POSTHOOK: query: select t, s, ts from text_llap2 order by t, s, ts limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@text_llap2
+#### A masked pattern was here ####
+-2	alice carson	2013-03-01 09:11:58.703074
+-2	alice nixon	2013-03-01 09:11:58.703321
+-2	alice underhill	2013-03-01 09:11:58.703122
+-2	alice underhill	2013-03-01 09:11:58.703127
+-2	alice xylophone	2013-03-01 09:11:58.703105
+-2	bob falkner	2013-03-01 09:11:58.703071
+-2	bob king	2013-03-01 09:11:58.703236
+-2	bob ovid	2013-03-01 09:11:58.703285
+-2	bob van buren	2013-03-01 09:11:58.703218
+-2	bob xylophone	2013-03-01 09:11:58.703219
+-2	calvin xylophone	2013-03-01 09:11:58.703083
+-2	david falkner	2013-03-01 09:11:58.703254
+-2	david laertes	2013-03-01 09:11:58.703076
+-2	david miller	2013-03-01 09:11:58.703238
+-3	alice allen	2013-03-01 09:11:58.703323
+-3	alice davidson	2013-03-01 09:11:58.703226
+-3	alice falkner	2013-03-01 09:11:58.703304
+-3	alice king	2013-03-01 09:11:58.70314
+-3	alice king	2013-03-01 09:11:58.703247
+-3	alice xylophone	2013-03-01 09:11:58.703129
+-3	bob ellison	2013-03-01 09:11:58.703261
+-3	bob falkner	2013-03-01 09:11:58.70328
+-3	bob ichabod	2013-03-01 09:11:58.70324
+-3	bob johnson	2013-03-01 09:11:58.703204
+-3	bob polk	2013-03-01 09:11:58.703128
+-3	bob underhill	2013-03-01 09:11:58.703176
+-3	bob underhill	2013-03-01 09:11:58.703188
+-3	bob van buren	2013-03-01 09:11:58.703199
+-3	calvin ichabod	2013-03-01 09:11:58.703213
+-3	calvin white	2013-03-01 09:11:58.703295
+-3	david carson	2013-03-01 09:11:58.703136
+-3	david falkner	2013-03-01 09:11:58.703305
+-3	david garcia	2013-03-01 09:11:58.70319
+-3	david hernandez	2013-03-01 09:11:58.703252
+-3	ethan steinbeck	2013-03-01 09:11:58.703079
+-3	ethan underhill	2013-03-01 09:11:58.703138
+-3	fred ellison	2013-03-01 09:11:58.703233
+-3	gabriella brown	2013-03-01 09:11:58.703288
+-3	holly nixon	2013-03-01 09:11:58.703262
+-3	holly polk	2013-03-01 09:11:58.703273
+-3	holly steinbeck	2013-03-01 09:11:58.703242
+-3	holly thompson	2013-03-01 09:11:58.703073
+-3	holly underhill	2013-03-01 09:11:58.703219
+-3	irene ellison	2013-03-01 09:11:58.703092
+-3	irene underhill	2013-03-01 09:11:58.703298
+-3	irene young	2013-03-01 09:11:58.703084
+-3	jessica johnson	2013-03-01 09:11:58.703319
+-3	jessica king	2013-03-01 09:11:58.703279
+-3	jessica miller	2013-03-01 09:11:58.703245
+-3	jessica white	2013-03-01 09:11:58.703199
+-3	katie ichabod	2013-03-01 09:11:58.703139
+-3	luke garcia	2013-03-01 09:11:58.703076
+-3	luke ichabod	2013-03-01 09:11:58.703294
+-3	luke king	2013-03-01 09:11:58.703207
+-3	luke young	2013-03-01 09:11:58.703182
+-3	mike allen	2013-03-01 09:11:58.703292
+-3	mike king	2013-03-01 09:11:58.703214
+-3	mike polk	2013-03-01 09:11:58.70319
+-3	mike white	2013-03-01 09:11:58.703087
+-3	mike xylophone	2013-03-01 09:11:58.703308
+-3	nick nixon	2013-03-01 09:11:58.703083
+-3	nick robinson	2013-03-01 09:11:58.703147
+-3	oscar davidson	2013-03-01 09:11:58.703071
+-3	oscar garcia	2013-03-01 09:11:58.703282
+-3	oscar johnson	2013-03-01 09:11:58.70311
+-3	oscar johnson	2013-03-01 09:11:58.703133
+-3	oscar miller	2013-03-01 09:11:58.70332
+-3	priscilla laertes	2013-03-01 09:11:58.70325
+-3	priscilla quirinius	2013-03-01 09:11:58.703228
+-3	priscilla zipper	2013-03-01 09:11:58.703321
+-3	quinn ellison	2013-03-01 09:11:58.703232
+-3	quinn polk	2013-03-01 09:11:58.703244
+-3	rachel davidson	2013-03-01 09:11:58.703316
+-3	rachel thompson	2013-03-01 09:11:58.703276
+-3	sarah miller	2013-03-01 09:11:58.70316
+-3	sarah robinson	2013-03-01 09:11:58.703288
+-3	sarah xylophone	2013-03-01 09:11:58.703112
+-3	sarah zipper	2013-03-01 09:11:58.703289
+-3	tom hernandez	2013-03-01 09:11:58.703108
+-3	tom hernandez	2013-03-01 09:11:58.703188
+-3	tom polk	2013-03-01 09:11:58.703217
+-3	tom steinbeck	2013-03-01 09:11:58.703251
+-3	ulysses carson	2013-03-01 09:11:58.703253
+-3	ulysses ellison	2013-03-01 09:11:58.703197
+-3	ulysses quirinius	2013-03-01 09:11:58.703189
+-3	ulysses robinson	2013-03-01 09:11:58.703227
+-3	ulysses steinbeck	2013-03-01 09:11:58.703259
+-3	victor allen	2013-03-01 09:11:58.703155
+-3	victor hernandez	2013-03-01 09:11:58.703176
+-3	victor robinson	2013-03-01 09:11:58.703305
+-3	victor thompson	2013-03-01 09:11:58.703299
+-3	victor xylophone	2013-03-01 09:11:58.703135
+-3	wendy quirinius	2013-03-01 09:11:58.703266
+-3	wendy robinson	2013-03-01 09:11:58.703294
+-3	wendy xylophone	2013-03-01 09:11:58.703191
+-3	xavier garcia	2013-03-01 09:11:58.703194
+-3	xavier ovid	2013-03-01 09:11:58.703148
+-3	yuri xylophone	2013-03-01 09:11:58.703258
+-3	zach thompson	2013-03-01 09:11:58.703252
+-3	zach young	2013-03-01 09:11:58.703191
+PREHOOK: query: select csmallint, cstring1, cboolean2 from text_llap100 order by csmallint, cstring1, cboolean2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@text_llap100
+#### A masked pattern was here ####
+POSTHOOK: query: select csmallint, cstring1, cboolean2 from text_llap100 order by csmallint, cstring1, cboolean2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@text_llap100
+#### A masked pattern was here ####
+-10129	cvLH6Eat2yFsyy7p	NULL
+-10154	cvLH6Eat2yFsyy7p	NULL
+-10268	cvLH6Eat2yFsyy7p	NULL
+-1027	cvLH6Eat2yFsyy7p	NULL
+-10909	cvLH6Eat2yFsyy7p	NULL
+-11320	cvLH6Eat2yFsyy7p	NULL
+-11492	cvLH6Eat2yFsyy7p	NULL
+-12083	cvLH6Eat2yFsyy7p	NULL
+-12171	cvLH6Eat2yFsyy7p	NULL
+-12472	cvLH6Eat2yFsyy7p	NULL
+-1254	cvLH6Eat2yFsyy7p	NULL
+-1299	cvLH6Eat2yFsyy7p	NULL
+-13229	cvLH6Eat2yFsyy7p	NULL
+-13326	cvLH6Eat2yFsyy7p	NULL
+-13372	cvLH6Eat2yFsyy7p	NULL
+-14072	cvLH6Eat2yFsyy7p	NULL
+-14379	cvLH6Eat2yFsyy7p	NULL
+-14739	cvLH6Eat2yFsyy7p	NULL
+-14965	cvLH6Eat2yFsyy7p	NULL
+-15059	cvLH6Eat2yFsyy7p	NULL
+-15431	cvLH6Eat2yFsyy7p	NULL
+-15549	cvLH6Eat2yFsyy7p	NULL
+-15790	cvLH6Eat2yFsyy7p	NULL
+-15813	cvLH6Eat2yFsyy7p	NULL
+-15912	cvLH6Eat2yFsyy7p	NULL
+-1724	cvLH6Eat2yFsyy7p	NULL
+-1990	cvLH6Eat2yFsyy7p	NULL
+-2013	cvLH6Eat2yFsyy7p	NULL
+-2468	cvLH6Eat2yFsyy7p	NULL
+-3012	cvLH6Eat2yFsyy7p	NULL
+-3045	cvLH6Eat2yFsyy7p	NULL
+-3166	cvLH6Eat2yFsyy7p	NULL
+-3419	cvLH6Eat2yFsyy7p	NULL
+-4213	cvLH6Eat2yFsyy7p	NULL
+-4255	cvLH6Eat2yFsyy7p	NULL
+-4463	cvLH6Eat2yFsyy7p	NULL
+-4490	cvLH6Eat2yFsyy7p	NULL
+-4667	cvLH6Eat2yFsyy7p	NULL
+-4812	cvLH6Eat2yFsyy7p	NULL
+-6583	cvLH6Eat2yFsyy7p	NULL
+-6922	cvLH6Eat2yFsyy7p	NULL
+-7183	cvLH6Eat2yFsyy7p	NULL
+-7353	cvLH6Eat2yFsyy7p	NULL
+-7449	cvLH6Eat2yFsyy7p	NULL
+-75	cvLH6Eat2yFsyy7p	NULL
+-7735	cvLH6Eat2yFsyy7p	NULL
+-7824	cvLH6Eat2yFsyy7p	NULL
+-7964	cvLH6Eat2yFsyy7p	NULL
+-7984	cvLH6Eat2yFsyy7p	NULL
+-814	cvLH6Eat2yFsyy7p	NULL
+-9566	cvLH6Eat2yFsyy7p	NULL
+10	cvLH6Eat2yFsyy7p	NULL
+10688	cvLH6Eat2yFsyy7p	NULL
+11242	cvLH6Eat2yFsyy7p	NULL
+11737	cvLH6Eat2yFsyy7p	NULL
+1206	cvLH6Eat2yFsyy7p	NULL
+12161	cvLH6Eat2yFsyy7p	NULL
+12422	cvLH6Eat2yFsyy7p	NULL
+13026	cvLH6Eat2yFsyy7p	NULL
+13300	cvLH6Eat2yFsyy7p	NULL
+1345	cvLH6Eat2yFsyy7p	NULL
+1358	cvLH6Eat2yFsyy7p	NULL
+14072	cvLH6Eat2yFsyy7p	NULL
+14625	cvLH6Eat2yFsyy7p	NULL
+1475	cvLH6Eat2yFsyy7p	NULL
+14907	cvLH6Eat2yFsyy7p	NULL
+15007	cvLH6Eat2yFsyy7p	NULL
+15626	cvLH6Eat2yFsyy7p	NULL
+163	cvLH6Eat2yFsyy7p	NULL
+1639	cvLH6Eat2yFsyy7p	NULL
+2541	cvLH6Eat2yFsyy7p	NULL
+2617	cvLH6Eat2yFsyy7p	NULL
+3168	cvLH6Eat2yFsyy7p	NULL
+37	cvLH6Eat2yFsyy7p	NULL
+3856	cvLH6Eat2yFsyy7p	NULL
+3961	cvLH6Eat2yFsyy7p	NULL
+4181	cvLH6Eat2yFsyy7p	NULL
+4432	cvLH6Eat2yFsyy7p	NULL
+4587	cvLH6Eat2yFsyy7p	NULL
+486	cvLH6Eat2yFsyy7p	NULL
+4963	cvLH6Eat2yFsyy7p	NULL
+5521	cvLH6Eat2yFsyy7p	NULL
+5780	cvLH6Eat2yFsyy7p	NULL
+6453	cvLH6Eat2yFsyy7p	NULL
+6557	cvLH6Eat2yFsyy7p	NULL
+6958	cvLH6Eat2yFsyy7p	NULL
+7021	cvLH6Eat2yFsyy7p	NULL
+7350	cvLH6Eat2yFsyy7p	NULL
+7476	cvLH6Eat2yFsyy7p	NULL
+77	cvLH6Eat2yFsyy7p	NULL
+7860	cvLH6Eat2yFsyy7p	NULL
+7952	cvLH6Eat2yFsyy7p	NULL
+8035	cvLH6Eat2yFsyy7p	NULL
+834	cvLH6Eat2yFsyy7p	NULL
+8353	cvLH6Eat2yFsyy7p	NULL
+8402	cvLH6Eat2yFsyy7p	NULL
+8499	cvLH6Eat2yFsyy7p	NULL
+9169	cvLH6Eat2yFsyy7p	NULL
+9366	cvLH6Eat2yFsyy7p	NULL
+9472	cvLH6Eat2yFsyy7p	NULL
+PREHOOK: query: DROP TABLE text_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@text_llap
+PREHOOK: Output: default@text_llap
+POSTHOOK: query: DROP TABLE text_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@text_llap
+POSTHOOK: Output: default@text_llap

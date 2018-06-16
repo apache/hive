@@ -80,11 +80,13 @@ STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.c
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_ppd_staging_n0
-PREHOOK: query: insert overwrite table orc_ppd_staging_n0 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging_n6 order by t, s
+PREHOOK: query: insert overwrite table orc_ppd_staging_n0 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, cast(ts as date) as da, `dec`, bin from staging_n6 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging_n6
 PREHOOK: Output: default@orc_ppd_staging_n0
-POSTHOOK: query: insert overwrite table orc_ppd_staging_n0 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging_n6 order by t, s
+POSTHOOK: query: insert overwrite table orc_ppd_staging_n0 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, cast(ts as date) as da, `dec`, bin from staging_n6 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging_n6
 POSTHOOK: Output: default@orc_ppd_staging_n0
@@ -177,11 +179,13 @@ STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.c
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_ppd_n1
-PREHOOK: query: insert overwrite table orc_ppd_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging_n0 order by t, s
+PREHOOK: query: insert overwrite table orc_ppd_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, da, `dec`, bin from orc_ppd_staging_n0 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_staging_n0
 PREHOOK: Output: default@orc_ppd_n1
-POSTHOOK: query: insert overwrite table orc_ppd_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging_n0 order by t, s
+POSTHOOK: query: insert overwrite table orc_ppd_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, da, `dec`, bin from orc_ppd_staging_n0 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_ppd_staging_n0
 POSTHOOK: Output: default@orc_ppd_n1
@@ -233,7 +237,7 @@ Table Parameters:
 	orc.bloom.filter.columns	*                   
 	orc.row.index.stride	1000                
 	rawDataSize         	1139514             
-	totalSize           	55453               
+	totalSize           	55665               
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -251,7 +255,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 16676
+   HDFS_BYTES_READ: 16675
    HDFS_BYTES_WRITTEN: 104
    HDFS_READ_OPS: 7
    HDFS_LARGE_READ_OPS: 0
@@ -943,7 +947,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 5691
+   HDFS_BYTES_READ: 5911
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -964,9 +968,9 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_TS_0: 1000
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 1310720
-   ALLOCATED_USED_BYTES: 13796
+   ALLOCATED_USED_BYTES: 13810
    CACHE_HIT_BYTES: 24
-   CACHE_MISS_BYTES: 5691
+   CACHE_MISS_BYTES: 5911
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
    NUM_VECTOR_BATCHES: 1
@@ -1003,7 +1007,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 6
    RECORDS_OUT_OPERATOR_TS_0: 1000
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
@@ -1041,7 +1045,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 6
    RECORDS_OUT_OPERATOR_TS_0: 1000
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
@@ -1101,7 +1105,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 2100
    RECORDS_OUT_OPERATOR_TS_0: 2100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 3
@@ -1139,7 +1143,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 0
    RECORDS_OUT_OPERATOR_TS_0: 0
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 1735
+   CACHE_HIT_BYTES: 1726
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    SELECTED_ROWGROUPS: 0
@@ -1174,7 +1178,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 2
    RECORDS_OUT_OPERATOR_TS_0: 1000
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
@@ -1212,7 +1216,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 2
    RECORDS_OUT_OPERATOR_TS_0: 1000
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
@@ -1250,7 +1254,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 2
    RECORDS_OUT_OPERATOR_TS_0: 1000
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
@@ -1276,7 +1280,7 @@ Stage-1 FILE SYSTEM COUNTERS:
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
-   RECORDS_IN_Map_1: 2000
+   RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
    RECORDS_OUT_INTERMEDIATE_Map_1: 81
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
@@ -1286,15 +1290,15 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_MAP_0: 0
    RECORDS_OUT_OPERATOR_RS_10: 81
    RECORDS_OUT_OPERATOR_SEL_9: 81
-   RECORDS_OUT_OPERATOR_TS_0: 2000
+   RECORDS_OUT_OPERATOR_TS_0: 2100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
-   NUM_DECODED_BATCHES: 2
-   NUM_VECTOR_BATCHES: 2
-   ROWS_EMITTED: 2000
-   SELECTED_ROWGROUPS: 2
+   NUM_DECODED_BATCHES: 3
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 2100
+   SELECTED_ROWGROUPS: 3
 Stage-1 INPUT COUNTERS:
    GROUPED_INPUT_SPLITS_Map_1: 1
    INPUT_DIRECTORIES_Map_1: 1
@@ -1314,7 +1318,7 @@ Stage-1 FILE SYSTEM COUNTERS:
 Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    DESERIALIZE_ERRORS: 0
-   RECORDS_IN_Map_1: 2000
+   RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
    RECORDS_OUT_INTERMEDIATE_Map_1: 74
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
@@ -1324,15 +1328,15 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_MAP_0: 0
    RECORDS_OUT_OPERATOR_RS_10: 74
    RECORDS_OUT_OPERATOR_SEL_9: 74
-   RECORDS_OUT_OPERATOR_TS_0: 2000
+   RECORDS_OUT_OPERATOR_TS_0: 2100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
-   NUM_DECODED_BATCHES: 2
-   NUM_VECTOR_BATCHES: 2
-   ROWS_EMITTED: 2000
-   SELECTED_ROWGROUPS: 2
+   NUM_DECODED_BATCHES: 3
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 2100
+   SELECTED_ROWGROUPS: 3
 Stage-1 INPUT COUNTERS:
    GROUPED_INPUT_SPLITS_Map_1: 1
    INPUT_DIRECTORIES_Map_1: 1
@@ -1364,7 +1368,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 12
    RECORDS_OUT_OPERATOR_TS_0: 2000
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 2
@@ -1402,7 +1406,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 13
    RECORDS_OUT_OPERATOR_TS_0: 2000
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 2
@@ -1440,7 +1444,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 1
    RECORDS_OUT_OPERATOR_TS_0: 100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
@@ -1478,7 +1482,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 7
    RECORDS_OUT_OPERATOR_TS_0: 1100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 2
@@ -1516,7 +1520,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 0
    RECORDS_OUT_OPERATOR_TS_0: 0
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 1735
+   CACHE_HIT_BYTES: 1726
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    SELECTED_ROWGROUPS: 0
@@ -1551,7 +1555,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 0
    RECORDS_OUT_OPERATOR_TS_0: 0
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 1735
+   CACHE_HIT_BYTES: 1726
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    SELECTED_ROWGROUPS: 0
@@ -1586,7 +1590,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 0
    RECORDS_OUT_OPERATOR_TS_0: 0
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 1735
+   CACHE_HIT_BYTES: 1726
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    SELECTED_ROWGROUPS: 0
@@ -1621,7 +1625,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 2
    RECORDS_OUT_OPERATOR_TS_0: 100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
@@ -1659,7 +1663,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 6
    RECORDS_OUT_OPERATOR_TS_0: 1100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 5715
+   CACHE_HIT_BYTES: 5935
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 2
@@ -1697,7 +1701,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 2
    RECORDS_OUT_OPERATOR_TS_0: 1000
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 6770
+   CACHE_HIT_BYTES: 6990
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
@@ -1735,7 +1739,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_OUT_OPERATOR_SEL_9: 2
    RECORDS_OUT_OPERATOR_TS_0: 100
 Stage-1 LLAP IO COUNTERS:
-   CACHE_HIT_BYTES: 6770
+   CACHE_HIT_BYTES: 6990
    CACHE_MISS_BYTES: 0
    METADATA_CACHE_HIT: 2
    NUM_DECODED_BATCHES: 1
