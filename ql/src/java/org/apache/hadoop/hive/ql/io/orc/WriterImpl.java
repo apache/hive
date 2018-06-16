@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -63,6 +65,7 @@ import org.apache.hadoop.io.Text;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.orc.PhysicalWriter;
+import org.apache.orc.TypeDescription;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -93,7 +96,15 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
              OrcFile.WriterOptions opts) throws IOException {
     super(fs, path, opts);
     this.inspector = opts.getInspector();
-    this.internalBatch = opts.getSchema().createRowBatch(opts.getBatchSize());
+    boolean useDecimal64ColumnVectors = opts.getConfiguration() != null &&
+      HiveConf.getVar(opts.getConfiguration(), HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED)
+        .equalsIgnoreCase("decimal_64");
+    if (useDecimal64ColumnVectors) {
+      this.internalBatch = opts.getSchema().createRowBatch(TypeDescription.RowBatchVersion.USE_DECIMAL64,
+        opts.getBatchSize());
+    } else {
+      this.internalBatch = opts.getSchema().createRowBatch(opts.getBatchSize());
+    }
     this.fields = initializeFieldsFromOi(inspector);
   }
 
@@ -207,9 +218,15 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
               break;
             }
             case DECIMAL: {
-              DecimalColumnVector vector = (DecimalColumnVector) column;
-              vector.set(rowId, ((HiveDecimalObjectInspector) inspector)
+              if (column instanceof Decimal64ColumnVector) {
+                Decimal64ColumnVector vector = (Decimal64ColumnVector) column;
+                vector.set(rowId, ((HiveDecimalObjectInspector) inspector)
                   .getPrimitiveWritableObject(obj));
+              } else {
+                DecimalColumnVector vector = (DecimalColumnVector) column;
+                vector.set(rowId, ((HiveDecimalObjectInspector) inspector)
+                  .getPrimitiveWritableObject(obj));
+              }
               break;
             }
           }

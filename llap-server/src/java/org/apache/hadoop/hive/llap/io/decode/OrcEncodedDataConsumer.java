@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
@@ -73,15 +74,20 @@ public class OrcEncodedDataConsumer
   private IoTrace trace;
   private final Includes includes;
   private TypeDescription[] batchSchemas;
+  private boolean useDecimal64ColumnVectors;
 
   public OrcEncodedDataConsumer(
-      Consumer<ColumnVectorBatch> consumer, Includes includes, boolean skipCorrupt,
-      QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
+    Consumer<ColumnVectorBatch> consumer, Includes includes, boolean skipCorrupt,
+    QueryFragmentCounters counters, LlapDaemonIOMetrics ioMetrics) {
     super(consumer, includes.getPhysicalColumnIds().size(), ioMetrics);
     this.includes = includes;
     // TODO: get rid of this
     this.skipCorrupt = skipCorrupt;
     this.counters = counters;
+  }
+
+  public void setUseDecimal64ColumnVectors(final boolean useDecimal64ColumnVectors) {
+    this.useDecimal64ColumnVectors = useDecimal64ColumnVectors;
   }
 
   public void setFileMetadata(ConsumerFileMetadata f) {
@@ -153,7 +159,7 @@ public class OrcEncodedDataConsumer
           if (cvb.cols[idx] == null) {
             // Orc store rows inside a root struct (hive writes it this way).
             // When we populate column vectors we skip over the root struct.
-            cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE);
+            cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE, useDecimal64ColumnVectors);
           }
           trace.logTreeReaderNextVector(idx);
 
@@ -217,10 +223,10 @@ public class OrcEncodedDataConsumer
     TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
             .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
             .writerTimeZone(stripeMetadata.getWriterTimezone())
-        ;
+            .fileFormat(fileMetadata == null ? null : fileMetadata.getFileVersion());
     this.batchSchemas = includes.getBatchReaderTypes(fileSchema);
     StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
-        batchSchemas, stripeMetadata.getEncodings(), batch, codec, context);
+        batchSchemas, stripeMetadata.getEncodings(), batch, codec, context, useDecimal64ColumnVectors);
     this.columnReaders = treeReader.getChildReaders();
 
     if (LlapIoImpl.LOG.isDebugEnabled()) {
@@ -232,7 +238,7 @@ public class OrcEncodedDataConsumer
     positionInStreams(columnReaders, batch.getBatchKey(), stripeMetadata);
   }
 
-  private ColumnVector createColumn(TypeDescription type, int batchSize) {
+  private ColumnVector createColumn(TypeDescription type, int batchSize, final boolean useDecimal64ColumnVectors) {
     switch (type.getCategory()) {
       case BOOLEAN:
       case BYTE:
@@ -252,30 +258,34 @@ public class OrcEncodedDataConsumer
       case TIMESTAMP:
         return new TimestampColumnVector(batchSize);
       case DECIMAL:
-        return new DecimalColumnVector(batchSize, type.getPrecision(),
-            type.getScale());
+        if (useDecimal64ColumnVectors && type.getPrecision() <= TypeDescription.MAX_DECIMAL64_PRECISION) {
+          return new Decimal64ColumnVector(batchSize, type.getPrecision(), type.getScale());
+        } else {
+          return new DecimalColumnVector(batchSize, type.getPrecision(), type.getScale());
+        }
       case STRUCT: {
         List<TypeDescription> subtypeIdxs = type.getChildren();
         ColumnVector[] fieldVector = new ColumnVector[subtypeIdxs.size()];
-        for(int i = 0; i < fieldVector.length; ++i) {
-          fieldVector[i] = createColumn(subtypeIdxs.get(i), batchSize);
+        for (int i = 0; i < fieldVector.length; ++i) {
+          fieldVector[i] = createColumn(subtypeIdxs.get(i), batchSize, useDecimal64ColumnVectors);
         }
         return new StructColumnVector(batchSize, fieldVector);
       }
       case UNION: {
         List<TypeDescription> subtypeIdxs = type.getChildren();
         ColumnVector[] fieldVector = new ColumnVector[subtypeIdxs.size()];
-        for(int i=0; i < fieldVector.length; ++i) {
-          fieldVector[i] = createColumn(subtypeIdxs.get(i), batchSize);
+        for (int i = 0; i < fieldVector.length; ++i) {
+          fieldVector[i] = createColumn(subtypeIdxs.get(i), batchSize, useDecimal64ColumnVectors);
         }
         return new UnionColumnVector(batchSize, fieldVector);
       }
       case LIST:
-        return new ListColumnVector(batchSize, createColumn(type.getChildren().get(0), batchSize));
+        return new ListColumnVector(batchSize, createColumn(type.getChildren().get(0), batchSize,
+          useDecimal64ColumnVectors));
       case MAP:
         List<TypeDescription> subtypeIdxs = type.getChildren();
-        return new MapColumnVector(batchSize, createColumn(subtypeIdxs.get(0), batchSize),
-            createColumn(subtypeIdxs.get(1), batchSize));
+        return new MapColumnVector(batchSize, createColumn(subtypeIdxs.get(0), batchSize, useDecimal64ColumnVectors),
+          createColumn(subtypeIdxs.get(1), batchSize, useDecimal64ColumnVectors));
       default:
         throw new IllegalArgumentException("LLAP does not support " + type.getCategory());
     }

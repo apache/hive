@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.llap.DebugUtils;
 
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -416,7 +417,12 @@ public abstract class BatchToRowReader<StructType, UnionType>
       } else {
         result = (HiveDecimalWritable) previous;
       }
-      result.set(((DecimalColumnVector) vector).vector[row]);
+      if (vector instanceof Decimal64ColumnVector) {
+        long value = ((Decimal64ColumnVector) vector).vector[row];
+        result.deserialize64(value, ((Decimal64ColumnVector) vector).scale);
+      } else {
+        result.set(((DecimalColumnVector) vector).vector[row]);
+      }
       return result;
     } else {
       return null;

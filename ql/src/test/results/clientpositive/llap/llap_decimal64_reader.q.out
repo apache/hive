@@ -1,0 +1,303 @@
+PREHOOK: query: DROP TABLE orc_llap_n0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_llap_n0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE orc_llap_n0(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN,
+    cdecimal1 decimal(10,2),
+    cdecimal2 decimal(38,5))
+    STORED AS ORC tblproperties ("orc.compress"="NONE")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_llap_n0
+POSTHOOK: query: CREATE TABLE orc_llap_n0(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN,
+    cdecimal1 decimal(10,2),
+    cdecimal2 decimal(38,5))
+    STORED AS ORC tblproperties ("orc.compress"="NONE")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_llap_n0
+PREHOOK: query: insert into table orc_llap_n0
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2,
+ cast("3.345" as decimal(10,2)), cast("5.56789" as decimal(38,5)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_llap_n0
+POSTHOOK: query: insert into table orc_llap_n0
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2,
+ cast("3.345" as decimal(10,2)), cast("5.56789" as decimal(38,5)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_llap_n0
+POSTHOOK: Lineage: orc_llap_n0.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cdecimal1 SIMPLE []
+POSTHOOK: Lineage: orc_llap_n0.cdecimal2 SIMPLE []
+POSTHOOK: Lineage: orc_llap_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: alter table orc_llap_n0 set tblproperties ("orc.compress"="NONE", 'orc.write.format'='UNSTABLE-PRE-2.0')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@orc_llap_n0
+PREHOOK: Output: default@orc_llap_n0
+POSTHOOK: query: alter table orc_llap_n0 set tblproperties ("orc.compress"="NONE", 'orc.write.format'='UNSTABLE-PRE-2.0')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@orc_llap_n0
+POSTHOOK: Output: default@orc_llap_n0
+PREHOOK: query: insert into table orc_llap_n0
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2,
+ cast("4.456" as decimal(10,2)), cast("5.56789" as decimal(38,5)) from alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@orc_llap_n0
+POSTHOOK: query: insert into table orc_llap_n0
+select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2,
+ cast("4.456" as decimal(10,2)), cast("5.56789" as decimal(38,5)) from alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@orc_llap_n0
+POSTHOOK: Lineage: orc_llap_n0.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cdecimal1 SIMPLE []
+POSTHOOK: Lineage: orc_llap_n0.cdecimal2 SIMPLE []
+POSTHOOK: Lineage: orc_llap_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: explain vectorization select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
+ group by cdecimal1,cdecimal2 limit 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
+ group by cdecimal1,cdecimal2 limit 2
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orc_llap_n0
+                  filterExpr: ((cdecimal1 = 3.35) or (cdecimal1 = 4.46)) (type: boolean)
+                  Statistics: Num rows: 24576 Data size: 5505024 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((cdecimal1 = 3.35) or (cdecimal1 = 4.46)) (type: boolean)
+                    Statistics: Num rows: 24576 Data size: 5505024 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: cdecimal1 (type: decimal(10,2)), cdecimal2 (type: decimal(38,5))
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(10,2)), _col1 (type: decimal(38,5))
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: decimal(10,2)), _col1 (type: decimal(38,5))
+                        Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: decimal(10,2)), KEY._col1 (type: decimal(38,5))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 2
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
+ group by cdecimal1,cdecimal2 limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
+ group by cdecimal1,cdecimal2 limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_n0
+#### A masked pattern was here ####
+4.46	5.56789
+3.35	5.56789
+PREHOOK: query: explain vectorization select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
+ group by cdecimal1,cdecimal2 limit 2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
+ group by cdecimal1,cdecimal2 limit 2
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orc_llap_n0
+                  filterExpr: ((cdecimal1 = 3.35) or (cdecimal1 = 4.46)) (type: boolean)
+                  Statistics: Num rows: 24576 Data size: 5505024 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((cdecimal1 = 3.35) or (cdecimal1 = 4.46)) (type: boolean)
+                    Statistics: Num rows: 24576 Data size: 5505024 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: cdecimal1 (type: decimal(10,2)), cdecimal2 (type: decimal(38,5))
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(10,2)), _col1 (type: decimal(38,5))
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: decimal(10,2)), _col1 (type: decimal(38,5))
+                        Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [[] is disabled because it is not in hive.vectorized.input.format.supports.enabled []]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: decimal(10,2)), KEY._col1 (type: decimal(38,5))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 2
+                  Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 2
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
+ group by cdecimal1,cdecimal2 limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_llap_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select cdecimal1,cdecimal2 from orc_llap_n0 where cdecimal1 = cast("3.345" as decimal(10,2)) or cdecimal1 = cast("4.456" as decimal(10,2))
+ group by cdecimal1,cdecimal2 limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_llap_n0
+#### A masked pattern was here ####
+4.46	5.56789
+3.35	5.56789
+PREHOOK: query: DROP TABLE orc_llap_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_llap_n0
+PREHOOK: Output: default@orc_llap_n0
+POSTHOOK: query: DROP TABLE orc_llap_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_llap_n0
+POSTHOOK: Output: default@orc_llap_n0

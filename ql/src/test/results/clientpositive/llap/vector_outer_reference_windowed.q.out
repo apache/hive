@@ -271,7 +271,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: c1 (type: decimal(15,2))
                     outputColumnNames: c1
@@ -283,7 +283,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(c1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal(col 0:decimal(15,2)) -> decimal(25,2)
+                          aggregators: VectorUDAFSumDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> decimal(25,2)
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -308,8 +308,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -317,7 +316,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0]
-                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -489,7 +488,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
                     outputColumnNames: c1, c2
@@ -501,10 +500,10 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(c1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal(col 0:decimal(15,2)) -> decimal(25,2)
+                          aggregators: VectorUDAFSumDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> decimal(25,2)
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:decimal(15,2), col 1:decimal(15,2)
+                          keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2), ConvertDecimal64ToDecimal(col 1:decimal(15,2)/DECIMAL_64) -> 4:decimal(15,2)
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -530,8 +529,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -539,9 +537,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(15,2), decimal(15,2)]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -726,12 +724,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -760,8 +758,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -769,9 +766,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(15,2)]
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -779,12 +776,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -812,8 +809,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -821,9 +817,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0]
-                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(15,2)]
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1035,12 +1031,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1068,8 +1064,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1077,9 +1072,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0]
-                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(15,2)]
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1087,12 +1082,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1121,8 +1116,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1130,9 +1124,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(15,2)]
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1343,12 +1337,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1377,8 +1371,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1386,9 +1379,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(15,2)]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1396,12 +1389,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2)/DECIMAL_64, 1:c2:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(15,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,2)/DECIMAL_64) -> 3:decimal(15,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1430,8 +1423,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -1439,9 +1431,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    dataColumns: c1:decimal(15,2)/DECIMAL_64, c2:decimal(15,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(15,2)]
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1571,7 +1563,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: c1 (type: decimal(7,2))
                     outputColumnNames: c1
@@ -1583,7 +1575,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(c1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal(col 0:decimal(7,2)) -> decimal(17,2)
+                          aggregators: VectorUDAFSumDecimal64(col 0:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -1608,8 +1600,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1617,7 +1608,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0]
-                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -1789,7 +1780,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
                     outputColumnNames: c1, c2
@@ -1801,10 +1792,10 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(c1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal(col 0:decimal(7,2)) -> decimal(17,2)
+                          aggregators: VectorUDAFSumDecimal64(col 0:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:decimal(7,2), col 1:decimal(7,2)
+                          keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2), ConvertDecimal64ToDecimal(col 1:decimal(7,2)/DECIMAL_64) -> 4:decimal(7,2)
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -1830,8 +1821,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1839,9 +1829,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(7,2), decimal(7,2)]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -2026,12 +2016,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2060,8 +2050,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -2069,9 +2058,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(7,2)]
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -2079,12 +2068,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2112,8 +2101,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -2121,9 +2109,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0]
-                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(7,2)]
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2335,12 +2323,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2368,8 +2356,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -2377,9 +2364,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0]
-                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(7,2)]
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -2387,12 +2374,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2421,8 +2408,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -2430,9 +2416,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(7,2)]
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2643,12 +2629,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2677,8 +2663,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -2686,9 +2671,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(7,2)]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2696,12 +2681,12 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2)/DECIMAL_64, 1:c2:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                        predicateExpression: SelectColumnIsNotNull(col 3:decimal(7,2))(children: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 3:decimal(7,2))
                     predicate: c1 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -2730,8 +2715,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
                 inputFormatFeatureSupport: [DECIMAL_64]
-                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
-                featureSupportInUse: []
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -2739,9 +2723,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    dataColumns: c1:decimal(7,2)/DECIMAL_64, c2:decimal(7,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(7,2)]
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
