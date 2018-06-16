@@ -53,18 +53,29 @@ public class TestTxnExIm extends TxnCommandsBaseForTests {
    * simplest export test.
    */
   @Test
-  public void testExport() throws Exception {
+  public void testExportDefaultDb() throws Exception {
+    testExport(true);
+  }
+  @Test
+  public void testExportCustomDb() throws Exception {
+    testExport(false);
+  }
+  private void testExport(boolean useDefualtDb) throws Exception {
     int[][] rows1 = {{1, 2}, {3, 4}};
-    runStatementOnDriver("drop table if exists T");
+    final String tblName = useDefualtDb ? "T" : "foo.T";
+    runStatementOnDriver("drop table if exists " + tblName);
     runStatementOnDriver("drop table if exists TImport ");
-    runStatementOnDriver("create table T (a int, b int) stored as ORC");
+    if(!useDefualtDb) {
+      runStatementOnDriver("create database foo");
+    }
+    runStatementOnDriver("create table " + tblName + " (a int, b int) stored as ORC");
     runStatementOnDriver("create table TImport (a int, b int) stored as ORC TBLPROPERTIES " +
         "('transactional'='false')");
-    runStatementOnDriver("insert into T(a,b) " + makeValuesClause(rows1));
-    List<String> rs = runStatementOnDriver("select * from T order by a,b");
+    runStatementOnDriver("insert into " + tblName + "(a,b) " + makeValuesClause(rows1));
+    List<String> rs = runStatementOnDriver("select * from " + tblName + " order by a,b");
     Assert.assertEquals("Content didn't match rs", stringifyValues(rows1), rs);
 
-    String exportStmt = "export table T to '" + getTestDataDir() + "/export'";
+    String exportStmt = "export table " + tblName + " to '" + getTestDataDir() + "/export'";
     rs = runStatementOnDriver("explain " + exportStmt);
     StringBuilder sb = new StringBuilder("*** " + exportStmt);
     for (String r : rs) {
