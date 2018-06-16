@@ -129,6 +129,44 @@ NULL
 124.00000
 125.20000
 200.00000
+PREHOOK: query: explain SELECT cast(key as decimal) FROM DECIMAL_5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT cast(key as decimal) FROM DECIMAL_5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_5
+                  Statistics: Num rows: 38 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CAST( key AS decimal(10,0)) (type: decimal(10,0))
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 38 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 38 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: SELECT cast(key as decimal) FROM DECIMAL_5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_5
@@ -137,42 +175,42 @@ POSTHOOK: query: SELECT cast(key as decimal) FROM DECIMAL_5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_5
 #### A masked pattern was here ####
--4400
+-440000000
 NULL
 0
 0
-100
-10
-1
+10000000
+1000000
+100000
+10000
+1000
+20000000
+2000000
+200000
 0
-0
-200
-20
-2
-0
-0
-0
-0
-0
-0
-0
-0
-0
-1
-2
-3
--1
--1
--1
-1
-1
-124
-125
--1255
-3
-3
-3
-1
+20000
+2000
+30000
+33000
+33300
+-30000
+-33000
+-33300
+100000
+200000
+314000
+-112000
+-112000
+-112200
+112000
+112200
+12400000
+12520000
+-125549000
+314000
+314000
+314000
+100000
 NULL
 NULL
 PREHOOK: query: SELECT cast(key as decimal(6,3)) FROM DECIMAL_5
@@ -187,38 +225,38 @@ NULL
 NULL
 0.000
 0.000
+NULL
+NULL
 100.000
 10.000
 1.000
-0.100
-0.010
+NULL
+NULL
 200.000
+0.000
 20.000
 2.000
-0.000
-0.200
-0.020
-0.300
-0.330
-0.333
--0.300
--0.330
--0.333
-1.000
-2.000
-3.140
--1.120
--1.120
--1.122
-1.120
-1.122
-124.000
-125.200
+30.000
+33.000
+33.300
+-30.000
+-33.000
+-33.300
+100.000
+200.000
+314.000
+-112.000
+-112.000
+-112.200
+112.000
+112.200
 NULL
-3.140
-3.140
-3.140
-1.000
+NULL
+NULL
+314.000
+314.000
+314.000
+100.000
 NULL
 NULL
 PREHOOK: query: DROP TABLE DECIMAL_5_txt

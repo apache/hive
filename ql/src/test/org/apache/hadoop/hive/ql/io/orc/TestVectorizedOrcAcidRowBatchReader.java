@@ -226,7 +226,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
       assertTrue(vectorizedReader.getDeleteEventRegistry() instanceof SortMergedDeleteEventRegistry);
     }
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(conf, true, Integer.MAX_VALUE);
-    VectorizedRowBatch vectorizedRowBatch = schema.createRowBatch();
+    VectorizedRowBatch vectorizedRowBatch = schema.createRowBatchV2();
     vectorizedRowBatch.setPartitionInfo(1, 0); // set data column count as 1.
     long previousPayload = Long.MIN_VALUE;
     while (vectorizedReader.next(null, vectorizedRowBatch)) {

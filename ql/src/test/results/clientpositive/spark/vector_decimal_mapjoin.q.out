@@ -128,8 +128,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -202,8 +202,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -339,6 +339,17 @@ POSTHOOK: Input: default@t2_n29
 9.00	9
 9.00	9
 9.00	9
+PREHOOK: query: select count(*) from (select t1_n48.`dec`, t2_n29.`dec` from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)) as t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n48
+PREHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select t1_n48.`dec`, t2_n29.`dec` from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)) as t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n48
+POSTHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
+106
 PREHOOK: query: explain vectorization detail
 select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)
 PREHOOK: type: QUERY
@@ -393,8 +404,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -467,8 +478,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -604,6 +615,17 @@ POSTHOOK: Input: default@t2_n29
 9.00	48.96	9	5
 9.00	48.96	9	7
 9.00	48.96	9	7
+PREHOOK: query: select count(*) from (select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)) as t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n48
+PREHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select t1_n48.`dec`, t1_n48.value_dec, t2_n29.`dec`, t2_n29.value_dec from t1_n48 join t2_n29 on (t1_n48.`dec`=t2_n29.`dec`)) as t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n48
+POSTHOOK: Input: default@t2_n29
+#### A masked pattern was here ####
+106
 PREHOOK: query: CREATE TABLE over1k_small(t tinyint,
            si smallint,
            i int,
@@ -840,6 +862,17 @@ POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
 89.00	89
+PREHOOK: query: select count(*) from (select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
+1
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
@@ -1000,6 +1033,17 @@ POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
 89.00	15.09	89	15
+PREHOOK: query: select count(*) from (select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
+1
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
@@ -1162,6 +1206,17 @@ POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
 89.00	89
+PREHOOK: query: select count(*) from (select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select t1_small.`dec`, t2_small.`dec` from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
+1
 PREHOOK: query: explain vectorization detail
 select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)
 PREHOOK: type: QUERY
@@ -1324,3 +1379,14 @@ POSTHOOK: Input: default@t1_small
 POSTHOOK: Input: default@t2_small
 #### A masked pattern was here ####
 89.00	15.09	89	15
+PREHOOK: query: select count(*) from (select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_small
+PREHOOK: Input: default@t2_small
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select t1_small.`dec`, t1_small.value_dec, t2_small.`dec`, t2_small.value_dec from t1_small join t2_small on (t1_small.`dec`=t2_small.`dec`)) as t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_small
+POSTHOOK: Input: default@t2_small
+#### A masked pattern was here ####
+1

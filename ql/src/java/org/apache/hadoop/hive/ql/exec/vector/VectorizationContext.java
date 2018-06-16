@@ -584,8 +584,8 @@ public class VectorizationContext {
 
         // Re-use an existing, available column of the same required type.
         if (usedOutputColumns.contains(i) ||
-            !(scratchVectorTypeNames)[i].equalsIgnoreCase(columnType) &&
-              scratchDataTypePhysicalVariations[i] == dataTypePhysicalVariation) {
+            !(scratchVectorTypeNames[i].equalsIgnoreCase(columnType) &&
+              scratchDataTypePhysicalVariations[i] == dataTypePhysicalVariation)) {
           continue;
         }
         //Use i
@@ -874,6 +874,7 @@ public class VectorizationContext {
       LOG.debug("Input Expression = " + exprDesc.toString()
           + ", Vectorized Expression = " + ve.toString());
     }
+
     return ve;
   }
 
@@ -1965,7 +1966,7 @@ public class VectorizationContext {
     return cleaned;
   }
 
-  private VectorExpression instantiateExpression(Class<?> vclass, TypeInfo returnTypeInfo,
+  public VectorExpression instantiateExpression(Class<?> vclass, TypeInfo returnTypeInfo,
       DataTypePhysicalVariation returnDataTypePhysicalVariation, Object...args)
       throws HiveException {
     VectorExpression ve = null;

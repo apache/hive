@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.io.NullWritable;
@@ -49,6 +50,11 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
 
   static final int MAX_ROW = 100; // to prevent infinite loop
   static final Logger LOG = LoggerFactory.getLogger(NullRowsRecordReader.class.getName());
+
+  @Override
+  public VectorizedSupport.Support[] getSupportedFeatures() {
+    return null;
+  }
 
   public static class DummyInputSplit extends FileSplit {
     @SuppressWarnings("unused")  // Serialization ctor.

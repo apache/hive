@@ -21,6 +21,7 @@ SELECT key FROM DECIMAL_5 ORDER BY key;
 
 SELECT DISTINCT key FROM DECIMAL_5 ORDER BY key;
 
+explain SELECT cast(key as decimal) FROM DECIMAL_5;
 SELECT cast(key as decimal) FROM DECIMAL_5;
 
 SELECT cast(key as decimal(6,3)) FROM DECIMAL_5;

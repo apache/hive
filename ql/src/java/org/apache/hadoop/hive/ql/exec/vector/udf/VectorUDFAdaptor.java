@@ -235,4 +235,12 @@ public class VectorUDFAdaptor extends VectorExpression {
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder()).build();
   }
+
+  public VectorUDFArgDesc[] getArgDescs() {
+    return argDescs;
+  }
+
+  public void setArgDescs(final VectorUDFArgDesc[] argDescs) {
+    this.argDescs = argDescs;
+  }
 }
