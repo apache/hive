@@ -112,7 +112,7 @@ public class VectorizedOrcAcidRowBatchReader
 
     final Reader reader = OrcInputFormat.createOrcReaderForSplit(conf, (OrcSplit) inputSplit);
     // Careful with the range here now, we do not want to read the whole base file like deltas.
-    innerReader = reader.rowsOptions(readerOptions.range(offset, length));
+    innerReader = reader.rowsOptions(readerOptions.range(offset, length), conf);
     baseReader = new org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch>() {
 
       @Override
@@ -145,7 +145,13 @@ public class VectorizedOrcAcidRowBatchReader
         return innerReader.getProgress();
       }
     };
-    this.vectorizedRowBatchBase = ((RecordReaderImpl) innerReader).createRowBatch();
+    final boolean useDecimal64ColumnVectors = HiveConf
+      .getVar(conf, ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+    if (useDecimal64ColumnVectors) {
+      this.vectorizedRowBatchBase = ((RecordReaderImpl) innerReader).createRowBatch(true);
+    } else {
+      this.vectorizedRowBatchBase = ((RecordReaderImpl) innerReader).createRowBatch(false);
+    }
   }
 
   /**
@@ -864,11 +870,17 @@ public class VectorizedOrcAcidRowBatchReader
       private final Reader reader;
 
       DeleteReaderValue(Reader deleteDeltaReader, Reader.Options readerOptions, int bucket,
-          ValidWriteIdList validWriteIdList, boolean isBucketedTable) throws IOException {
+        ValidWriteIdList validWriteIdList, boolean isBucketedTable, final JobConf conf) throws IOException {
         this.reader = deleteDeltaReader;
-        this.recordReader  = deleteDeltaReader.rowsOptions(readerOptions);
+        this.recordReader  = deleteDeltaReader.rowsOptions(readerOptions, conf);
         this.bucketForSplit = bucket;
-        this.batch = deleteDeltaReader.getSchema().createRowBatch();
+        final boolean useDecimal64ColumnVector = HiveConf.getVar(conf, ConfVars
+          .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
+        if (useDecimal64ColumnVector) {
+          this.batch = deleteDeltaReader.getSchema().createRowBatchV2();
+        } else {
+          this.batch = deleteDeltaReader.getSchema().createRowBatch();
+        }
         if (!recordReader.nextBatch(batch)) { // Read the first batch.
           this.batch = null; // Oh! the first batch itself was null. Close the reader.
         }
@@ -1067,7 +1079,7 @@ public class VectorizedOrcAcidRowBatchReader
                   throw new DeleteEventsOverflowMemoryException();
                 }
                 DeleteReaderValue deleteReaderValue = new DeleteReaderValue(deleteDeltaReader,
-                    readerOptions, bucket, validWriteIdList, isBucketedTable);
+                    readerOptions, bucket, validWriteIdList, isBucketedTable, conf);
                 DeleteRecordKey deleteRecordKey = new DeleteRecordKey();
                 if (deleteReaderValue.next(deleteRecordKey)) {
                   sortMerger.put(deleteRecordKey, deleteReaderValue);

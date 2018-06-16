@@ -214,8 +214,8 @@ public class FetchOperator implements Serializable {
   private static final Map<String, InputFormat> inputFormats = new HashMap<String, InputFormat>();
 
   @SuppressWarnings("unchecked")
-  static InputFormat getInputFormatFromCache(
-    Class<? extends InputFormat> inputFormatClass, JobConf conf) throws IOException {
+  public static InputFormat getInputFormatFromCache(
+    Class<? extends InputFormat> inputFormatClass, Configuration conf) throws IOException {
     if (Configurable.class.isAssignableFrom(inputFormatClass) ||
         JobConfigurable.class.isAssignableFrom(inputFormatClass)) {
       return ReflectionUtil.newInstance(inputFormatClass, conf);

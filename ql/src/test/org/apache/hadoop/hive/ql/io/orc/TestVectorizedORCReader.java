@@ -49,6 +49,7 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.TypeDescription;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -151,7 +152,7 @@ public class TestVectorizedORCReader {
         OrcFile.readerOptions(conf));
     RecordReaderImpl vrr = (RecordReaderImpl) vreader.rows();
     RecordReaderImpl rr = (RecordReaderImpl) reader.rows();
-    VectorizedRowBatch batch = reader.getSchema().createRowBatch();
+    VectorizedRowBatch batch = reader.getSchema().createRowBatchV2();
     OrcStruct row = null;
 
     // Check Vectorized ORC reader against ORC row reader

@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.llap.io.api.impl;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.BatchToRowInputFormat;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -231,5 +232,10 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       }
     }
     return tableScanOperator;
+  }
+
+  @Override
+  public VectorizedSupport.Support[] getSupportedFeatures() {
+    return new VectorizedSupport.Support[] {VectorizedSupport.Support.DECIMAL_64};
   }
 }
