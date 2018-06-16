@@ -3,15 +3,15 @@ set hive.vectorized.execution.enabled=false;
 DROP TABLE orcfile_merge1_n2;
 DROP TABLE orc_split_elim_n0;
 
-create table orc_split_elim_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
+create table orc_split_elim_n0 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc;
 
 load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_n0;
 load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_n0;
 
-create table orcfile_merge1_n2 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc tblproperties("orc.compress.size"="4096");
+create table orcfile_merge1_n2 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc tblproperties("orc.compress.size"="4096");
 
-insert overwrite table orcfile_merge1_n2 select * from orc_split_elim_n0;
-insert into table orcfile_merge1_n2 select * from orc_split_elim_n0;
+insert overwrite table orcfile_merge1_n2 select * from orc_split_elim_n0 order by userid;
+insert into table orcfile_merge1_n2 select * from orc_split_elim_n0 order by userid;
 
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orcfile_merge1_n2/;
 

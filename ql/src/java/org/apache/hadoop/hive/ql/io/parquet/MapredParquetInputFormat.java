@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
@@ -114,5 +115,10 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
     }
 
     return true;
+  }
+
+  @Override
+  public VectorizedSupport.Support[] getSupportedFeatures() {
+    return null;
   }
 }

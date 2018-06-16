@@ -400,7 +400,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	2                   
-	totalSize           	1078                
+	totalSize           	1076                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

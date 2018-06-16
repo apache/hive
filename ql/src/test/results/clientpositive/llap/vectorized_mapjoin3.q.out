@@ -122,12 +122,12 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1), 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1)/DECIMAL_64, 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:decimal(8,1)), SelectColumnIsNotNull(col 1:int))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 3:decimal(8,1))(children: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)), SelectColumnIsNotNull(col 1:int))
                     predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                     Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -146,12 +146,13 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         Map Join Vectorization:
                             bigTableKeyColumnNums: [1]
-                            bigTableRetainedColumnNums: [0]
-                            bigTableValueColumnNums: [0]
+                            bigTableRetainedColumnNums: [3]
+                            bigTableValueColumnNums: [3]
+                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [0]
+                            projectedOutputColumnNums: [3]
                         outputColumnNames: _col0
                         input vertices:
                           1 Reducer 3
@@ -171,8 +172,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -180,9 +181,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: decimal0801_col:decimal(8,1), int_col_1:int
+                    dataColumns: decimal0801_col:decimal(8,1)/DECIMAL_64, int_col_1:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(8,1)]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -226,8 +227,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -325,12 +326,12 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1), 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1)/DECIMAL_64, 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:decimal(8,1)))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 3:decimal(8,1))(children: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)))
                     predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                     Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -349,12 +350,13 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         Map Join Vectorization:
                             bigTableKeyColumnNums: [1]
-                            bigTableRetainedColumnNums: [0]
-                            bigTableValueColumnNums: [0]
+                            bigTableRetainedColumnNums: [3]
+                            bigTableValueColumnNums: [3]
+                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [0]
+                            projectedOutputColumnNums: [3]
                         outputColumnNames: _col0
                         input vertices:
                           1 Reducer 3
@@ -374,8 +376,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -383,9 +385,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: decimal0801_col:decimal(8,1), int_col_1:int
+                    dataColumns: decimal0801_col:decimal(8,1)/DECIMAL_64, int_col_1:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(8,1)]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -429,8 +431,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -528,12 +530,12 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1), 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1)/DECIMAL_64, 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:decimal(8,1)), SelectColumnIsNotNull(col 1:int))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 3:decimal(8,1))(children: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)), SelectColumnIsNotNull(col 1:int))
                     predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                     Statistics: Num rows: 4 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -552,12 +554,13 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         Map Join Vectorization:
                             bigTableKeyColumnNums: [1]
-                            bigTableRetainedColumnNums: [0]
-                            bigTableValueColumnNums: [0]
+                            bigTableRetainedColumnNums: [3]
+                            bigTableValueColumnNums: [3]
+                            bigTableValueExpressions: ConvertDecimal64ToDecimal(col 0:decimal(8,1)/DECIMAL_64) -> 3:decimal(8,1)
                             className: VectorMapJoinInnerBigOnlyLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutputColumnNums: [0]
+                            projectedOutputColumnNums: [3]
                         outputColumnNames: _col0
                         input vertices:
                           1 Reducer 3
@@ -577,8 +580,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -586,9 +589,9 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 2
                     includeColumns: [0, 1]
-                    dataColumns: decimal0801_col:decimal(8,1), int_col_1:int
+                    dataColumns: decimal0801_col:decimal(8,1)/DECIMAL_64, int_col_1:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [decimal(8,1)]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -632,8 +635,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false

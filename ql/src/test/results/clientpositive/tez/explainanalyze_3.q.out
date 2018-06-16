@@ -623,11 +623,11 @@ Stage-0
                 TableScan [TS_0] (rows=500/500 width=178)
                   default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: create table orc_merge5_n1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: query: create table orc_merge5_n1 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_merge5_n1
-POSTHOOK: query: create table orc_merge5_n1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+POSTHOOK: query: create table orc_merge5_n1 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_merge5_n1

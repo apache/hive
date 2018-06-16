@@ -229,7 +229,7 @@ public class TestInputOutputFormat {
       return "booleanValue,byteValue,shortValue,intValue,longValue,floatValue,doubleValue,stringValue,decimalValue,dateValue,timestampValue";
     }
     static String getColumnTypesProperty() {
-      return "boolean:tinyint:smallint:int:bigint:float:double:string:decimal:date:timestamp";
+      return "boolean:tinyint:smallint:int:bigint:float:double:string:decimal(38,18):date:timestamp";
     }
   }
 
@@ -3847,9 +3847,10 @@ public class TestInputOutputFormat {
    * Test schema evolution when using the reader directly.
    */
   @Test
-  public void testSchemaEvolution() throws Exception {
+  public void testSchemaEvolutionOldDecimal() throws Exception {
     TypeDescription fileSchema =
         TypeDescription.fromString("struct<a:int,b:struct<c:int>,d:string>");
+    conf.set(ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED.varname, "decimal_64");
     Writer writer = OrcFile.createWriter(testFilePath,
         OrcFile.writerOptions(conf)
             .fileSystem(fs)
@@ -3915,6 +3916,78 @@ public class TestInputOutputFormat {
   }
 
   /**
+   * Test schema evolution when using the reader directly.
+   */
+  @Test
+  public void testSchemaEvolutionDecimal64() throws Exception {
+    TypeDescription fileSchema =
+      TypeDescription.fromString("struct<a:int,b:struct<c:int>,d:string>");
+    conf.set(ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED.varname, "decimal_64");
+    Writer writer = OrcFile.createWriter(testFilePath,
+      OrcFile.writerOptions(conf)
+        .fileSystem(fs)
+        .setSchema(fileSchema)
+        .compress(org.apache.orc.CompressionKind.NONE));
+    VectorizedRowBatch batch = fileSchema.createRowBatch(TypeDescription.RowBatchVersion.USE_DECIMAL64,1000);
+    batch.size = 1000;
+    LongColumnVector lcv = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[0]);
+    for(int r=0; r < 1000; r++) {
+      ((LongColumnVector) batch.cols[0]).vector[r] = r * 42;
+      lcv.vector[r] = r * 10001;
+      ((BytesColumnVector) batch.cols[2]).setVal(r,
+        Integer.toHexString(r).getBytes(StandardCharsets.UTF_8));
+    }
+    writer.addRowBatch(batch);
+    writer.close();
+    TypeDescription readerSchema = TypeDescription.fromString(
+      "struct<a:int,b:struct<c:int,future1:int>,d:string,future2:int>");
+    Reader reader = OrcFile.createReader(testFilePath,
+      OrcFile.readerOptions(conf).filesystem(fs));
+    RecordReader rows = reader.rowsOptions(new Reader.Options()
+      .schema(readerSchema));
+    batch = readerSchema.createRowBatchV2();
+    lcv = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[0]);
+    LongColumnVector future1 = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[1]);
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1000, batch.size);
+    assertEquals(true, future1.isRepeating);
+    assertEquals(true, future1.isNull[0]);
+    assertEquals(true, batch.cols[3].isRepeating);
+    assertEquals(true, batch.cols[3].isNull[0]);
+    for(int r=0; r < batch.size; ++r) {
+      assertEquals("row " + r, r * 42, ((LongColumnVector) batch.cols[0]).vector[r]);
+      assertEquals("row " + r, r * 10001, lcv.vector[r]);
+      assertEquals("row " + r, r * 10001, lcv.vector[r]);
+      assertEquals("row " + r, Integer.toHexString(r),
+        ((BytesColumnVector) batch.cols[2]).toString(r));
+    }
+    assertEquals(false, rows.nextBatch(batch));
+    rows.close();
+
+    // try it again with an include vector
+    rows = reader.rowsOptions(new Reader.Options()
+      .schema(readerSchema)
+      .include(new boolean[]{false, true, true, true, false, false, true}));
+    batch = readerSchema.createRowBatchV2();
+    lcv = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[0]);
+    future1 = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[1]);
+    assertEquals(true, rows.nextBatch(batch));
+    assertEquals(1000, batch.size);
+    assertEquals(true, future1.isRepeating);
+    assertEquals(true, future1.isNull[0]);
+    assertEquals(true, batch.cols[3].isRepeating);
+    assertEquals(true, batch.cols[3].isNull[0]);
+    assertEquals(true, batch.cols[2].isRepeating);
+    assertEquals(true, batch.cols[2].isNull[0]);
+    for(int r=0; r < batch.size; ++r) {
+      assertEquals("row " + r, r * 42, ((LongColumnVector) batch.cols[0]).vector[r]);
+      assertEquals("row " + r, r * 10001, lcv.vector[r]);
+    }
+    assertEquals(false, rows.nextBatch(batch));
+    rows.close();
+  }
+
+  /**
    * Test column projection when using ACID.
    */
   @Test
@@ -3933,7 +4006,7 @@ public class TestInputOutputFormat {
             .fileSystem(fs)
             .setSchema(fileSchema)
             .compress(org.apache.orc.CompressionKind.NONE));
-    VectorizedRowBatch batch = fileSchema.createRowBatch(1000);
+    VectorizedRowBatch batch = fileSchema.createRowBatch(TypeDescription.RowBatchVersion.USE_DECIMAL64,1000);
     batch.size = 1000;
     StructColumnVector scv = (StructColumnVector)batch.cols[5];
     // operation
@@ -4047,7 +4120,7 @@ public class TestInputOutputFormat {
         .stripeSize(128);
     // Create ORC file with small stripe size so we can write multiple stripes.
     Writer writer = OrcFile.createWriter(testFilePath, options);
-    VectorizedRowBatch batch = fileSchema.createRowBatch(1000);
+    VectorizedRowBatch batch = fileSchema.createRowBatch(TypeDescription.RowBatchVersion.USE_DECIMAL64,1000);
     batch.size = 1000;
     StructColumnVector scv = (StructColumnVector)batch.cols[5];
     // operation

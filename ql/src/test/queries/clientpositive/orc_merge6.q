@@ -4,8 +4,8 @@ set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
 
 -- orc file merge tests for static partitions
-create table orc_merge5_n4 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
-create table orc_merge5a_n1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (year string, hour int) stored as orc;
+create table orc_merge5_n4 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc;
+create table orc_merge5a_n1 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) partitioned by (year string, hour int) stored as orc;
 
 load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n4;
 

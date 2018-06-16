@@ -4,6 +4,8 @@ set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 set hive.vectorized.execution.enabled=true;
 
+-- SORT_QUERY_RESULTS
+
 CREATE TABLE lineitem_test_txt (L_ORDERKEY      INT,
                                 L_PARTKEY       INT,
                                 L_SUPPKEY       INT,
@@ -68,8 +70,7 @@ SELECT
    IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
-FROM lineitem_test
-ORDER BY Quantity;
+FROM lineitem_test;
 SELECT
    L_QUANTITY as Quantity,
    CASE
@@ -108,8 +109,7 @@ SELECT
    IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
-FROM lineitem_test
-ORDER BY Quantity;
+FROM lineitem_test;
 
 SET hive.vectorized.if.expr.mode=good;
 
@@ -152,8 +152,7 @@ SELECT
    IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
-FROM lineitem_test
-ORDER BY Quantity;
+FROM lineitem_test;
 SELECT
    L_QUANTITY as Quantity,
    CASE
@@ -192,8 +191,7 @@ SELECT
    IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
-FROM lineitem_test
-ORDER BY Quantity;
+FROM lineitem_test;
 
 SET hive.vectorized.if.expr.mode=better;
 
@@ -236,8 +234,7 @@ SELECT
    IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
-FROM lineitem_test
-ORDER BY Quantity;
+FROM lineitem_test;
 SELECT
    L_QUANTITY as Quantity,
    CASE
@@ -276,6 +273,5 @@ SELECT
    IF(L_SUPPKEY > 10000, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE), NULL) AS Field_10,
    IF(L_SUPPKEY > 10000, NULL, DATEDIFF(L_RECEIPTDATE, L_COMMITDATE)) AS Field_11,
    IF(L_SUPPKEY % 500 > 100, DATE_ADD('2008-12-31', 1), DATE_ADD('2008-12-31', 365)) AS Field_12
-FROM lineitem_test
-ORDER BY Quantity;
+FROM lineitem_test;
  

@@ -24,4 +24,5 @@ package org.apache.hadoop.hive.ql.exec.vector;
  */
 public interface VectorizedInputFormatInterface {
 
+  VectorizedSupport.Support[] getSupportedFeatures();
 }

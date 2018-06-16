@@ -3,8 +3,8 @@ set hive.explain.user=false;
 
 -- SORT_QUERY_RESULTS
 
-create table orc_merge5_n5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
-create table orc_merge5b_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
+create table orc_merge5_n5 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc;
+create table orc_merge5b_n0 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc;
 
 load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n5;
 
