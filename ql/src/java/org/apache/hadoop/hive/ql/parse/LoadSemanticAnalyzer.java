@@ -75,7 +75,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
   private static final Logger LOG = LoggerFactory.getLogger(LoadSemanticAnalyzer.class);
   private boolean queryReWritten = false;
 
-  private final String tempTblNameSuffix = "__TEMP_TABLE_FOR_LOAD_DATA__";
+  private final String tempTblNameSuffix = "__temp_table_for_load_data__";
 
   // AST specific data
   private Tree fromTree, tableTree;
