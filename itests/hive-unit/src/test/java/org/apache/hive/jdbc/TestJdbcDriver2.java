@@ -3036,6 +3036,29 @@ public class TestJdbcDriver2 {
     }
   }
 
+  @Test
+  public void testGetQueryId() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    stmt.executeAsync("create database query_id_test with dbproperties ('repl.source.for' = '1, 2, 3')");
+    String queryId = stmt.getQueryId();
+    assertFalse(queryId.isEmpty());
+    stmt.getUpdateCount();
+
+    stmt.executeAsync("repl status query_id_test with ('hive.query.id' = 'hiveCustomTag')");
+    queryId = stmt.getQueryId();
+    assertFalse("hiveCustomTag".equals(queryId));
+    stmt.getUpdateCount();
+
+    stmt.executeAsync("select count(*) from " + dataTypeTableName);
+    queryId = stmt.getQueryId();
+    assertFalse("hiveCustomTag".equals(queryId));
+    assertFalse(queryId.isEmpty());
+    stmt.getUpdateCount();
+    stmt.execute("drop database query_id_test");
+
+    stmt.close();
+  }
+
   // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException
   @Test(expected = HiveSQLException.class)
   public void testConnectInvalidDatabase() throws SQLException {
