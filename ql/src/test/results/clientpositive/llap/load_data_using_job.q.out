@@ -240,14 +240,14 @@ STAGE PLANS:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
@@ -449,17 +449,17 @@ STAGE PLANS:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
@@ -663,17 +663,17 @@ STAGE PLANS:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
@@ -1008,14 +1008,14 @@ STAGE PLANS:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8
-POSTHOOK: Lineage: srcbucket_mapjoin_n8.key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8.value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8.key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8.value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
@@ -1230,14 +1230,14 @@ STAGE PLANS:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
@@ -1455,17 +1455,17 @@ STAGE PLANS:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
@@ -1685,17 +1685,17 @@ STAGE PLANS:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
@@ -2033,17 +2033,17 @@ STAGE PLANS:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
@@ -2616,19 +2616,19 @@ STAGE PLANS:
 
 PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).ds SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=1).ds SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).ds SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=1).ds SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=1).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=1).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
@@ -2837,16 +2837,16 @@ PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket_mapjoin_n8
