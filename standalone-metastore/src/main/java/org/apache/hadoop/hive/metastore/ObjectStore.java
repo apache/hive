@@ -9925,19 +9925,20 @@ public class ObjectStore implements RawStore, Configurable {
       final String catName, final String parent_db_name_input, final String parent_tbl_name_input,
       final String foreign_db_name_input, final String foreign_tbl_name_input, boolean allowSql,
       boolean allowJdo) throws MetaException, NoSuchObjectException {
-    final String parent_db_name = parent_db_name_input;
-    final String parent_tbl_name = parent_tbl_name_input;
-    final String foreign_db_name = foreign_db_name_input;
-    final String foreign_tbl_name = foreign_tbl_name_input;
+    final String parent_db_name = (parent_db_name_input != null) ? normalizeIdentifier(parent_db_name_input) : null;
+    final String parent_tbl_name = (parent_tbl_name_input != null) ? normalizeIdentifier(parent_tbl_name_input) : null;
+    final String foreign_db_name = (foreign_db_name_input != null) ? normalizeIdentifier(foreign_db_name_input) : null;
+    final String foreign_tbl_name = (foreign_tbl_name_input != null)
+                                    ? normalizeIdentifier(foreign_tbl_name_input) : null;
     final String db_name;
     final String tbl_name;
     if (foreign_tbl_name == null) {
       // The FK table name might be null if we are retrieving the constraint from the PK side
-      db_name = parent_db_name_input;
-      tbl_name = parent_tbl_name_input;
+      db_name = parent_db_name;
+      tbl_name = parent_tbl_name;
     } else {
-      db_name = foreign_db_name_input;
-      tbl_name = foreign_tbl_name_input;
+      db_name = foreign_db_name;
+      tbl_name = foreign_tbl_name;
     }
     return new GetListHelper<SQLForeignKey>(catName, db_name, tbl_name, allowSql, allowJdo) {
 

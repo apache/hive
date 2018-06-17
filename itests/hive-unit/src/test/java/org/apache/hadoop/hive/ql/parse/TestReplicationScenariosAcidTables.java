@@ -28,6 +28,9 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
@@ -45,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables
@@ -344,5 +348,94 @@ public class TestReplicationScenariosAcidTables {
     replicaNonAcid.loadFailure(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testAcidBootstrapReplLoadRetryAfterFailure() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(1)")
+            .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+                    "\"transactional_properties\"=\"insert_only\")")
+            .run("insert into t2 partition(name='bob') values(11)")
+            .run("insert into t2 partition(name='carl') values(10)")
+            .dump(primaryDbName, null);
+
+    WarehouseInstance.Tuple tuple2 = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, null);
+
+    // Inject a behavior where REPL LOAD failed when try to load table "t2", it fails.
+    BehaviourInjection<CallerArguments, Boolean> callerVerifier
+            = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        injectionPathCalled = true;
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName));
+          return false;
+        }
+        if (args.tblName != null) {
+          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
+          return args.tblName.equals("t1");
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'");
+    replica.loadFailure(replicatedDbName, tuple.dumpLocation, withConfigs);
+    callerVerifier.assertInjectionsPerformed(true, false);
+    InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult("null")
+            .run("show tables")
+            .verifyResults(new String[] { "t1" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("1"));
+
+    // Retry with different dump should fail.
+    replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
+
+    // Verify if no create table on t1. Only table t2 should  be created in retry.
+    callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
+      @Nullable
+      @Override
+      public Boolean apply(@Nullable CallerArguments args) {
+        injectionPathCalled = true;
+        if (!args.dbName.equalsIgnoreCase(replicatedDbName)) {
+          LOG.warn("Verifier - DB: " + String.valueOf(args.dbName));
+          return false;
+        }
+        if (args.tblName != null) {
+          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
+          return args.tblName.equals("t2");
+        }
+        return true;
+      }
+    };
+    InjectableBehaviourObjectStore.setCallerVerifier(callerVerifier);
+
+    // Retry with same dump with which it was already loaded should resume the bootstrap load.
+    // This time, it completes by adding just constraints for table t4.
+    replica.load(replicatedDbName, tuple.dumpLocation);
+    callerVerifier.assertInjectionsPerformed(true, false);
+    InjectableBehaviourObjectStore.resetCallerVerifier(); // reset the behaviour
+
+    replica.run("use " + replicatedDbName)
+            .run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2" })
+            .run("select id from t1")
+            .verifyResults(Arrays.asList("1"))
+            .run("select name from t2 order by name")
+            .verifyResults(Arrays.asList("bob", "carl"));
   }
 }
