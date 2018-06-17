@@ -378,10 +378,10 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("create table Tstage (a int, b int) stored as orc tblproperties('transactional'='false')");
     //this creates an ORC data file with correct schema under table root
     runStatementOnDriver("insert into Tstage values(1,2),(3,4)");
-    CommandProcessorResponse cpr = runStatementOnDriverNegative("load data local inpath '" + getWarehouseDir() + "' into table T");
-    // This condition should not occur with the new support of rewriting load into IAS.
-    Assert.assertFalse(cpr.getErrorMessage().contains("Load into bucketed tables are disabled"));
+    // This will work with the new support of rewriting load into IAS.
+    runStatementOnDriver("load data local inpath '" + getWarehouseDir() + "/Tstage' into table T");
   }
+
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
     super.checkExpected(rs, expected, msg, LOG, true);
   }
