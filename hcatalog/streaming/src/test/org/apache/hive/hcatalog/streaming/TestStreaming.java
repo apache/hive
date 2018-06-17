@@ -439,8 +439,6 @@ public class TestStreaming {
     String tableLoc  = "'" + dbUri + Path.SEPARATOR + "streamedtable" + "'";
     String tableLoc2 = "'" + dbUri + Path.SEPARATOR + "finaltable" + "'";
     String tableLoc3 = "'" + dbUri + Path.SEPARATOR + "nobucket" + "'";
-    // disabling vectorization as this test yields incorrect results with vectorization
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     try (IDriver driver = DriverFactory.newDriver(conf)) {
       runDDL(driver, "create database testBucketing3");
       runDDL(driver, "use testBucketing3");
