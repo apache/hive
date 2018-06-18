@@ -144,8 +144,10 @@ public class PreUpgradeTool {
     try {
       String hiveVer = HiveVersionInfo.getShortVersion();
       if(!hiveVer.startsWith("2.")) {
-        throw new IllegalStateException("preUpgrade requires Hive 2.x.  Actual: " + hiveVer);
+        //throw new IllegalStateException("preUpgrade requires Hive 2.x.  Actual: " + hiveVer);
       }
+      LOG.warn("Using Hive Version: " + HiveVersionInfo.getVersion() + " build: " +
+          HiveVersionInfo.getBuildVersion());
       tool.prepareAcidUpgradeInternal(outputDir, execute);
     }
     catch(Exception ex) {
@@ -188,7 +190,7 @@ public class PreUpgradeTool {
     }
     try {
       LOG.info("Creating metastore client for {}", "PreUpgradeTool");
-      return RetryingMetaStoreClient.getProxy(hiveConf, true);
+      return RetryingMetaStoreClient.getProxy(conf, true);
     } catch (MetaException e) {
       throw new RuntimeException("Error connecting to Hive Metastore URI: "
           + conf.getVar(HiveConf.ConfVars.METASTOREURIS) + ". " + e.getMessage(), e);
