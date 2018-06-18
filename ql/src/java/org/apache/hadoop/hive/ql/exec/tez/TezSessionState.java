@@ -180,7 +180,11 @@ public class TezSessionState {
       return false;
     }
     try {
-      session = sessionFuture.get(0, TimeUnit.NANOSECONDS);
+      TezClient session = sessionFuture.get(0, TimeUnit.NANOSECONDS);
+      if (session == null) {
+        return false;
+      }
+      this.session = session;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return false;
@@ -202,7 +206,11 @@ public class TezSessionState {
       return false;
     }
     try {
-      session = sessionFuture.get(0, TimeUnit.NANOSECONDS);
+      TezClient session = sessionFuture.get(0, TimeUnit.NANOSECONDS);
+      if (session == null) {
+        return false;
+      }
+      this.session = session;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return false;
@@ -446,12 +454,23 @@ public class TezSessionState {
       FutureTask<TezClient> sessionFuture = new FutureTask<>(new Callable<TezClient>() {
         @Override
         public TezClient call() throws Exception {
+          TezClient result = null;
           try {
-            return startSessionAndContainers(session, conf, commonLocalResources, tezConfig, true);
+            result = startSessionAndContainers(
+                session, conf, commonLocalResources, tezConfig, true);
           } catch (Throwable t) {
+            // The caller has already stopped the session.
             LOG.error("Failed to start Tez session", t);
             throw (t instanceof Exception) ? (Exception)t : new Exception(t);
           }
+          // Check interrupt at the last moment in case we get cancelled quickly.
+          // This is not bulletproof but should allow us to close session in most cases.
+          if (Thread.interrupted()) {
+            LOG.info("Interrupted while starting Tez session");
+            closeAndIgnoreExceptions(result);
+            return null;
+          }
+          return result;
         }
       });
       new Thread(sessionFuture, "Tez session start thread").start();
@@ -554,7 +573,11 @@ public class TezSessionState {
       return;
     }
     try {
-      this.session = this.sessionFuture.get();
+      TezClient session = this.sessionFuture.get();
+      if (session == null) {
+        throw new RuntimeException("Initialization was interrupted");
+      }
+      this.session = session;
     } catch (ExecutionException e) {
       throw new RuntimeException(e);
     }
@@ -728,7 +751,7 @@ public class TezSessionState {
     appJarLr = null;
 
     try {
-      if (getSession() != null) {
+      if (session != null) {
         LOG.info("Closing Tez Session");
         closeClient(session);
         session = null;
