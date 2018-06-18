@@ -67,7 +67,7 @@ public abstract class MetaStoreClientTest {
    * @param msConf Specific MetaStore configuration values
    * @param extraConf Specific other configuration values
    */
-  static void startMetaStores(Map<MetastoreConf.ConfVars, String> msConf,
+  public static void startMetaStores(Map<MetastoreConf.ConfVars, String> msConf,
                               Map<String, String> extraConf) {
     for(AbstractMetaStoreService metaStoreService : metaStoreServices) {
       try {

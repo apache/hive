@@ -53,8 +53,11 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   public static final String DEFAULT_TRANSACTIONAL_PROPERTY = "default";
   public static final String INSERTONLY_TRANSACTIONAL_PROPERTY = "insert_only";
 
+  private final Set<String> supportedCatalogs = new HashSet<String>();
+
   TransactionalValidationListener(Configuration conf) {
     super(conf);
+    supportedCatalogs.add("hive");
   }
 
   @Override
@@ -73,11 +76,21 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   }
 
   private void handle(PreAlterTableEvent context) throws MetaException {
-    handleAlterTableTransactionalProp(context);
+    if (supportedCatalogs.contains(getTableCatalog(context.getNewTable()))) {
+      handleAlterTableTransactionalProp(context);
+    }
   }
 
   private void handle(PreCreateTableEvent context) throws MetaException {
-    handleCreateTableTransactionalProp(context);
+    if (supportedCatalogs.contains(getTableCatalog(context.getTable()))) {
+      handleCreateTableTransactionalProp(context);
+    }
+  }
+
+  private String getTableCatalog(Table table) {
+    String catName = table.isSetCatName() ? table.getCatName() :
+      MetaStoreUtils.getDefaultCatalog(getConf());
+    return catName.toLowerCase();
   }
 
   /**
@@ -230,7 +243,8 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
           newTable.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL));
       return;
     }
-    Configuration conf = MetastoreConf.newMetastoreConf();
+
+    Configuration conf = getConf();
     boolean makeAcid =
         //no point making an acid table if these other props are not set since it will just throw
         //exceptions when someone tries to use the table.
@@ -437,8 +451,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     try {
       Warehouse wh = hmsHandler.getWh();
       if (table.getSd().getLocation() == null || table.getSd().getLocation().isEmpty()) {
-        String catName = table.isSetCatName() ? table.getCatName() :
-            MetaStoreUtils.getDefaultCatalog(getConf());
+        String catName = getTableCatalog(table);
         tablePath = wh.getDefaultTablePath(hmsHandler.getMS().getDatabase(
             catName, table.getDbName()), table);
       } else {
