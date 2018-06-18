@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -45,6 +46,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 public class TestHiveProtoLoggingHook {
@@ -106,6 +110,8 @@ public class TestHiveProtoLoggingHook {
   @Test
   public void testPostEventLog() throws Exception {
     context.setHookType(HookType.POST_EXEC_HOOK);
+    context.getPerfLogger().PerfLogBegin("test", "LogTest");
+    context.getPerfLogger().PerfLogEnd("test", "LogTest");
 
     EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
     evtLogger.handle(context);
@@ -119,7 +125,11 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals("test_op_id", event.getOperationId());
 
     assertOtherInfo(event, OtherInfoType.STATUS, Boolean.TRUE.toString());
-    assertOtherInfo(event, OtherInfoType.PERF, null);
+    String val = findOtherInfo(event, OtherInfoType.PERF);
+    Map<String, Long> map = new ObjectMapper().readValue(val,
+        new TypeReference<Map<String, Long>>() {});
+    // This should be really close to zero.
+    Assert.assertTrue("Expected LogTest in PERF", map.get("LogTest") < 100);
   }
 
   @Test
@@ -158,15 +168,20 @@ public class TestHiveProtoLoggingHook {
     return event;
   }
 
-  private void assertOtherInfo(HiveHookEventProto event, OtherInfoType key, String value) {
+  private String findOtherInfo(HiveHookEventProto event, OtherInfoType key) {
     for (MapFieldEntry otherInfo : event.getOtherInfoList()) {
       if (otherInfo.getKey().equals(key.name())) {
-        if (value != null) {
-          Assert.assertEquals(value, otherInfo.getValue());
-        }
-        return;
+        return otherInfo.getValue();
       }
     }
-    Assert.fail("Cannot find key: " + key);
+    Assert.fail("Cannot find key " + key);
+    return null;
+  }
+
+  private void assertOtherInfo(HiveHookEventProto event, OtherInfoType key, String value) {
+    String val = findOtherInfo(event, key);
+    if (value != null) {
+      Assert.assertEquals(value, val);
+    }
   }
 }
