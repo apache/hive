@@ -101,7 +101,8 @@ public class RpcServer implements Closeable {
             Runnable cancelTask = new Runnable() {
                 @Override
                 public void run() {
-                  LOG.warn("Timed out waiting for test message from Remote Spark driver.");
+                  LOG.warn("Timed out waiting for the completion of SASL negotiation "
+                          + "between HiveServer2 and the Remote Spark Driver.");
                   newRpc.close();
                 }
             };
