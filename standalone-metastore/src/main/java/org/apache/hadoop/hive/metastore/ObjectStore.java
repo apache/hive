@@ -80,140 +80,29 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.DatabaseName;
-import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.*;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.FunctionType;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.ISchemaName;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
-import org.apache.hadoop.hive.metastore.api.ResourceType;
-import org.apache.hadoop.hive.metastore.api.ResourceUri;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.RuntimeStat;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
-import org.apache.hadoop.hive.metastore.api.SchemaType;
-import org.apache.hadoop.hive.metastore.api.SchemaValidation;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SerdeType;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
-import org.apache.hadoop.hive.metastore.model.MCatalog;
-import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
-import org.apache.hadoop.hive.metastore.model.MConstraint;
-import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
-import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
-import org.apache.hadoop.hive.metastore.model.MDatabase;
-import org.apache.hadoop.hive.metastore.model.MDelegationToken;
-import org.apache.hadoop.hive.metastore.model.MFieldSchema;
-import org.apache.hadoop.hive.metastore.model.MFunction;
-import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
-import org.apache.hadoop.hive.metastore.model.MISchema;
-import org.apache.hadoop.hive.metastore.model.MMasterKey;
-import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
-import org.apache.hadoop.hive.metastore.model.MNotificationLog;
-import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
-import org.apache.hadoop.hive.metastore.model.MOrder;
-import org.apache.hadoop.hive.metastore.model.MPartition;
-import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
-import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
-import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
-import org.apache.hadoop.hive.metastore.model.MResourceUri;
-import org.apache.hadoop.hive.metastore.model.MRole;
-import org.apache.hadoop.hive.metastore.model.MRoleMap;
-import org.apache.hadoop.hive.metastore.model.MRuntimeStat;
-import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
-import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
-import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
-import org.apache.hadoop.hive.metastore.model.MStringList;
-import org.apache.hadoop.hive.metastore.model.MTable;
-import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
-import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
-import org.apache.hadoop.hive.metastore.model.MType;
-import org.apache.hadoop.hive.metastore.model.MVersionTable;
-import org.apache.hadoop.hive.metastore.model.MWMMapping;
+import org.apache.hadoop.hive.metastore.model.*;
 import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
-import org.apache.hadoop.hive.metastore.model.MWMPool;
-import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
-import org.apache.hadoop.hive.metastore.model.MWMTrigger;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
+import org.apache.hive.common.util.TxnIdUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
@@ -1303,10 +1192,16 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void createTable(Table tbl) throws InvalidObjectException, MetaException {
     boolean commited = false;
+    MTable mtbl = null;
+
     try {
       openTransaction();
 
-      MTable mtbl = convertToMTable(tbl);
+      mtbl = convertToMTable(tbl);
+      if (TxnUtils.isTransactionalTable(tbl)) {
+        mtbl.setTxnId(tbl.getTxnId());
+        mtbl.setWriteIdList(tbl.getValidWriteIdList());
+      }
       pm.makePersistent(mtbl);
 
       if (tbl.getCreationMetadata() != null) {
@@ -1417,6 +1312,8 @@ public class ObjectStore implements RawStore, Configurable {
               TableName.getQualified(catName, dbName, tableName));
         }
 
+        Table table = convertToTable(tbl);
+
         List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
                                            catName, dbName, tableName, null);
         if (CollectionUtils.isNotEmpty(tabConstraints)) {
@@ -1515,17 +1412,51 @@ public class ObjectStore implements RawStore, Configurable {
     return mConstraints;
   }
 
+  private static String getFullyQualifiedTableName(String dbName, String tblName) {
+    return ((dbName == null || dbName.isEmpty()) ? "" : "\"" + dbName + "\".\"")
+        + "\"" + tblName + "\"";
+  }
+
   @Override
-  public Table getTable(String catName, String dbName, String tableName) throws MetaException {
+  public Table
+  getTable(String catName, String dbName, String tableName)
+      throws MetaException {
+    return getTable(catName, dbName, tableName, -1, null);
+  }
+
+  @Override
+  public Table getTable(String catName, String dbName, String tableName,
+                        long txnId, String writeIdList)
+      throws MetaException {
     boolean commited = false;
     Table tbl = null;
     try {
       openTransaction();
-      tbl = convertToTable(getMTable(catName, dbName, tableName));
+      MTable mtable = getMTable(catName, dbName, tableName);
+      tbl = convertToTable(mtable);
       // Retrieve creation metadata if needed
       if (tbl != null && TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
         tbl.setCreationMetadata(
-            convertToCreationMetadata(getCreationMetadata(catName, dbName, tableName)));
+                convertToCreationMetadata(getCreationMetadata(catName, dbName, tableName)));
+      }
+
+      // If transactional non partitioned table,
+      // check whether the current version table statistics
+      // in the metastore comply with the client query's snapshot isolation.
+      // Note: a partitioned table has table stats and table snapshot in MPartiiton.
+      if (writeIdList != null) {
+        if (tbl != null
+            && TxnUtils.isTransactionalTable(tbl)
+            && tbl.getPartitionKeysSize() == 0) {
+          if (isCurrentStatsValidForTheQuery(mtable, txnId, writeIdList, -1, false)) {
+            tbl.setIsStatsCompliant(IsolationLevelCompliance.YES);
+          } else {
+            tbl.setIsStatsCompliant(IsolationLevelCompliance.NO);
+            // Do not make persistent the following state since it is the query specific (not global).
+            StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
+            LOG.info("Removed COLUMN_STATS_ACCURATE from Table's parameters.");
+          }
+        }
       }
       commited = commitTransaction();
     } finally {
@@ -2049,12 +1980,17 @@ public class ObjectStore implements RawStore, Configurable {
     String ownerType = (ownerPrincipalType == null) ? PrincipalType.USER.name() : ownerPrincipalType.name();
 
     // A new table is always created with a new column descriptor
-    return new MTable(normalizeIdentifier(tbl.getTableName()), mdb,
+    MTable mtable = new MTable(normalizeIdentifier(tbl.getTableName()), mdb,
         convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), ownerType, tbl
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
         tableType);
+    if (TxnUtils.isTransactionalTable(tbl)) {
+      mtable.setTxnId(tbl.getTxnId());
+      mtable.setWriteIdList(tbl.getValidWriteIdList());
+    }
+    return mtable;
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
@@ -2331,6 +2267,7 @@ public class ObjectStore implements RawStore, Configurable {
               + dbName + "." + tblName + ": " + part);
         }
         MPartition mpart = convertToMPart(part, table, true);
+
         toPersist.add(mpart);
         int now = (int)(System.currentTimeMillis()/1000);
         if (tabGrants != null) {
@@ -2442,6 +2379,7 @@ public class ObjectStore implements RawStore, Configurable {
       MetaException {
     boolean success = false;
     boolean commited = false;
+
     try {
       String catName = part.isSetCatName() ? part.getCatName() : getDefaultCatalog(conf);
       MTable table = this.getMTable(catName, part.getDbName(), part.getTableName());
@@ -2453,7 +2391,7 @@ public class ObjectStore implements RawStore, Configurable {
             catName, part.getDbName(), part.getTableName());
       }
       openTransaction();
-      MPartition mpart = convertToMPart(part, true);
+      MPartition mpart = convertToMPart(part, table, true);
       pm.makePersistent(mpart);
 
       int now = (int)(System.currentTimeMillis()/1000);
@@ -2495,14 +2433,38 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public Partition getPartition(String catName, String dbName, String tableName,
       List<String> part_vals) throws NoSuchObjectException, MetaException {
+    return getPartition(catName, dbName, tableName, part_vals, -1, null);
+  }
+
+  @Override
+  public Partition getPartition(String catName, String dbName, String tableName,
+                                List<String> part_vals,
+                                long txnId, String writeIdList)
+      throws NoSuchObjectException, MetaException {
     openTransaction();
-    Partition part = convertToPart(getMPartition(catName, dbName, tableName, part_vals));
+    MTable table = this.getMTable(catName, dbName, tableName);
+    MPartition mpart = getMPartition(catName, dbName, tableName, part_vals);
+    Partition part = convertToPart(mpart);
     commitTransaction();
     if(part == null) {
       throw new NoSuchObjectException("partition values="
           + part_vals.toString());
     }
     part.setValues(part_vals);
+    // If transactional table partition, check whether the current version partition
+    // statistics in the metastore comply with the client query's snapshot isolation.
+    if (writeIdList != null) {
+      if (TxnUtils.isTransactionalTable(table.getParameters())) {
+        if (isCurrentStatsValidForTheQuery(mpart, txnId, writeIdList, -1, false)) {
+          part.setIsStatsCompliant(IsolationLevelCompliance.YES);
+        } else {
+          part.setIsStatsCompliant(IsolationLevelCompliance.NO);
+          // Do not make persistent the following state since it is query specific (not global).
+          StatsSetupConst.setBasicStatsState(part.getParameters(), StatsSetupConst.FALSE);
+          LOG.info("Removed COLUMN_STATS_ACCURATE from Partition object's parameters.");
+        }
+      }
+    }
     return part;
   }
 
@@ -2601,26 +2563,6 @@ public class ObjectStore implements RawStore, Configurable {
    * is true, then this partition's storage descriptor's column descriptor will point
    * to the same one as the table's storage descriptor.
    * @param part the partition to convert
-   * @param useTableCD whether to try to use the parent table's column descriptor.
-   * @return the model partition object, and null if the input partition is null.
-   * @throws InvalidObjectException
-   * @throws MetaException
-   */
-  private MPartition convertToMPart(Partition part, boolean useTableCD)
-      throws InvalidObjectException, MetaException {
-    if (part == null) {
-      return null;
-    }
-    MTable mt = getMTable(part.getCatName(), part.getDbName(), part.getTableName());
-    return convertToMPart(part, mt, useTableCD);
-  }
-
-  /**
-   * Convert a Partition object into an MPartition, which is an object backed by the db
-   * If the Partition's set of columns is the same as the parent table's AND useTableCD
-   * is true, then this partition's storage descriptor's column descriptor will point
-   * to the same one as the table's storage descriptor.
-   * @param part the partition to convert
    * @param mt the parent table object
    * @param useTableCD whether to try to use the parent table's column descriptor.
    * @return the model partition object, and null if the input partition is null.
@@ -2652,10 +2594,15 @@ public class ObjectStore implements RawStore, Configurable {
       msd = convertToMStorageDescriptor(part.getSd());
     }
 
-    return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
+    MPartition mpart = new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
         .getPartitionKeys()), part.getValues()), mt, part.getValues(), part
         .getCreateTime(), part.getLastAccessTime(),
         msd, part.getParameters());
+    if (TxnUtils.isTransactionalTable(mt.getParameters())) {
+      mpart.setTxnId(part.getTxnId());
+      mpart.setWriteIdList(part.getValidWriteIdList());
+    }
+    return mpart;
   }
 
   private Partition convertToPart(MPartition mpart) throws MetaException {
@@ -3031,7 +2978,7 @@ public class ObjectStore implements RawStore, Configurable {
         TableName.getQualified(catName, dbName, tableName), filter, cols);
     List<String> partitionNames = null;
     List<Partition> partitions = null;
-    Table tbl = getTable(catName, dbName, tableName);
+    Table tbl = getTable(catName, dbName, tableName, -1, null);
     try {
       // Get partitions by name - ascending or descending
       partitionNames = getPartitionNamesByFilter(catName, dbName, tableName, filter, ascending,
@@ -3164,7 +3111,8 @@ public class ObjectStore implements RawStore, Configurable {
       if (applyDistinct) {
         partValuesSelect.append("DISTINCT ");
       }
-      List<FieldSchema> partitionKeys = getTable(catName, dbName, tableName).getPartitionKeys();
+      List<FieldSchema> partitionKeys =
+          getTable(catName, dbName, tableName, -1, null).getPartitionKeys();
       for (FieldSchema key : cols) {
         partValuesSelect.append(extractPartitionKey(key, partitionKeys)).append(", ");
       }
@@ -3246,7 +3194,7 @@ public class ObjectStore implements RawStore, Configurable {
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tableName = normalizeIdentifier(tableName);
-    Table table = getTable(catName, dbName, tableName);
+    Table table = getTable(catName, dbName, tableName, -1, null);
     if (table == null) {
       throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tableName)
           + " table not found");
@@ -3622,7 +3570,8 @@ public class ObjectStore implements RawStore, Configurable {
     protected T results = null;
 
     public GetHelper(String catalogName, String dbName, String tblName,
-                     boolean allowSql, boolean allowJdo) throws MetaException {
+                     boolean allowSql, boolean allowJdo)
+        throws MetaException {
       assert allowSql || allowJdo;
       this.allowJdo = allowJdo;
       this.catName = (catalogName != null) ? normalizeIdentifier(catalogName) : null;
@@ -3840,7 +3789,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private abstract class GetStatHelper extends GetHelper<ColumnStatistics> {
     public GetStatHelper(String catalogName, String dbName, String tblName, boolean allowSql,
-                         boolean allowJdo) throws MetaException {
+                         boolean allowJdo, String writeIdList) throws MetaException {
       super(catalogName, dbName, tblName, allowSql, allowJdo);
     }
 
@@ -4140,6 +4089,21 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setViewExpandedText(newt.getViewExpandedText());
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
 
+      // If transactional, update MTable to have txnId and the writeIdList
+      // for the current Stats updater query.
+      if (newTable.getValidWriteIdList() != null &&
+          TxnUtils.isTransactionalTable(newTable)) {
+        // Check concurrent INSERT case and set false to the flag.
+        if (isCurrentStatsValidForTheQuery(oldt, newt.getTxnId(), newt.getWriteIdList(),
+                -1, true)) {
+          StatsSetupConst.setBasicStatsState(oldt.getParameters(), StatsSetupConst.FALSE);
+          LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table " +
+                  dbname + "." + name + ". will be made persistent.");
+        }
+        oldt.setTxnId(newTable.getTxnId());
+        oldt.setWriteIdList(newTable.getValidWriteIdList());
+      }
+
       // commit the changes
       success = commitTransaction();
     } finally {
@@ -4192,8 +4156,9 @@ public class ObjectStore implements RawStore, Configurable {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
+    MTable table = this.getMTable(catName, dbname, name);
     MPartition oldp = getMPartition(catName, dbname, name, part_vals);
-    MPartition newp = convertToMPart(newPart, false);
+    MPartition newp = convertToMPart(newPart, table, false);
     MColumnDescriptor oldCD = null;
     MStorageDescriptor oldSD = oldp.getSd();
     if (oldSD != null) {
@@ -4213,6 +4178,20 @@ public class ObjectStore implements RawStore, Configurable {
     }
     if (newp.getLastAccessTime() != oldp.getLastAccessTime()) {
       oldp.setLastAccessTime(newp.getLastAccessTime());
+    }
+    // If transactional, add/update the MUPdaterTransaction
+    // for the current updater query.
+    if (newPart.getValidWriteIdList() != null &&
+        TxnUtils.isTransactionalTable(table.getParameters())) {
+      // Check concurrent INSERT case and set false to the flag.
+      if (!isCurrentStatsValidForTheQuery(oldp, newp.getTxnId(), newp.getWriteIdList(),
+              -1, true)) {
+        StatsSetupConst.setBasicStatsState(oldp.getParameters(), StatsSetupConst.FALSE);
+        LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition " +
+                dbname + "." + name + "." + oldp.getPartitionName() + " will be made persistent.");
+      }
+      oldp.setTxnId(newPart.getTxnId());
+      oldp.setWriteIdList(newPart.getValidWriteIdList());
     }
     return oldCD;
   }
@@ -4245,7 +4224,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void alterPartitions(String catName, String dbname, String name,
-                              List<List<String>> part_vals, List<Partition> newParts)
+                              List<List<String>> part_vals, List<Partition> newParts,
+                              long txnId, String writeIdList)
       throws InvalidObjectException, MetaException {
     boolean success = false;
     Exception e = null;
@@ -4255,6 +4235,10 @@ public class ObjectStore implements RawStore, Configurable {
       Set<MColumnDescriptor> oldCds = new HashSet<>();
       for (Partition tmpPart: newParts) {
         List<String> tmpPartVals = part_val_itr.next();
+        if (txnId > 0) {
+          tmpPart.setTxnId(txnId);
+          tmpPart.setValidWriteIdList(writeIdList);
+        }
         MColumnDescriptor oldCd = alterPartitionNoTxn(catName, dbname, name, tmpPartVals, tmpPart);
         if (oldCd != null) {
           oldCds.add(oldCd);
@@ -6131,7 +6115,9 @@ public class ObjectStore implements RawStore, Configurable {
           } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
 
             boolean found = false;
-            Table tabObj = this.getTable(catName, hiveObject.getDbName(), hiveObject.getObjectName());
+            Table tabObj =
+                this.getTable(catName, hiveObject.getDbName(),
+                     hiveObject.getObjectName(), -1, null);
             String partName = null;
             if (hiveObject.getPartValues() != null) {
               partName = Warehouse.makePartName(tabObj.getPartitionKeys(), hiveObject.getPartValues());
@@ -6165,7 +6151,7 @@ public class ObjectStore implements RawStore, Configurable {
           } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
 
             Table tabObj = this.getTable(catName, hiveObject.getDbName(), hiveObject
-                .getObjectName());
+                .getObjectName(), -1, null);
             String partName = null;
             if (hiveObject.getPartValues() != null) {
               partName = Warehouse.makePartName(tabObj.getPartitionKeys(),
@@ -7687,7 +7673,7 @@ public class ObjectStore implements RawStore, Configurable {
       query
           .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, int t4," +
               "java.lang.String t5");
-      Table tbl = getTable(catName, dbName, tblName); // Make sure dbName and tblName are valid.
+      Table tbl = getTable(catName, dbName, tblName, -1, null); // Make sure dbName and tblName are valid.
       if (null == tbl) {
         throw new UnknownTableException("Table: " + tblName + " is not found.");
       }
@@ -7713,7 +7699,7 @@ public class ObjectStore implements RawStore, Configurable {
     Table tbl = null;
     try{
     openTransaction();
-    tbl = getTable(catName, dbName, tblName); // Make sure dbName and tblName are valid.
+    tbl = getTable(catName, dbName, tblName, -1, null); // Make sure dbName and tblName are valid.
     if(null == tbl) {
       throw new UnknownTableException("Table: "+ tblName + " is not found.");
     }
@@ -8442,7 +8428,10 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, QueryWrapper queryWrapper)
+  private List<MTableColumnStatistics> getMTableColumnStatistics(
+      Table table,
+      List<String> colNames,
+      QueryWrapper queryWrapper)
       throws MetaException {
     if (colNames == null || colNames.isEmpty()) {
       return Collections.emptyList();
@@ -8517,9 +8506,40 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
+  public ColumnStatistics getTableColumnStatistics(
+      String catName,
+      String dbName,
+      String tableName,
       List<String> colNames) throws MetaException, NoSuchObjectException {
-    return getTableColumnStatisticsInternal(catName, dbName, tableName, colNames, true, true);
+    return getTableColumnStatisticsInternal(
+        catName, dbName, tableName, colNames, true, true);
+  }
+
+  @Override
+  public ColumnStatistics getTableColumnStatistics(
+      String catName,
+      String dbName,
+      String tableName,
+      List<String> colNames,
+      long txnId,
+      String writeIdList) throws MetaException, NoSuchObjectException {
+    IsolationLevelCompliance iLL = IsolationLevelCompliance.UNKNOWN;
+    // If the current stats in the metastore doesn't comply with
+    // the isolation level of the query, set No to the compliance flag.
+    if (writeIdList != null) {
+      MTable table = this.getMTable(catName, dbName, tableName);
+      if (!isCurrentStatsValidForTheQuery(table, txnId, writeIdList, -1, false)) {
+        iLL = IsolationLevelCompliance.NO;
+      } else {
+        iLL = IsolationLevelCompliance.YES;
+      }
+    }
+    ColumnStatistics cS = getTableColumnStatisticsInternal(
+        catName, dbName, tableName, colNames, true, true);
+    if (cS != null) {
+      cS.setIsStatsCompliant(iLL);
+    }
+    return cS;
   }
 
   protected ColumnStatistics getTableColumnStatisticsInternal(
@@ -8527,7 +8547,7 @@ public class ObjectStore implements RawStore, Configurable {
       boolean allowJdo) throws MetaException, NoSuchObjectException {
     final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
     return new GetStatHelper(normalizeIdentifier(catName), normalizeIdentifier(dbName),
-        normalizeIdentifier(tableName), allowSql, allowJdo) {
+        normalizeIdentifier(tableName), allowSql, allowJdo, null) {
       @Override
       protected ColumnStatistics getSqlResult(GetHelper<ColumnStatistics> ctx) throws MetaException {
         return directSql.getTableStats(catName, dbName, tblName, colNames, enableBitVector);
@@ -8538,7 +8558,8 @@ public class ObjectStore implements RawStore, Configurable {
         QueryWrapper queryWrapper = new QueryWrapper();
 
         try {
-        List<MTableColumnStatistics> mStats = getMTableColumnStatistics(getTable(), colNames, queryWrapper);
+        List<MTableColumnStatistics> mStats =
+            getMTableColumnStatistics(getTable(), colNames, queryWrapper);
         if (mStats.isEmpty()) {
           return null;
         }
@@ -8564,6 +8585,35 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException {
+    return getPartitionColumnStatisticsInternal(
+        catName, dbName, tableName, partNames, colNames, true, true);
+  }
+
+  @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(
+      String catName, String dbName, String tableName,
+      List<String> partNames, List<String> colNames,
+      long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    // If any of the current partition stats in the metastore doesn't comply with
+    // the isolation level of the query, return null.
+    if (writeIdList != null) {
+      if (partNames == null && partNames.isEmpty()) {
+        LOG.warn("The given partNames does not have any name.");
+        return null;
+      }
+      // Loop through the given "partNames" list
+      // checking isolation-level-compliance of each partition column stats.
+      for(String partName : partNames) {
+        MPartition mpart = getMPartition(catName, dbName, tableName, Warehouse.getPartValuesFromPartName(partName));
+        if (!isCurrentStatsValidForTheQuery(mpart, txnId, writeIdList, -1, false)) {
+          LOG.debug("The current metastore transactional partition column statistics " +
+            "for " + dbName + "." + tableName + "." + mpart.getPartitionName() + " is not valid " +
+            "for the current query.");
+          return null;
+        }
+      }
+    }
     return getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, true, true);
   }
@@ -8616,10 +8666,36 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(true);
   }
 
+  @Override
+  public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
+      final List<String> partNames, final List<String> colNames,
+      long txnId, String writeIdList) throws MetaException, NoSuchObjectException {
+    // If the current stats in the metastore doesn't comply with
+    // the isolation level of the query, return null.
+    if (writeIdList != null) {
+      if (partNames == null && partNames.isEmpty()) {
+        LOG.warn("The given partNames does not have any name.");
+        return null;
+      }
+      // Loop through the given "partNames" list
+      // checking isolation-level-compliance of each partition column stats.
+      for(String partName : partNames) {
+        MPartition mpart = getMPartition(catName, dbName, tblName, Warehouse.getPartValuesFromPartName(partName));
+        if (!isCurrentStatsValidForTheQuery(mpart, txnId, writeIdList, -1, false)) {
+          LOG.debug("The current metastore transactional partition column statistics " +
+                  "for " + dbName + "." + tblName + "." + mpart.getPartitionName() + " is not valid " +
+                  "for the current query.");
+          return null;
+        }
+      }
+    }
+    return get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
+  }
 
   @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
-      final List<String> partNames, final List<String> colNames) throws MetaException, NoSuchObjectException {
+      final List<String> partNames, final List<String> colNames)
+      throws MetaException, NoSuchObjectException {
     final boolean useDensityFunctionForNDVEstimation = MetastoreConf.getBoolVar(getConf(),
         ConfVars.STATS_NDV_DENSITY_FUNCTION);
     final double ndvTuner = MetastoreConf.getDoubleVar(getConf(), ConfVars.STATS_NDV_TUNER);
@@ -8651,7 +8727,8 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
     final boolean enableBitVector =
         MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
-    return new GetHelper<List<MetaStoreUtils.ColStatsObjWithSourceInfo>>(catName, dbName, null, true, false) {
+    return new GetHelper<List<MetaStoreUtils.ColStatsObjWithSourceInfo>>(
+        catName, dbName, null, true, false) {
       @Override
       protected List<MetaStoreUtils.ColStatsObjWithSourceInfo> getSqlResult(
           GetHelper<List<MetaStoreUtils.ColStatsObjWithSourceInfo>> ctx) throws MetaException {
@@ -12109,4 +12186,88 @@ public class ObjectStore implements RawStore, Configurable {
     return ret;
   }
 
+  /**
+   * Return true if the current statistics in the Metastore is valid
+   * for the query of the given "txnId" and "queryValidWriteIdList".
+   *
+   * Note that a statistics entity is valid iff
+   * the stats is written by the current query or
+   * the conjunction of the following two are true:
+   * ~ COLUMN_STATE_ACCURATE(CSA) state is true
+   * ~ Isolation-level (snapshot) compliant with the query
+   * @param tbl                    MTable of the stats entity
+   * @param txnId                  transaction id of the query
+   * @param queryValidWriteIdList  valid writeId list of the query
+   * @Precondition   "tbl" should be retrieved from the TBLS table.
+   */
+  private boolean isCurrentStatsValidForTheQuery(
+      MTable tbl, long txnId, String queryValidWriteIdList,
+      long statsWriteId, boolean checkConcurrentWrites)
+      throws MetaException {
+    return isCurrentStatsValidForTheQuery(tbl.getTxnId(), tbl.getParameters(), tbl.getWriteIdList(),
+        txnId, queryValidWriteIdList, statsWriteId, checkConcurrentWrites);
+  }
+
+  /**
+   * Return true if the current statistics in the Metastore is valid
+   * for the query of the given "txnId" and "queryValidWriteIdList".
+   *
+   * Note that a statistics entity is valid iff
+   * the stats is written by the current query or
+   * the conjunction of the following two are true:
+   * ~ COLUMN_STATE_ACCURATE(CSA) state is true
+   * ~ Isolation-level (snapshot) compliant with the query
+   * @param part                   MPartition of the stats entity
+   * @param txnId                  transaction id of the query
+   * @param queryValidWriteIdList  valid writeId list of the query
+   * @Precondition   "part" should be retrieved from the PARTITIONS table.
+   */
+  private boolean isCurrentStatsValidForTheQuery(
+      MPartition part, long txnId, String queryValidWriteIdList,
+      long statsWriteId, boolean checkConcurrentWrites)
+      throws MetaException {
+    return isCurrentStatsValidForTheQuery(part.getTxnId(), part.getParameters(), part.getWriteIdList(),
+        txnId, queryValidWriteIdList, statsWriteId, checkConcurrentWrites);
+  }
+
+  private boolean isCurrentStatsValidForTheQuery(
+      long statsTxnId, Map<String, String> statsParams, String statsWriteIdList,
+      long queryTxnId, String queryValidWriteIdList,
+      long statsWriteId, boolean checkConcurrentWrites)
+      throws MetaException {
+    // If the current query is a stats updater, then we can return true
+    // to avoid implementing a logic inside TxnIdUtils.checkEquivalentWriteIds().
+    if (statsTxnId == queryTxnId) {
+      return true;
+    }
+
+    // If the Metastore stats's writer transaction is open or aborted
+    // we should return false.
+    try {
+      if (TxnDbUtil.isOpenOrAbortedTransaction(conf, statsTxnId)) {
+        return false;
+      }
+    } catch (Exception e) {
+      throw new MetaException("Cannot check transaction state.");
+    }
+
+    // This COLUMN_STATS_ACCURATE(CSA) state checking also includes the case that the stats is
+    // written by an aborted transaction but TXNS has no entry for the transaction
+    // after compaction.
+    if (!StatsSetupConst.areBasicStatsUptoDate(statsParams)) {
+      return false;
+    }
+
+    // If the NUM_FILES of the table/partition is 0, return 'true' from this method.
+    // Since newly initialized empty table has 0 for the parameter.
+    if (Long.parseLong(statsParams.get(StatsSetupConst.NUM_FILES)) == 0) {
+      return true;
+    }
+
+    ValidWriteIdList list4Stats = new ValidReaderWriteIdList(statsWriteIdList);
+    ValidWriteIdList list4TheQuery = new ValidReaderWriteIdList(queryValidWriteIdList);
+
+    return !checkConcurrentWrites ? TxnIdUtils.checkEquivalentWriteIds(list4Stats, list4TheQuery) :
+            !TxnIdUtils.areTheseConcurrentWrites(list4Stats, list4TheQuery, statsWriteId);
+  }
 }

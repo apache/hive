@@ -276,7 +276,6 @@ public interface HiveTxnManager {
    * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction.
    */
   long getTableWriteId(String dbName, String tableName) throws LockException;
-
   /**
    * Allocates write id for each transaction in the list.
    * @param dbName database name

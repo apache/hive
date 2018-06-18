@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -576,8 +577,8 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select txn_id from TXNS where " +
-          "txn_id not in (select tc_txnid from TXN_COMPONENTS) and " +
-          "txn_state = '" + TXN_ABORTED + "'";
+            "txn_id not in (select tc_txnid from TXN_COMPONENTS) and " +
+            "txn_state = '" + TXN_ABORTED + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         List<Long> txnids = new ArrayList<>();
@@ -587,10 +588,71 @@ class CompactionTxnHandler extends TxnHandler {
           return;
         }
         Collections.sort(txnids);//easier to read logs
+
         List<String> queries = new ArrayList<>();
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
 
+        // Turn off COLUMN_STATS_ACCURATE for txnids' components in TBLS and PARTITIONS
+        for (Long txnId : txnids) {
+          // Get table ids for the current txnId.
+          s = "select tbl_id from TBLS where txn_id = " + txnId;
+          LOG.debug("Going to execute query <" + s + ">");
+          rs = stmt.executeQuery(s);
+          List<Long> tblIds = new ArrayList<>();
+          while (rs.next()) {
+            tblIds.add(rs.getLong(1));
+          }
+          close(rs);
+          if(tblIds.size() <= 0) {
+            continue;
+          }
+
+          // Update COLUMN_STATS_AcCURATE.BASIC_STATS to false for each tableId.
+          prefix.append("delete from TABLE_PARAMS " +
+              " where param_key = '" + "COLUMN_STATS_ACCURATE" + "' and ");
+          suffix.append("");
+          TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, tblIds, "tbl_id", true, false);
+
+          for (String query : queries) {
+            LOG.debug("Going to execute update <" + query + ">");
+            int rc = stmt.executeUpdate(query);
+            LOG.info("Turned off " + rc + " COLUMN_STATE_ACCURATE.BASIC_STATS states from TBLS");
+          }
+
+          queries.clear();
+          prefix.setLength(0);
+          suffix.setLength(0);
+
+          // Get partition ids for the current txnId.
+          s = "select part_id from PARTITIONS where txn_id = " + txnId;
+          LOG.debug("Going to execute query <" + s + ">");
+          rs = stmt.executeQuery(s);
+          List<Long> ptnIds = new ArrayList<>();
+          while (rs.next()) ptnIds.add(rs.getLong(1));
+          close(rs);
+          if(ptnIds.size() <= 0) {
+            continue;
+          }
+
+          // Update COLUMN_STATS_AcCURATE.BASIC_STATS to false for each ptnId.
+          prefix.append("delete from PARTITION_PARAMS " +
+              " where param_key = '" + "COLUMN_STATS_ACCURATE" + "' and ");
+          suffix.append("");
+          TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, ptnIds, "part_id", true, false);
+
+          for (String query : queries) {
+            LOG.debug("Going to execute update <" + query + ">");
+            int rc = stmt.executeUpdate(query);
+            LOG.info("Turned off " + rc + " COLUMN_STATE_ACCURATE.BASIC_STATS states from PARTITIONS");
+          }
+
+          queries.clear();
+          prefix.setLength(0);
+          suffix.setLength(0);
+        }
+
+        // Delete from TXNS.
         prefix.append("delete from TXNS where ");
         suffix.append("");
 

@@ -1,3 +1,4 @@
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -37,6 +38,8 @@ public class MTable {
   private String viewExpandedText;
   private boolean rewriteEnabled;
   private String tableType;
+  private long txnId;
+  private String writeIdList;
 
   public MTable() {}
 
@@ -269,5 +272,21 @@ public class MTable {
    */
   public String getTableType() {
     return tableType;
+  }
+
+  public long getTxnId() {
+    return txnId;
+  }
+
+  public void setTxnId(long txnId) {
+    this.txnId = txnId;
+  }
+
+  public String getWriteIdList() {
+    return writeIdList;
+  }
+
+  public void setWriteIdList(String writeIdList) {
+    this.writeIdList = writeIdList;
   }
 }

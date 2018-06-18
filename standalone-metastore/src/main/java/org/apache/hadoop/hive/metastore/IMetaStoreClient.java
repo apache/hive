@@ -712,6 +712,10 @@ public interface IMetaStoreClient {
   Table getTable(String dbName, String tableName) throws MetaException,
       TException, NoSuchObjectException;
 
+  Table getTable(String dbName, String tableName,
+                 long txnId, String validWriteIdList)
+      throws MetaException, TException, NoSuchObjectException;
+
   /**
    * Get a table object.
    * @param catName catalog the table is in.
@@ -723,6 +727,8 @@ public interface IMetaStoreClient {
    */
   Table getTable(String catName, String dbName, String tableName) throws MetaException, TException;
 
+  Table getTable(String catName, String dbName, String tableName,
+                        long txnId, String validWriteIdList) throws TException;
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.
@@ -2125,6 +2131,11 @@ public interface IMetaStoreClient {
       EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException;
 
+  void alter_partitions(String dbName, String tblName, List<Partition> newParts,
+                        EnvironmentContext environmentContext,
+                        long txnId, String writeIdList)
+      throws InvalidOperationException, MetaException, TException;
+
   /**
    * updates a list of partitions
    * @param catName catalog name.
@@ -2144,7 +2155,7 @@ public interface IMetaStoreClient {
   default void alter_partitions(String catName, String dbName, String tblName,
                                 List<Partition> newParts)
       throws InvalidOperationException, MetaException, TException {
-    alter_partitions(catName, dbName, tblName, newParts, null);
+    alter_partitions(catName, dbName, tblName, newParts, null,-1, null);
   }
 
   /**
@@ -2165,7 +2176,8 @@ public interface IMetaStoreClient {
    *           if error in communicating with metastore server
    */
   void alter_partitions(String catName, String dbName, String tblName, List<Partition> newParts,
-                        EnvironmentContext environmentContext)
+                        EnvironmentContext environmentContext,
+                        long txnId, String writeIdList)
       throws InvalidOperationException, MetaException, TException;
 
   /**
@@ -2346,6 +2358,12 @@ public interface IMetaStoreClient {
   List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
       List<String> colNames) throws NoSuchObjectException, MetaException, TException;
 
+  List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
+                                                     List<String> colNames,
+                                                     long txnId,
+                                                     String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException;
+
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
    * non-partitioned tables.  For partitioned tables use
@@ -2363,6 +2381,11 @@ public interface IMetaStoreClient {
                                                      List<String> colNames)
       throws NoSuchObjectException, MetaException, TException;
 
+  List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
+                                                     List<String> colNames,
+                                                     long txnId,
+                                                     String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException;
   /**
    * Get the column statistics for a set of columns in a partition.
    * @param dbName database name
@@ -2378,6 +2401,11 @@ public interface IMetaStoreClient {
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
       String tableName,  List<String> partNames, List<String> colNames)
           throws NoSuchObjectException, MetaException, TException;
+
+  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
+      String tableName,  List<String> partNames, List<String> colNames,
+      long txnId, String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get the column statistics for a set of columns in a partition.
@@ -2396,6 +2424,11 @@ public interface IMetaStoreClient {
       String catName, String dbName, String tableName,  List<String> partNames, List<String> colNames)
       throws NoSuchObjectException, MetaException, TException;
 
+  Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
+      String catName, String dbName, String tableName,
+      List<String> partNames, List<String> colNames,
+      long txnId, String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException;
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
    * all columns in a partition.
@@ -3237,6 +3270,10 @@ public interface IMetaStoreClient {
   AggrStats getAggrColStatsFor(String dbName, String tblName,
       List<String> colNames, List<String> partName)  throws NoSuchObjectException, MetaException, TException;
 
+  AggrStats getAggrColStatsFor(String dbName, String tblName,
+      List<String> colNames, List<String> partName,
+      long txnId, String writeIdList)  throws NoSuchObjectException, MetaException, TException;
+
   /**
    * Get aggregated column stats for a set of partitions.
    * @param catName catalog name
@@ -3253,6 +3290,10 @@ public interface IMetaStoreClient {
                                List<String> colNames, List<String> partNames)
       throws NoSuchObjectException, MetaException, TException;
 
+  AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
+                               List<String> colNames, List<String> partNames,
+                               long txnId, String writeIdList)
+      throws NoSuchObjectException, MetaException, TException;
   /**
    * Set table or partition column statistics.
    * @param request request object, contains all the table, partition, and statistics information

@@ -266,6 +266,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public Table getTable(String catName, String dbName, String tableName,
+                        long txnId, String writeIdList) throws MetaException {
+    return objectStore.getTable(catName, dbName, tableName, txnId, writeIdList);
+  }
+
+  @Override
   public boolean addPartition(Partition part)
       throws InvalidObjectException, MetaException {
     return objectStore.addPartition(part);
@@ -275,6 +281,13 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public Partition getPartition(String catName, String dbName, String tableName, List<String> partVals)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartition(catName, dbName, tableName, partVals);
+  }
+
+  @Override
+  public Partition getPartition(String catName, String dbName, String tableName,
+                                List<String> partVals, long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getPartition(catName, dbName, tableName, partVals, txnId, writeIdList);
   }
 
   @Override
@@ -376,9 +389,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
-                              List<List<String>> partValsList, List<Partition> newParts)
+                              List<List<String>> partValsList, List<Partition> newParts,
+                              long txnId, String writeIdList)
       throws InvalidObjectException, MetaException {
-    objectStore.alterPartitions(catName, dbName, tblName, partValsList, newParts);
+    objectStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, txnId, writeIdList);
   }
 
   @Override
@@ -685,6 +699,14 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
+                                                   List<String> colNames,
+                                                   long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getTableColumnStatistics(catName, dbName, tableName, colNames, txnId, writeIdList);
+  }
+
+  @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
                                              String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -778,6 +800,17 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
+                                                             String tblName, List<String> colNames,
+                                                             List<String> partNames,
+                                                             long txnId,
+                                                             String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getPartitionColumnStatistics(
+        catName, dbName, tblName  , colNames, partNames, txnId, writeIdList);
+  }
+
+  @Override
   public boolean doesPartitionExist(String catName, String dbName, String tableName,
                                     List<FieldSchema> partKeys, List<String> partVals)
       throws MetaException, NoSuchObjectException {
@@ -850,6 +883,14 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName,
                                       String tblName, List<String> partNames, List<String> colNames)
+      throws MetaException {
+    return null;
+  }
+
+  @Override
+  public AggrStats get_aggr_stats_for(String catName, String dbName,
+                                      String tblName, List<String> partNames, List<String> colNames,
+                                      long txnId, String writeIdList)
       throws MetaException {
     return null;
   }

@@ -28,9 +28,12 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import com.google.common.annotations.VisibleForTesting;
+import jline.internal.Log;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.zookeeper.txn.TxnHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -193,6 +196,68 @@ public final class TxnDbUtil {
           " RTM_TARGET_TXN_ID bigint NOT NULL, " +
           " PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID))"
       );
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"TBLS\" (\"TBL_ID\" BIGINT NOT NULL, " +
+            " \"CREATE_TIME\" INTEGER NOT NULL, \"DB_ID\" BIGINT, \"LAST_ACCESS_TIME\" INTEGER NOT NULL, " +
+            " \"OWNER\" VARCHAR(767), \"OWNER_TYPE\" VARCHAR(10), \"RETENTION\" INTEGER NOT NULL, " +
+            " \"SD_ID\" BIGINT, \"TBL_NAME\" VARCHAR(256), \"TBL_TYPE\" VARCHAR(128), " +
+            " \"VIEW_EXPANDED_TEXT\" LONG VARCHAR, \"VIEW_ORIGINAL_TEXT\" LONG VARCHAR, " +
+            " \"IS_REWRITE_ENABLED\" CHAR(1) NOT NULL DEFAULT \'N\', \"TXN_ID\" BIGINT DEFAULT 0, " +
+            " \"WRITEID_LIST\" CLOB, " +
+            " PRIMARY KEY (TBL_ID))"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("TBLS table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"PARTITIONS\" (" +
+            " \"PART_ID\" BIGINT NOT NULL, \"CREATE_TIME\" INTEGER NOT NULL, " +
+            " \"LAST_ACCESS_TIME\" INTEGER NOT NULL, \"PART_NAME\" VARCHAR(767), " +
+            " \"SD_ID\" BIGINT, \"TBL_ID\" BIGINT, \"TXN_ID\" BIGINT DEFAULT 0, " +
+            " \"WRITEID_LIST\" CLOB, " +
+            " PRIMARY KEY (PART_ID))"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("PARTITIONS table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"TABLE_PARAMS\" (" +
+            " \"TBL_ID\" BIGINT NOT NULL, \"PARAM_KEY\" VARCHAR(256) NOT NULL, " +
+            " \"PARAM_VALUE\" CLOB, " +
+            " PRIMARY KEY (TBL_ID, PARAM_KEY))"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("TABLE_PARAMS table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"PARTITION_PARAMS\" (" +
+            " \"PART_ID\" BIGINT NOT NULL, \"PARAM_KEY\" VARCHAR(256) NOT NULL, " +
+            " \"PARAM_VALUE\" VARCHAR(4000), " +
+            " PRIMARY KEY (PART_ID, PARAM_KEY))"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("PARTITION_PARAMS table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
 
       try {
         stmt.execute("CREATE TABLE \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\" VARCHAR(256) NOT " +
@@ -370,6 +435,35 @@ public final class TxnDbUtil {
         return 0;
       }
       return rs.getInt(1);
+    } finally {
+      closeResources(conn, stmt, rs);
+    }
+  }
+
+  /**
+   * Return true if the transaction of the given txnId is open.
+   * @param conf    HiveConf
+   * @param txnId   transaction id to search for
+   * @return
+   * @throws Exception
+   */
+  public static boolean isOpenOrAbortedTransaction(Configuration conf, long txnId) throws Exception {
+    Connection conn = null;
+    PreparedStatement stmt = null;
+    ResultSet rs = null;
+    try {
+      conn = getConnection(conf);
+      conn.setAutoCommit(false);
+      conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+
+      stmt = conn.prepareStatement("SELECT txn_id FROM TXNS WHERE txn_id = ?");
+      stmt.setLong(1, txnId);
+      rs = stmt.executeQuery();
+      if (!rs.next()) {
+        return false;
+      } else {
+        return true;
+      }
     } finally {
       closeResources(conn, stmt, rs);
     }

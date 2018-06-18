@@ -835,7 +835,8 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   public void testAlterPartitionsWithEnvironmentCtxBogusCatalogName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext());
+    client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext(),
+        -1, null);
   }
 
   @Test(expected = InvalidOperationException.class)

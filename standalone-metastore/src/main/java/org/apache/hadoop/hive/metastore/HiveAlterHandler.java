@@ -144,7 +144,7 @@ public class HiveAlterHandler implements AlterHandler {
 
       // check if table with the new name already exists
       if (!newTblName.equals(name) || !newDbName.equals(dbname)) {
-        if (msdb.getTable(catName, newDbName, newTblName) != null) {
+        if (msdb.getTable(catName, newDbName, newTblName,  -1, null) != null) {
           throw new InvalidOperationException("new table " + newDbName
               + "." + newTblName + " already exists");
         }
@@ -153,7 +153,7 @@ public class HiveAlterHandler implements AlterHandler {
 
       msdb.openTransaction();
       // get old table
-      oldt = msdb.getTable(catName, dbname, name);
+      oldt = msdb.getTable(catName, dbname, name,  -1, null);
       if (oldt == null) {
         throw new InvalidOperationException("table " +
             TableName.getQualified(catName, dbname, name) + " doesn't exist");
@@ -296,7 +296,8 @@ public class HiveAlterHandler implements AlterHandler {
               for (Partition part : partBatch) {
                 partValues.add(part.getValues());
               }
-              msdb.alterPartitions(catName, newDbName, newTblName, partValues, partBatch);
+              msdb.alterPartitions(
+                  catName, newDbName, newTblName, partValues, partBatch, -1, null);
             }
           }
 
@@ -453,7 +454,7 @@ public class HiveAlterHandler implements AlterHandler {
       try {
         msdb.openTransaction();
 
-        Table tbl = msdb.getTable(catName, dbname, name);
+        Table tbl = msdb.getTable(catName, dbname, name,  -1, null);
         if (tbl == null) {
           throw new InvalidObjectException(
               "Unable to alter partition because table or database does not exist.");
@@ -509,7 +510,7 @@ public class HiveAlterHandler implements AlterHandler {
     Database db;
     try {
       msdb.openTransaction();
-      Table tbl = msdb.getTable(DEFAULT_CATALOG_NAME, dbname, name);
+      Table tbl = msdb.getTable(DEFAULT_CATALOG_NAME, dbname, name,  -1, null);
       if (tbl == null) {
         throw new InvalidObjectException(
             "Unable to alter partition because table or database does not exist.");
@@ -658,14 +659,15 @@ public class HiveAlterHandler implements AlterHandler {
     EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     return alterPartitions(msdb, wh, DEFAULT_CATALOG_NAME, dbname, name, new_parts,
-        environmentContext, null);
+        environmentContext, -1, null, null);
   }
 
   @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
                                          final String dbname, final String name,
                                          final List<Partition> new_parts,
-                                         EnvironmentContext environmentContext, IHMSHandler handler)
+                                         EnvironmentContext environmentContext,
+                                         long txnId, String writeIdList, IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<>();
     List<List<String>> partValsList = new ArrayList<>();
@@ -678,7 +680,7 @@ public class HiveAlterHandler implements AlterHandler {
     try {
       msdb.openTransaction();
 
-      Table tbl = msdb.getTable(catName, dbname, name);
+      Table tbl = msdb.getTable(catName, dbname, name,  -1, null);
       if (tbl == null) {
         throw new InvalidObjectException(
             "Unable to alter partitions because table or database does not exist.");
@@ -713,7 +715,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
       }
 
-      msdb.alterPartitions(catName, dbname, name, partValsList, new_parts);
+      msdb.alterPartitions(catName, dbname, name, partValsList, new_parts, txnId, writeIdList);
       Iterator<Partition> oldPartsIt = oldParts.iterator();
       for (Partition newPart : new_parts) {
         Partition oldPart;

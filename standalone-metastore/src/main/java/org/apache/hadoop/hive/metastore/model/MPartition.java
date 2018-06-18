@@ -30,7 +30,8 @@ public class MPartition {
   private int lastAccessTime;
   private MStorageDescriptor sd;
   private Map<String, String> parameters;
-  
+  private long txnId;
+  private String writeIdList;
   
   public MPartition() {}
   
@@ -152,4 +153,19 @@ public class MPartition {
     this.createTime = createTime;
   }
 
+  public long getTxnId() {
+    return txnId;
+  }
+
+  public void setTxnId(long txnId) {
+    this.txnId = txnId;
+  }
+
+  public String getWriteIdList() {
+    return writeIdList;
+  }
+
+  public void setWriteIdList(String writeIdList) {
+    this.writeIdList = writeIdList;
+  }
 }

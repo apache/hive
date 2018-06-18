@@ -19,10 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.ISchemaName;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.*;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -34,59 +31,6 @@ import java.util.Map;
 
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.RuntimeStat;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
@@ -266,6 +210,20 @@ public interface RawStore extends Configurable {
   Table getTable(String catalogName, String dbName, String tableName) throws MetaException;
 
   /**
+   * Get a table object.
+   * @param catalogName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param txnId transaction id of the calling transaction
+   * @param writeIdList string format of valid writeId transaction list
+   * @return table object, or null if no such table exists (wow it would be nice if we either
+   * consistently returned null or consistently threw NoSuchObjectException).
+   * @throws MetaException something went wrong in the RDBMS
+   */
+  Table getTable(String catalogName, String dbName, String tableName,
+                 long txnId, String writeIdList) throws MetaException;
+
+  /**
    * Add a partition.
    * @param part partition to add
    * @return true if the partition was successfully added.
@@ -317,6 +275,22 @@ public interface RawStore extends Configurable {
    */
   Partition getPartition(String catName, String dbName, String tableName,
       List<String> part_vals) throws MetaException, NoSuchObjectException;
+  /**
+   * Get a partition.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tableName table name.
+   * @param part_vals partition values for this table.
+   * @param txnId transaction id of the calling transaction
+   * @param writeIdList string format of valid writeId transaction list
+   * @return the partition.
+   * @throws MetaException error reading from RDBMS.
+   * @throws NoSuchObjectException no partition matching this specification exists.
+   */
+  Partition getPartition(String catName, String dbName, String tableName,
+                         List<String> part_vals,
+                         long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Check whether a partition exists.
@@ -525,11 +499,14 @@ public interface RawStore extends Configurable {
    * @param new_parts list of new partitions.  The order must match the old partitions described in
    *                  part_vals_list.  Each of these should be a complete copy of the new
    *                  partition, not just the pieces to update.
+   * @param txnId transaction id of the transaction that called this method.
+   * @param writeIdList valid write id list of the transaction on the current table
    * @throws InvalidObjectException One of the indicated partitions does not exist.
    * @throws MetaException error accessing the RDBMS.
    */
   void alterPartitions(String catName, String db_name, String tbl_name,
-      List<List<String>> part_vals_list, List<Partition> new_parts)
+      List<List<String>> part_vals_list, List<Partition> new_parts,
+      long txnId, String writeIdList)
       throws InvalidObjectException, MetaException;
 
   /**
@@ -901,6 +878,25 @@ public interface RawStore extends Configurable {
     List<String> colName) throws MetaException, NoSuchObjectException;
 
   /**
+   * Returns the relevant column statistics for a given column in a given table in a given database
+   * if such statistics exist.
+   * @param catName catalog name.
+   * @param dbName name of the database, defaults to current database
+   * @param tableName name of the table
+   * @param colName names of the columns for which statistics is requested
+   * @param txnId transaction id of the calling transaction
+   * @param writeIdList string format of valid writeId transaction list
+   * @return Relevant column statistics for the column for the given table
+   * @throws NoSuchObjectException No such table
+   * @throws MetaException error accessing the RDBMS
+   *
+   */
+  ColumnStatistics getTableColumnStatistics(
+    String catName, String dbName, String tableName,
+    List<String> colName, long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException;
+
+  /**
    * Get statistics for a partition for a set of columns.
    * @param catName catalog name.
    * @param dbName database name.
@@ -913,6 +909,25 @@ public interface RawStore extends Configurable {
    */
   List<ColumnStatistics> getPartitionColumnStatistics(
      String catName, String dbName, String tblName, List<String> partNames, List<String> colNames)
+      throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get statistics for a partition for a set of columns.
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param partNames list of partition names.  These are names so must be key1=val1[/key2=val2...]
+   * @param colNames list of columns to get stats for
+   * @param txnId transaction id of the calling transaction
+   * @param writeIdList string format of valid writeId transaction list
+   * @return list of statistics objects
+   * @throws MetaException error accessing the RDBMS
+   * @throws NoSuchObjectException no such partition.
+   */
+  List<ColumnStatistics> getPartitionColumnStatistics(
+      String catName, String dbName, String tblName,
+      List<String> partNames, List<String> colNames,
+      long txnId, String writeIdList)
       throws MetaException, NoSuchObjectException;
 
   /**
@@ -1157,6 +1172,25 @@ public interface RawStore extends Configurable {
    */
   AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get aggregated stats for a table or partition(s).
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param partNames list of partition names.  These are the names of the partitions, not
+   *                  values.
+   * @param colNames list of column names
+   * @param txnId transaction id of the calling transaction
+   * @param writeIdList string format of valid writeId transaction list
+   * @return aggregated stats
+   * @throws MetaException error accessing RDBMS
+   * @throws NoSuchObjectException no such table or partition
+   */
+  AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
+    List<String> partNames, List<String> colNames,
+    long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Get column stats for all partitions of all tables in the database

@@ -19,11 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.ISchemaName;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -33,58 +29,6 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.RuntimeStat;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
@@ -247,6 +191,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public Table getTable(String catName, String dbName, String tableName, long txnId, String writeIdList)
+      throws MetaException {
+    return objectStore.getTable(catName, dbName, tableName, txnId, writeIdList);
+  }
+
+  @Override
   public boolean addPartition(Partition part)
       throws InvalidObjectException, MetaException {
     return objectStore.addPartition(part);
@@ -256,6 +206,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public Partition getPartition(String catName, String dbName, String tableName, List<String> partVals)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartition(catName, dbName, tableName, partVals);
+  }
+
+  @Override
+  public Partition getPartition(String catName, String dbName, String tableName,
+                                List<String> partVals, long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getPartition(catName, dbName, tableName, partVals, txnId, writeIdList);
   }
 
   @Override
@@ -343,9 +300,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
-      List<List<String>> partValsList, List<Partition> newParts)
+      List<List<String>> partValsList, List<Partition> newParts,
+      long txnId, String writeIdList)
       throws InvalidObjectException, MetaException {
-    objectStore.alterPartitions(catName, dbName, tblName, partValsList, newParts);
+    objectStore.alterPartitions(
+        catName, dbName, tblName, partValsList, newParts, txnId, writeIdList);
   }
 
   @Override
@@ -647,6 +606,15 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public ColumnStatistics getTableColumnStatistics(String catName, String dbName,
+                                                   String tableName, List<String> colNames,
+                                                   long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getTableColumnStatistics(
+        catName, dbName, tableName, colNames, txnId, writeIdList);
+  }
+
+  @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
                                              String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -739,6 +707,15 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(
+      String catName, String dbName, String tblName, List<String> partNames,
+      List<String> colNames, long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getPartitionColumnStatistics(
+             catName, dbName, tblName  , colNames, partNames, txnId, writeIdList);
+  }
+
+  @Override
   public boolean doesPartitionExist(String catName, String dbName, String tableName,
       List<FieldSchema> partKeys, List<String> partVals)
       throws MetaException, NoSuchObjectException {
@@ -803,6 +780,15 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public AggrStats get_aggr_stats_for(String catName, String dbName,
       String tblName, List<String> partNames, List<String> colNames)
       throws MetaException {
+    return null;
+  }
+
+  @Override
+  public AggrStats get_aggr_stats_for(String catName, String dbName,
+                                      String tblName, List<String> partNames,
+                                      List<String> colNames,
+                                      long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
     return null;
   }
 

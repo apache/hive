@@ -197,6 +197,6 @@ public interface AlterHandler extends Configurable {
    */
   List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
     final String dbname, final String name, final List<Partition> new_parts,
-    EnvironmentContext environmentContext,IHMSHandler handler)
+    EnvironmentContext environmentContext, long txnId, String writeIdList, IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
 }

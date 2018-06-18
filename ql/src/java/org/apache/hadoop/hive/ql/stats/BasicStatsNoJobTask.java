@@ -344,12 +344,12 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
 
       if (values.get(0).result instanceof Table) {
-        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext);
+        db.alterTable(tableFullName, (Table) values.get(0).result, environmentContext, true);
         LOG.debug("Updated stats for {}.", tableFullName);
       } else {
         if (values.get(0).result instanceof Partition) {
           List<Partition> results = Lists.transform(values, FooterStatCollector.EXTRACT_RESULT_FUNCTION);
-          db.alterPartitions(tableFullName, results, environmentContext);
+          db.alterPartitions(tableFullName, results, environmentContext, true);
           LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
         } else {
           throw new RuntimeException("inconsistent");
