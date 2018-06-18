@@ -211,6 +211,8 @@ class SparkSubmitSparkClient extends AbstractSparkClient {
           LOG.warn("Child process exited with code {}", exitCode);
           rpcServer.cancelClient(clientId,
               "Child process (spark-submit) exited before connecting back with error log " + errStr.toString());
+        } else {
+          LOG.info("Child process (spark-submit) exited successfully.");
         }
       } catch (InterruptedException ie) {
         LOG.warn("Thread waiting on the child process (spark-submit) is interrupted, killing the child process.");
