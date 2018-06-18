@@ -33,6 +33,8 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -48,6 +50,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.orc.OrcFile;
 import org.apache.orc.Reader;
@@ -172,6 +175,26 @@ public class PreUpgradeTool {
       throw ex;
     }
   }
+  private static IMetaStoreClient getHMS(HiveConf conf) {
+    UserGroupInformation loggedInUser = null;
+    try {
+      loggedInUser = UserGroupInformation.getLoginUser();
+    } catch (IOException e) {
+      LOG.warn("Unable to get logged in user via UGI. err: {}", e.getMessage());
+    }
+    boolean secureMode = loggedInUser != null && loggedInUser.hasKerberosCredentials();
+    if (secureMode) {
+      conf.setBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL, true);
+    }
+    try {
+      LOG.info("Creating metastore client for {}", "PreUpgradeTool");
+      return RetryingMetaStoreClient.getProxy(hiveConf, true);
+    } catch (MetaException e) {
+      throw new RuntimeException("Error connecting to Hive Metastore URI: "
+          + conf.getVar(HiveConf.ConfVars.METASTOREURIS) + ". " + e.getMessage(), e);
+    }
+  }
+
   /**
    * todo: this should accept a file of table names to exclude from non-acid to acid conversion
    * todo: change script comments to a preamble instead of a footer
@@ -186,13 +209,11 @@ public class PreUpgradeTool {
       throws HiveException, TException, IOException {
     HiveConf conf = hiveConf != null ? hiveConf : new HiveConf();
     boolean isAcidEnabled = isAcidEnabled(conf);
-    HiveMetaStoreClient hms = new HiveMetaStoreClient(conf);//MetaException
+    IMetaStoreClient hms = getHMS(conf);
     LOG.debug("Looking for databases");
     List<String> databases = hms.getAllDatabases();//TException
     LOG.debug("Found " + databases.size() + " databases to process");
     List<String> compactions = new ArrayList<>();
-    List<String> convertToAcid = new ArrayList<>();
-    List<String> convertToMM = new ArrayList<>();
     final CompactionMetaInfo compactionMetaInfo = new CompactionMetaInfo();
     ValidTxnList txns = null;
     Hive db = null;
@@ -324,7 +345,7 @@ public class PreUpgradeTool {
    * @return any compaction commands to run for {@code Table t}
    */
   private static List<String> getCompactionCommands(Table t, HiveConf conf,
-      HiveMetaStoreClient hms, CompactionMetaInfo compactionMetaInfo, boolean execute, Hive db,
+      IMetaStoreClient hms, CompactionMetaInfo compactionMetaInfo, boolean execute, Hive db,
       ValidTxnList txns) throws IOException, TException, HiveException {
     if(!isFullAcidTable(t)) {
       return Collections.emptyList();
