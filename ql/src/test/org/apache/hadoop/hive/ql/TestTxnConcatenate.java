@@ -7,7 +7,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -207,14 +206,19 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from NEXT_WRITE_ID where NWI_TABLE='s'"));
 
-    //this causes MetaStoreEvenListener.onDropTable()/onCreateTable() to execute and the data
-    //files are just moved under new table.  This can't work since a drop table in Acid removes
-    //the relevant table metadata (like writeid, etc.), so writeIds in file names/ROW_IDs
-    //no longer make sense.  (In fact 'select ...' returns nothing since there is no NEXT_WRITE_ID
-    //entry for the 'new' table and all existing data is 'above HWM'. see HIVE-19569
-    CommandProcessorResponse cpr =
-        runStatementOnDriverNegative("alter table mydb1.S RENAME TO mydb2.bar");
-    Assert.assertTrue(cpr.getErrorMessage() != null && cpr.getErrorMessage()
-        .contains("Changing database name of a transactional table mydb1.s is not supported."));
+    runStatementOnDriver("alter table mydb1.S RENAME TO mydb2.bar");
+
+    Assert.assertEquals(
+            TxnDbUtil.queryToString(hiveConf, "select * from COMPLETED_TXN_COMPONENTS"), 2,
+            TxnDbUtil.countQueryAgent(hiveConf,
+                    "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TABLE='bar'"));
+    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+            "select count(*) from COMPACTION_QUEUE where CQ_TABLE='bar'"));
+    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+            "select count(*) from WRITE_SET where WS_TABLE='bar'"));
+    Assert.assertEquals(2, TxnDbUtil.countQueryAgent(hiveConf,
+            "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='bar'"));
+    Assert.assertEquals(1, TxnDbUtil.countQueryAgent(hiveConf,
+            "select count(*) from NEXT_WRITE_ID where NWI_TABLE='bar'"));
   }
 }
