@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
@@ -233,13 +234,14 @@ public class SerializationUtilities {
       kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
       kryo.register(new java.util.ArrayList().subList(0,0).getClass(), new ArrayListSubListSerializer());
       kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
+      kryo.register(MapWork.class, new MapWorkSerializer(kryo, MapWork.class));
+      kryo.register(PartitionDesc.class, new PartitionDescSerializer(kryo, PartitionDesc.class));
 
       ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy())
           .setFallbackInstantiatorStrategy(
               new StdInstantiatorStrategy());
       removeField(kryo, AbstractOperatorDesc.class, "colExprMap");
       removeField(kryo, AbstractOperatorDesc.class, "statistics");
-      kryo.register(MapWork.class);
       kryo.register(ReduceWork.class);
       kryo.register(TableDesc.class);
       kryo.register(UnionOperator.class);
@@ -537,6 +539,54 @@ public class SerializationUtilities {
       Properties ip = kryo.readObjectOrNull(input, Properties.class);
       ((CopyOnFirstWriteProperties) map).setInterned(ip);
       return map;
+    }
+  }
+
+  /**
+   * We use a custom {@link com.esotericsoftware.kryo.Serializer} for {@link MapWork} objects in
+   * order to invoke any string interning code present in the "setter" methods. The fields in {@link
+   * MapWork} often store paths that contain duplicate strings, so interning them can decrease
+   * memory significantly.
+   */
+  private static class MapWorkSerializer extends FieldSerializer<MapWork> {
+
+    MapWorkSerializer(Kryo kryo, Class type) {
+      super(kryo, type);
+    }
+
+    @Override
+    public MapWork read(Kryo kryo, Input input, Class<MapWork> type) {
+      MapWork mapWork = super.read(kryo, input, type);
+      // The set methods in MapWork intern the any duplicate strings which is why we call them
+      // during de-serialization
+      mapWork.setPathToPartitionInfo(mapWork.getPathToPartitionInfo());
+      mapWork.setPathToAliases(mapWork.getPathToAliases());
+      return mapWork;
+    }
+  }
+
+  /**
+   * We use a custom {@link com.esotericsoftware.kryo.Serializer} for {@link PartitionDesc} objects
+   * in order to invoke any string interning code present in the "setter" methods. {@link
+   * PartitionDesc} objects are usually stored by {@link MapWork} objects and contain duplicate info
+   * like input format class names, partition specs, etc.
+   */
+  private static class PartitionDescSerializer extends FieldSerializer<PartitionDesc> {
+
+    PartitionDescSerializer(Kryo kryo, Class type) {
+      super(kryo, type);
+    }
+
+    @Override
+    public PartitionDesc read(Kryo kryo, Input input, Class<PartitionDesc> type) {
+      PartitionDesc partitionDesc = super.read(kryo, input, type);
+      // The set methods in PartitionDesc intern the any duplicate strings which is why we call them
+      // during de-serialization
+      partitionDesc.setBaseFileName(partitionDesc.getBaseFileName());
+      partitionDesc.setPartSpec(partitionDesc.getPartSpec());
+      partitionDesc.setInputFileFormatClass(partitionDesc.getInputFileFormatClass());
+      partitionDesc.setOutputFileFormatClass(partitionDesc.getOutputFileFormatClass());
+      return partitionDesc;
     }
   }
 
