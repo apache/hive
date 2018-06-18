@@ -8,7 +8,6 @@ set mapred.input.dir.recursive=true;
 
 -- Tests truncating a column from a list bucketing table
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
 CREATE TABLE test_tab_n3 (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE;
 

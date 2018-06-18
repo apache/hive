@@ -10,7 +10,6 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set hive.default.fileformat=RCFILE;
 set hive.exec.pre.hooks = org.apache.hadoop.hive.ql.hooks.PreExecutePrinter,org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables,org.apache.hadoop.hive.ql.hooks.UpdateInputAccessTimeHook$PreExec;
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 
 create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets;
 

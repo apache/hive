@@ -20,7 +20,6 @@ set hive.exec.dynamic.partition=true;
 -- It does not matter, whether the output is merged or not. In this case, merging is turned
 -- on
 -- This test demonstrates that this optimization works in the presence of dynamic partitions.
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n32, it might be easier
 -- to run the test only on hadoop 23
 

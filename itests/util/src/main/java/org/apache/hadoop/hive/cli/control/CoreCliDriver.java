@@ -165,14 +165,6 @@ public class CoreCliDriver extends CliAdapter {
       System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
-
-      if (qt.shouldBeSkipped(fname)) {
-        LOG.info("Test " + fname + " skipped");
-        System.err.println("Test " + fname + " skipped");
-        skipped = true;
-        return;
-      }
-
       qt.cliInit(new File(fpath), false);
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {

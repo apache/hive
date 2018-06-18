@@ -2,7 +2,6 @@ set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
 set hive.cbo.returnpath.hiveop=true;
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- 0.23 changed input order of data in reducer task, which affects result of percentile_approx
 
 CREATE TABLE bucket_n1 (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE;

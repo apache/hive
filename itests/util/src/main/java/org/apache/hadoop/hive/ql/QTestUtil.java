@@ -54,7 +54,6 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import junit.framework.TestSuite;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -80,6 +79,9 @@ import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.dataset.Dataset;
+import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
+import org.apache.hadoop.hive.ql.dataset.DatasetParser;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -105,9 +107,6 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
-import org.apache.hadoop.hive.ql.dataset.DatasetParser;
-import org.apache.hadoop.hive.ql.dataset.Dataset;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsErasureCodingShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -119,14 +118,15 @@ import org.apache.tools.ant.BuildException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import junit.framework.TestSuite;
 
 /**
  * QTestUtil.
@@ -164,7 +164,6 @@ public class QTestUtil {
   protected String overrideResultsDir;
   protected final String logDir;
   private final TreeMap<String, String> qMap;
-  private final Set<String> qSkipSet;
   private final Set<String> qSortSet;
   private final Set<String> qSortQuerySet;
   private final Set<String> qHashQuerySet;
@@ -173,7 +172,6 @@ public class QTestUtil {
   private final Set<String> qMaskStatsQuerySet;
   private final Set<String> qMaskDataSizeQuerySet;
   private final Set<String> qMaskLineageQuerySet;
-  private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
   private static Set<String> srcTables;
   private final Set<String> srcUDFs;
@@ -594,7 +592,6 @@ public class QTestUtil {
     conf = queryState.getConf();
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
-    qSkipSet = new HashSet<String>();
     qSortSet = new HashSet<String>();
     qSortQuerySet = new HashSet<String>();
     qHashQuerySet = new HashSet<String>();
@@ -603,7 +600,6 @@ public class QTestUtil {
     qMaskStatsQuerySet = new HashSet<String>();
     qMaskDataSizeQuerySet = new HashSet<String>();
     qMaskLineageQuerySet = new HashSet<String>();
-    qJavaVersionSpecificOutput = new HashSet<String>();
     this.clusterType = clusterType;
 
     HadoopShims shims = ShimLoader.getHadoopShims();
@@ -839,14 +835,6 @@ public class QTestUtil {
       return;
     }
 
-    if(checkHadoopVersionExclude(qf.getName(), query)) {
-      qSkipSet.add(qf.getName());
-    }
-
-    if (checkNeedJavaSpecificOutput(qf.getName(), query)) {
-      qJavaVersionSpecificOutput.add(qf.getName());
-    }
-
     if (matches(SORT_BEFORE_DIFF, query)) {
       qSortSet.add(qf.getName());
     } else if (matches(SORT_QUERY_RESULTS, query)) {
@@ -885,79 +873,6 @@ public class QTestUtil {
     if (matcher.find()) {
       return true;
     }
-    return false;
-  }
-
-  private boolean checkHadoopVersionExclude(String fileName, String query){
-
-    // Look for a hint to not run a test on some Hadoop versions
-    Pattern pattern = Pattern.compile("-- (EX|IN)CLUDE_HADOOP_MAJOR_VERSIONS\\((.*)\\)");
-
-    boolean excludeQuery = false;
-    boolean includeQuery = false;
-    Set<String> versionSet = new HashSet<String>();
-    String hadoopVer = ShimLoader.getMajorVersion();
-
-    Matcher matcher = pattern.matcher(query);
-
-    // Each qfile may include at most one INCLUDE or EXCLUDE directive.
-    //
-    // If a qfile contains an INCLUDE directive, and hadoopVer does
-    // not appear in the list of versions to include, then the qfile
-    // is skipped.
-    //
-    // If a qfile contains an EXCLUDE directive, and hadoopVer is
-    // listed in the list of versions to EXCLUDE, then the qfile is
-    // skipped.
-    //
-    // Otherwise, the qfile is included.
-
-    if (matcher.find()) {
-
-      String prefix = matcher.group(1);
-      if ("EX".equals(prefix)) {
-        excludeQuery = true;
-      } else {
-        includeQuery = true;
-      }
-
-      String versions = matcher.group(2);
-      for (String s : versions.split("\\,")) {
-        s = s.trim();
-        versionSet.add(s);
-      }
-    }
-
-    if (matcher.find()) {
-      //2nd match is not supposed to be there
-      String message = "QTestUtil: qfile " + fileName
-        + " contains more than one reference to (EX|IN)CLUDE_HADOOP_MAJOR_VERSIONS";
-      throw new UnsupportedOperationException(message);
-    }
-
-    if (excludeQuery && versionSet.contains(hadoopVer)) {
-      System.out.println("QTestUtil: " + fileName
-        + " EXCLUDE list contains Hadoop Version " + hadoopVer + ". Skipping...");
-      return true;
-    } else if (includeQuery && !versionSet.contains(hadoopVer)) {
-      System.out.println("QTestUtil: " + fileName
-        + " INCLUDE list does not contain Hadoop Version " + hadoopVer + ". Skipping...");
-      return true;
-    }
-    return false;
-  }
-
-  private boolean checkNeedJavaSpecificOutput(String fileName, String query) {
-    Pattern pattern = Pattern.compile("-- JAVA_VERSION_SPECIFIC_OUTPUT");
-    Matcher matcher = pattern.matcher(query);
-    if (matcher.find()) {
-      System.out.println("Test is flagged to generate Java version specific " +
-          "output. Since we are using Java version " + javaVersion +
-          ", we will generated Java " + javaVersion + " specific " +
-          "output file for query file " + fileName);
-      return true;
-    }
-
     return false;
   }
 
@@ -1613,17 +1528,8 @@ public class QTestUtil {
     return commands;
   }
 
-  public boolean shouldBeSkipped(String tname) {
-    return qSkipSet.contains(tname);
-  }
-
   private String getOutFileExtension(String fname) {
-    String outFileExtension = ".out";
-    if (qJavaVersionSpecificOutput.contains(fname)) {
-      outFileExtension = ".java" + javaVersion + ".out";
-    }
-
-    return outFileExtension;
+    return ".out";
   }
 
   public void convertSequenceFileToTextFile() throws Exception {
