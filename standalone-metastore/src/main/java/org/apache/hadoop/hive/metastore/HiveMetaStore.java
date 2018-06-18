@@ -241,6 +241,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
+  public static boolean isRenameAllowed(Database srcDB, Database destDB) {
+    if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
+      if (ReplChangeManager.isSourceOfReplication(srcDB) || ReplChangeManager.isSourceOfReplication(destDB)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public static class HMSHandler extends FacebookBase implements IHMSHandler {
     public static final Logger LOG = HiveMetaStore.LOG;
     private final Configuration conf; // stores datastore (jpox) properties,
@@ -3910,19 +3919,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return new Partition();
     }
 
-    private boolean isRenameAllowed(String catalogName, String srcDBName, String destDBName)
-            throws MetaException, NoSuchObjectException {
-      RawStore ms = getMS();
-      if (!srcDBName.equalsIgnoreCase(destDBName)) {
-        Database destDB = ms.getDatabase(catalogName, destDBName);
-        Database srcDB = ms.getDatabase(catalogName, srcDBName);
-        if (ReplChangeManager.isSourceOfReplication(srcDB) || ReplChangeManager.isSourceOfReplication(destDB)) {
-          return false;
-        }
-      }
-      return true;
-    }
-
     @Override
     public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
         String sourceDbName, String sourceTableName, String destDbName,
@@ -4011,7 +4007,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
 
-      if (!isRenameAllowed(parsedDestDbName[CAT_NAME], parsedSourceDbName[DB_NAME], parsedDestDbName[DB_NAME])) {
+      Database srcDb = ms.getDatabase(parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME]);
+      Database destDb = ms.getDatabase(parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME]);
+      if (!isRenameAllowed(srcDb, destDb)) {
         throw new MetaException("Exchange partition not allowed for " +
                 getCatalogQualifiedTableName(parsedSourceDbName[CAT_NAME],
                 parsedSourceDbName[DB_NAME], sourceTableName) + " Dest db : " + destDbName);
@@ -5027,11 +5025,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       try {
         Table oldt = get_table_core(catName, dbname, name);
-        if (!isRenameAllowed(catName, dbname, newTable.getDbName())) {
-          throw new MetaException("Alter table not allowed for table " +
-                  getCatalogQualifiedTableName(catName, dbname, name) +
-                  " new table = " + getCatalogQualifiedTableName(newTable));
-        }
         firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
         alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
                 envContext, this);

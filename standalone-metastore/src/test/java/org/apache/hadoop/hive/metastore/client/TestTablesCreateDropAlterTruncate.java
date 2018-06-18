@@ -889,7 +889,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     }
   }
 
-  @Test(expected = InvalidOperationException.class)
+  @Test(expected = MetaException.class)
   public void testAlterTableNullDatabaseInNew() throws Exception {
     Table originalTable = testTables[0];
     Table newTable = originalTable.deepCopy();
