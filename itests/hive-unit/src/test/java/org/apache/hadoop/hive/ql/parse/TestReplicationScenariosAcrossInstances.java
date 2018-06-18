@@ -797,7 +797,7 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
-  public void shouldNotCreateDirectoryForNonNativeTableInDumpDirectory() throws Throwable {
+  public void testShouldNotCreateDirectoryForNonNativeTableInDumpDirectory() throws Throwable {
     String createTableQuery =
         "CREATE TABLE custom_serdes( serde_id bigint COMMENT 'from deserializer', name string "
             + "COMMENT 'from deserializer', slib string COMMENT 'from deserializer') "
@@ -833,6 +833,33 @@ public class TestReplicationScenariosAcrossInstances {
         }
       }
     }
+  }
+
+  @Test
+  public void testShouldDumpMetaDataForNonNativeTableIfSetMeataDataOnly() throws Throwable {
+    String tableName = testName.getMethodName() + "_table";
+    String createTableQuery =
+            "CREATE TABLE " + tableName + " ( serde_id bigint COMMENT 'from deserializer', name string "
+                    + "COMMENT 'from deserializer', slib string COMMENT 'from deserializer') "
+                    + "ROW FORMAT SERDE 'org.apache.hive.storage.jdbc.JdbcSerDe' "
+                    + "STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler' "
+                    + "WITH SERDEPROPERTIES ('serialization.format'='1') "
+                    + "TBLPROPERTIES ( "
+                    + "'hive.sql.database.type'='METASTORE', "
+                    + "'hive.sql.query'='SELECT \"SERDE_ID\", \"NAME\", \"SLIB\" FROM \"SERDES\"')";
+
+    WarehouseInstance.Tuple bootstrapTuple = primary
+            .run("use " + primaryDbName)
+            .run(createTableQuery)
+            .dump(primaryDbName, null, Collections.singletonList("'hive.repl.dump.metadata.only'='true'"));
+
+    // Bootstrap load in replica
+    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(bootstrapTuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResult(tableName);
   }
 
   private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {

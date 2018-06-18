@@ -172,7 +172,8 @@ public class Utils {
       return false;
     }
 
-    if (tableHandle.isNonNative()) {
+    // if its metadata only, then dump metadata of non native tables also.
+    if (tableHandle.isNonNative() && !replicationSpec.isMetadataOnly()) {
       return false;
     }
 

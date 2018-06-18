@@ -30,9 +30,12 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import java.io.IOException;
 import java.util.HashMap;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class TestExportImport {
 
@@ -121,5 +124,44 @@ public class TestExportImport {
         .run("select * from test1.t1")
         .verifyResults(new String[] { "1", "2" });
 
+  }
+
+  @Test
+  public void testExportNonNativeTable() throws Throwable {
+    String path = "hdfs:///tmp/" + dbName + "/";
+    String exportPath = path + "1/";
+    String exportMetaPath = exportPath + "/Meta";
+    String tableName =  testName.getMethodName();
+    String createTableQuery =
+            "CREATE TABLE " + tableName + " ( serde_id bigint COMMENT 'from deserializer', name string "
+                    + "COMMENT 'from deserializer', slib string COMMENT 'from deserializer') "
+                    + "ROW FORMAT SERDE 'org.apache.hive.storage.jdbc.JdbcSerDe' "
+                    + "STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler' "
+                    + "WITH SERDEPROPERTIES ('serialization.format'='1') "
+                    + "TBLPROPERTIES ( "
+                    + "'hive.sql.database.type'='METASTORE', "
+                    + "'hive.sql.query'='SELECT \"SERDE_ID\", \"NAME\", \"SLIB\" FROM \"SERDES\"')";
+
+    srcHiveWarehouse.run("use " + dbName)
+            .run(createTableQuery)
+            .runFailure("export table " + tableName + " to '" + exportPath + "'")
+            .run("export table " + tableName + " to '" + exportMetaPath + "'" + " for metadata replication('1')");
+
+    destHiveWarehouse.run("use " + replDbName)
+            .runFailure("import table " +  tableName + " from '" + exportPath + "'")
+            .run("show tables")
+            .verifyFailure(new String[] {tableName})
+            .run("import table " + tableName + " from '" + exportMetaPath + "'")
+            .run("show tables")
+            .verifyResult(tableName);
+
+    // check physical path
+    Path checkPath = new Path(exportPath);
+    checkPath = new Path(checkPath, EximUtil.DATA_PATH_NAME);
+    FileSystem fs = checkPath.getFileSystem(srcHiveWarehouse.hiveConf);
+    assertFalse(fs.exists(checkPath));
+    checkPath = new Path(exportMetaPath);
+    checkPath = new Path(checkPath, EximUtil.METADATA_NAME);
+    assertTrue(fs.exists(checkPath));
   }
 }
