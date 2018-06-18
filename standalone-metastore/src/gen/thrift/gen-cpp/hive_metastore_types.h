@@ -185,6 +185,16 @@ struct SchemaVersionState {
 
 extern const std::map<int, const char*> _SchemaVersionState_VALUES_TO_NAMES;
 
+struct IsolationLevelCompliance {
+  enum type {
+    YES = 1,
+    NO = 2,
+    UNKNOWN = 3
+  };
+};
+
+extern const std::map<int, const char*> _IsolationLevelCompliance_VALUES_TO_NAMES;
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -666,6 +676,10 @@ class GetSerdeRequest;
 class RuntimeStat;
 
 class GetRuntimeStatsRequest;
+
+class AlterPartitionsRequest;
+
+class AlterPartitionsResponse;
 
 class MetaException;
 
@@ -3101,7 +3115,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), txnId(true), validWriteIdList(false), isStatsCompliant(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -3120,6 +3134,9 @@ typedef struct _Table__isset {
   bool creationMetadata :1;
   bool catName :1;
   bool ownerType :1;
+  bool txnId :1;
+  bool validWriteIdList :1;
+  bool isStatsCompliant :1;
 } _Table__isset;
 
 class Table {
@@ -3127,7 +3144,7 @@ class Table {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), txnId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
     ownerType = (PrincipalType::type)1;
 
   }
@@ -3151,6 +3168,9 @@ class Table {
   CreationMetadata creationMetadata;
   std::string catName;
   PrincipalType::type ownerType;
+  int64_t txnId;
+  std::string validWriteIdList;
+  IsolationLevelCompliance::type isStatsCompliant;
 
   _Table__isset __isset;
 
@@ -3189,6 +3209,12 @@ class Table {
   void __set_catName(const std::string& val);
 
   void __set_ownerType(const PrincipalType::type val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
+
+  void __set_isStatsCompliant(const IsolationLevelCompliance::type val);
 
   bool operator == (const Table & rhs) const
   {
@@ -3240,6 +3266,18 @@ class Table {
       return false;
     else if (__isset.ownerType && !(ownerType == rhs.ownerType))
       return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
+      return false;
     return true;
   }
   bool operator != (const Table &rhs) const {
@@ -3263,7 +3301,7 @@ inline std::ostream& operator<<(std::ostream& out, const Table& obj)
 }
 
 typedef struct _Partition__isset {
-  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false) {}
+  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), txnId(true), validWriteIdList(false), isStatsCompliant(false) {}
   bool values :1;
   bool dbName :1;
   bool tableName :1;
@@ -3273,6 +3311,9 @@ typedef struct _Partition__isset {
   bool parameters :1;
   bool privileges :1;
   bool catName :1;
+  bool txnId :1;
+  bool validWriteIdList :1;
+  bool isStatsCompliant :1;
 } _Partition__isset;
 
 class Partition {
@@ -3280,7 +3321,7 @@ class Partition {
 
   Partition(const Partition&);
   Partition& operator=(const Partition&);
-  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName() {
+  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName(), txnId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~Partition() throw();
@@ -3293,6 +3334,9 @@ class Partition {
   std::map<std::string, std::string>  parameters;
   PrincipalPrivilegeSet privileges;
   std::string catName;
+  int64_t txnId;
+  std::string validWriteIdList;
+  IsolationLevelCompliance::type isStatsCompliant;
 
   _Partition__isset __isset;
 
@@ -3313,6 +3357,12 @@ class Partition {
   void __set_privileges(const PrincipalPrivilegeSet& val);
 
   void __set_catName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
+
+  void __set_isStatsCompliant(const IsolationLevelCompliance::type val);
 
   bool operator == (const Partition & rhs) const
   {
@@ -3337,6 +3387,18 @@ class Partition {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
       return false;
     return true;
   }
@@ -3537,13 +3599,16 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionListComposingS
 }
 
 typedef struct _PartitionSpec__isset {
-  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false), catName(false) {}
+  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false), catName(false), txnId(true), validWriteIdList(false), isStatsCompliant(false) {}
   bool dbName :1;
   bool tableName :1;
   bool rootPath :1;
   bool sharedSDPartitionSpec :1;
   bool partitionList :1;
   bool catName :1;
+  bool txnId :1;
+  bool validWriteIdList :1;
+  bool isStatsCompliant :1;
 } _PartitionSpec__isset;
 
 class PartitionSpec {
@@ -3551,7 +3616,7 @@ class PartitionSpec {
 
   PartitionSpec(const PartitionSpec&);
   PartitionSpec& operator=(const PartitionSpec&);
-  PartitionSpec() : dbName(), tableName(), rootPath(), catName() {
+  PartitionSpec() : dbName(), tableName(), rootPath(), catName(), txnId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~PartitionSpec() throw();
@@ -3561,6 +3626,9 @@ class PartitionSpec {
   PartitionSpecWithSharedSD sharedSDPartitionSpec;
   PartitionListComposingSpec partitionList;
   std::string catName;
+  int64_t txnId;
+  std::string validWriteIdList;
+  IsolationLevelCompliance::type isStatsCompliant;
 
   _PartitionSpec__isset __isset;
 
@@ -3575,6 +3643,12 @@ class PartitionSpec {
   void __set_partitionList(const PartitionListComposingSpec& val);
 
   void __set_catName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
+
+  void __set_isStatsCompliant(const IsolationLevelCompliance::type val);
 
   bool operator == (const PartitionSpec & rhs) const
   {
@@ -3595,6 +3669,18 @@ class PartitionSpec {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
       return false;
     return true;
   }
@@ -4404,28 +4490,57 @@ inline std::ostream& operator<<(std::ostream& out, const ColumnStatisticsDesc& o
   return out;
 }
 
+typedef struct _ColumnStatistics__isset {
+  _ColumnStatistics__isset() : txnId(true), validWriteIdList(false), isStatsCompliant(false) {}
+  bool txnId :1;
+  bool validWriteIdList :1;
+  bool isStatsCompliant :1;
+} _ColumnStatistics__isset;
 
 class ColumnStatistics {
  public:
 
   ColumnStatistics(const ColumnStatistics&);
   ColumnStatistics& operator=(const ColumnStatistics&);
-  ColumnStatistics() {
+  ColumnStatistics() : txnId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~ColumnStatistics() throw();
   ColumnStatisticsDesc statsDesc;
   std::vector<ColumnStatisticsObj>  statsObj;
+  int64_t txnId;
+  std::string validWriteIdList;
+  IsolationLevelCompliance::type isStatsCompliant;
+
+  _ColumnStatistics__isset __isset;
 
   void __set_statsDesc(const ColumnStatisticsDesc& val);
 
   void __set_statsObj(const std::vector<ColumnStatisticsObj> & val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
+
+  void __set_isStatsCompliant(const IsolationLevelCompliance::type val);
 
   bool operator == (const ColumnStatistics & rhs) const
   {
     if (!(statsDesc == rhs.statsDesc))
       return false;
     if (!(statsObj == rhs.statsObj))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
       return false;
     return true;
   }
@@ -4449,28 +4564,41 @@ inline std::ostream& operator<<(std::ostream& out, const ColumnStatistics& obj)
   return out;
 }
 
+typedef struct _AggrStats__isset {
+  _AggrStats__isset() : isStatsCompliant(false) {}
+  bool isStatsCompliant :1;
+} _AggrStats__isset;
 
 class AggrStats {
  public:
 
   AggrStats(const AggrStats&);
   AggrStats& operator=(const AggrStats&);
-  AggrStats() : partsFound(0) {
+  AggrStats() : partsFound(0), isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~AggrStats() throw();
   std::vector<ColumnStatisticsObj>  colStats;
   int64_t partsFound;
+  IsolationLevelCompliance::type isStatsCompliant;
+
+  _AggrStats__isset __isset;
 
   void __set_colStats(const std::vector<ColumnStatisticsObj> & val);
 
   void __set_partsFound(const int64_t val);
+
+  void __set_isStatsCompliant(const IsolationLevelCompliance::type val);
 
   bool operator == (const AggrStats & rhs) const
   {
     if (!(colStats == rhs.colStats))
       return false;
     if (!(partsFound == rhs.partsFound))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
       return false;
     return true;
   }
@@ -4495,8 +4623,10 @@ inline std::ostream& operator<<(std::ostream& out, const AggrStats& obj)
 }
 
 typedef struct _SetPartitionsStatsRequest__isset {
-  _SetPartitionsStatsRequest__isset() : needMerge(false) {}
+  _SetPartitionsStatsRequest__isset() : needMerge(false), txnId(true), validWriteIdList(false) {}
   bool needMerge :1;
+  bool txnId :1;
+  bool validWriteIdList :1;
 } _SetPartitionsStatsRequest__isset;
 
 class SetPartitionsStatsRequest {
@@ -4504,18 +4634,24 @@ class SetPartitionsStatsRequest {
 
   SetPartitionsStatsRequest(const SetPartitionsStatsRequest&);
   SetPartitionsStatsRequest& operator=(const SetPartitionsStatsRequest&);
-  SetPartitionsStatsRequest() : needMerge(0) {
+  SetPartitionsStatsRequest() : needMerge(0), txnId(-1LL), validWriteIdList() {
   }
 
   virtual ~SetPartitionsStatsRequest() throw();
   std::vector<ColumnStatistics>  colStats;
   bool needMerge;
+  int64_t txnId;
+  std::string validWriteIdList;
 
   _SetPartitionsStatsRequest__isset __isset;
 
   void __set_colStats(const std::vector<ColumnStatistics> & val);
 
   void __set_needMerge(const bool val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
 
   bool operator == (const SetPartitionsStatsRequest & rhs) const
   {
@@ -4524,6 +4660,14 @@ class SetPartitionsStatsRequest {
     if (__isset.needMerge != rhs.__isset.needMerge)
       return false;
     else if (__isset.needMerge && !(needMerge == rhs.needMerge))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
     return true;
   }
@@ -5642,23 +5786,36 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionsByExprRequest
   return out;
 }
 
+typedef struct _TableStatsResult__isset {
+  _TableStatsResult__isset() : isStatsCompliant(false) {}
+  bool isStatsCompliant :1;
+} _TableStatsResult__isset;
 
 class TableStatsResult {
  public:
 
   TableStatsResult(const TableStatsResult&);
   TableStatsResult& operator=(const TableStatsResult&);
-  TableStatsResult() {
+  TableStatsResult() : isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~TableStatsResult() throw();
   std::vector<ColumnStatisticsObj>  tableStats;
+  IsolationLevelCompliance::type isStatsCompliant;
+
+  _TableStatsResult__isset __isset;
 
   void __set_tableStats(const std::vector<ColumnStatisticsObj> & val);
+
+  void __set_isStatsCompliant(const IsolationLevelCompliance::type val);
 
   bool operator == (const TableStatsResult & rhs) const
   {
     if (!(tableStats == rhs.tableStats))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
       return false;
     return true;
   }
@@ -5682,23 +5839,36 @@ inline std::ostream& operator<<(std::ostream& out, const TableStatsResult& obj)
   return out;
 }
 
+typedef struct _PartitionsStatsResult__isset {
+  _PartitionsStatsResult__isset() : isStatsCompliant(false) {}
+  bool isStatsCompliant :1;
+} _PartitionsStatsResult__isset;
 
 class PartitionsStatsResult {
  public:
 
   PartitionsStatsResult(const PartitionsStatsResult&);
   PartitionsStatsResult& operator=(const PartitionsStatsResult&);
-  PartitionsStatsResult() {
+  PartitionsStatsResult() : isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~PartitionsStatsResult() throw();
   std::map<std::string, std::vector<ColumnStatisticsObj> >  partStats;
+  IsolationLevelCompliance::type isStatsCompliant;
+
+  _PartitionsStatsResult__isset __isset;
 
   void __set_partStats(const std::map<std::string, std::vector<ColumnStatisticsObj> > & val);
+
+  void __set_isStatsCompliant(const IsolationLevelCompliance::type val);
 
   bool operator == (const PartitionsStatsResult & rhs) const
   {
     if (!(partStats == rhs.partStats))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
       return false;
     return true;
   }
@@ -5723,8 +5893,10 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionsStatsResult& 
 }
 
 typedef struct _TableStatsRequest__isset {
-  _TableStatsRequest__isset() : catName(false) {}
+  _TableStatsRequest__isset() : catName(false), txnId(true), validWriteIdList(false) {}
   bool catName :1;
+  bool txnId :1;
+  bool validWriteIdList :1;
 } _TableStatsRequest__isset;
 
 class TableStatsRequest {
@@ -5732,7 +5904,7 @@ class TableStatsRequest {
 
   TableStatsRequest(const TableStatsRequest&);
   TableStatsRequest& operator=(const TableStatsRequest&);
-  TableStatsRequest() : dbName(), tblName(), catName() {
+  TableStatsRequest() : dbName(), tblName(), catName(), txnId(-1LL), validWriteIdList() {
   }
 
   virtual ~TableStatsRequest() throw();
@@ -5740,6 +5912,8 @@ class TableStatsRequest {
   std::string tblName;
   std::vector<std::string>  colNames;
   std::string catName;
+  int64_t txnId;
+  std::string validWriteIdList;
 
   _TableStatsRequest__isset __isset;
 
@@ -5750,6 +5924,10 @@ class TableStatsRequest {
   void __set_colNames(const std::vector<std::string> & val);
 
   void __set_catName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
 
   bool operator == (const TableStatsRequest & rhs) const
   {
@@ -5762,6 +5940,14 @@ class TableStatsRequest {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
     return true;
   }
@@ -5786,8 +5972,10 @@ inline std::ostream& operator<<(std::ostream& out, const TableStatsRequest& obj)
 }
 
 typedef struct _PartitionsStatsRequest__isset {
-  _PartitionsStatsRequest__isset() : catName(false) {}
+  _PartitionsStatsRequest__isset() : catName(false), txnId(true), validWriteIdList(false) {}
   bool catName :1;
+  bool txnId :1;
+  bool validWriteIdList :1;
 } _PartitionsStatsRequest__isset;
 
 class PartitionsStatsRequest {
@@ -5795,7 +5983,7 @@ class PartitionsStatsRequest {
 
   PartitionsStatsRequest(const PartitionsStatsRequest&);
   PartitionsStatsRequest& operator=(const PartitionsStatsRequest&);
-  PartitionsStatsRequest() : dbName(), tblName(), catName() {
+  PartitionsStatsRequest() : dbName(), tblName(), catName(), txnId(-1LL), validWriteIdList() {
   }
 
   virtual ~PartitionsStatsRequest() throw();
@@ -5804,6 +5992,8 @@ class PartitionsStatsRequest {
   std::vector<std::string>  colNames;
   std::vector<std::string>  partNames;
   std::string catName;
+  int64_t txnId;
+  std::string validWriteIdList;
 
   _PartitionsStatsRequest__isset __isset;
 
@@ -5816,6 +6006,10 @@ class PartitionsStatsRequest {
   void __set_partNames(const std::vector<std::string> & val);
 
   void __set_catName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
 
   bool operator == (const PartitionsStatsRequest & rhs) const
   {
@@ -5830,6 +6024,14 @@ class PartitionsStatsRequest {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
     return true;
   }
@@ -5854,8 +6056,9 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionsStatsRequest&
 }
 
 typedef struct _AddPartitionsResult__isset {
-  _AddPartitionsResult__isset() : partitions(false) {}
+  _AddPartitionsResult__isset() : partitions(false), isStatsCompliant(false) {}
   bool partitions :1;
+  bool isStatsCompliant :1;
 } _AddPartitionsResult__isset;
 
 class AddPartitionsResult {
@@ -5863,21 +6066,28 @@ class AddPartitionsResult {
 
   AddPartitionsResult(const AddPartitionsResult&);
   AddPartitionsResult& operator=(const AddPartitionsResult&);
-  AddPartitionsResult() {
+  AddPartitionsResult() : isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~AddPartitionsResult() throw();
   std::vector<Partition>  partitions;
+  IsolationLevelCompliance::type isStatsCompliant;
 
   _AddPartitionsResult__isset __isset;
 
   void __set_partitions(const std::vector<Partition> & val);
+
+  void __set_isStatsCompliant(const IsolationLevelCompliance::type val);
 
   bool operator == (const AddPartitionsResult & rhs) const
   {
     if (__isset.partitions != rhs.__isset.partitions)
       return false;
     else if (__isset.partitions && !(partitions == rhs.partitions))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
       return false;
     return true;
   }
@@ -5902,9 +6112,11 @@ inline std::ostream& operator<<(std::ostream& out, const AddPartitionsResult& ob
 }
 
 typedef struct _AddPartitionsRequest__isset {
-  _AddPartitionsRequest__isset() : needResult(true), catName(false) {}
+  _AddPartitionsRequest__isset() : needResult(true), catName(false), txnId(true), validWriteIdList(false) {}
   bool needResult :1;
   bool catName :1;
+  bool txnId :1;
+  bool validWriteIdList :1;
 } _AddPartitionsRequest__isset;
 
 class AddPartitionsRequest {
@@ -5912,7 +6124,7 @@ class AddPartitionsRequest {
 
   AddPartitionsRequest(const AddPartitionsRequest&);
   AddPartitionsRequest& operator=(const AddPartitionsRequest&);
-  AddPartitionsRequest() : dbName(), tblName(), ifNotExists(0), needResult(true), catName() {
+  AddPartitionsRequest() : dbName(), tblName(), ifNotExists(0), needResult(true), catName(), txnId(-1LL), validWriteIdList() {
   }
 
   virtual ~AddPartitionsRequest() throw();
@@ -5922,6 +6134,8 @@ class AddPartitionsRequest {
   bool ifNotExists;
   bool needResult;
   std::string catName;
+  int64_t txnId;
+  std::string validWriteIdList;
 
   _AddPartitionsRequest__isset __isset;
 
@@ -5936,6 +6150,10 @@ class AddPartitionsRequest {
   void __set_needResult(const bool val);
 
   void __set_catName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
 
   bool operator == (const AddPartitionsRequest & rhs) const
   {
@@ -5954,6 +6172,14 @@ class AddPartitionsRequest {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
     return true;
   }
@@ -9873,9 +10099,11 @@ inline std::ostream& operator<<(std::ostream& out, const ClientCapabilities& obj
 }
 
 typedef struct _GetTableRequest__isset {
-  _GetTableRequest__isset() : capabilities(false), catName(false) {}
+  _GetTableRequest__isset() : capabilities(false), catName(false), txnId(true), validWriteIdList(false) {}
   bool capabilities :1;
   bool catName :1;
+  bool txnId :1;
+  bool validWriteIdList :1;
 } _GetTableRequest__isset;
 
 class GetTableRequest {
@@ -9883,7 +10111,7 @@ class GetTableRequest {
 
   GetTableRequest(const GetTableRequest&);
   GetTableRequest& operator=(const GetTableRequest&);
-  GetTableRequest() : dbName(), tblName(), catName() {
+  GetTableRequest() : dbName(), tblName(), catName(), txnId(-1LL), validWriteIdList() {
   }
 
   virtual ~GetTableRequest() throw();
@@ -9891,6 +10119,8 @@ class GetTableRequest {
   std::string tblName;
   ClientCapabilities capabilities;
   std::string catName;
+  int64_t txnId;
+  std::string validWriteIdList;
 
   _GetTableRequest__isset __isset;
 
@@ -9901,6 +10131,10 @@ class GetTableRequest {
   void __set_capabilities(const ClientCapabilities& val);
 
   void __set_catName(const std::string& val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
 
   bool operator == (const GetTableRequest & rhs) const
   {
@@ -9915,6 +10149,14 @@ class GetTableRequest {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
     return true;
   }
@@ -9938,23 +10180,36 @@ inline std::ostream& operator<<(std::ostream& out, const GetTableRequest& obj)
   return out;
 }
 
+typedef struct _GetTableResult__isset {
+  _GetTableResult__isset() : isStatsCompliant(false) {}
+  bool isStatsCompliant :1;
+} _GetTableResult__isset;
 
 class GetTableResult {
  public:
 
   GetTableResult(const GetTableResult&);
   GetTableResult& operator=(const GetTableResult&);
-  GetTableResult() {
+  GetTableResult() : isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~GetTableResult() throw();
   Table table;
+  IsolationLevelCompliance::type isStatsCompliant;
+
+  _GetTableResult__isset __isset;
 
   void __set_table(const Table& val);
+
+  void __set_isStatsCompliant(const IsolationLevelCompliance::type val);
 
   bool operator == (const GetTableResult & rhs) const
   {
     if (!(table == rhs.table))
+      return false;
+    if (__isset.isStatsCompliant != rhs.__isset.isStatsCompliant)
+      return false;
+    else if (__isset.isStatsCompliant && !(isStatsCompliant == rhs.isStatsCompliant))
       return false;
     return true;
   }
@@ -13181,6 +13436,117 @@ class GetRuntimeStatsRequest {
 void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetRuntimeStatsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _AlterPartitionsRequest__isset {
+  _AlterPartitionsRequest__isset() : txnId(true), validWriteIdList(false) {}
+  bool txnId :1;
+  bool validWriteIdList :1;
+} _AlterPartitionsRequest__isset;
+
+class AlterPartitionsRequest {
+ public:
+
+  AlterPartitionsRequest(const AlterPartitionsRequest&);
+  AlterPartitionsRequest& operator=(const AlterPartitionsRequest&);
+  AlterPartitionsRequest() : dbName(), tableName(), txnId(-1LL), validWriteIdList() {
+  }
+
+  virtual ~AlterPartitionsRequest() throw();
+  std::string dbName;
+  std::string tableName;
+  std::vector<Partition>  partitions;
+  EnvironmentContext environmentContext;
+  int64_t txnId;
+  std::string validWriteIdList;
+
+  _AlterPartitionsRequest__isset __isset;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_partitions(const std::vector<Partition> & val);
+
+  void __set_environmentContext(const EnvironmentContext& val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_validWriteIdList(const std::string& val);
+
+  bool operator == (const AlterPartitionsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(partitions == rhs.partitions))
+      return false;
+    if (!(environmentContext == rhs.environmentContext))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
+      return false;
+    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    return true;
+  }
+  bool operator != (const AlterPartitionsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AlterPartitionsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AlterPartitionsRequest &a, AlterPartitionsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AlterPartitionsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AlterPartitionsResponse {
+ public:
+
+  AlterPartitionsResponse(const AlterPartitionsResponse&);
+  AlterPartitionsResponse& operator=(const AlterPartitionsResponse&);
+  AlterPartitionsResponse() {
+  }
+
+  virtual ~AlterPartitionsResponse() throw();
+
+  bool operator == (const AlterPartitionsResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const AlterPartitionsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AlterPartitionsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AlterPartitionsResponse &a, AlterPartitionsResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AlterPartitionsResponse& obj)
 {
   obj.printTo(out);
   return out;

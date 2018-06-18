@@ -49,68 +49,10 @@ import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.ISchemaName;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.StatsType;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.RuntimeStat;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -879,20 +821,29 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public Table getTable(String catName, String dbName, String tblName) throws MetaException {
+    return getTable(catName, dbName, tblName, -1, null);
+  }
+
+  // TODO: if writeIdList is not null, check isolation level compliance for SVS,
+  // possibly with getTableFromCache() with table snapshot in cache.
+  @Override
+  public Table getTable(String catName, String dbName, String tblName,
+                        long txnId, String writeIdList)
+      throws MetaException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
-      return rawStore.getTable(catName, dbName, tblName);
+      return rawStore.getTable(catName, dbName, tblName, txnId,writeIdList);
     }
     Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
-    if (tbl == null) {
+    if (tbl == null || writeIdList != null) {
       // This table is not yet loaded in cache
       // If the prewarm thread is working on this table's database,
       // let's move this table to the top of tblNamesBeingPrewarmed stack,
       // so that it gets loaded to the cache faster and is available for subsequent requests
       tblsPendingPrewarm.prioritizeTableForPrewarm(tblName);
-      return rawStore.getTable(catName, dbName, tblName);
+      return rawStore.getTable(catName, dbName, tblName, txnId, writeIdList);
     }
     if (tbl != null) {
       tbl.unsetPrivileges();
@@ -955,16 +906,26 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public Partition getPartition(String catName, String dbName, String tblName, List<String> part_vals)
       throws MetaException, NoSuchObjectException {
+    return getPartition(catName, dbName, tblName, part_vals, -1, null);
+  }
+
+  // TODO: the same as getTable()
+  @Override
+  public Partition getPartition(String catName, String dbName, String tblName,
+                                List<String> part_vals, long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
-      return rawStore.getPartition(catName, dbName, tblName, part_vals);
+      return rawStore.getPartition(
+          catName, dbName, tblName, part_vals, txnId, writeIdList);
     }
     Partition part = sharedCache.getPartitionFromCache(catName, dbName, tblName, part_vals);
-    if (part == null) {
+    if (part == null || writeIdList != null) {
       // The table containing the partition is not yet loaded in cache
-      return rawStore.getPartition(catName, dbName, tblName, part_vals);
+      return rawStore.getPartition(
+          catName, dbName, tblName, part_vals, txnId, writeIdList);
     }
     return part;
   }
@@ -1204,15 +1165,17 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
-                              List<List<String>> partValsList, List<Partition> newParts)
+                              List<List<String>> partValsList, List<Partition> newParts,
+                              long txnId, String writeIdList)
       throws InvalidObjectException, MetaException {
-    rawStore.alterPartitions(catName, dbName, tblName, partValsList, newParts);
+    rawStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, txnId, writeIdList);
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
       return;
     }
+    // TODO: modify the following method for the case when writeIdList != null.
     sharedCache.alterPartitionsInCache(catName, dbName, tblName, partValsList, newParts);
   }
 
@@ -1656,16 +1619,27 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tblName,
       List<String> colNames) throws MetaException, NoSuchObjectException {
+    return getTableColumnStatistics(catName, dbName, tblName, colNames, -1, null);
+  }
+
+  // TODO: the same as getTable()
+  @Override
+  public ColumnStatistics getTableColumnStatistics(
+      String catName, String dbName, String tblName, List<String> colNames,
+      long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
-      return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
+      return rawStore.getTableColumnStatistics(
+          catName, dbName, tblName, colNames, txnId, writeIdList);
     }
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
-    if (table == null) {
+    if (table == null || writeIdList != null) {
       // The table is not yet loaded in cache
-      return rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
+      return rawStore.getTableColumnStatistics(
+          catName, dbName, tblName, colNames, txnId, writeIdList);
     }
     ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tblName);
     List<ColumnStatisticsObj> colStatObjs =
@@ -1723,6 +1697,15 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<ColumnStatistics> getPartitionColumnStatistics(
+      String catName, String dbName, String tblName, List<String> partNames,
+      List<String> colNames, long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    return rawStore.getPartitionColumnStatistics(
+        catName, dbName, tblName, partNames, colNames, txnId, writeIdList);
+  }
+
+  @Override
   public boolean deletePartitionColumnStatistics(String catName, String dbName, String tblName, String partName,
       List<String> partVals, String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -1743,17 +1726,28 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName, List<String> partNames,
       List<String> colNames) throws MetaException, NoSuchObjectException {
+    return get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, -1, null);
+  }
+
+  @Override
+  // TODO: the same as getTable() for transactional stats.
+  public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
+                                      List<String> partNames, List<String> colNames,
+                                      long txnId, String writeIdList)
+      throws MetaException, NoSuchObjectException {
     List<ColumnStatisticsObj> colStats;
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
-      rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
+      rawStore.get_aggr_stats_for(
+          catName, dbName, tblName, partNames, colNames, txnId, writeIdList);
     }
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
-    if (table == null) {
+    if (table == null || writeIdList != null) {
       // The table is not yet loaded in cache
-      return rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames);
+      return rawStore.get_aggr_stats_for(
+          catName, dbName, tblName, partNames, colNames, txnId, writeIdList);
     }
     List<String> allPartNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
     if (partNames.size() == allPartNames.size()) {

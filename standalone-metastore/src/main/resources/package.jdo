@@ -210,6 +210,12 @@
       <field name="tableType">
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>
+      <field name="txnId">
+        <column name="TXN_ID"/>
+      </field>
+      <field name="writeIdList">
+        <column name="WRITEID_LIST" jdbc-type="CLOB" allows-null="true"/>
+      </field>
     </class>
 
     <class name="MCreationMetadata" identity-type="datastore" table="MV_CREATION_METADATA" detachable="true">
@@ -488,6 +494,12 @@
         <value>
            <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
         </value>
+      </field>
+      <field name="txnId">
+        <column name="TXN_ID"/>
+      </field>
+      <field name="writeIdList">
+        <column name="WRITEID_LIST" jdbc-type="CLOB" allows-null="true"/>
       </field>
     </class>
     
@@ -989,6 +1001,9 @@
       <field name="lastAnalyzed">
         <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
       </field>
+      <field name="txnId">
+        <column name="TXN_ID"/>
+      </field>
     </class>
 
     <class name="MPartitionColumnStatistics" table="PART_COL_STATS" identity-type="datastore" detachable="true">
@@ -1058,6 +1073,9 @@
       </field>
       <field name="lastAnalyzed">
         <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
+      </field>
+      <field name="txnId">
+        <column name="TXN_ID"/>
       </field>
     </class>
     <class name="MVersionTable" table="VERSION" identity-type="datastore" detachable="true">

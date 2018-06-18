@@ -791,6 +791,50 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
+      String dbName, String tableName, List<String> partNames, List<String> colNames,
+      long txnId, String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException {
+    return getPartitionColumnStatistics(getDefaultCatalog(conf), dbName, tableName,
+        partNames, colNames, txnId, validWriteIdList);
+  }
+
+  @Override
+  public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
+      String catName, String dbName, String tableName, List<String> partNames,
+      List<String> colNames, long txnId, String validWriteIdList)
+      throws NoSuchObjectException, MetaException, TException {
+    PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames,
+        partNames);
+    rqst.setCatName(catName);
+    rqst.setTxnId(txnId);
+    rqst.setValidWriteIdList(validWriteIdList);
+    return client.get_partitions_statistics_req(rqst).getPartStats();
+  }
+
+  @Override
+  public AggrStats getAggrColStatsFor(String dbName, String tblName, List<String> colNames,
+      List<String> partNames, long txnId, String writeIdList)
+      throws NoSuchObjectException, MetaException, TException {
+    return getAggrColStatsFor(getDefaultCatalog(conf), dbName, tblName, colNames,
+        partNames, txnId, writeIdList);  }
+
+  @Override
+  public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName, List<String> colNames,
+      List<String> partNames, long txnId, String writeIdList)
+      throws NoSuchObjectException, MetaException, TException {
+    if (colNames.isEmpty() || partNames.isEmpty()) {
+      LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
+      return new AggrStats(new ArrayList<>(),0); // Nothing to aggregate
+    }
+    PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
+    req.setCatName(catName);
+    req.setTxnId(txnId);
+    req.setValidWriteIdList(writeIdList);
+    return client.get_aggr_stats_for(req);
+  }
+
+  @Override
   public List<Partition> exchange_partitions(Map<String, String> partitionSpecs, String sourceCat,
                                              String sourceDb, String sourceTable, String destCat,
                                              String destDb, String destTableName) throws TException {
@@ -1584,10 +1628,30 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public Table getTable(String dbname, String name,
+                 long txnId, String validWriteIdList)
+      throws MetaException, TException, NoSuchObjectException{
+    return getTable(getDefaultCatalog(conf), dbname, name,
+        txnId, validWriteIdList);
+  };
+
+  @Override
   public Table getTable(String catName, String dbName, String tableName) throws TException {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
     req.setCapabilities(version);
+    Table t = client.get_table_req(req).getTable();
+    return deepCopy(filterHook.filterTable(t));
+  }
+
+  @Override
+  public Table getTable(String catName, String dbName, String tableName,
+    long txnId, String validWriteIdList) throws TException {
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    req.setCatName(catName);
+    req.setCapabilities(version);
+    req.setTxnId(txnId);
+    req.setValidWriteIdList(validWriteIdList);
     Table t = client.get_table_req(req).getTable();
     return deepCopy(filterHook.filterTable(t));
   }
@@ -1821,21 +1885,42 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts)
       throws TException {
-    alter_partitions(getDefaultCatalog(conf), dbName, tblName, newParts, null);
+    alter_partitions(
+        getDefaultCatalog(conf), dbName, tblName, newParts, null, -1, null);
   }
 
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts,
                                EnvironmentContext environmentContext) throws TException {
-    alter_partitions(getDefaultCatalog(conf), dbName, tblName, newParts, environmentContext);
+    alter_partitions(
+        getDefaultCatalog(conf), dbName, tblName, newParts, environmentContext, -1, null);
+  }
+
+  @Override
+  public void alter_partitions(String dbName, String tblName, List<Partition> newParts,
+                               EnvironmentContext environmentContext,
+                               long txnId, String writeIdList)
+      throws InvalidOperationException, MetaException, TException {
+    //client.alter_partition_with_environment_context(getDefaultCatalog(conf),
+      //  dbName, tblName, newParts, environmentContext);
+    alter_partitions(getDefaultCatalog(conf),
+        dbName, tblName, newParts, environmentContext, txnId, writeIdList);
+
   }
 
   @Override
   public void alter_partitions(String catName, String dbName, String tblName,
                                List<Partition> newParts,
-                               EnvironmentContext environmentContext) throws TException {
-    client.alter_partitions_with_environment_context(prependCatalogToDbName(catName, dbName, conf),
-        tblName, newParts, environmentContext);
+                               EnvironmentContext environmentContext,
+                               long txnId, String writeIdList) throws TException {
+    AlterPartitionsRequest req = new AlterPartitionsRequest();
+    req.setDbName(prependCatalogToDbName(catName, dbName, conf));
+    req.setTableName(tblName);
+    req.setPartitions(newParts);
+    req.setEnvironmentContext(environmentContext);
+    req.setTxnId(txnId);
+    req.setValidWriteIdList(writeIdList);
+    client.alter_partitions_with_environment_context(req);
   }
 
   @Override
@@ -1963,6 +2048,28 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                                             List<String> colNames) throws TException {
     TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames);
     rqst.setCatName(catName);
+    return client.get_table_statistics_req(rqst).getTableStats();
+  }
+
+  @Override
+  public List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
+                                                            List<String> colNames,
+                                                            long txnId,
+                                                            String validWriteIdList) throws TException {
+    return getTableColumnStatistics(getDefaultCatalog(conf), dbName, tableName, colNames,
+        txnId, validWriteIdList);
+  }
+
+  @Override
+  public List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName,
+                                                            String tableName,
+                                                            List<String> colNames,
+                                                            long txnId,
+                                                            String validWriteIdList) throws TException {
+    TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames);
+    rqst.setCatName(catName);
+    rqst.setTxnId(txnId);
+    rqst.setValidWriteIdList(validWriteIdList);
     return client.get_table_statistics_req(rqst).getTableStats();
   }
 
@@ -3319,4 +3426,5 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setMaxCreateTime(maxCreateTime);
     return client.get_runtime_stats(req);
   }
+
 }

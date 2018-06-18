@@ -168,7 +168,9 @@ CREATE TABLE "PARTITIONS" (
     "LAST_ACCESS_TIME" bigint NOT NULL,
     "PART_NAME" character varying(767) DEFAULT NULL::character varying,
     "SD_ID" bigint,
-    "TBL_ID" bigint
+    "TBL_ID" bigint,
+    "TXN_ID" bigint,
+    "WRITEID_LIST" text
 );
 
 
@@ -392,7 +394,9 @@ CREATE TABLE "TBLS" (
     "TBL_TYPE" character varying(128) DEFAULT NULL::character varying,
     "VIEW_EXPANDED_TEXT" text,
     "VIEW_ORIGINAL_TEXT" text,
-    "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false
+    "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false,
+    "TXN_ID" bigint,
+    "WRITEID_LIST" text
 );
 
 --
@@ -545,7 +549,8 @@ CREATE TABLE "TAB_COL_STATS" (
  "MAX_COL_LEN" bigint,
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
- "LAST_ANALYZED" bigint NOT NULL
+ "LAST_ANALYZED" bigint NOT NULL,
+ "TXN_ID" bigint
 );
 
 --
@@ -583,7 +588,8 @@ CREATE TABLE "PART_COL_STATS" (
  "MAX_COL_LEN" bigint,
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
- "LAST_ANALYZED" bigint NOT NULL
+ "LAST_ANALYZED" bigint NOT NULL,
+ "TXN_ID" bigint
 );
 
 --

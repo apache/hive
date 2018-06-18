@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.avro.generic.GenericData;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -40,13 +41,11 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.common.HiveStatsUtils;
-import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -57,9 +56,12 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -1621,6 +1623,102 @@ public class AcidUtils {
     }
   }
 
+  public static class TableSnapshot {
+    private long txnId;
+    private String validWriteIdList;
+
+    public TableSnapshot() {
+    }
+
+    public TableSnapshot(long txnId, String validWriteIdList) {
+      this.txnId = txnId;
+      this.validWriteIdList = validWriteIdList;
+    }
+
+    public long getTxnId() {
+      return txnId;
+    }
+
+    public String getValidWriteIdList() {
+      return validWriteIdList;
+    }
+
+    public void setTxnId(long txnId) {
+      this.txnId = txnId;
+    }
+
+    public void setValidWriteIdList(String validWriteIdList) {
+      this.validWriteIdList = validWriteIdList;
+    }
+  }
+
+  /**
+   * Create a TableShopshot with the given "conf"
+   * for the table of the given "tbl".
+   *
+   * @param conf
+   * @param tbl
+   * @return TableSnapshot on success, null on failure
+   * @throws LockException
+   */
+  public static TableSnapshot getTableSnapshot(
+      Configuration conf,
+      Table tbl) throws LockException {
+    if (!isTransactionalTable(tbl)) {
+      return null;
+    } else {
+      long txnId = 0;
+      ValidWriteIdList validWriteIdList = null;
+
+      HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
+
+      if (sessionTxnMgr != null) {
+        txnId = sessionTxnMgr.getCurrentTxnId();
+      }
+      String fullTableName = getFullTableName(tbl.getDbName(), tbl.getTableName());
+      if (txnId > 0 && isTransactionalTable(tbl)) {
+        validWriteIdList =
+            getTableValidWriteIdList(conf, fullTableName);
+
+        if (validWriteIdList == null) {
+          validWriteIdList = getTableValidWriteIdListWithTxnList(
+              conf, tbl.getDbName(), tbl.getTableName());
+        }
+      }
+      return new TableSnapshot(txnId,
+          validWriteIdList != null ? validWriteIdList.toString() : null);
+    }
+  }
+
+  /**
+   * Returns ValidWriteIdList for the table with the given "dbName" and "tableName".
+   * This is called when HiveConf has no list for the table.
+   * Otherwise use getTableSnapshot().
+   * @param conf       Configuration
+   * @param dbName
+   * @param tableName
+   * @return ValidWriteIdList on success, null on failure to get a list.
+   * @throws LockException
+   */
+  public static ValidWriteIdList getTableValidWriteIdListWithTxnList(
+      Configuration conf, String dbName, String tableName) throws LockException {
+    HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
+    if (sessionTxnMgr == null) {
+      return null;
+    }
+    ValidWriteIdList validWriteIdList = null;
+    ValidTxnWriteIdList validTxnWriteIdList = null;
+
+    String validTxnList = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    List<String> tablesInput = new ArrayList<>();
+    String fullTableName = getFullTableName(dbName, tableName);
+    tablesInput.add(fullTableName);
+
+    validTxnWriteIdList = sessionTxnMgr.getValidWriteIds(tablesInput, validTxnList);
+    return validTxnWriteIdList != null ?
+        validTxnWriteIdList.getTableValidWriteIdList(fullTableName) : null;
+  }
+
   public static String getFullTableName(String dbName, String tableName) {
     return dbName.toLowerCase() + "." + tableName.toLowerCase();
   }
@@ -1908,8 +2006,8 @@ public class AcidUtils {
   }
 
   public static boolean isAcidEnabled(HiveConf hiveConf) {
-    String txnMgr = hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
-    boolean concurrency =  hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    String txnMgr = hiveConf.getVar(ConfVars.HIVE_TXN_MANAGER);
+    boolean concurrency =  hiveConf.getBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY);
     String dbTxnMgr = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
     if (txnMgr.equals(dbTxnMgr) && concurrency) {
       return true;

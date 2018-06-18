@@ -305,6 +305,23 @@ class SchemaVersionState:
     "DELETED": 8,
   }
 
+class IsolationLevelCompliance:
+  YES = 1
+  NO = 2
+  UNKNOWN = 3
+
+  _VALUES_TO_NAMES = {
+    1: "YES",
+    2: "NO",
+    3: "UNKNOWN",
+  }
+
+  _NAMES_TO_VALUES = {
+    "YES": 1,
+    "NO": 2,
+    "UNKNOWN": 3,
+  }
+
 class FunctionType:
   JAVA = 1
 
@@ -4550,6 +4567,9 @@ class Table:
    - creationMetadata
    - catName
    - ownerType
+   - txnId
+   - validWriteIdList
+   - isStatsCompliant
   """
 
   thrift_spec = (
@@ -4572,9 +4592,12 @@ class Table:
     (16, TType.STRUCT, 'creationMetadata', (CreationMetadata, CreationMetadata.thrift_spec), None, ), # 16
     (17, TType.STRING, 'catName', None, None, ), # 17
     (18, TType.I32, 'ownerType', None,     1, ), # 18
+    (19, TType.I64, 'txnId', None, -1, ), # 19
+    (20, TType.STRING, 'validWriteIdList', None, None, ), # 20
+    (21, TType.I32, 'isStatsCompliant', None, None, ), # 21
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=thrift_spec[18][4],):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=thrift_spec[18][4], txnId=thrift_spec[19][4], validWriteIdList=None, isStatsCompliant=None,):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -4593,6 +4616,9 @@ class Table:
     self.creationMetadata = creationMetadata
     self.catName = catName
     self.ownerType = ownerType
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
+    self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4708,6 +4734,21 @@ class Table:
           self.ownerType = iprot.readI32()
         else:
           iprot.skip(ftype)
+      elif fid == 19:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 20:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 21:
+        if ftype == TType.I32:
+          self.isStatsCompliant = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4797,6 +4838,18 @@ class Table:
       oprot.writeFieldBegin('ownerType', TType.I32, 18)
       oprot.writeI32(self.ownerType)
       oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 19)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 20)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
+    if self.isStatsCompliant is not None:
+      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 21)
+      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4824,6 +4877,9 @@ class Table:
     value = (value * 31) ^ hash(self.creationMetadata)
     value = (value * 31) ^ hash(self.catName)
     value = (value * 31) ^ hash(self.ownerType)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
+    value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
   def __repr__(self):
@@ -4849,6 +4905,9 @@ class Partition:
    - parameters
    - privileges
    - catName
+   - txnId
+   - validWriteIdList
+   - isStatsCompliant
   """
 
   thrift_spec = (
@@ -4862,9 +4921,12 @@ class Partition:
     (7, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 7
     (8, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 8
     (9, TType.STRING, 'catName', None, None, ), # 9
+    (10, TType.I64, 'txnId', None, -1, ), # 10
+    (11, TType.STRING, 'validWriteIdList', None, None, ), # 11
+    (12, TType.I32, 'isStatsCompliant', None, None, ), # 12
   )
 
-  def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None, catName=None,):
+  def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None, catName=None, txnId=thrift_spec[10][4], validWriteIdList=None, isStatsCompliant=None,):
     self.values = values
     self.dbName = dbName
     self.tableName = tableName
@@ -4874,6 +4936,9 @@ class Partition:
     self.parameters = parameters
     self.privileges = privileges
     self.catName = catName
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
+    self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4942,6 +5007,21 @@ class Partition:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.I32:
+          self.isStatsCompliant = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4995,6 +5075,18 @@ class Partition:
       oprot.writeFieldBegin('catName', TType.STRING, 9)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 10)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 11)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
+    if self.isStatsCompliant is not None:
+      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 12)
+      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -5013,6 +5105,9 @@ class Partition:
     value = (value * 31) ^ hash(self.parameters)
     value = (value * 31) ^ hash(self.privileges)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
+    value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
   def __repr__(self):
@@ -5346,6 +5441,9 @@ class PartitionSpec:
    - sharedSDPartitionSpec
    - partitionList
    - catName
+   - txnId
+   - validWriteIdList
+   - isStatsCompliant
   """
 
   thrift_spec = (
@@ -5356,15 +5454,21 @@ class PartitionSpec:
     (4, TType.STRUCT, 'sharedSDPartitionSpec', (PartitionSpecWithSharedSD, PartitionSpecWithSharedSD.thrift_spec), None, ), # 4
     (5, TType.STRUCT, 'partitionList', (PartitionListComposingSpec, PartitionListComposingSpec.thrift_spec), None, ), # 5
     (6, TType.STRING, 'catName', None, None, ), # 6
+    (7, TType.I64, 'txnId', None, -1, ), # 7
+    (8, TType.STRING, 'validWriteIdList', None, None, ), # 8
+    (9, TType.I32, 'isStatsCompliant', None, None, ), # 9
   )
 
-  def __init__(self, dbName=None, tableName=None, rootPath=None, sharedSDPartitionSpec=None, partitionList=None, catName=None,):
+  def __init__(self, dbName=None, tableName=None, rootPath=None, sharedSDPartitionSpec=None, partitionList=None, catName=None, txnId=thrift_spec[7][4], validWriteIdList=None, isStatsCompliant=None,):
     self.dbName = dbName
     self.tableName = tableName
     self.rootPath = rootPath
     self.sharedSDPartitionSpec = sharedSDPartitionSpec
     self.partitionList = partitionList
     self.catName = catName
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
+    self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5407,6 +5511,21 @@ class PartitionSpec:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.I32:
+          self.isStatsCompliant = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -5441,6 +5560,18 @@ class PartitionSpec:
       oprot.writeFieldBegin('catName', TType.STRING, 6)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 7)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 8)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
+    if self.isStatsCompliant is not None:
+      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 9)
+      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -5456,6 +5587,9 @@ class PartitionSpec:
     value = (value * 31) ^ hash(self.sharedSDPartitionSpec)
     value = (value * 31) ^ hash(self.partitionList)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
+    value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
   def __repr__(self):
@@ -6841,17 +6975,26 @@ class ColumnStatistics:
   Attributes:
    - statsDesc
    - statsObj
+   - txnId
+   - validWriteIdList
+   - isStatsCompliant
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'statsDesc', (ColumnStatisticsDesc, ColumnStatisticsDesc.thrift_spec), None, ), # 1
     (2, TType.LIST, 'statsObj', (TType.STRUCT,(ColumnStatisticsObj, ColumnStatisticsObj.thrift_spec)), None, ), # 2
+    (3, TType.I64, 'txnId', None, -1, ), # 3
+    (4, TType.STRING, 'validWriteIdList', None, None, ), # 4
+    (5, TType.I32, 'isStatsCompliant', None, None, ), # 5
   )
 
-  def __init__(self, statsDesc=None, statsObj=None,):
+  def __init__(self, statsDesc=None, statsObj=None, txnId=thrift_spec[3][4], validWriteIdList=None, isStatsCompliant=None,):
     self.statsDesc = statsDesc
     self.statsObj = statsObj
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
+    self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -6879,6 +7022,21 @@ class ColumnStatistics:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I32:
+          self.isStatsCompliant = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -6900,6 +7058,18 @@ class ColumnStatistics:
         iter243.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 3)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
+    if self.isStatsCompliant is not None:
+      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 5)
+      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -6915,6 +7085,9 @@ class ColumnStatistics:
     value = 17
     value = (value * 31) ^ hash(self.statsDesc)
     value = (value * 31) ^ hash(self.statsObj)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
+    value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
   def __repr__(self):
@@ -6933,17 +7106,20 @@ class AggrStats:
   Attributes:
    - colStats
    - partsFound
+   - isStatsCompliant
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'colStats', (TType.STRUCT,(ColumnStatisticsObj, ColumnStatisticsObj.thrift_spec)), None, ), # 1
     (2, TType.I64, 'partsFound', None, None, ), # 2
+    (3, TType.I32, 'isStatsCompliant', None, None, ), # 3
   )
 
-  def __init__(self, colStats=None, partsFound=None,):
+  def __init__(self, colStats=None, partsFound=None, isStatsCompliant=None,):
     self.colStats = colStats
     self.partsFound = partsFound
+    self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -6970,6 +7146,11 @@ class AggrStats:
           self.partsFound = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.isStatsCompliant = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -6991,6 +7172,10 @@ class AggrStats:
       oprot.writeFieldBegin('partsFound', TType.I64, 2)
       oprot.writeI64(self.partsFound)
       oprot.writeFieldEnd()
+    if self.isStatsCompliant is not None:
+      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 3)
+      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -7006,6 +7191,7 @@ class AggrStats:
     value = 17
     value = (value * 31) ^ hash(self.colStats)
     value = (value * 31) ^ hash(self.partsFound)
+    value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
   def __repr__(self):
@@ -7024,17 +7210,23 @@ class SetPartitionsStatsRequest:
   Attributes:
    - colStats
    - needMerge
+   - txnId
+   - validWriteIdList
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'colStats', (TType.STRUCT,(ColumnStatistics, ColumnStatistics.thrift_spec)), None, ), # 1
     (2, TType.BOOL, 'needMerge', None, None, ), # 2
+    (3, TType.I64, 'txnId', None, -1, ), # 3
+    (4, TType.STRING, 'validWriteIdList', None, None, ), # 4
   )
 
-  def __init__(self, colStats=None, needMerge=None,):
+  def __init__(self, colStats=None, needMerge=None, txnId=thrift_spec[3][4], validWriteIdList=None,):
     self.colStats = colStats
     self.needMerge = needMerge
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -7061,6 +7253,16 @@ class SetPartitionsStatsRequest:
           self.needMerge = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -7082,6 +7284,14 @@ class SetPartitionsStatsRequest:
       oprot.writeFieldBegin('needMerge', TType.BOOL, 2)
       oprot.writeBool(self.needMerge)
       oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 3)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -7095,6 +7305,8 @@ class SetPartitionsStatsRequest:
     value = 17
     value = (value * 31) ^ hash(self.colStats)
     value = (value * 31) ^ hash(self.needMerge)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
   def __repr__(self):
@@ -9133,15 +9345,18 @@ class TableStatsResult:
   """
   Attributes:
    - tableStats
+   - isStatsCompliant
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'tableStats', (TType.STRUCT,(ColumnStatisticsObj, ColumnStatisticsObj.thrift_spec)), None, ), # 1
+    (2, TType.I32, 'isStatsCompliant', None, None, ), # 2
   )
 
-  def __init__(self, tableStats=None,):
+  def __init__(self, tableStats=None, isStatsCompliant=None,):
     self.tableStats = tableStats
+    self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9163,6 +9378,11 @@ class TableStatsResult:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.isStatsCompliant = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -9180,6 +9400,10 @@ class TableStatsResult:
         iter380.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.isStatsCompliant is not None:
+      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 2)
+      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -9192,6 +9416,7 @@ class TableStatsResult:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.tableStats)
+    value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
   def __repr__(self):
@@ -9209,15 +9434,18 @@ class PartitionsStatsResult:
   """
   Attributes:
    - partStats
+   - isStatsCompliant
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.MAP, 'partStats', (TType.STRING,None,TType.LIST,(TType.STRUCT,(ColumnStatisticsObj, ColumnStatisticsObj.thrift_spec))), None, ), # 1
+    (2, TType.I32, 'isStatsCompliant', None, None, ), # 2
   )
 
-  def __init__(self, partStats=None,):
+  def __init__(self, partStats=None, isStatsCompliant=None,):
     self.partStats = partStats
+    self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9245,6 +9473,11 @@ class PartitionsStatsResult:
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.isStatsCompliant = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -9266,6 +9499,10 @@ class PartitionsStatsResult:
         oprot.writeListEnd()
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
+    if self.isStatsCompliant is not None:
+      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 2)
+      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -9278,6 +9515,7 @@ class PartitionsStatsResult:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.partStats)
+    value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
   def __repr__(self):
@@ -9298,6 +9536,8 @@ class TableStatsRequest:
    - tblName
    - colNames
    - catName
+   - txnId
+   - validWriteIdList
   """
 
   thrift_spec = (
@@ -9306,13 +9546,17 @@ class TableStatsRequest:
     (2, TType.STRING, 'tblName', None, None, ), # 2
     (3, TType.LIST, 'colNames', (TType.STRING,None), None, ), # 3
     (4, TType.STRING, 'catName', None, None, ), # 4
+    (5, TType.I64, 'txnId', None, -1, ), # 5
+    (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
   )
 
-  def __init__(self, dbName=None, tblName=None, colNames=None, catName=None,):
+  def __init__(self, dbName=None, tblName=None, colNames=None, catName=None, txnId=thrift_spec[5][4], validWriteIdList=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.colNames = colNames
     self.catName = catName
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9348,6 +9592,16 @@ class TableStatsRequest:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -9377,6 +9631,14 @@ class TableStatsRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 4)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 5)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -9396,6 +9658,8 @@ class TableStatsRequest:
     value = (value * 31) ^ hash(self.tblName)
     value = (value * 31) ^ hash(self.colNames)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
   def __repr__(self):
@@ -9417,6 +9681,8 @@ class PartitionsStatsRequest:
    - colNames
    - partNames
    - catName
+   - txnId
+   - validWriteIdList
   """
 
   thrift_spec = (
@@ -9426,14 +9692,18 @@ class PartitionsStatsRequest:
     (3, TType.LIST, 'colNames', (TType.STRING,None), None, ), # 3
     (4, TType.LIST, 'partNames', (TType.STRING,None), None, ), # 4
     (5, TType.STRING, 'catName', None, None, ), # 5
+    (6, TType.I64, 'txnId', None, -1, ), # 6
+    (7, TType.STRING, 'validWriteIdList', None, None, ), # 7
   )
 
-  def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None, catName=None,):
+  def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None, catName=None, txnId=thrift_spec[6][4], validWriteIdList=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.colNames = colNames
     self.partNames = partNames
     self.catName = catName
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9479,6 +9749,16 @@ class PartitionsStatsRequest:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -9515,6 +9795,14 @@ class PartitionsStatsRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 5)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 6)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 7)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -9537,6 +9825,8 @@ class PartitionsStatsRequest:
     value = (value * 31) ^ hash(self.colNames)
     value = (value * 31) ^ hash(self.partNames)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
   def __repr__(self):
@@ -9554,15 +9844,18 @@ class AddPartitionsResult:
   """
   Attributes:
    - partitions
+   - isStatsCompliant
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'partitions', (TType.STRUCT,(Partition, Partition.thrift_spec)), None, ), # 1
+    (2, TType.I32, 'isStatsCompliant', None, None, ), # 2
   )
 
-  def __init__(self, partitions=None,):
+  def __init__(self, partitions=None, isStatsCompliant=None,):
     self.partitions = partitions
+    self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9584,6 +9877,11 @@ class AddPartitionsResult:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.isStatsCompliant = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -9601,6 +9899,10 @@ class AddPartitionsResult:
         iter424.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.isStatsCompliant is not None:
+      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 2)
+      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -9611,6 +9913,7 @@ class AddPartitionsResult:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.partitions)
+    value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
   def __repr__(self):
@@ -9633,6 +9936,8 @@ class AddPartitionsRequest:
    - ifNotExists
    - needResult
    - catName
+   - txnId
+   - validWriteIdList
   """
 
   thrift_spec = (
@@ -9643,15 +9948,19 @@ class AddPartitionsRequest:
     (4, TType.BOOL, 'ifNotExists', None, None, ), # 4
     (5, TType.BOOL, 'needResult', None, True, ), # 5
     (6, TType.STRING, 'catName', None, None, ), # 6
+    (7, TType.I64, 'txnId', None, -1, ), # 7
+    (8, TType.STRING, 'validWriteIdList', None, None, ), # 8
   )
 
-  def __init__(self, dbName=None, tblName=None, parts=None, ifNotExists=None, needResult=thrift_spec[5][4], catName=None,):
+  def __init__(self, dbName=None, tblName=None, parts=None, ifNotExists=None, needResult=thrift_spec[5][4], catName=None, txnId=thrift_spec[7][4], validWriteIdList=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.parts = parts
     self.ifNotExists = ifNotExists
     self.needResult = needResult
     self.catName = catName
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9698,6 +10007,16 @@ class AddPartitionsRequest:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -9735,6 +10054,14 @@ class AddPartitionsRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 6)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 7)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 8)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -9758,6 +10085,8 @@ class AddPartitionsRequest:
     value = (value * 31) ^ hash(self.ifNotExists)
     value = (value * 31) ^ hash(self.needResult)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
   def __repr__(self):
@@ -16609,6 +16938,8 @@ class GetTableRequest:
    - tblName
    - capabilities
    - catName
+   - txnId
+   - validWriteIdList
   """
 
   thrift_spec = (
@@ -16617,13 +16948,17 @@ class GetTableRequest:
     (2, TType.STRING, 'tblName', None, None, ), # 2
     (3, TType.STRUCT, 'capabilities', (ClientCapabilities, ClientCapabilities.thrift_spec), None, ), # 3
     (4, TType.STRING, 'catName', None, None, ), # 4
+    (5, TType.I64, 'txnId', None, -1, ), # 5
+    (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
   )
 
-  def __init__(self, dbName=None, tblName=None, capabilities=None, catName=None,):
+  def __init__(self, dbName=None, tblName=None, capabilities=None, catName=None, txnId=thrift_spec[5][4], validWriteIdList=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.capabilities = capabilities
     self.catName = catName
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -16655,6 +16990,16 @@ class GetTableRequest:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -16681,6 +17026,14 @@ class GetTableRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 4)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 5)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -16698,6 +17051,8 @@ class GetTableRequest:
     value = (value * 31) ^ hash(self.tblName)
     value = (value * 31) ^ hash(self.capabilities)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
   def __repr__(self):
@@ -16715,15 +17070,18 @@ class GetTableResult:
   """
   Attributes:
    - table
+   - isStatsCompliant
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'table', (Table, Table.thrift_spec), None, ), # 1
+    (2, TType.I32, 'isStatsCompliant', None, None, ), # 2
   )
 
-  def __init__(self, table=None,):
+  def __init__(self, table=None, isStatsCompliant=None,):
     self.table = table
+    self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -16740,6 +17098,11 @@ class GetTableResult:
           self.table.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.isStatsCompliant = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -16754,6 +17117,10 @@ class GetTableResult:
       oprot.writeFieldBegin('table', TType.STRUCT, 1)
       self.table.write(oprot)
       oprot.writeFieldEnd()
+    if self.isStatsCompliant is not None:
+      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 2)
+      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -16766,6 +17133,7 @@ class GetTableResult:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.table)
+    value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
   def __repr__(self):
@@ -21653,6 +22021,200 @@ class GetRuntimeStatsRequest:
     value = 17
     value = (value * 31) ^ hash(self.maxWeight)
     value = (value * 31) ^ hash(self.maxCreateTime)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class AlterPartitionsRequest:
+  """
+  Attributes:
+   - dbName
+   - tableName
+   - partitions
+   - environmentContext
+   - txnId
+   - validWriteIdList
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'dbName', None, None, ), # 1
+    (2, TType.STRING, 'tableName', None, None, ), # 2
+    (3, TType.LIST, 'partitions', (TType.STRUCT,(Partition, Partition.thrift_spec)), None, ), # 3
+    (4, TType.STRUCT, 'environmentContext', (EnvironmentContext, EnvironmentContext.thrift_spec), None, ), # 4
+    (5, TType.I64, 'txnId', None, -1, ), # 5
+    (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
+  )
+
+  def __init__(self, dbName=None, tableName=None, partitions=None, environmentContext=None, txnId=thrift_spec[5][4], validWriteIdList=None,):
+    self.dbName = dbName
+    self.tableName = tableName
+    self.partitions = partitions
+    self.environmentContext = environmentContext
+    self.txnId = txnId
+    self.validWriteIdList = validWriteIdList
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.dbName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.tableName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.LIST:
+          self.partitions = []
+          (_etype819, _size816) = iprot.readListBegin()
+          for _i820 in xrange(_size816):
+            _elem821 = Partition()
+            _elem821.read(iprot)
+            self.partitions.append(_elem821)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.environmentContext = EnvironmentContext()
+          self.environmentContext.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.txnId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.validWriteIdList = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('AlterPartitionsRequest')
+    if self.dbName is not None:
+      oprot.writeFieldBegin('dbName', TType.STRING, 1)
+      oprot.writeString(self.dbName)
+      oprot.writeFieldEnd()
+    if self.tableName is not None:
+      oprot.writeFieldBegin('tableName', TType.STRING, 2)
+      oprot.writeString(self.tableName)
+      oprot.writeFieldEnd()
+    if self.partitions is not None:
+      oprot.writeFieldBegin('partitions', TType.LIST, 3)
+      oprot.writeListBegin(TType.STRUCT, len(self.partitions))
+      for iter822 in self.partitions:
+        iter822.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.environmentContext is not None:
+      oprot.writeFieldBegin('environmentContext', TType.STRUCT, 4)
+      self.environmentContext.write(oprot)
+      oprot.writeFieldEnd()
+    if self.txnId is not None:
+      oprot.writeFieldBegin('txnId', TType.I64, 5)
+      oprot.writeI64(self.txnId)
+      oprot.writeFieldEnd()
+    if self.validWriteIdList is not None:
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
+      oprot.writeString(self.validWriteIdList)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.dbName is None:
+      raise TProtocol.TProtocolException(message='Required field dbName is unset!')
+    if self.tableName is None:
+      raise TProtocol.TProtocolException(message='Required field tableName is unset!')
+    if self.partitions is None:
+      raise TProtocol.TProtocolException(message='Required field partitions is unset!')
+    if self.environmentContext is None:
+      raise TProtocol.TProtocolException(message='Required field environmentContext is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.dbName)
+    value = (value * 31) ^ hash(self.tableName)
+    value = (value * 31) ^ hash(self.partitions)
+    value = (value * 31) ^ hash(self.environmentContext)
+    value = (value * 31) ^ hash(self.txnId)
+    value = (value * 31) ^ hash(self.validWriteIdList)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class AlterPartitionsResponse:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('AlterPartitionsResponse')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
     return value
 
   def __repr__(self):

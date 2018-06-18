@@ -1301,8 +1301,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new AssertionError("Unsupported alter materialized view type! : " + alterMVDesc.getOp());
     }
 
-    db.alterTable(mv, environmentContext);
-
+    db.alterTable(mv,environmentContext);
     return 0;
   }
 

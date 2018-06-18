@@ -36,8 +36,24 @@ public class TxnIdUtils {
     }
 
     return checkEquivalentCommittedIds(
-        older.getHighWatermark(), older.getInvalidWriteIds(),
-        newer.getHighWatermark(), newer.getInvalidWriteIds());
+            older.getHighWatermark(), older.getInvalidWriteIds(),
+            newer.getHighWatermark(), newer.getInvalidWriteIds());
+  }
+
+  /**
+   * Check if the give two write id lists are for concurrent writes
+   * on the table.
+   */
+  public static boolean areTheseConcurrentWrites(
+          ValidWriteIdList older, ValidWriteIdList newer, long statsWriteId) {
+    if (!older.getTableName().equalsIgnoreCase(newer.getTableName())) {
+      return false;
+    }
+
+    assert(older.getHighWatermark() <= newer.getHighWatermark());
+
+    // TODO: Just return false for now.
+    return false;
   }
 
   /**
