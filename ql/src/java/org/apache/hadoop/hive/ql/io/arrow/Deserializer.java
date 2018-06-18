@@ -29,9 +29,7 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.IntervalDayVector;
 import org.apache.arrow.vector.IntervalYearVector;
 import org.apache.arrow.vector.SmallIntVector;
-import org.apache.arrow.vector.TimeStampMicroVector;
-import org.apache.arrow.vector.TimeStampMilliVector;
-import org.apache.arrow.vector.TimeStampNanoVector;
+import org.apache.arrow.vector.TimeStampVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
@@ -268,64 +266,11 @@ class Deserializer {
         }
         break;
       case TIMESTAMPMILLI:
-        {
-          for (int i = 0; i < size; i++) {
-            if (arrowVector.isNull(i)) {
-              VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
-            } else {
-              hiveVector.isNull[i] = false;
-
-              // Time = second + sub-second
-              final long timeInMillis = ((TimeStampMilliVector) arrowVector).get(i);
-              final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
-              int subSecondInNanos = (int) ((timeInMillis % MILLIS_PER_SECOND) * NS_PER_MILLIS);
-              long second = timeInMillis / MILLIS_PER_SECOND;
-
-              // A nanosecond value should not be negative
-              if (subSecondInNanos < 0) {
-
-                // So add one second to the negative nanosecond value to make it positive
-                subSecondInNanos += NS_PER_SECOND;
-
-                // Subtract one second from the second value because we added one second
-                second -= 1;
-              }
-              timestampColumnVector.time[i] = second * MILLIS_PER_SECOND;
-              timestampColumnVector.nanos[i] = subSecondInNanos;
-            }
-          }
-        }
-        break;
+      case TIMESTAMPMILLITZ:
       case TIMESTAMPMICRO:
-        {
-          for (int i = 0; i < size; i++) {
-            if (arrowVector.isNull(i)) {
-              VectorizedBatchUtil.setNullColIsNullValue(hiveVector, i);
-            } else {
-              hiveVector.isNull[i] = false;
-
-              // Time = second + sub-second
-              final long timeInMicros = ((TimeStampMicroVector) arrowVector).get(i);
-              final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
-              int subSecondInNanos = (int) ((timeInMicros % MICROS_PER_SECOND) * NS_PER_MICROS);
-              long second = timeInMicros / MICROS_PER_SECOND;
-
-              // A nanosecond value should not be negative
-              if (subSecondInNanos < 0) {
-
-                // So add one second to the negative nanosecond value to make it positive
-                subSecondInNanos += NS_PER_SECOND;
-
-                // Subtract one second from the second value because we added one second
-                second -= 1;
-              }
-              timestampColumnVector.time[i] = second * MILLIS_PER_SECOND;
-              timestampColumnVector.nanos[i] = subSecondInNanos;
-            }
-          }
-        }
-        break;
+      case TIMESTAMPMICROTZ:
       case TIMESTAMPNANO:
+      case TIMESTAMPNANOTZ:
         {
           for (int i = 0; i < size; i++) {
             if (arrowVector.isNull(i)) {
@@ -334,11 +279,36 @@ class Deserializer {
               hiveVector.isNull[i] = false;
 
               // Time = second + sub-second
-              final long timeInNanos = ((TimeStampNanoVector) arrowVector).get(i);
-              final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
-              int subSecondInNanos = (int) (timeInNanos % NS_PER_SECOND);
-              long second = timeInNanos / NS_PER_SECOND;
+              final long time = ((TimeStampVector) arrowVector).get(i);
+              long second;
+              int subSecondInNanos;
+              switch (minorType) {
+                case TIMESTAMPMILLI:
+                case TIMESTAMPMILLITZ:
+                  {
+                    subSecondInNanos = (int) ((time % MILLIS_PER_SECOND) * NS_PER_MILLIS);
+                    second = time / MILLIS_PER_SECOND;
+                  }
+                  break;
+                case TIMESTAMPMICROTZ:
+                case TIMESTAMPMICRO:
+                  {
+                    subSecondInNanos = (int) ((time % MICROS_PER_SECOND) * NS_PER_MICROS);
+                    second = time / MICROS_PER_SECOND;
+                  }
+                  break;
+                case TIMESTAMPNANOTZ:
+                case TIMESTAMPNANO:
+                  {
+                    subSecondInNanos = (int) (time % NS_PER_SECOND);
+                    second = time / NS_PER_SECOND;
+                  }
+                  break;
+                default:
+                  throw new IllegalArgumentException();
+              }
 
+              final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
               // A nanosecond value should not be negative
               if (subSecondInNanos < 0) {
 

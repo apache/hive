@@ -30,7 +30,7 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.IntervalDayVector;
 import org.apache.arrow.vector.IntervalYearVector;
 import org.apache.arrow.vector.SmallIntVector;
-import org.apache.arrow.vector.TimeStampMicroVector;
+import org.apache.arrow.vector.TimeStampMicroTZVector;
 import org.apache.arrow.vector.TinyIntVector;
 import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
@@ -38,6 +38,7 @@ import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.MapVector;
 import org.apache.arrow.vector.complex.NullableMapVector;
+import org.apache.arrow.vector.types.TimeUnit;
 import org.apache.arrow.vector.types.Types;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.FieldType;
@@ -177,8 +178,8 @@ class Serializer {
           case DATE:
             return Types.MinorType.DATEDAY.getType();
           case TIMESTAMP:
-            // HIVE-19723: Prefer microsecond because Spark supports it
-            return Types.MinorType.TIMESTAMPMICRO.getType();
+            // HIVE-19853: Prefer timestamp in microsecond with time zone because Spark supports it
+            return new ArrowType.Timestamp(TimeUnit.MICROSECOND, "UTC");
           case BINARY:
             return Types.MinorType.VARBINARY.getType();
           case DECIMAL:
@@ -433,11 +434,11 @@ class Serializer {
         break;
       case TIMESTAMP:
         {
-          final TimeStampMicroVector timeStampMicroVector = (TimeStampMicroVector) arrowVector;
+          final TimeStampMicroTZVector timeStampMicroTZVector = (TimeStampMicroTZVector) arrowVector;
           final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
           for (int i = 0; i < size; i++) {
             if (hiveVector.isNull[i]) {
-              timeStampMicroVector.setNull(i);
+              timeStampMicroTZVector.setNull(i);
             } else {
               // Time = second + sub-second
               final long secondInMillis = timestampColumnVector.getTime(i);
@@ -446,9 +447,9 @@ class Serializer {
 
               if ((secondInMillis > 0 && secondInMicros < 0) || (secondInMillis < 0 && secondInMicros > 0)) {
                 // If the timestamp cannot be represented in long microsecond, set it as a null value
-                timeStampMicroVector.setNull(i);
+                timeStampMicroTZVector.setNull(i);
               } else {
-                timeStampMicroVector.set(i, secondInMicros + subSecondInMicros);
+                timeStampMicroTZVector.set(i, secondInMicros + subSecondInMicros);
               }
             }
           }
