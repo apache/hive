@@ -2,7 +2,6 @@ set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 10;
 set hive.map.groupby.sorted=true;
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE T1_n80(key STRING, val STRING)

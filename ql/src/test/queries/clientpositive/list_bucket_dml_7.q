@@ -9,7 +9,6 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.merge.rcfile.block.level=true;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
 
 -- list bucketing DML : dynamic partition (one level) , merge , one skewed column

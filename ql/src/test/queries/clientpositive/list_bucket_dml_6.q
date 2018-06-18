@@ -46,7 +46,6 @@ set hive.merge.mapredfiles=false;
 -- with merge
 -- 118 000002_0 
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- SORT_QUERY_RESULTS
 
 -- create a skewed table

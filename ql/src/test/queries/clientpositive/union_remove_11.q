@@ -19,7 +19,6 @@ set mapred.input.dir.recursive=true;
 -- It does not matter, whether the output is merged or not. In this case, merging is turned
 -- on
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n21, it might be easier
 -- to run the test only on hadoop 23
 

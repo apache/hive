@@ -2,7 +2,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 
 CREATE TABLE dest1_n164(c1 INT, c2 STRING) STORED AS TEXTFILE;
 

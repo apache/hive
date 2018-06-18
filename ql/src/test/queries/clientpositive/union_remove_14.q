@@ -16,7 +16,6 @@ set mapred.input.dir.recursive=true;
 -- followed by select star and a file sink.
 -- The union selectstar optimization should be performed, and the union should be removed.
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n16, it might be easier
 -- to run the test only on hadoop 23
 

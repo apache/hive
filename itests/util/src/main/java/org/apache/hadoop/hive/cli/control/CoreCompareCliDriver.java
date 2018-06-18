@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Strings;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -33,6 +32,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import com.google.common.base.Strings;
 public class CoreCompareCliDriver extends CliAdapter{
 
   private static QTestUtil qt;
@@ -126,10 +127,6 @@ public class CoreCompareCliDriver extends CliAdapter{
       qt.addFile(fpath);
       for (String versionFile : versionFiles) {
         qt.addFile(new File(queryDirectory, versionFile), true);
-      }
-
-      if (qt.shouldBeSkipped(fname)) {
-        return;
       }
 
       int ecode = 0;

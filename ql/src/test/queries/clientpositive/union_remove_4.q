@@ -15,7 +15,6 @@ set hive.merge.smallfiles.avgsize=1;
 -- again to process the union. The union can be removed completely.
 -- It does not matter, whether the output is merged or not. In this case, merging is turned
 -- on
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- Since this test creates sub-directories for the output table outputTbl1_n33, it might be easier
 -- to run the test only on hadoop 23
 

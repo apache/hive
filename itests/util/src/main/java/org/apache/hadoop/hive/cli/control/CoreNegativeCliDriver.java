@@ -22,13 +22,14 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 
-import com.google.common.base.Strings;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+
+import com.google.common.base.Strings;
 
 public class CoreNegativeCliDriver extends CliAdapter{
 
@@ -116,10 +117,6 @@ public class CoreNegativeCliDriver extends CliAdapter{
 
       qt.addFile(fpath);
 
-      if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
-        return;
-      }
 
       qt.cliInit(new File(fpath), false);
       int ecode = qt.executeClient(fname);
