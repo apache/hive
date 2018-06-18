@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
@@ -109,7 +110,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           initReplDump(ast);
         } catch (HiveException e) {
-          throw new SemanticException("repl dump failed " + e.getMessage());
+          throw new SemanticException(e.getMessage(), e);
         }
         analyzeReplDump(ast);
         break;
@@ -146,11 +147,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (null != replConfigs) {
           for (Map.Entry<String, String> config : replConfigs.entrySet()) {
             conf.set(config.getKey(), config.getValue());
-            if ("hive.repl.dump.metadata.only".equalsIgnoreCase(config.getKey()) &&
-                    "true".equalsIgnoreCase(config.getValue())) {
-              isMetaDataOnly = true;
-            }
           }
+          isMetaDataOnly = HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY);
         }
       } else if (ast.getChild(currNode).getType() == TOK_TABNAME) {
         // optional tblName was specified.
@@ -184,12 +182,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
-        if (!ReplChangeManager.isSourceOfReplication(database) && !isMetaDataOnly) {
-          throw new SemanticException("Cannot dump database " + dbName +
-                  " as it is not a source of replication");
+        if (!isMetaDataOnly && !ReplChangeManager.isSourceOfReplication(database)) {
+          LOG.error("Cannot dump database " + dbNameOrPattern +
+                  " as it is not a source of replication (repl.source.for)");
+          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getMsg());
         }
       } else {
-        throw new SemanticException("Cannot dump database " + dbName + " as it does not exist");
+        throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
       }
     }
   }
@@ -365,7 +364,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (!fs.exists(loadPath)) {
         // supposed dump path does not exist.
-        throw new FileNotFoundException(loadPath.toUri().toString());
+        LOG.error("File not found " + loadPath.toUri().toString());
+        throw new FileNotFoundException(ErrorMsg.REPL_LOAD_PATH_NOT_FOUND.getMsg());
       }
 
       // Now, the dumped path can be one of three things:
@@ -511,7 +511,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
-      throw new SemanticException(e);
+      throw new SemanticException(e.getMessage(), e);
     }
   }
 
