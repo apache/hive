@@ -135,19 +135,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
+    boolean isMetaDataOnly = false;
     dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
-
-    for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
-      Database database = db.getDatabase(dbName);
-      if (database != null) {
-        if (!ReplChangeManager.isSourceOfReplication(database)) {
-          throw new SemanticException("Cannot dump database " + dbNameOrPattern +
-                  " as it is not a source of replication");
-        }
-      } else {
-        throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
-      }
-    }
 
     // skip the first node, which is always required
     int currNode = 1;
@@ -158,6 +147,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (null != replConfigs) {
           for (Map.Entry<String, String> config : replConfigs.entrySet()) {
             conf.set(config.getKey(), config.getValue());
+            if ("hive.repl.dump.metadata.only".equalsIgnoreCase(config.getKey()) &&
+                    "true".equalsIgnoreCase(config.getValue())) {
+              isMetaDataOnly = true;
+            }
           }
         }
       } else if (ast.getChild(currNode).getType() == TOK_TABNAME) {
@@ -187,6 +180,18 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       // move to the next root node
       currNode++;
+    }
+
+    for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
+      Database database = db.getDatabase(dbName);
+      if (database != null) {
+        if (!ReplChangeManager.isSourceOfReplication(database) && !isMetaDataOnly) {
+          throw new SemanticException("Cannot dump database " + dbName +
+                  " as it is not a source of replication");
+        }
+      } else {
+        throw new SemanticException("Cannot dump database " + dbName + " as it does not exist");
+      }
     }
   }
 
