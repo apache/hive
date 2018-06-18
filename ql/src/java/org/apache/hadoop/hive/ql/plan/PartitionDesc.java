@@ -69,7 +69,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   private VectorPartitionDesc vectorPartitionDesc;
 
   public void setBaseFileName(String baseFileName) {
-    this.baseFileName = baseFileName.intern();
+    this.baseFileName = StringInternUtils.internIfNotNull(baseFileName);
   }
 
   public PartitionDesc() {
