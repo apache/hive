@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import org.apache.calcite.adapter.druid.DirectOperatorConversion;
 import org.apache.calcite.adapter.druid.DruidExpressions;
@@ -51,6 +52,7 @@ import org.joda.time.Period;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -87,9 +89,9 @@ public class DruidSqlOperatorConverter {
       druidOperatorMap
           .put(SqlStdOperatorTable.SUBSTRING, new DruidSqlOperatorConverter.DruidSubstringOperatorConversion());
       druidOperatorMap
-          .put(SqlStdOperatorTable.IS_NULL, new UnarySuffixOperatorConversion(SqlStdOperatorTable.IS_NULL, "isnull"));
+          .put(SqlStdOperatorTable.IS_NULL, new UnaryFunctionOperatorConversion(SqlStdOperatorTable.IS_NULL, "isnull"));
       druidOperatorMap.put(SqlStdOperatorTable.IS_NOT_NULL,
-          new UnarySuffixOperatorConversion(SqlStdOperatorTable.IS_NOT_NULL, "notnull")
+          new UnaryFunctionOperatorConversion(SqlStdOperatorTable.IS_NOT_NULL, "notnull")
       );
       druidOperatorMap.put(HiveTruncSqlOperator.INSTANCE, new DruidDateTruncOperatorConversion());
       druidOperatorMap.put(HiveToDateSqlOperator.INSTANCE, new DruidToDateOperatorConversion());
@@ -346,4 +348,33 @@ public class DruidSqlOperatorConverter {
     );
   }
 
+  public static class UnaryFunctionOperatorConversion implements org.apache.calcite.adapter.druid.DruidSqlOperatorConverter {
+
+    private final SqlOperator operator;
+    private final String druidOperator;
+
+    public UnaryFunctionOperatorConversion(SqlOperator operator, String druidOperator) {
+      this.operator = operator;
+      this.druidOperator = druidOperator;
+    }
+
+    @Override public SqlOperator calciteOperator() {
+      return operator;
+    }
+
+    @Override public String toDruidExpression(RexNode rexNode, RelDataType rowType,
+        DruidQuery druidQuery) {
+      final RexCall call = (RexCall) rexNode;
+
+      final List<String> druidExpressions = DruidExpressions.toDruidExpressions(
+          druidQuery, rowType,
+          call.getOperands());
+
+      if (druidExpressions == null) {
+        return null;
+      }
+
+      return DruidQuery.format("%s(%s)", druidOperator, Iterables.getOnlyElement(druidExpressions));
+    }
+  }
 }
