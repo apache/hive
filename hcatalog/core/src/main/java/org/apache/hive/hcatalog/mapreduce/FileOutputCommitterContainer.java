@@ -33,10 +33,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -323,18 +323,18 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
    * @param params The parameters to store inside the partition
    * @param table The Table metadata object under which this Partition will reside
    * @param fs FileSystem object to operate on the underlying filesystem
-   * @param grpName Group name that owns the table dir
-   * @param perms FsPermission that's the default permission of the table dir.
+   * @param conf HiveConf used to access FS
+   * @param status Permission that's the default permission of the table dir.
    * @return Constructed Partition metadata object
    * @throws java.io.IOException
    */
 
   private Partition constructPartition(
-    JobContext context, OutputJobInfo jobInfo,
-    String partLocnRoot, String dynPartPath, Map<String, String> partKVs,
-    HCatSchema outputSchema, Map<String, String> params,
-    Table table, FileSystem fs,
-    String grpName, FsPermission perms) throws IOException {
+      JobContext context, OutputJobInfo jobInfo,
+      String partLocnRoot, String dynPartPath, Map<String, String> partKVs,
+      HCatSchema outputSchema, Map<String, String> params,
+      Table table, FileSystem fs, HiveConf conf,
+      HdfsUtils.HadoopFileStatus status) throws IOException {
 
     Partition partition = new Partition();
     partition.setDbName(table.getDbName());
@@ -371,18 +371,16 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       for (FieldSchema partKey : table.getPartitionKeys()) {
         if (i++ != 0) {
           fs.mkdirs(partPath); // Attempt to make the path in case it does not exist before we check
-          applyGroupAndPerms(fs, partPath, perms, grpName, false);
+          HdfsUtils.setFullFileStatus(conf, status, status.getFileStatus().getGroup(), fs,
+              partPath, false);
         }
         partPath = constructPartialPartPath(partPath, partKey.getName().toLowerCase(), partKVs);
       }
     }
 
-    // Apply the group and permissions to the leaf partition and files.
-    // Need not bother in case of HDFS as permission is taken care of by setting UMask
-    fs.mkdirs(partPath); // Attempt to make the path in case it does not exist before we check
-    if (!ShimLoader.getHadoopShims().getHCatShim().isFileInHDFS(fs, partPath)) {
-      applyGroupAndPerms(fs, partPath, perms, grpName, true);
-    }
+    // Do not need to set the status on the partition directory. We will do it later recursively.
+    // See: end of the registerPartitions method
+    fs.mkdirs(partPath);
 
     // Set the location in the StorageDescriptor
     if (dynamicPartitioningUsed) {
@@ -398,26 +396,6 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       partition.getSd().setLocation(partPath.toString());
     }
     return partition;
-  }
-
-  private void applyGroupAndPerms(FileSystem fs, Path dir, FsPermission permission,
-                  String group, boolean recursive)
-    throws IOException {
-    if(LOG.isDebugEnabled()) {
-      LOG.debug("applyGroupAndPerms : " + dir +
-          " perms: " + permission +
-          " group: " + group + " recursive: " + recursive);
-    }
-    fs.setPermission(dir, permission);
-    if (recursive) {
-      for (FileStatus fileStatus : fs.listStatus(dir)) {
-        if (fileStatus.isDir()) {
-          applyGroupAndPerms(fs, fileStatus.getPath(), permission, group, true);
-        } else {
-          fs.setPermission(fileStatus.getPath(), permission);
-        }
-      }
-    }
   }
 
   private String getFinalDynamicPartitionDestination(Table table, Map<String, String> partKVs,
@@ -794,21 +772,19 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       StorerInfo storer = InternalUtil.extractStorerInfo(table.getTTable().getSd(),
           table.getParameters());
 
-      FileStatus tblStat = fs.getFileStatus(tblPath);
-      String grpName = tblStat.getGroup();
-      FsPermission perms = tblStat.getPermission();
+      HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, tblPath);
 
       List<Partition> partitionsToAdd = new ArrayList<Partition>();
       if (!dynamicPartitioningUsed) {
         partitionsToAdd.add(constructPartition(context, jobInfo, tblPath.toString(), null,
             jobInfo.getPartitionValues(), jobInfo.getOutputSchema(), getStorerParameterMap(storer),
-            table, fs, grpName, perms));
+            table, fs, hiveConf, status));
       } else {
         for (Entry<String, Map<String, String>> entry : partitionsDiscoveredByPath.entrySet()) {
           partitionsToAdd.add(constructPartition(context, jobInfo,
               getPartitionRootLocation(entry.getKey(), entry.getValue().size()), entry.getKey(),
               entry.getValue(), jobInfo.getOutputSchema(), getStorerParameterMap(storer), table,
-              fs, grpName, perms));
+              fs, hiveConf, status));
         }
       }
 
@@ -950,9 +926,9 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         // Set permissions appropriately for each of the partitions we just created
         // so as to have their permissions mimic the table permissions
         for (Partition p : partitionsAdded){
-          applyGroupAndPerms(fs,new Path(p.getSd().getLocation()),tblStat.getPermission(),tblStat.getGroup(),true);
+          HdfsUtils.setFullFileStatus(conf, status, status.getFileStatus().getGroup(), fs,
+              new Path(p.getSd().getLocation()), true);
         }
-
       }
     } catch (Exception e) {
       if (partitionsAdded.size() > 0) {
