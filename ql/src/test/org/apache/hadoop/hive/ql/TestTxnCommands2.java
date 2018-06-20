@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -60,6 +61,9 @@ import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
+import org.apache.orc.OrcFile;
+import org.apache.orc.Reader;
+import org.apache.orc.TypeDescription;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -2166,6 +2170,62 @@ public class TestTxnCommands2 {
     int [][] resultData = new int[][] {{1,2}, {3,4}};
     List<String> rs = runStatementOnDriver("select a,b from " + Table.MMTBL);
     Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
+  @Test
+  public void testAcidOrcWritePreservesFieldNames() throws Exception {
+    // with vectorization
+    String tableName = "acidorcwritefieldnames";
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    runStatementOnDriver("DROP TABLE IF EXISTS " + tableName);
+    runStatementOnDriver("CREATE TABLE " + tableName + " (a INT, b STRING) CLUSTERED BY (a) INTO " + BUCKET_COUNT + " BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("INSERT INTO " + tableName + " VALUES (1, 'foo'), (2, 'bar')");
+
+    tableName = "acidorcwritefieldnames_complex";
+    runStatementOnDriver("DROP TABLE IF EXISTS " + tableName);
+    runStatementOnDriver("CREATE TABLE " + tableName + " (a INT, b STRING, s STRUCT<c:int, si:STRUCT<d:double," +
+      "e:float>>) CLUSTERED BY (a) INTO " + BUCKET_COUNT +
+      " BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("INSERT INTO " + tableName + " select a, b, named_struct('c',10,'si'," +
+      "named_struct('d',cast(1.0 as double),'e',cast(2.0 as float))) from acidorcwritefieldnames");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] fileStatuses = fs.globStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tableName + "/" + AcidUtils.DELTA_PREFIX + "*/" + AcidUtils.BUCKET_PREFIX + "*"));
+    Assert.assertEquals(BUCKET_COUNT, fileStatuses.length);
+
+    OrcFile.ReaderOptions readerOptions = OrcFile.readerOptions(hiveConf);
+    for (FileStatus fileStatus : fileStatuses) {
+      Reader r = OrcFile.createReader(fileStatus.getPath(), readerOptions);
+      TypeDescription rowSchema = r.getSchema().getChildren().get(5);
+      Assert.assertEquals("struct<a:int,b:string,s:struct<c:int,si:struct<d:double,e:float>>>", rowSchema.toString());
+    }
+
+    // without vectorization
+    tableName = "acidorcwritefieldnames";
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    runStatementOnDriver("DROP TABLE IF EXISTS " + tableName);
+    runStatementOnDriver("CREATE TABLE " + tableName + " (a INT, b STRING) CLUSTERED BY (a) INTO " + BUCKET_COUNT + " BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("INSERT INTO " + tableName + " VALUES (1, 'foo'), (2, 'bar')");
+
+    tableName = "acidorcwritefieldnames_complex";
+    runStatementOnDriver("DROP TABLE IF EXISTS " + tableName);
+    runStatementOnDriver("CREATE TABLE " + tableName + " (a INT, b STRING, s STRUCT<c:int, si:STRUCT<d:double," +
+      "e:float>>) CLUSTERED BY (a) INTO " + BUCKET_COUNT +
+      " BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("INSERT INTO " + tableName + " select a, b, named_struct('c',10,'si'," +
+      "named_struct('d',cast(1.0 as double),'e',cast(2.0 as float))) from acidorcwritefieldnames");
+
+    fs = FileSystem.get(hiveConf);
+    fileStatuses = fs.globStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tableName + "/" + AcidUtils.DELTA_PREFIX + "*/" + AcidUtils.BUCKET_PREFIX + "*"));
+    Assert.assertEquals(BUCKET_COUNT, fileStatuses.length);
+
+    readerOptions = OrcFile.readerOptions(hiveConf);
+    for (FileStatus fileStatus : fileStatuses) {
+      Reader r = OrcFile.createReader(fileStatus.getPath(), readerOptions);
+      TypeDescription rowSchema = r.getSchema().getChildren().get(5);
+      Assert.assertEquals("struct<a:int,b:string,s:struct<c:int,si:struct<d:double,e:float>>>", rowSchema.toString());
+    }
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
   }
 
   /**
