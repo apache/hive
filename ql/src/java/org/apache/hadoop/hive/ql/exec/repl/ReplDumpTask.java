@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -123,7 +124,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
-      return 1;
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     return 0;
   }
