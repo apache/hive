@@ -111,7 +111,7 @@ POSTHOOK: query: select sum(hash(*)) from alltypesorc3xcols
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc3xcols
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--302946892512
+-73477136966
 PREHOOK: query: alter table alltypesorc3xcols concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
 PREHOOK: Input: default@alltypesorc3xcols
@@ -137,7 +137,7 @@ POSTHOOK: query: select sum(hash(*)) from alltypesorc3xcols
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc3xcols
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--302946892512
+-73477136966
 PREHOOK: query: select * from alltypesorc3xcols limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc3xcols
@@ -147,8 +147,8 @@ Structure for hdfs://### HDFS PATH ###
 File Version: 0.12 with ORC_135
 Rows: 24576
 Compression: ZLIB
-Compression size: 262144
-Type: struct<_col0:tinyint,_col1:smallint,_col2:int,_col3:bigint,_col4:float,_col5:double,_col6:string,_col7:string,_col8:timestamp,_col9:timestamp,_col10:boolean,_col11:boolean,_col12:tinyint,_col13:smallint,_col14:int,_col15:bigint,_col16:float,_col17:double,_col18:string,_col19:string,_col20:timestamp,_col21:timestamp,_col22:boolean,_col23:boolean,_col24:tinyint,_col25:smallint,_col26:int,_col27:bigint,_col28:float,_col29:double,_col30:string,_col31:string,_col32:timestamp,_col33:timestamp,_col34:boolean,_col35:boolean>
+Compression size: 131072
+Type: struct<atinyint:tinyint,asmallint:smallint,aint:int,abigint:bigint,afloat:float,adouble:double,astring1:string,astring2:string,atimestamp1:timestamp,atimestamp2:timestamp,aboolean1:boolean,aboolean2:boolean,btinyint:tinyint,bsmallint:smallint,bint:int,bbigint:bigint,bfloat:float,bdouble:double,bstring1:string,bstring2:string,btimestamp1:timestamp,btimestamp2:timestamp,bboolean1:boolean,bboolean2:boolean,ctinyint:tinyint,csmallint:smallint,cint:int,cbigint:bigint,cfloat:float,cdouble:double,cstring1:string,cstring2:string,ctimestamp1:timestamp,ctimestamp2:timestamp,cboolean1:boolean,cboolean2:boolean>
 
 Stripe Statistics:
   Stripe 1:
@@ -161,8 +161,8 @@ Stripe Statistics:
     Column 6: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 7: count: 12288 hasNull: false min: 00020767-dd8f-4f4d-bd68-4b7be64b8e44 max: fffa3516-e219-4027-b0d3-72bb2e676c52 sum: 442368
     Column 8: count: 12288 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 884736
-    Column 9: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
-    Column 10: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 9: count: 9173 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
+    Column 10: count: 9174 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
     Column 11: count: 9174 hasNull: true true: 6138
     Column 12: count: 9173 hasNull: true true: 3983
     Column 13: count: 9173 hasNull: true min: -64 max: 62 sum: -39856
@@ -173,8 +173,8 @@ Stripe Statistics:
     Column 18: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 19: count: 9174 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 127881
     Column 20: count: 9173 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 149134
-    Column 21: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
-    Column 22: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 21: count: 9173 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
+    Column 22: count: 9174 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
     Column 23: count: 9174 hasNull: true true: 6138
     Column 24: count: 9173 hasNull: true true: 3983
     Column 25: count: 9173 hasNull: true min: -64 max: 62 sum: -39856
@@ -185,8 +185,8 @@ Stripe Statistics:
     Column 30: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 31: count: 9174 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 127881
     Column 32: count: 9173 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 149134
-    Column 33: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
-    Column 34: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 33: count: 9173 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
+    Column 34: count: 9174 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
     Column 35: count: 9174 hasNull: true true: 6138
     Column 36: count: 9173 hasNull: true true: 3983
   Stripe 2:
@@ -199,8 +199,8 @@ Stripe Statistics:
     Column 6: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 7: count: 12288 hasNull: false min: 00020767-dd8f-4f4d-bd68-4b7be64b8e44 max: fffa3516-e219-4027-b0d3-72bb2e676c52 sum: 442368
     Column 8: count: 12288 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 884736
-    Column 9: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
-    Column 10: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 9: count: 9173 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
+    Column 10: count: 9174 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
     Column 11: count: 9174 hasNull: true true: 6138
     Column 12: count: 9173 hasNull: true true: 3983
     Column 13: count: 9173 hasNull: true min: -64 max: 62 sum: -39856
@@ -211,8 +211,8 @@ Stripe Statistics:
     Column 18: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 19: count: 9174 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 127881
     Column 20: count: 9173 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 149134
-    Column 21: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
-    Column 22: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 21: count: 9173 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
+    Column 22: count: 9174 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
     Column 23: count: 9174 hasNull: true true: 6138
     Column 24: count: 9173 hasNull: true true: 3983
     Column 25: count: 9173 hasNull: true min: -64 max: 62 sum: -39856
@@ -223,8 +223,8 @@ Stripe Statistics:
     Column 30: count: 9174 hasNull: true min: -16379.0 max: 9763215.5639 sum: 5.62236530305E7
     Column 31: count: 9174 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 127881
     Column 32: count: 9173 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 149134
-    Column 33: count: 9173 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
-    Column 34: count: 9174 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+    Column 33: count: 9173 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
+    Column 34: count: 9174 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
     Column 35: count: 9174 hasNull: true true: 6138
     Column 36: count: 9173 hasNull: true true: 3983
 
@@ -238,8 +238,8 @@ File Statistics:
   Column 6: count: 18348 hasNull: true min: -16379.0 max: 9763215.5639 sum: 1.12447306061E8
   Column 7: count: 24576 hasNull: false min: 00020767-dd8f-4f4d-bd68-4b7be64b8e44 max: fffa3516-e219-4027-b0d3-72bb2e676c52 sum: 884736
   Column 8: count: 24576 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 1769472
-  Column 9: count: 18346 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
-  Column 10: count: 18348 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+  Column 9: count: 18346 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
+  Column 10: count: 18348 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
   Column 11: count: 18348 hasNull: true true: 12276
   Column 12: count: 18346 hasNull: true true: 7966
   Column 13: count: 18346 hasNull: true min: -64 max: 62 sum: -79712
@@ -250,8 +250,8 @@ File Statistics:
   Column 18: count: 18348 hasNull: true min: -16379.0 max: 9763215.5639 sum: 1.12447306061E8
   Column 19: count: 18348 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 255762
   Column 20: count: 18346 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 298268
-  Column 21: count: 18346 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
-  Column 22: count: 18348 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+  Column 21: count: 18346 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
+  Column 22: count: 18348 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
   Column 23: count: 18348 hasNull: true true: 12276
   Column 24: count: 18346 hasNull: true true: 7966
   Column 25: count: 18346 hasNull: true min: -64 max: 62 sum: -79712
@@ -262,136 +262,136 @@ File Statistics:
   Column 30: count: 18348 hasNull: true min: -16379.0 max: 9763215.5639 sum: 1.12447306061E8
   Column 31: count: 18348 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yy2GiGM sum: 255762
   Column 32: count: 18346 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 298268
-  Column 33: count: 18346 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
-  Column 34: count: 18348 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808
+  Column 33: count: 18346 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
+  Column 34: count: 18348 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808
   Column 35: count: 18348 hasNull: true true: 12276
   Column 36: count: 18346 hasNull: true true: 7966
 
 Stripes:
-  Stripe: offset: 3 data: 1500017 rows: 12288 tail: 501 index: 2836
+  Stripe: offset: 3 data: 1498336 rows: 12288 tail: 493 index: 2821
     Stream: column 0 section ROW_INDEX start: 3 length 21
     Stream: column 1 section ROW_INDEX start: 24 length 53
     Stream: column 2 section ROW_INDEX start: 77 length 67
-    Stream: column 3 section ROW_INDEX start: 144 length 81
-    Stream: column 4 section ROW_INDEX start: 225 length 83
-    Stream: column 5 section ROW_INDEX start: 308 length 77
-    Stream: column 6 section ROW_INDEX start: 385 length 77
-    Stream: column 7 section ROW_INDEX start: 462 length 176
-    Stream: column 8 section ROW_INDEX start: 638 length 267
-    Stream: column 9 section ROW_INDEX start: 905 length 63
-    Stream: column 10 section ROW_INDEX start: 968 length 57
-    Stream: column 11 section ROW_INDEX start: 1025 length 47
-    Stream: column 12 section ROW_INDEX start: 1072 length 47
-    Stream: column 13 section ROW_INDEX start: 1119 length 53
-    Stream: column 14 section ROW_INDEX start: 1172 length 67
-    Stream: column 15 section ROW_INDEX start: 1239 length 81
-    Stream: column 16 section ROW_INDEX start: 1320 length 83
-    Stream: column 17 section ROW_INDEX start: 1403 length 77
-    Stream: column 18 section ROW_INDEX start: 1480 length 77
-    Stream: column 19 section ROW_INDEX start: 1557 length 115
-    Stream: column 20 section ROW_INDEX start: 1672 length 93
-    Stream: column 21 section ROW_INDEX start: 1765 length 63
-    Stream: column 22 section ROW_INDEX start: 1828 length 57
-    Stream: column 23 section ROW_INDEX start: 1885 length 47
-    Stream: column 24 section ROW_INDEX start: 1932 length 47
-    Stream: column 25 section ROW_INDEX start: 1979 length 53
-    Stream: column 26 section ROW_INDEX start: 2032 length 67
-    Stream: column 27 section ROW_INDEX start: 2099 length 81
-    Stream: column 28 section ROW_INDEX start: 2180 length 83
-    Stream: column 29 section ROW_INDEX start: 2263 length 77
-    Stream: column 30 section ROW_INDEX start: 2340 length 77
-    Stream: column 31 section ROW_INDEX start: 2417 length 115
-    Stream: column 32 section ROW_INDEX start: 2532 length 93
-    Stream: column 33 section ROW_INDEX start: 2625 length 63
-    Stream: column 34 section ROW_INDEX start: 2688 length 57
-    Stream: column 35 section ROW_INDEX start: 2745 length 47
-    Stream: column 36 section ROW_INDEX start: 2792 length 47
-    Stream: column 1 section PRESENT start: 2839 length 51
-    Stream: column 1 section DATA start: 2890 length 5448
-    Stream: column 2 section PRESENT start: 8338 length 53
-    Stream: column 2 section DATA start: 8391 length 12144
-    Stream: column 3 section PRESENT start: 20535 length 53
-    Stream: column 3 section DATA start: 20588 length 24618
-    Stream: column 4 section PRESENT start: 45206 length 52
-    Stream: column 4 section DATA start: 45258 length 24681
-    Stream: column 5 section PRESENT start: 69939 length 51
-    Stream: column 5 section DATA start: 69990 length 9927
-    Stream: column 6 section PRESENT start: 79917 length 53
-    Stream: column 6 section DATA start: 79970 length 19755
-    Stream: column 7 section DATA start: 99725 length 258570
-    Stream: column 7 section LENGTH start: 358295 length 108
-    Stream: column 8 section DATA start: 358403 length 517341
-    Stream: column 8 section LENGTH start: 875744 length 108
-    Stream: column 9 section PRESENT start: 875852 length 52
-    Stream: column 9 section DATA start: 875904 length 8045
-    Stream: column 9 section SECONDARY start: 883949 length 9555
-    Stream: column 10 section PRESENT start: 893504 length 58
-    Stream: column 10 section DATA start: 893562 length 8082
-    Stream: column 10 section SECONDARY start: 901644 length 9590
-    Stream: column 11 section PRESENT start: 911234 length 51
-    Stream: column 11 section DATA start: 911285 length 782
-    Stream: column 12 section PRESENT start: 912067 length 54
-    Stream: column 12 section DATA start: 912121 length 783
-    Stream: column 13 section PRESENT start: 912904 length 51
-    Stream: column 13 section DATA start: 912955 length 5448
-    Stream: column 14 section PRESENT start: 918403 length 53
-    Stream: column 14 section DATA start: 918456 length 12144
-    Stream: column 15 section PRESENT start: 930600 length 53
-    Stream: column 15 section DATA start: 930653 length 24618
-    Stream: column 16 section PRESENT start: 955271 length 52
-    Stream: column 16 section DATA start: 955323 length 24681
-    Stream: column 17 section PRESENT start: 980004 length 51
-    Stream: column 17 section DATA start: 980055 length 9927
-    Stream: column 18 section PRESENT start: 989982 length 53
-    Stream: column 18 section DATA start: 990035 length 19755
-    Stream: column 19 section PRESENT start: 1009790 length 51
-    Stream: column 19 section DATA start: 1009841 length 11009
-    Stream: column 19 section LENGTH start: 1020850 length 3722
-    Stream: column 19 section DICTIONARY_DATA start: 1024572 length 65435
-    Stream: column 20 section PRESENT start: 1090007 length 54
-    Stream: column 20 section DATA start: 1090061 length 11006
-    Stream: column 20 section LENGTH start: 1101067 length 3739
-    Stream: column 20 section DICTIONARY_DATA start: 1104806 length 66022
-    Stream: column 21 section PRESENT start: 1170828 length 52
-    Stream: column 21 section DATA start: 1170880 length 8045
-    Stream: column 21 section SECONDARY start: 1178925 length 9555
-    Stream: column 22 section PRESENT start: 1188480 length 58
-    Stream: column 22 section DATA start: 1188538 length 8082
-    Stream: column 22 section SECONDARY start: 1196620 length 9590
-    Stream: column 23 section PRESENT start: 1206210 length 51
-    Stream: column 23 section DATA start: 1206261 length 782
-    Stream: column 24 section PRESENT start: 1207043 length 54
-    Stream: column 24 section DATA start: 1207097 length 783
-    Stream: column 25 section PRESENT start: 1207880 length 51
-    Stream: column 25 section DATA start: 1207931 length 5448
-    Stream: column 26 section PRESENT start: 1213379 length 53
-    Stream: column 26 section DATA start: 1213432 length 12144
-    Stream: column 27 section PRESENT start: 1225576 length 53
-    Stream: column 27 section DATA start: 1225629 length 24618
-    Stream: column 28 section PRESENT start: 1250247 length 52
-    Stream: column 28 section DATA start: 1250299 length 24681
-    Stream: column 29 section PRESENT start: 1274980 length 51
-    Stream: column 29 section DATA start: 1275031 length 9927
-    Stream: column 30 section PRESENT start: 1284958 length 53
-    Stream: column 30 section DATA start: 1285011 length 19755
-    Stream: column 31 section PRESENT start: 1304766 length 51
-    Stream: column 31 section DATA start: 1304817 length 11009
-    Stream: column 31 section LENGTH start: 1315826 length 3722
-    Stream: column 31 section DICTIONARY_DATA start: 1319548 length 65435
-    Stream: column 32 section PRESENT start: 1384983 length 54
-    Stream: column 32 section DATA start: 1385037 length 11006
-    Stream: column 32 section LENGTH start: 1396043 length 3739
-    Stream: column 32 section DICTIONARY_DATA start: 1399782 length 66022
-    Stream: column 33 section PRESENT start: 1465804 length 52
-    Stream: column 33 section DATA start: 1465856 length 8045
-    Stream: column 33 section SECONDARY start: 1473901 length 9555
-    Stream: column 34 section PRESENT start: 1483456 length 58
-    Stream: column 34 section DATA start: 1483514 length 8082
-    Stream: column 34 section SECONDARY start: 1491596 length 9590
-    Stream: column 35 section PRESENT start: 1501186 length 51
-    Stream: column 35 section DATA start: 1501237 length 782
-    Stream: column 36 section PRESENT start: 1502019 length 54
-    Stream: column 36 section DATA start: 1502073 length 783
+    Stream: column 3 section ROW_INDEX start: 144 length 79
+    Stream: column 4 section ROW_INDEX start: 223 length 83
+    Stream: column 5 section ROW_INDEX start: 306 length 77
+    Stream: column 6 section ROW_INDEX start: 383 length 77
+    Stream: column 7 section ROW_INDEX start: 460 length 170
+    Stream: column 8 section ROW_INDEX start: 630 length 264
+    Stream: column 9 section ROW_INDEX start: 894 length 63
+    Stream: column 10 section ROW_INDEX start: 957 length 57
+    Stream: column 11 section ROW_INDEX start: 1014 length 47
+    Stream: column 12 section ROW_INDEX start: 1061 length 47
+    Stream: column 13 section ROW_INDEX start: 1108 length 53
+    Stream: column 14 section ROW_INDEX start: 1161 length 67
+    Stream: column 15 section ROW_INDEX start: 1228 length 79
+    Stream: column 16 section ROW_INDEX start: 1307 length 83
+    Stream: column 17 section ROW_INDEX start: 1390 length 77
+    Stream: column 18 section ROW_INDEX start: 1467 length 77
+    Stream: column 19 section ROW_INDEX start: 1544 length 115
+    Stream: column 20 section ROW_INDEX start: 1659 length 93
+    Stream: column 21 section ROW_INDEX start: 1752 length 63
+    Stream: column 22 section ROW_INDEX start: 1815 length 57
+    Stream: column 23 section ROW_INDEX start: 1872 length 47
+    Stream: column 24 section ROW_INDEX start: 1919 length 47
+    Stream: column 25 section ROW_INDEX start: 1966 length 53
+    Stream: column 26 section ROW_INDEX start: 2019 length 67
+    Stream: column 27 section ROW_INDEX start: 2086 length 79
+    Stream: column 28 section ROW_INDEX start: 2165 length 83
+    Stream: column 29 section ROW_INDEX start: 2248 length 77
+    Stream: column 30 section ROW_INDEX start: 2325 length 77
+    Stream: column 31 section ROW_INDEX start: 2402 length 115
+    Stream: column 32 section ROW_INDEX start: 2517 length 93
+    Stream: column 33 section ROW_INDEX start: 2610 length 63
+    Stream: column 34 section ROW_INDEX start: 2673 length 57
+    Stream: column 35 section ROW_INDEX start: 2730 length 47
+    Stream: column 36 section ROW_INDEX start: 2777 length 47
+    Stream: column 1 section PRESENT start: 2824 length 51
+    Stream: column 1 section DATA start: 2875 length 5448
+    Stream: column 2 section PRESENT start: 8323 length 53
+    Stream: column 2 section DATA start: 8376 length 12078
+    Stream: column 3 section PRESENT start: 20454 length 53
+    Stream: column 3 section DATA start: 20507 length 24479
+    Stream: column 4 section PRESENT start: 44986 length 52
+    Stream: column 4 section DATA start: 45038 length 24479
+    Stream: column 5 section PRESENT start: 69517 length 51
+    Stream: column 5 section DATA start: 69568 length 9927
+    Stream: column 6 section PRESENT start: 79495 length 53
+    Stream: column 6 section DATA start: 79548 length 19755
+    Stream: column 7 section DATA start: 99303 length 259558
+    Stream: column 7 section LENGTH start: 358861 length 12
+    Stream: column 8 section DATA start: 358873 length 518777
+    Stream: column 8 section LENGTH start: 877650 length 12
+    Stream: column 9 section PRESENT start: 877662 length 52
+    Stream: column 9 section DATA start: 877714 length 7769
+    Stream: column 9 section SECONDARY start: 885483 length 9448
+    Stream: column 10 section PRESENT start: 894931 length 58
+    Stream: column 10 section DATA start: 894989 length 7778
+    Stream: column 10 section SECONDARY start: 902767 length 9469
+    Stream: column 11 section PRESENT start: 912236 length 51
+    Stream: column 11 section DATA start: 912287 length 782
+    Stream: column 12 section PRESENT start: 913069 length 54
+    Stream: column 12 section DATA start: 913123 length 783
+    Stream: column 13 section PRESENT start: 913906 length 51
+    Stream: column 13 section DATA start: 913957 length 5448
+    Stream: column 14 section PRESENT start: 919405 length 53
+    Stream: column 14 section DATA start: 919458 length 12078
+    Stream: column 15 section PRESENT start: 931536 length 53
+    Stream: column 15 section DATA start: 931589 length 24479
+    Stream: column 16 section PRESENT start: 956068 length 52
+    Stream: column 16 section DATA start: 956120 length 24479
+    Stream: column 17 section PRESENT start: 980599 length 51
+    Stream: column 17 section DATA start: 980650 length 9927
+    Stream: column 18 section PRESENT start: 990577 length 53
+    Stream: column 18 section DATA start: 990630 length 19755
+    Stream: column 19 section PRESENT start: 1010385 length 51
+    Stream: column 19 section DATA start: 1010436 length 10942
+    Stream: column 19 section LENGTH start: 1021378 length 3722
+    Stream: column 19 section DICTIONARY_DATA start: 1025100 length 65435
+    Stream: column 20 section PRESENT start: 1090535 length 54
+    Stream: column 20 section DATA start: 1090589 length 10939
+    Stream: column 20 section LENGTH start: 1101528 length 3739
+    Stream: column 20 section DICTIONARY_DATA start: 1105267 length 66022
+    Stream: column 21 section PRESENT start: 1171289 length 52
+    Stream: column 21 section DATA start: 1171341 length 7769
+    Stream: column 21 section SECONDARY start: 1179110 length 9448
+    Stream: column 22 section PRESENT start: 1188558 length 58
+    Stream: column 22 section DATA start: 1188616 length 7778
+    Stream: column 22 section SECONDARY start: 1196394 length 9469
+    Stream: column 23 section PRESENT start: 1205863 length 51
+    Stream: column 23 section DATA start: 1205914 length 782
+    Stream: column 24 section PRESENT start: 1206696 length 54
+    Stream: column 24 section DATA start: 1206750 length 783
+    Stream: column 25 section PRESENT start: 1207533 length 51
+    Stream: column 25 section DATA start: 1207584 length 5448
+    Stream: column 26 section PRESENT start: 1213032 length 53
+    Stream: column 26 section DATA start: 1213085 length 12078
+    Stream: column 27 section PRESENT start: 1225163 length 53
+    Stream: column 27 section DATA start: 1225216 length 24479
+    Stream: column 28 section PRESENT start: 1249695 length 52
+    Stream: column 28 section DATA start: 1249747 length 24479
+    Stream: column 29 section PRESENT start: 1274226 length 51
+    Stream: column 29 section DATA start: 1274277 length 9927
+    Stream: column 30 section PRESENT start: 1284204 length 53
+    Stream: column 30 section DATA start: 1284257 length 19755
+    Stream: column 31 section PRESENT start: 1304012 length 51
+    Stream: column 31 section DATA start: 1304063 length 10942
+    Stream: column 31 section LENGTH start: 1315005 length 3722
+    Stream: column 31 section DICTIONARY_DATA start: 1318727 length 65435
+    Stream: column 32 section PRESENT start: 1384162 length 54
+    Stream: column 32 section DATA start: 1384216 length 10939
+    Stream: column 32 section LENGTH start: 1395155 length 3739
+    Stream: column 32 section DICTIONARY_DATA start: 1398894 length 66022
+    Stream: column 33 section PRESENT start: 1464916 length 52
+    Stream: column 33 section DATA start: 1464968 length 7769
+    Stream: column 33 section SECONDARY start: 1472737 length 9448
+    Stream: column 34 section PRESENT start: 1482185 length 58
+    Stream: column 34 section DATA start: 1482243 length 7778
+    Stream: column 34 section SECONDARY start: 1490021 length 9469
+    Stream: column 35 section PRESENT start: 1499490 length 51
+    Stream: column 35 section DATA start: 1499541 length 782
+    Stream: column 36 section PRESENT start: 1500323 length 54
+    Stream: column 36 section DATA start: 1500377 length 783
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT
     Encoding column 2: DIRECT_V2
@@ -437,13 +437,13 @@ Stripes:
       Entry 1: count: 1264 hasNull: true min: -64 max: 62 sum: 10347 positions: 0,182,99,0,0,5937,2
     Row group indices for column 2:
       Entry 0: count: 7924 hasNull: true min: -16379 max: 16376 sum: 9298530 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,15334,272
+      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,10231,272
     Row group indices for column 3:
       Entry 0: count: 7139 hasNull: true min: -1073051226 max: 1073680599 sum: 1417841516466 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,28584,0
+      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,16332,0
     Row group indices for column 4:
       Entry 0: count: 6889 hasNull: true min: -2147311592 max: 2144325818 sum: -24788202148 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,26534,262
+      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,18366,262
     Row group indices for column 5:
       Entry 0: count: 7909 hasNull: true min: -64.0 max: 79.5530014038086 sum: -49823.35599219799 positions: 0,0,0,0,0,0
       Entry 1: count: 1264 hasNull: true min: -64.0 max: 62.0 sum: 10343.719999313354 positions: 0,182,99,0,0,31636
@@ -452,16 +452,16 @@ Stripes:
       Entry 1: count: 1250 hasNull: true min: -16309.0 max: 9763215.5639 sum: 7897951.792899999 positions: 0,126,96,0,0,63392
     Row group indices for column 7:
       Entry 0: count: 10000 hasNull: false min: 00020767-dd8f-4f4d-bd68-4b7be64b8e44 max: fffa3516-e219-4027-b0d3-72bb2e676c52 sum: 360000 positions: 0,0,0,0,0
-      Entry 1: count: 2288 hasNull: false min: 002d8ccb-a094-4d10-b283-999770cf8488 max: ffacef94-41da-4230-807a-509bbf50b057 sum: 82368 positions: 153190,97856,0,9766,272
+      Entry 1: count: 2288 hasNull: false min: 002d8ccb-a094-4d10-b283-999770cf8488 max: ffacef94-41da-4230-807a-509bbf50b057 sum: 82368 positions: 153708,97856,0,76,272
     Row group indices for column 8:
       Entry 0: count: 10000 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 720000 positions: 0,0,0,0,0
-      Entry 1: count: 2288 hasNull: false min: 00124556-8383-44c4-a28b-7a413de74ccc4137606f-2cf7-43fb-beff-b6d374fd15ec max: ffde3bce-bb56-4fa9-81d7-146ca2eab946225c18e0-0002-4d07-9853-12c92c0f5637 sum: 164736 positions: 306445,195712,0,9766,272
+      Entry 1: count: 2288 hasNull: false min: 00124556-8383-44c4-a28b-7a413de74ccc4137606f-2cf7-43fb-beff-b6d374fd15ec max: ffde3bce-bb56-4fa9-81d7-146ca2eab946225c18e0-0002-4d07-9853-12c92c0f5637 sum: 164736 positions: 384237,64640,0,76,272
     Row group indices for column 9:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 15:59:43.64 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:43.64 max UTC: 1969-12-31 08:00:30.808 positions: 0,182,100,0,0,22588,218,0,11248,258
     Row group indices for column 10:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,126,97,0,0,20399,273,0,10229,272
     Row group indices for column 11:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -473,13 +473,13 @@ Stripes:
       Entry 1: count: 1264 hasNull: true min: -64 max: 62 sum: 10347 positions: 0,182,99,0,0,5937,2
     Row group indices for column 14:
       Entry 0: count: 7924 hasNull: true min: -16379 max: 16376 sum: 9298530 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,15334,272
+      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,10231,272
     Row group indices for column 15:
       Entry 0: count: 7139 hasNull: true min: -1073051226 max: 1073680599 sum: 1417841516466 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,28584,0
+      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,16332,0
     Row group indices for column 16:
       Entry 0: count: 6889 hasNull: true min: -2147311592 max: 2144325818 sum: -24788202148 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,26534,262
+      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,18366,262
     Row group indices for column 17:
       Entry 0: count: 7909 hasNull: true min: -64.0 max: 79.5530014038086 sum: -49823.35599219799 positions: 0,0,0,0,0,0
       Entry 1: count: 1264 hasNull: true min: -64.0 max: 62.0 sum: 10343.719999313354 positions: 0,182,99,0,0,31636
@@ -488,16 +488,16 @@ Stripes:
       Entry 1: count: 1250 hasNull: true min: -16309.0 max: 9763215.5639 sum: 7897951.792899999 positions: 0,126,96,0,0,63392
     Row group indices for column 19:
       Entry 0: count: 7140 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yxN0212hM17E8J8bJj8D7b sum: 99028 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: 006bb3K max: yy2GiGM sum: 28853 positions: 0,126,98,0,0,14308,0
+      Entry 1: count: 2034 hasNull: true min: 006bb3K max: yy2GiGM sum: 28853 positions: 0,126,98,0,0,8182,0
     Row group indices for column 20:
       Entry 0: count: 6889 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 109415 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,13280,262
+      Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,9196,262
     Row group indices for column 21:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 15:59:43.64 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:43.64 max UTC: 1969-12-31 08:00:30.808 positions: 0,182,100,0,0,22588,218,0,11248,258
     Row group indices for column 22:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,126,97,0,0,20399,273,0,10229,272
     Row group indices for column 23:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -509,13 +509,13 @@ Stripes:
       Entry 1: count: 1264 hasNull: true min: -64 max: 62 sum: 10347 positions: 0,182,99,0,0,5937,2
     Row group indices for column 26:
       Entry 0: count: 7924 hasNull: true min: -16379 max: 16376 sum: 9298530 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,15334,272
+      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,10231,272
     Row group indices for column 27:
       Entry 0: count: 7139 hasNull: true min: -1073051226 max: 1073680599 sum: 1417841516466 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,28584,0
+      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,16332,0
     Row group indices for column 28:
       Entry 0: count: 6889 hasNull: true min: -2147311592 max: 2144325818 sum: -24788202148 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,26534,262
+      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,18366,262
     Row group indices for column 29:
       Entry 0: count: 7909 hasNull: true min: -64.0 max: 79.5530014038086 sum: -49823.35599219799 positions: 0,0,0,0,0,0
       Entry 1: count: 1264 hasNull: true min: -64.0 max: 62.0 sum: 10343.719999313354 positions: 0,182,99,0,0,31636
@@ -524,146 +524,146 @@ Stripes:
       Entry 1: count: 1250 hasNull: true min: -16309.0 max: 9763215.5639 sum: 7897951.792899999 positions: 0,126,96,0,0,63392
     Row group indices for column 31:
       Entry 0: count: 7140 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yxN0212hM17E8J8bJj8D7b sum: 99028 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: 006bb3K max: yy2GiGM sum: 28853 positions: 0,126,98,0,0,14308,0
+      Entry 1: count: 2034 hasNull: true min: 006bb3K max: yy2GiGM sum: 28853 positions: 0,126,98,0,0,8182,0
     Row group indices for column 32:
       Entry 0: count: 6889 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 109415 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,13280,262
+      Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,9196,262
     Row group indices for column 33:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 15:59:43.64 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:43.64 max UTC: 1969-12-31 08:00:30.808 positions: 0,182,100,0,0,22588,218,0,11248,258
     Row group indices for column 34:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,126,97,0,0,20399,273,0,10229,272
     Row group indices for column 35:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
     Row group indices for column 36:
       Entry 0: count: 6889 hasNull: true true: 3402 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2284 hasNull: true true: 581 positions: 0,168,8,0,0,520,97,1
-  Stripe: offset: 1503357 data: 1500017 rows: 12288 tail: 501 index: 2836
-    Stream: column 0 section ROW_INDEX start: 1503357 length 21
-    Stream: column 1 section ROW_INDEX start: 1503378 length 53
-    Stream: column 2 section ROW_INDEX start: 1503431 length 67
-    Stream: column 3 section ROW_INDEX start: 1503498 length 81
-    Stream: column 4 section ROW_INDEX start: 1503579 length 83
-    Stream: column 5 section ROW_INDEX start: 1503662 length 77
-    Stream: column 6 section ROW_INDEX start: 1503739 length 77
-    Stream: column 7 section ROW_INDEX start: 1503816 length 176
-    Stream: column 8 section ROW_INDEX start: 1503992 length 267
-    Stream: column 9 section ROW_INDEX start: 1504259 length 63
-    Stream: column 10 section ROW_INDEX start: 1504322 length 57
-    Stream: column 11 section ROW_INDEX start: 1504379 length 47
-    Stream: column 12 section ROW_INDEX start: 1504426 length 47
-    Stream: column 13 section ROW_INDEX start: 1504473 length 53
-    Stream: column 14 section ROW_INDEX start: 1504526 length 67
-    Stream: column 15 section ROW_INDEX start: 1504593 length 81
-    Stream: column 16 section ROW_INDEX start: 1504674 length 83
-    Stream: column 17 section ROW_INDEX start: 1504757 length 77
-    Stream: column 18 section ROW_INDEX start: 1504834 length 77
-    Stream: column 19 section ROW_INDEX start: 1504911 length 115
-    Stream: column 20 section ROW_INDEX start: 1505026 length 93
-    Stream: column 21 section ROW_INDEX start: 1505119 length 63
-    Stream: column 22 section ROW_INDEX start: 1505182 length 57
-    Stream: column 23 section ROW_INDEX start: 1505239 length 47
-    Stream: column 24 section ROW_INDEX start: 1505286 length 47
-    Stream: column 25 section ROW_INDEX start: 1505333 length 53
-    Stream: column 26 section ROW_INDEX start: 1505386 length 67
-    Stream: column 27 section ROW_INDEX start: 1505453 length 81
-    Stream: column 28 section ROW_INDEX start: 1505534 length 83
-    Stream: column 29 section ROW_INDEX start: 1505617 length 77
-    Stream: column 30 section ROW_INDEX start: 1505694 length 77
-    Stream: column 31 section ROW_INDEX start: 1505771 length 115
-    Stream: column 32 section ROW_INDEX start: 1505886 length 93
-    Stream: column 33 section ROW_INDEX start: 1505979 length 63
-    Stream: column 34 section ROW_INDEX start: 1506042 length 57
-    Stream: column 35 section ROW_INDEX start: 1506099 length 47
-    Stream: column 36 section ROW_INDEX start: 1506146 length 47
-    Stream: column 1 section PRESENT start: 1506193 length 51
-    Stream: column 1 section DATA start: 1506244 length 5448
-    Stream: column 2 section PRESENT start: 1511692 length 53
-    Stream: column 2 section DATA start: 1511745 length 12144
-    Stream: column 3 section PRESENT start: 1523889 length 53
-    Stream: column 3 section DATA start: 1523942 length 24618
-    Stream: column 4 section PRESENT start: 1548560 length 52
-    Stream: column 4 section DATA start: 1548612 length 24681
-    Stream: column 5 section PRESENT start: 1573293 length 51
-    Stream: column 5 section DATA start: 1573344 length 9927
-    Stream: column 6 section PRESENT start: 1583271 length 53
-    Stream: column 6 section DATA start: 1583324 length 19755
-    Stream: column 7 section DATA start: 1603079 length 258570
-    Stream: column 7 section LENGTH start: 1861649 length 108
-    Stream: column 8 section DATA start: 1861757 length 517341
-    Stream: column 8 section LENGTH start: 2379098 length 108
-    Stream: column 9 section PRESENT start: 2379206 length 52
-    Stream: column 9 section DATA start: 2379258 length 8045
-    Stream: column 9 section SECONDARY start: 2387303 length 9555
-    Stream: column 10 section PRESENT start: 2396858 length 58
-    Stream: column 10 section DATA start: 2396916 length 8082
-    Stream: column 10 section SECONDARY start: 2404998 length 9590
-    Stream: column 11 section PRESENT start: 2414588 length 51
-    Stream: column 11 section DATA start: 2414639 length 782
-    Stream: column 12 section PRESENT start: 2415421 length 54
-    Stream: column 12 section DATA start: 2415475 length 783
-    Stream: column 13 section PRESENT start: 2416258 length 51
-    Stream: column 13 section DATA start: 2416309 length 5448
-    Stream: column 14 section PRESENT start: 2421757 length 53
-    Stream: column 14 section DATA start: 2421810 length 12144
-    Stream: column 15 section PRESENT start: 2433954 length 53
-    Stream: column 15 section DATA start: 2434007 length 24618
-    Stream: column 16 section PRESENT start: 2458625 length 52
-    Stream: column 16 section DATA start: 2458677 length 24681
-    Stream: column 17 section PRESENT start: 2483358 length 51
-    Stream: column 17 section DATA start: 2483409 length 9927
-    Stream: column 18 section PRESENT start: 2493336 length 53
-    Stream: column 18 section DATA start: 2493389 length 19755
-    Stream: column 19 section PRESENT start: 2513144 length 51
-    Stream: column 19 section DATA start: 2513195 length 11009
-    Stream: column 19 section LENGTH start: 2524204 length 3722
-    Stream: column 19 section DICTIONARY_DATA start: 2527926 length 65435
-    Stream: column 20 section PRESENT start: 2593361 length 54
-    Stream: column 20 section DATA start: 2593415 length 11006
-    Stream: column 20 section LENGTH start: 2604421 length 3739
-    Stream: column 20 section DICTIONARY_DATA start: 2608160 length 66022
-    Stream: column 21 section PRESENT start: 2674182 length 52
-    Stream: column 21 section DATA start: 2674234 length 8045
-    Stream: column 21 section SECONDARY start: 2682279 length 9555
-    Stream: column 22 section PRESENT start: 2691834 length 58
-    Stream: column 22 section DATA start: 2691892 length 8082
-    Stream: column 22 section SECONDARY start: 2699974 length 9590
-    Stream: column 23 section PRESENT start: 2709564 length 51
-    Stream: column 23 section DATA start: 2709615 length 782
-    Stream: column 24 section PRESENT start: 2710397 length 54
-    Stream: column 24 section DATA start: 2710451 length 783
-    Stream: column 25 section PRESENT start: 2711234 length 51
-    Stream: column 25 section DATA start: 2711285 length 5448
-    Stream: column 26 section PRESENT start: 2716733 length 53
-    Stream: column 26 section DATA start: 2716786 length 12144
-    Stream: column 27 section PRESENT start: 2728930 length 53
-    Stream: column 27 section DATA start: 2728983 length 24618
-    Stream: column 28 section PRESENT start: 2753601 length 52
-    Stream: column 28 section DATA start: 2753653 length 24681
-    Stream: column 29 section PRESENT start: 2778334 length 51
-    Stream: column 29 section DATA start: 2778385 length 9927
-    Stream: column 30 section PRESENT start: 2788312 length 53
-    Stream: column 30 section DATA start: 2788365 length 19755
-    Stream: column 31 section PRESENT start: 2808120 length 51
-    Stream: column 31 section DATA start: 2808171 length 11009
-    Stream: column 31 section LENGTH start: 2819180 length 3722
-    Stream: column 31 section DICTIONARY_DATA start: 2822902 length 65435
-    Stream: column 32 section PRESENT start: 2888337 length 54
-    Stream: column 32 section DATA start: 2888391 length 11006
-    Stream: column 32 section LENGTH start: 2899397 length 3739
-    Stream: column 32 section DICTIONARY_DATA start: 2903136 length 66022
-    Stream: column 33 section PRESENT start: 2969158 length 52
-    Stream: column 33 section DATA start: 2969210 length 8045
-    Stream: column 33 section SECONDARY start: 2977255 length 9555
-    Stream: column 34 section PRESENT start: 2986810 length 58
-    Stream: column 34 section DATA start: 2986868 length 8082
-    Stream: column 34 section SECONDARY start: 2994950 length 9590
-    Stream: column 35 section PRESENT start: 3004540 length 51
-    Stream: column 35 section DATA start: 3004591 length 782
-    Stream: column 36 section PRESENT start: 3005373 length 54
-    Stream: column 36 section DATA start: 3005427 length 783
+  Stripe: offset: 1501653 data: 1498336 rows: 12288 tail: 493 index: 2821
+    Stream: column 0 section ROW_INDEX start: 1501653 length 21
+    Stream: column 1 section ROW_INDEX start: 1501674 length 53
+    Stream: column 2 section ROW_INDEX start: 1501727 length 67
+    Stream: column 3 section ROW_INDEX start: 1501794 length 79
+    Stream: column 4 section ROW_INDEX start: 1501873 length 83
+    Stream: column 5 section ROW_INDEX start: 1501956 length 77
+    Stream: column 6 section ROW_INDEX start: 1502033 length 77
+    Stream: column 7 section ROW_INDEX start: 1502110 length 170
+    Stream: column 8 section ROW_INDEX start: 1502280 length 264
+    Stream: column 9 section ROW_INDEX start: 1502544 length 63
+    Stream: column 10 section ROW_INDEX start: 1502607 length 57
+    Stream: column 11 section ROW_INDEX start: 1502664 length 47
+    Stream: column 12 section ROW_INDEX start: 1502711 length 47
+    Stream: column 13 section ROW_INDEX start: 1502758 length 53
+    Stream: column 14 section ROW_INDEX start: 1502811 length 67
+    Stream: column 15 section ROW_INDEX start: 1502878 length 79
+    Stream: column 16 section ROW_INDEX start: 1502957 length 83
+    Stream: column 17 section ROW_INDEX start: 1503040 length 77
+    Stream: column 18 section ROW_INDEX start: 1503117 length 77
+    Stream: column 19 section ROW_INDEX start: 1503194 length 115
+    Stream: column 20 section ROW_INDEX start: 1503309 length 93
+    Stream: column 21 section ROW_INDEX start: 1503402 length 63
+    Stream: column 22 section ROW_INDEX start: 1503465 length 57
+    Stream: column 23 section ROW_INDEX start: 1503522 length 47
+    Stream: column 24 section ROW_INDEX start: 1503569 length 47
+    Stream: column 25 section ROW_INDEX start: 1503616 length 53
+    Stream: column 26 section ROW_INDEX start: 1503669 length 67
+    Stream: column 27 section ROW_INDEX start: 1503736 length 79
+    Stream: column 28 section ROW_INDEX start: 1503815 length 83
+    Stream: column 29 section ROW_INDEX start: 1503898 length 77
+    Stream: column 30 section ROW_INDEX start: 1503975 length 77
+    Stream: column 31 section ROW_INDEX start: 1504052 length 115
+    Stream: column 32 section ROW_INDEX start: 1504167 length 93
+    Stream: column 33 section ROW_INDEX start: 1504260 length 63
+    Stream: column 34 section ROW_INDEX start: 1504323 length 57
+    Stream: column 35 section ROW_INDEX start: 1504380 length 47
+    Stream: column 36 section ROW_INDEX start: 1504427 length 47
+    Stream: column 1 section PRESENT start: 1504474 length 51
+    Stream: column 1 section DATA start: 1504525 length 5448
+    Stream: column 2 section PRESENT start: 1509973 length 53
+    Stream: column 2 section DATA start: 1510026 length 12078
+    Stream: column 3 section PRESENT start: 1522104 length 53
+    Stream: column 3 section DATA start: 1522157 length 24479
+    Stream: column 4 section PRESENT start: 1546636 length 52
+    Stream: column 4 section DATA start: 1546688 length 24479
+    Stream: column 5 section PRESENT start: 1571167 length 51
+    Stream: column 5 section DATA start: 1571218 length 9927
+    Stream: column 6 section PRESENT start: 1581145 length 53
+    Stream: column 6 section DATA start: 1581198 length 19755
+    Stream: column 7 section DATA start: 1600953 length 259558
+    Stream: column 7 section LENGTH start: 1860511 length 12
+    Stream: column 8 section DATA start: 1860523 length 518777
+    Stream: column 8 section LENGTH start: 2379300 length 12
+    Stream: column 9 section PRESENT start: 2379312 length 52
+    Stream: column 9 section DATA start: 2379364 length 7769
+    Stream: column 9 section SECONDARY start: 2387133 length 9448
+    Stream: column 10 section PRESENT start: 2396581 length 58
+    Stream: column 10 section DATA start: 2396639 length 7778
+    Stream: column 10 section SECONDARY start: 2404417 length 9469
+    Stream: column 11 section PRESENT start: 2413886 length 51
+    Stream: column 11 section DATA start: 2413937 length 782
+    Stream: column 12 section PRESENT start: 2414719 length 54
+    Stream: column 12 section DATA start: 2414773 length 783
+    Stream: column 13 section PRESENT start: 2415556 length 51
+    Stream: column 13 section DATA start: 2415607 length 5448
+    Stream: column 14 section PRESENT start: 2421055 length 53
+    Stream: column 14 section DATA start: 2421108 length 12078
+    Stream: column 15 section PRESENT start: 2433186 length 53
+    Stream: column 15 section DATA start: 2433239 length 24479
+    Stream: column 16 section PRESENT start: 2457718 length 52
+    Stream: column 16 section DATA start: 2457770 length 24479
+    Stream: column 17 section PRESENT start: 2482249 length 51
+    Stream: column 17 section DATA start: 2482300 length 9927
+    Stream: column 18 section PRESENT start: 2492227 length 53
+    Stream: column 18 section DATA start: 2492280 length 19755
+    Stream: column 19 section PRESENT start: 2512035 length 51
+    Stream: column 19 section DATA start: 2512086 length 10942
+    Stream: column 19 section LENGTH start: 2523028 length 3722
+    Stream: column 19 section DICTIONARY_DATA start: 2526750 length 65435
+    Stream: column 20 section PRESENT start: 2592185 length 54
+    Stream: column 20 section DATA start: 2592239 length 10939
+    Stream: column 20 section LENGTH start: 2603178 length 3739
+    Stream: column 20 section DICTIONARY_DATA start: 2606917 length 66022
+    Stream: column 21 section PRESENT start: 2672939 length 52
+    Stream: column 21 section DATA start: 2672991 length 7769
+    Stream: column 21 section SECONDARY start: 2680760 length 9448
+    Stream: column 22 section PRESENT start: 2690208 length 58
+    Stream: column 22 section DATA start: 2690266 length 7778
+    Stream: column 22 section SECONDARY start: 2698044 length 9469
+    Stream: column 23 section PRESENT start: 2707513 length 51
+    Stream: column 23 section DATA start: 2707564 length 782
+    Stream: column 24 section PRESENT start: 2708346 length 54
+    Stream: column 24 section DATA start: 2708400 length 783
+    Stream: column 25 section PRESENT start: 2709183 length 51
+    Stream: column 25 section DATA start: 2709234 length 5448
+    Stream: column 26 section PRESENT start: 2714682 length 53
+    Stream: column 26 section DATA start: 2714735 length 12078
+    Stream: column 27 section PRESENT start: 2726813 length 53
+    Stream: column 27 section DATA start: 2726866 length 24479
+    Stream: column 28 section PRESENT start: 2751345 length 52
+    Stream: column 28 section DATA start: 2751397 length 24479
+    Stream: column 29 section PRESENT start: 2775876 length 51
+    Stream: column 29 section DATA start: 2775927 length 9927
+    Stream: column 30 section PRESENT start: 2785854 length 53
+    Stream: column 30 section DATA start: 2785907 length 19755
+    Stream: column 31 section PRESENT start: 2805662 length 51
+    Stream: column 31 section DATA start: 2805713 length 10942
+    Stream: column 31 section LENGTH start: 2816655 length 3722
+    Stream: column 31 section DICTIONARY_DATA start: 2820377 length 65435
+    Stream: column 32 section PRESENT start: 2885812 length 54
+    Stream: column 32 section DATA start: 2885866 length 10939
+    Stream: column 32 section LENGTH start: 2896805 length 3739
+    Stream: column 32 section DICTIONARY_DATA start: 2900544 length 66022
+    Stream: column 33 section PRESENT start: 2966566 length 52
+    Stream: column 33 section DATA start: 2966618 length 7769
+    Stream: column 33 section SECONDARY start: 2974387 length 9448
+    Stream: column 34 section PRESENT start: 2983835 length 58
+    Stream: column 34 section DATA start: 2983893 length 7778
+    Stream: column 34 section SECONDARY start: 2991671 length 9469
+    Stream: column 35 section PRESENT start: 3001140 length 51
+    Stream: column 35 section DATA start: 3001191 length 782
+    Stream: column 36 section PRESENT start: 3001973 length 54
+    Stream: column 36 section DATA start: 3002027 length 783
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT
     Encoding column 2: DIRECT_V2
@@ -709,13 +709,13 @@ Stripes:
       Entry 1: count: 1264 hasNull: true min: -64 max: 62 sum: 10347 positions: 0,182,99,0,0,5937,2
     Row group indices for column 2:
       Entry 0: count: 7924 hasNull: true min: -16379 max: 16376 sum: 9298530 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,15334,272
+      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,10231,272
     Row group indices for column 3:
       Entry 0: count: 7139 hasNull: true min: -1073051226 max: 1073680599 sum: 1417841516466 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,28584,0
+      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,16332,0
     Row group indices for column 4:
       Entry 0: count: 6889 hasNull: true min: -2147311592 max: 2144325818 sum: -24788202148 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,26534,262
+      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,18366,262
     Row group indices for column 5:
       Entry 0: count: 7909 hasNull: true min: -64.0 max: 79.5530014038086 sum: -49823.35599219799 positions: 0,0,0,0,0,0
       Entry 1: count: 1264 hasNull: true min: -64.0 max: 62.0 sum: 10343.719999313354 positions: 0,182,99,0,0,31636
@@ -724,16 +724,16 @@ Stripes:
       Entry 1: count: 1250 hasNull: true min: -16309.0 max: 9763215.5639 sum: 7897951.792899999 positions: 0,126,96,0,0,63392
     Row group indices for column 7:
       Entry 0: count: 10000 hasNull: false min: 00020767-dd8f-4f4d-bd68-4b7be64b8e44 max: fffa3516-e219-4027-b0d3-72bb2e676c52 sum: 360000 positions: 0,0,0,0,0
-      Entry 1: count: 2288 hasNull: false min: 002d8ccb-a094-4d10-b283-999770cf8488 max: ffacef94-41da-4230-807a-509bbf50b057 sum: 82368 positions: 153190,97856,0,9766,272
+      Entry 1: count: 2288 hasNull: false min: 002d8ccb-a094-4d10-b283-999770cf8488 max: ffacef94-41da-4230-807a-509bbf50b057 sum: 82368 positions: 153708,97856,0,76,272
     Row group indices for column 8:
       Entry 0: count: 10000 hasNull: false min: 000976f7-7075-4f3f-a564-5a375fafcc101416a2b7-7f64-41b7-851f-97d15405037e max: fffd0642-5f01-48cd-8d97-3428faee49e9b39f2b4c-efdc-4e5f-9ab5-4aa5394cb156 sum: 720000 positions: 0,0,0,0,0
-      Entry 1: count: 2288 hasNull: false min: 00124556-8383-44c4-a28b-7a413de74ccc4137606f-2cf7-43fb-beff-b6d374fd15ec max: ffde3bce-bb56-4fa9-81d7-146ca2eab946225c18e0-0002-4d07-9853-12c92c0f5637 sum: 164736 positions: 306445,195712,0,9766,272
+      Entry 1: count: 2288 hasNull: false min: 00124556-8383-44c4-a28b-7a413de74ccc4137606f-2cf7-43fb-beff-b6d374fd15ec max: ffde3bce-bb56-4fa9-81d7-146ca2eab946225c18e0-0002-4d07-9853-12c92c0f5637 sum: 164736 positions: 384237,64640,0,76,272
     Row group indices for column 9:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 15:59:43.64 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:43.64 max UTC: 1969-12-31 08:00:30.808 positions: 0,182,100,0,0,22588,218,0,11248,258
     Row group indices for column 10:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,126,97,0,0,20399,273,0,10229,272
     Row group indices for column 11:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -745,13 +745,13 @@ Stripes:
       Entry 1: count: 1264 hasNull: true min: -64 max: 62 sum: 10347 positions: 0,182,99,0,0,5937,2
     Row group indices for column 14:
       Entry 0: count: 7924 hasNull: true min: -16379 max: 16376 sum: 9298530 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,15334,272
+      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,10231,272
     Row group indices for column 15:
       Entry 0: count: 7139 hasNull: true min: -1073051226 max: 1073680599 sum: 1417841516466 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,28584,0
+      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,16332,0
     Row group indices for column 16:
       Entry 0: count: 6889 hasNull: true min: -2147311592 max: 2144325818 sum: -24788202148 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,26534,262
+      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,18366,262
     Row group indices for column 17:
       Entry 0: count: 7909 hasNull: true min: -64.0 max: 79.5530014038086 sum: -49823.35599219799 positions: 0,0,0,0,0,0
       Entry 1: count: 1264 hasNull: true min: -64.0 max: 62.0 sum: 10343.719999313354 positions: 0,182,99,0,0,31636
@@ -760,16 +760,16 @@ Stripes:
       Entry 1: count: 1250 hasNull: true min: -16309.0 max: 9763215.5639 sum: 7897951.792899999 positions: 0,126,96,0,0,63392
     Row group indices for column 19:
       Entry 0: count: 7140 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yxN0212hM17E8J8bJj8D7b sum: 99028 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: 006bb3K max: yy2GiGM sum: 28853 positions: 0,126,98,0,0,14308,0
+      Entry 1: count: 2034 hasNull: true min: 006bb3K max: yy2GiGM sum: 28853 positions: 0,126,98,0,0,8182,0
     Row group indices for column 20:
       Entry 0: count: 6889 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 109415 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,13280,262
+      Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,9196,262
     Row group indices for column 21:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 15:59:43.64 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:43.64 max UTC: 1969-12-31 08:00:30.808 positions: 0,182,100,0,0,22588,218,0,11248,258
     Row group indices for column 22:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,126,97,0,0,20399,273,0,10229,272
     Row group indices for column 23:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -781,13 +781,13 @@ Stripes:
       Entry 1: count: 1264 hasNull: true min: -64 max: 62 sum: 10347 positions: 0,182,99,0,0,5937,2
     Row group indices for column 26:
       Entry 0: count: 7924 hasNull: true min: -16379 max: 16376 sum: 9298530 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,15334,272
+      Entry 1: count: 1250 hasNull: true min: -16309 max: 16331 sum: -1862540 positions: 0,126,96,0,0,10231,272
     Row group indices for column 27:
       Entry 0: count: 7139 hasNull: true min: -1073051226 max: 1073680599 sum: 1417841516466 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,28584,0
+      Entry 1: count: 2034 hasNull: true min: -1073279343 max: 1072872630 sum: 20209347319 positions: 0,128,98,0,0,16332,0
     Row group indices for column 28:
       Entry 0: count: 6889 hasNull: true min: -2147311592 max: 2144325818 sum: -24788202148 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,26534,262
+      Entry 1: count: 2284 hasNull: true min: -2144905793 max: 2145498388 sum: -1673671826261 positions: 0,168,7,0,0,18366,262
     Row group indices for column 29:
       Entry 0: count: 7909 hasNull: true min: -64.0 max: 79.5530014038086 sum: -49823.35599219799 positions: 0,0,0,0,0,0
       Entry 1: count: 1264 hasNull: true min: -64.0 max: 62.0 sum: 10343.719999313354 positions: 0,182,99,0,0,31636
@@ -796,16 +796,16 @@ Stripes:
       Entry 1: count: 1250 hasNull: true min: -16309.0 max: 9763215.5639 sum: 7897951.792899999 positions: 0,126,96,0,0,63392
     Row group indices for column 31:
       Entry 0: count: 7140 hasNull: true min: 0042l0d5rPD6sMlJ7Ue0q max: yxN0212hM17E8J8bJj8D7b sum: 99028 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2034 hasNull: true min: 006bb3K max: yy2GiGM sum: 28853 positions: 0,126,98,0,0,14308,0
+      Entry 1: count: 2034 hasNull: true min: 006bb3K max: yy2GiGM sum: 28853 positions: 0,126,98,0,0,8182,0
     Row group indices for column 32:
       Entry 0: count: 6889 hasNull: true min: 0034fkcXMQI3 max: yyt0S8WorA sum: 109415 positions: 0,0,0,0,0,0,0
-      Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,13280,262
+      Entry 1: count: 2284 hasNull: true min: 004J8y max: yjDBo sum: 39719 positions: 0,168,8,0,0,9196,262
     Row group indices for column 33:
-      Entry 0: count: 7909 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1264 hasNull: true min: 1969-12-31 13:59:43.64 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:43.64 max UTC: 1969-12-31 06:00:30.808 positions: 0,182,100,0,0,30619,258,0,15332,258
+      Entry 0: count: 7909 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1264 hasNull: true min: 1969-12-31 15:59:43.64 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:43.64 max UTC: 1969-12-31 08:00:30.808 positions: 0,182,100,0,0,22588,218,0,11248,258
     Row group indices for column 34:
-      Entry 0: count: 7924 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
-      Entry 1: count: 1250 hasNull: true min: 1969-12-31 13:59:30.929 max: 1969-12-31 14:00:30.808 min UTC: 1969-12-31 05:59:30.929 max UTC: 1969-12-31 06:00:30.808 positions: 0,126,97,0,0,30619,273,0,15334,272
+      Entry 0: count: 7924 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,0,0,0,0,0,0,0,0,0
+      Entry 1: count: 1250 hasNull: true min: 1969-12-31 15:59:30.929 max: 1969-12-31 16:00:30.808 min UTC: 1969-12-31 07:59:30.929 max UTC: 1969-12-31 08:00:30.808 positions: 0,126,97,0,0,20399,273,0,10229,272
     Row group indices for column 35:
       Entry 0: count: 7140 hasNull: true true: 5115 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2034 hasNull: true true: 1023 positions: 0,126,98,0,0,520,126,4
@@ -813,7 +813,7 @@ Stripes:
       Entry 0: count: 6889 hasNull: true true: 3402 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2284 hasNull: true true: 581 positions: 0,168,8,0,0,520,97,1
 
-File length: 3007984 bytes
+File length: 3004630 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

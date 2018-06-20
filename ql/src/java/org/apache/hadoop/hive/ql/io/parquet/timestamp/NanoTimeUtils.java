@@ -13,11 +13,12 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.timestamp;
 
-import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.hadoop.hive.common.type.Timestamp;
 
 import jodd.datetime.JDateTime;
 
@@ -58,7 +59,7 @@ public class NanoTimeUtils {
    public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion) {
 
      Calendar calendar = getCalendar(skipConversion);
-     calendar.setTime(ts);
+     calendar.setTimeInMillis(ts.toEpochMilli());
      int year = calendar.get(Calendar.YEAR);
      if (calendar.get(Calendar.ERA) == GregorianCalendar.BC) {
        year = 1 - year;
@@ -106,8 +107,7 @@ public class NanoTimeUtils {
      calendar.set(Calendar.HOUR_OF_DAY, hour);
      calendar.set(Calendar.MINUTE, minutes);
      calendar.set(Calendar.SECOND, seconds);
-     Timestamp ts = new Timestamp(calendar.getTimeInMillis());
-     ts.setNanos((int) nanos);
+     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
      return ts;
    }
 }

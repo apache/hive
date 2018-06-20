@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -432,7 +433,10 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
       serializeWrite.writeDate((int) ((LongColumnVector) colVector).vector[adjustedBatchIndex]);
       break;
     case TIMESTAMP:
-      serializeWrite.writeTimestamp(((TimestampColumnVector) colVector).asScratchTimestamp(adjustedBatchIndex));
+      // From java.sql.Timestamp used by vectorization to serializable org.apache.hadoop.hive.common.type.Timestamp
+      java.sql.Timestamp ts = ((TimestampColumnVector) colVector).asScratchTimestamp(adjustedBatchIndex);
+      Timestamp serializableTS = Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos());
+      serializeWrite.writeTimestamp(serializableTS);
       break;
     case FLOAT:
       serializeWrite.writeFloat((float) ((DoubleColumnVector) colVector).vector[adjustedBatchIndex]);

@@ -21,7 +21,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.io.Text;
@@ -29,10 +29,6 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.BooleanWritable;
-
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 
 public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableObjectInspector
     implements SettableHiveCharObjectInspector {
@@ -52,7 +48,7 @@ public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableOb
       return null;
     }
 
-    if ((o instanceof Text) || (o instanceof TimestampWritable)
+    if ((o instanceof Text) || (o instanceof TimestampWritableV2)
         || (o instanceof HiveDecimalWritable) || (o instanceof DoubleWritable)
         || (o instanceof FloatWritable) || (o instanceof LongWritable) || (o instanceof IntWritable)
         || (o instanceof BooleanWritable)) {
@@ -75,7 +71,7 @@ public class WritableHiveCharObjectInspector extends AbstractPrimitiveWritableOb
       return null;
     }
 
-    if ((o instanceof Text) || (o instanceof TimestampWritable)
+    if ((o instanceof Text) || (o instanceof TimestampWritableV2)
         || (o instanceof HiveDecimalWritable) || (o instanceof DoubleWritable)
         || (o instanceof FloatWritable) || (o instanceof LongWritable) || (o instanceof IntWritable)
         || (o instanceof BooleanWritable)) {

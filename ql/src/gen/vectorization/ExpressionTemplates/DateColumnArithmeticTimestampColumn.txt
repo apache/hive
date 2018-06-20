@@ -28,8 +28,8 @@ import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * Generated from template DateColumnArithmeticTimestampColumn.txt, a class
@@ -97,12 +97,12 @@ public class <ClassName> extends VectorExpression {
      * conditional checks in the inner loop.
      */
     if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
-      scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[0]));
+      scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[0]));
       dtm.<OperatorMethod>(
           scratchTimestamp1, inputColVector2.asScratch<CamelOperandType2>(0), outputColVector.getScratch<CamelReturnType>());
       outputColVector.setFromScratch<CamelReturnType>(0);
     } else if (inputColVector1.isRepeating) {
-      scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[0]));
+      scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[0]));
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
@@ -122,14 +122,14 @@ public class <ClassName> extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
           dtm.<OperatorMethod>(
               scratchTimestamp1, value2, outputColVector.getScratch<CamelReturnType>());
           outputColVector.setFromScratch<CamelReturnType>(i);
          }
       } else {
         for(int i = 0; i != n; i++) {
-          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
           dtm.<OperatorMethod>(
               scratchTimestamp1, value2, outputColVector.getScratch<CamelReturnType>());
           outputColVector.setFromScratch<CamelReturnType>(i);
@@ -139,14 +139,14 @@ public class <ClassName> extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
          dtm.<OperatorMethod>(
               scratchTimestamp1, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
           outputColVector.setFromScratch<CamelReturnType>(i);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          scratchTimestamp1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          scratchTimestamp1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
           dtm.<OperatorMethod>(
               scratchTimestamp1, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
           outputColVector.setFromScratch<CamelReturnType>(i);

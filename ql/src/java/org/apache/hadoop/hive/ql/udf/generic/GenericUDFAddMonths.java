@@ -24,8 +24,10 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -62,7 +64,7 @@ public class GenericUDFAddMonths extends GenericUDF {
   private transient PrimitiveCategory[] dtInputTypes = new PrimitiveCategory[3];
   private final Text output = new Text();
   private transient SimpleDateFormat formatter = null;
-  private final Calendar calendar = Calendar.getInstance();
+  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
   private transient Integer numMonthsConst;
   private transient boolean isNumMonthsConst;
 
@@ -80,6 +82,7 @@ public class GenericUDFAddMonths extends GenericUDF {
         String fmtStr = getConstantStringValue(arguments, 2);
         if (fmtStr != null) {
           formatter = new SimpleDateFormat(fmtStr);
+          formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         }
       } else {
         throw new UDFArgumentTypeException(2, getFuncName() + " only takes constant as "
@@ -128,17 +131,19 @@ public class GenericUDFAddMonths extends GenericUDF {
 
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
-    Date date = getTimestampValue(arguments, 0, tsConverters);
-    if (date == null) {
-      date = getDateValue(arguments, 0, dtInputTypes, dtConverters);
-      if (date == null) {
+    Timestamp ts = getTimestampValue(arguments, 0, tsConverters);
+    if (ts != null) {
+      addMonth(ts, numMonthInt);
+    } else {
+      Date date = getDateValue(arguments, 0, dtInputTypes, dtConverters);
+      if (date != null) {
+        addMonth(date, numMonthInt);
+      } else {
         return null;
       }
     }
 
-    addMonth(date, numMonthInt);
-    Date newDate = calendar.getTime();
-    String res = formatter.format(newDate);
+    String res = formatter.format(calendar.getTime());
 
     output.set(res);
     return output;
@@ -154,9 +159,19 @@ public class GenericUDFAddMonths extends GenericUDF {
     return "add_months";
   }
 
-  protected Calendar addMonth(Date d, int numMonths) {
-    calendar.setTime(d);
+  private Calendar addMonth(Date d, int numMonths) {
+    calendar.setTimeInMillis(d.toEpochMilli());
 
+    return addMonth(numMonths);
+  }
+
+  private Calendar addMonth(Timestamp ts, int numMonths) {
+    calendar.setTimeInMillis(ts.toEpochMilli());
+
+    return addMonth(numMonths);
+  }
+
+  private Calendar addMonth(int numMonths) {
     boolean lastDatOfMonth = isLastDayOfMonth(calendar);
 
     calendar.add(Calendar.MONTH, numMonths);
@@ -168,7 +183,7 @@ public class GenericUDFAddMonths extends GenericUDF {
     return calendar;
   }
 
-  protected boolean isLastDayOfMonth(Calendar cal) {
+  private boolean isLastDayOfMonth(Calendar cal) {
     int maxDd = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
     int dd = cal.get(Calendar.DAY_OF_MONTH);
     return dd == maxDd;

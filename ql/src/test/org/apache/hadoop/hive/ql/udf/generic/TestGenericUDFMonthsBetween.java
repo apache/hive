@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -60,20 +59,14 @@ public class TestGenericUDFMonthsBetween extends TestCase {
   }
 
   public void testWrongDateStr() throws HiveException {
-    boolean caught = false;
-    try {
-      GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
-      ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-      ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-      ObjectInspector[] arguments = { valueOI1, valueOI2 };
-      udf.initialize(arguments);
+    GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector[] arguments = {valueOI1, valueOI2};
+    udf.initialize(arguments);
 
-      runTestStr("2002-03", "2002-02-24", null, udf);
-      runTestStr("2002-03-24", "2002-02", null, udf);
-    } catch (HiveException e) {
-      caught = true;
-    }
-    assertTrue(caught);
+    runTestStr("2002-03", "2002-02-24", null, udf);
+    runTestStr("2002-03-24", "2002-02", null, udf);
   }
 
   public void testMonthsBetweenForString(GenericUDFMonthsBetween udf) throws HiveException {
@@ -187,7 +180,7 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestTs("2002-03-24 00:00:00", "2002-02-24 10:30:00", 1.0, udf);
     runTestTs("2002-03-24 10:30:00", "2002-02-24 00:00:00", 1.0, udf);
 
-    runTestTs("2003-04-23 23:59:59", "2003-03-24 00:0:0", 0.99999963, udf);
+    runTestTs("2003-04-23 23:59:59", "2003-03-24 00:00:00", 0.99999963, udf);
   }
 
   public void testMonthsBetweenForDate() throws HiveException {
@@ -253,8 +246,8 @@ public class TestGenericUDFMonthsBetween extends TestCase {
 
   protected void runTestTs(String ts1, String ts2, Double expDiff, GenericUDFMonthsBetween udf)
       throws HiveException {
-    TimestampWritable tsWr1 = ts1 == null ? null : new TimestampWritable(Timestamp.valueOf(ts1));
-    TimestampWritable tsWr2 = ts2 == null ? null : new TimestampWritable(Timestamp.valueOf(ts2));
+    TimestampWritableV2 tsWr1 = ts1 == null ? null : new TimestampWritableV2(Timestamp.valueOf(ts1));
+    TimestampWritableV2 tsWr2 = ts2 == null ? null : new TimestampWritableV2(Timestamp.valueOf(ts2));
     DeferredJavaObject valueObj1 = new DeferredJavaObject(tsWr1);
     DeferredJavaObject valueObj2 = new DeferredJavaObject(tsWr2);
     DeferredObject[] args = new DeferredObject[] { valueObj1, valueObj2 };
@@ -269,8 +262,8 @@ public class TestGenericUDFMonthsBetween extends TestCase {
 
   protected void runTestDt(String dt1, String dt2, Double expDiff, GenericUDFMonthsBetween udf)
       throws HiveException {
-    DateWritable dtWr1 = dt1 == null ? null : new DateWritable(Date.valueOf(dt1));
-    DateWritable dtWr2 = dt2 == null ? null : new DateWritable(Date.valueOf(dt2));
+    DateWritableV2 dtWr1 = dt1 == null ? null : new DateWritableV2(Date.valueOf(dt1));
+    DateWritableV2 dtWr2 = dt2 == null ? null : new DateWritableV2(Date.valueOf(dt2));
     DeferredJavaObject valueObj1 = new DeferredJavaObject(dtWr1);
     DeferredJavaObject valueObj2 = new DeferredJavaObject(dtWr2);
     DeferredObject[] args = new DeferredObject[] { valueObj1, valueObj2 };

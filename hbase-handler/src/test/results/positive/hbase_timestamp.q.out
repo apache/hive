@@ -97,26 +97,26 @@ POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-0	val_0	2012-02-22 17:15:54
-119	val_119	2012-02-22 17:15:54
-136	val_136	2012-02-22 17:15:54
-153	val_153	2012-02-22 17:15:54
-17	val_17	2012-02-22 17:15:54
-170	val_170	2012-02-22 17:15:54
-187	val_187	2012-02-22 17:15:54
-221	val_221	2012-02-22 17:15:54
-238	val_238	2012-02-22 17:15:54
-255	val_255	2012-02-22 17:15:54
-272	val_272	2012-02-22 17:15:54
-289	val_289	2012-02-22 17:15:54
-306	val_306	2012-02-22 17:15:54
-323	val_323	2012-02-22 17:15:54
-34	val_34	2012-02-22 17:15:54
-374	val_374	2012-02-22 17:15:54
-459	val_459	2012-02-22 17:15:54
-493	val_493	2012-02-22 17:15:54
-51	val_51	2012-02-22 17:15:54
-85	val_85	2012-02-22 17:15:54
+0	val_0	2012-02-23 01:15:54
+119	val_119	2012-02-23 01:15:54
+136	val_136	2012-02-23 01:15:54
+153	val_153	2012-02-23 01:15:54
+17	val_17	2012-02-23 01:15:54
+170	val_170	2012-02-23 01:15:54
+187	val_187	2012-02-23 01:15:54
+221	val_221	2012-02-23 01:15:54
+238	val_238	2012-02-23 01:15:54
+255	val_255	2012-02-23 01:15:54
+272	val_272	2012-02-23 01:15:54
+289	val_289	2012-02-23 01:15:54
+306	val_306	2012-02-23 01:15:54
+323	val_323	2012-02-23 01:15:54
+34	val_34	2012-02-23 01:15:54
+374	val_374	2012-02-23 01:15:54
+459	val_459	2012-02-23 01:15:54
+493	val_493	2012-02-23 01:15:54
+51	val_51	2012-02-23 01:15:54
+85	val_85	2012-02-23 01:15:54
 PREHOOK: query: DROP TABLE hbase_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table
@@ -202,8 +202,8 @@ POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table W
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-165	val_165	1973-03-03 01:46:40
-396	val_396	1973-03-03 01:46:40
+165	val_165	1973-03-03 09:46:40
+396	val_396	1973-03-03 09:46:40
 PREHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` > 100000000000
 PREHOOK: type: QUERY
@@ -251,10 +251,10 @@ POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table W
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-111	val_111	1976-05-03 12:33:20
-222	val_222	1976-05-03 12:33:20
-296	val_296	1976-05-03 12:33:20
-333	val_333	1976-05-03 12:33:20
+111	val_111	1976-05-03 19:33:20
+222	val_222	1976-05-03 19:33:20
+296	val_296	1976-05-03 19:33:20
+333	val_333	1976-05-03 19:33:20
 PREHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` <= 100000000000
 PREHOOK: type: QUERY
@@ -302,8 +302,8 @@ POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table W
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-165	val_165	1973-03-03 01:46:40
-396	val_396	1973-03-03 01:46:40
+165	val_165	1973-03-03 09:46:40
+396	val_396	1973-03-03 09:46:40
 PREHOOK: query: explain
 SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` >= 200000000000
 PREHOOK: type: QUERY
@@ -351,10 +351,10 @@ POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table W
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-111	val_111	1976-05-03 12:33:20
-222	val_222	1976-05-03 12:33:20
-296	val_296	1976-05-03 12:33:20
-333	val_333	1976-05-03 12:33:20
+111	val_111	1976-05-03 19:33:20
+222	val_222	1976-05-03 19:33:20
+296	val_296	1976-05-03 19:33:20
+333	val_333	1976-05-03 19:33:20
 PREHOOK: query: DROP TABLE hbase_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table

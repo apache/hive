@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * Example usage:
  * ... CAST(<Timestamp string> as TIMESTAMP) ...
  *
- * Creates a TimestampWritable object using PrimitiveObjectInspectorConverter
+ * Creates a TimestampWritableV2 object using PrimitiveObjectInspectorConverter
  *
  */
 @Description(name = "timestamp",

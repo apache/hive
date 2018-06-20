@@ -18,14 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.LongWritable;
@@ -65,13 +64,13 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
 
     Timestamp ts = Timestamp.valueOf("1970-01-01 00:00:00");
     runAndVerify(udf,
-        new TimestampWritable(ts),
-        new LongWritable(ts.getTime() / 1000));
+        new TimestampWritableV2(ts),
+        new LongWritable(ts.toEpochSecond()));
 
     ts = Timestamp.valueOf("2001-02-03 01:02:03");
     runAndVerify(udf,
-        new TimestampWritable(ts),
-        new LongWritable(ts.getTime() / 1000));
+        new TimestampWritableV2(ts),
+        new LongWritable(ts.toEpochSecond()));
 
     // test null values
     runAndVerify(udf, null, null);
@@ -85,8 +84,8 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
 
     Date date = Date.valueOf("1970-01-01");
     runAndVerify(udf,
-        new DateWritable(date),
-        new LongWritable(date.getTime() / 1000));
+        new DateWritableV2(date),
+        new LongWritable(date.toEpochSecond()));
 
     // test null values
     runAndVerify(udf, null, null);
@@ -101,7 +100,7 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     String val = "2001-01-01 01:02:03";
     runAndVerify(udf1,
         new Text(val),
-        new LongWritable(Timestamp.valueOf(val).getTime() / 1000));
+        new LongWritable(Timestamp.valueOf(val).toEpochSecond()));
 
     // test null values
     runAndVerify(udf1, null, null);
@@ -116,7 +115,7 @@ public class TestGenericUDFToUnixTimestamp extends TestCase {
     runAndVerify(udf2,
         new Text(val),
         new Text(format),
-        new LongWritable(Date.valueOf(val).getTime() / 1000));
+        new LongWritable(Date.valueOf(val).toEpochSecond()));
 
     // test null values
     runAndVerify(udf2, null, null, null);

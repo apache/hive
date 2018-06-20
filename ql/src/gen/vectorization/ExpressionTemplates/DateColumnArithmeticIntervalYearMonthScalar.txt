@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * Generated from template DateColumnArithmeticIntervalYearMonthScalar.txt, which covers binary arithmetic
@@ -93,10 +93,10 @@ public class <ClassName> extends VectorExpression {
     if (inputColVector1.isRepeating) {
       if (inputColVector1.noNulls || !inputIsNull[0]) {
         outputIsNull[0] = false;
-        scratchDate1.setTime(DateWritable.daysToMillis((int) vector1[0]));
+        scratchDate1.setTime(DateWritableV2.daysToMillis((int) vector1[0]));
         dtm.<OperatorMethod>(
             scratchDate1, value, outputDate);
-        outputVector[0] = DateWritable.dateToDays(outputDate);
+        outputVector[0] = DateWritableV2.dateToDays(outputDate);
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
@@ -115,18 +115,18 @@ public class <ClassName> extends VectorExpression {
            for(int j = 0; j != n; j++) {
             final int i = sel[j];
             outputIsNull[i] = false;
-            scratchDate1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+            scratchDate1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
             dtm.<OperatorMethod>(
                 scratchDate1, value, outputDate);
-            outputVector[i] = DateWritable.dateToDays(outputDate);
+            outputVector[i] = DateWritableV2.dateToDays(outputDate);
           }
          } else {
            for(int j = 0; j != n; j++) {
              final int i = sel[j];
-             scratchDate1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+             scratchDate1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
              dtm.<OperatorMethod>(
                  scratchDate1, value, outputDate);
-             outputVector[i] = DateWritable.dateToDays(outputDate);
+             outputVector[i] = DateWritableV2.dateToDays(outputDate);
            }
          }
       } else {
@@ -138,10 +138,10 @@ public class <ClassName> extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          scratchDate1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+          scratchDate1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
           dtm.<OperatorMethod>(
               scratchDate1, value, outputDate);
-          outputVector[i] = DateWritable.dateToDays(outputDate);
+          outputVector[i] = DateWritableV2.dateToDays(outputDate);
         }
       }
     } else /* there are NULLs in the inputColVector */ {
@@ -155,10 +155,10 @@ public class <ClassName> extends VectorExpression {
           int i = sel[j];
           if (!inputIsNull[i]) {
             outputIsNull[i] = false;
-            scratchDate1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+            scratchDate1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
             dtm.<OperatorMethod>(
                 scratchDate1, value, outputDate);
-            outputVector[i] = DateWritable.dateToDays(outputDate);
+            outputVector[i] = DateWritableV2.dateToDays(outputDate);
           } else {
             outputIsNull[i] = true;
             outputColVector.noNulls = false;
@@ -168,10 +168,10 @@ public class <ClassName> extends VectorExpression {
         for(int i = 0; i != n; i++) {
           if (!inputIsNull[i]) {
             outputIsNull[i] = false;
-            scratchDate1.setTime(DateWritable.daysToMillis((int) vector1[i]));
+            scratchDate1.setTime(DateWritableV2.daysToMillis((int) vector1[i]));
             dtm.<OperatorMethod>(
                 scratchDate1, value, outputDate);
-            outputVector[i] = DateWritable.dateToDays(outputDate);
+            outputVector[i] = DateWritableV2.dateToDays(outputDate);
           } else {
             outputIsNull[i] = true;
             outputColVector.noNulls = false;

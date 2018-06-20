@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampObjectInspector;
 
 /**
@@ -35,17 +35,17 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestam
  *    YYYY-MM-DD HH:MM:SS.[fff...]
  *
  */
-public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, TimestampWritable> {
+public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, TimestampWritableV2> {
   private static final Logger LOG = LoggerFactory.getLogger(LazyTimestamp.class);
 
   public LazyTimestamp(LazyTimestampObjectInspector oi) {
     super(oi);
-    data = new TimestampWritable();
+    data = new TimestampWritableV2();
   }
 
   public LazyTimestamp(LazyTimestamp copy) {
     super(copy);
-    data = new TimestampWritable(copy.data);
+    data = new TimestampWritableV2(copy.data);
   }
 
   /**
@@ -94,18 +94,18 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
    *          The Timestamp to write
    * @throws IOException
    */
-  public static void writeUTF8(OutputStream out, TimestampWritable i)
+  public static void writeUTF8(OutputStream out, TimestampWritableV2 i)
       throws IOException {
     if (i == null) {
       // Serialize as time 0
-      out.write(TimestampWritable.nullBytes);
+      out.write(TimestampWritableV2.nullBytes);
     } else {
       out.write(i.toString().getBytes("US-ASCII"));
     }
   }
 
   @Override
-  public TimestampWritable getWritableObject() {
+  public TimestampWritableV2 getWritableObject() {
     return data;
   }
 }

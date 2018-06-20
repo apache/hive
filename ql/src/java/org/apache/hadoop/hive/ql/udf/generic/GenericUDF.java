@@ -20,12 +20,13 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.util.Date;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -34,10 +35,12 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -45,14 +48,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hive.common.util.DateUtils;
 
 /**
  * A Generic User-defined function (GenericUDF) for the use with Hive.
@@ -489,7 +490,7 @@ public abstract class GenericUDF implements Closeable {
   }
 
   protected Date getDateValue(DeferredObject[] arguments, int i, PrimitiveCategory[] inputTypes,
-      Converter[] converters) throws HiveException {
+                              Converter[] converters) throws HiveException {
     Object obj;
     if ((obj = arguments[i].get()) == null) {
       return null;
@@ -502,16 +503,16 @@ public abstract class GenericUDF implements Closeable {
     case CHAR:
       String dateStr = converters[i].convert(obj).toString();
       try {
-        date = DateUtils.getDateFormat().parse(dateStr);
-      } catch (ParseException e) {
-        throw new UDFArgumentException("Unparsable date: " + dateStr);
+        date = Date.valueOf(dateStr);
+      } catch (IllegalArgumentException e) {
+        date = null;
       }
       break;
     case TIMESTAMP:
     case DATE:
     case TIMESTAMPLOCALTZ:
       Object writableValue = converters[i].convert(obj);
-      date = ((DateWritable) writableValue).get();
+      date = ((DateWritableV2) writableValue).get();
       break;
     default:
       throw new UDFArgumentTypeException(0, getFuncName()
@@ -531,8 +532,60 @@ public abstract class GenericUDF implements Closeable {
     if (writableValue == null) {
       return null;
     }
-    Timestamp ts = ((TimestampWritable) writableValue).getTimestamp();
+    Timestamp ts = ((TimestampWritableV2) writableValue).getTimestamp();
     return ts;
+  }
+
+  protected HiveIntervalYearMonth getIntervalYearMonthValue(DeferredObject[] arguments, int i, PrimitiveCategory[] inputTypes,
+      Converter[] converters) throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+
+    HiveIntervalYearMonth intervalYearMonth;
+    switch (inputTypes[i]) {
+      case STRING:
+      case VARCHAR:
+      case CHAR:
+        String intervalYearMonthStr = converters[i].convert(obj).toString();
+        intervalYearMonth = HiveIntervalYearMonth.valueOf(intervalYearMonthStr);
+        break;
+      case INTERVAL_YEAR_MONTH:
+        Object writableValue = converters[i].convert(obj);
+        intervalYearMonth = ((HiveIntervalYearMonthWritable) writableValue).getHiveIntervalYearMonth();
+        break;
+      default:
+        throw new UDFArgumentTypeException(0, getFuncName()
+            + " only takes INTERVAL_YEAR_MONTH and STRING_GROUP types, got " + inputTypes[i]);
+    }
+    return intervalYearMonth;
+  }
+
+  protected HiveIntervalDayTime getIntervalDayTimeValue(DeferredObject[] arguments, int i, PrimitiveCategory[] inputTypes,
+      Converter[] converters) throws HiveException {
+    Object obj;
+    if ((obj = arguments[i].get()) == null) {
+      return null;
+    }
+
+    HiveIntervalDayTime intervalDayTime;
+    switch (inputTypes[i]) {
+      case STRING:
+      case VARCHAR:
+      case CHAR:
+        String intervalDayTimeStr = converters[i].convert(obj).toString();
+        intervalDayTime = HiveIntervalDayTime.valueOf(intervalDayTimeStr);
+        break;
+      case INTERVAL_DAY_TIME:
+        Object writableValue = converters[i].convert(obj);
+        intervalDayTime = ((HiveIntervalDayTimeWritable) writableValue).getHiveIntervalDayTime();
+        break;
+      default:
+        throw new UDFArgumentTypeException(0, getFuncName()
+            + " only takes INTERVAL_DAY_TIME and STRING_GROUP types, got " + inputTypes[i]);
+    }
+    return intervalDayTime;
   }
 
   protected String getConstantStringValue(ObjectInspector[] arguments, int i) {

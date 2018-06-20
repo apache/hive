@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hive.common.util.HiveStringUtils;
 
 import com.google.common.collect.Lists;
@@ -107,7 +107,7 @@ public final class MetaDataFormatUtils {
       return "";
     }
 
-    DateWritable writableValue = new DateWritable((int) val.getDaysSinceEpoch());
+    DateWritableV2 writableValue = new DateWritableV2((int) val.getDaysSinceEpoch());
     return writableValue.toString();
   }
 

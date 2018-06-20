@@ -22,10 +22,10 @@ STAGE PLANS:
             alias: t1_n138
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00.0') (type: boolean)
+              predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: TIMESTAMP'2016-01-23 00:00:00.0' (type: timestamp), date_field (type: date)
+                expressions: TIMESTAMP'2016-01-23 00:00:00' (type: timestamp), date_field (type: date)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
@@ -96,10 +96,10 @@ STAGE PLANS:
             alias: t1_n138
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00.0') (type: boolean)
+              predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: TIMESTAMP'2016-01-23 00:00:00.0' (type: timestamp), date_field (type: date)
+                expressions: TIMESTAMP'2016-01-23 00:00:00' (type: timestamp), date_field (type: date)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator

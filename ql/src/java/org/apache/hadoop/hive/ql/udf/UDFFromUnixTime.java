@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -119,6 +120,7 @@ public class UDFFromUnixTime extends UDF {
   private Text eval(long unixtime, Text format) {
     if (!format.equals(lastFormat)) {
       formatter = new SimpleDateFormat(format.toString());
+      formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
       lastFormat.set(format);
     }
 
