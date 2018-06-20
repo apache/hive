@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 
 import javax.security.auth.login.LoginException;
 import java.io.FileNotFoundException;
@@ -68,7 +70,7 @@ public class CopyUtils {
   // changed/removed during copy, so double check the checksum after copy,
   // if not match, copy again from cm
   public void copyAndVerify(FileSystem destinationFs, Path destRoot,
-                    List<ReplChangeManager.FileInfo> srcFiles) throws IOException, LoginException {
+                    List<ReplChangeManager.FileInfo> srcFiles) throws IOException, LoginException, HiveFatalException {
     Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
     for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
       FileSystem sourceFs = entry.getKey();
@@ -92,7 +94,7 @@ public class CopyUtils {
 
   private void doCopyRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
                            FileSystem destinationFs, Path destination,
-                           boolean useRegularCopy) throws IOException, LoginException {
+                           boolean useRegularCopy) throws IOException, LoginException, HiveFatalException {
     int repeat = 0;
     boolean isCopyError = false;
     List<Path> pathList = Lists.transform(srcFileList, ReplChangeManager.FileInfo::getEffectivePath);
@@ -145,7 +147,7 @@ public class CopyUtils {
     // If still files remains to be copied due to failure/checksum mismatch after several attempts, then throw error
     if (!pathList.isEmpty()) {
       LOG.error("File copy failed even after several attempts. Files list: " + pathList);
-      throw new IOException("File copy failed even after several attempts.");
+      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
     }
   }
 
@@ -154,7 +156,7 @@ public class CopyUtils {
   // itself is missing, then throw error.
   private List<Path> getFilesToRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
                                      FileSystem destinationFs, Path destination, boolean isCopyError)
-          throws IOException {
+          throws IOException, HiveFatalException {
     List<Path> pathList = new ArrayList<Path>();
 
     // Going through file list and make the retry list
@@ -190,9 +192,9 @@ public class CopyUtils {
       srcPath = srcFile.getEffectivePath();
       if (null == srcPath) {
         // This case possible if CM path is not enabled.
-        LOG.error("File copy failed and likely source file is deleted or modified. "
+        LOG.error("File copy failed and likely source file is deleted or modified."
                 + "Source File: " + srcFile.getSourcePath());
-        throw new IOException("File copy failed and likely source file is deleted or modified.");
+        throw new HiveFatalException(ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getMsg());
       }
 
       if (!srcFile.isUseSourcePath() && !sourceFs.exists(srcFile.getCmPath())) {
@@ -201,7 +203,7 @@ public class CopyUtils {
                 + "Missing Source File: " + srcFile.getSourcePath() + ", CM File: " + srcFile.getCmPath() + ". "
                 + "Try setting higher value for hive.repl.cm.retain in source warehouse. "
                 + "Also, bootstrap the system again to get back the consistent replicated state.");
-        throw new IOException("Both source and CM path are missing from source.");
+        throw new HiveFatalException(ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getMsg());
       }
 
       pathList.add(srcPath);

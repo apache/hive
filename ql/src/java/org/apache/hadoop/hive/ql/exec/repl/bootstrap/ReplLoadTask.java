@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -223,7 +224,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     } catch (Exception e) {
       LOG.error("failed replication", e);
       setException(e);
-      return 1;
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     LOG.info("completed load task run : {}", work.executedLoadTask());
     return 0;

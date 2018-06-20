@@ -73,9 +73,9 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 
 import javax.annotation.Nullable;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -853,7 +853,8 @@ public class TestReplicationScenarios {
     InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventIdSkipper);
 
     advanceDumpDir();
-    verifyFail("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    assertTrue(ret.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
     eventIdSkipper.assertInjectionsPerformed(true,false);
     InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
   }
@@ -3155,6 +3156,32 @@ public class TestReplicationScenarios {
     cs = fs.getContentSummary(path);
     fileCountAfter = cs.getFileCount();
     assertTrue(fileCount == fileCountAfter);
+  }
+
+  @Test
+  public void testLoadCmPathMissing() throws IOException {
+    String dbName = createDB(testName.getMethodName(), driver);
+    run("CREATE TABLE " + dbName + ".normal(a int)", driver);
+    run("INSERT INTO " + dbName + ".normal values (1)", driver);
+
+    advanceDumpDir();
+    run("repl dump " + dbName, true, driver);
+    String dumpLocation = getResult(0, 0, driver);
+
+    run("DROP TABLE " + dbName + ".normal", driver);
+
+    String cmDir = hconf.getVar(HiveConf.ConfVars.REPLCMDIR);
+    Path path = new Path(cmDir);
+    FileSystem fs = path.getFileSystem(hconf);
+    ContentSummary cs = fs.getContentSummary(path);
+    long fileCount = cs.getFileCount();
+    assertTrue(fileCount != 0);
+    fs.delete(path);
+
+    CommandProcessorResponse ret = driverMirror.run("REPL LOAD " + dbName + " FROM '" + dumpLocation + "'");
+    assertTrue(ret.getResponseCode() == ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getErrorCode());
+    run("drop database " + dbName, true, driver);
+    fs.create(path, false);
   }
 
   @Test
