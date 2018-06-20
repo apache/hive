@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.SchemaEvolution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -773,9 +774,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * Convert from the row include/sarg/columnNames to the event equivalent
    * for the underlying file.
    * @param options options for the row reader
+   * @param rowSchema schema of the row, excluding ACID columns
    * @return a cloned options object that is modified for the event reader
    */
-  static Reader.Options createEventOptions(Reader.Options options) {
+  static Reader.Options createEventOptions(Reader.Options options, TypeDescription rowSchema) {
     Reader.Options result = options.clone();
     result.include(options.getInclude());
 
@@ -788,6 +790,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       }
       result.searchArgument(options.getSearchArgument(), cols);
     }
+
+    // schema evolution will insert the acid columns to row schema for ACID read
+    result.schema(rowSchema);
+
     return result;
   }
 
@@ -970,12 +976,12 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     TypeDescription typeDescr =
         OrcInputFormat.getDesiredRowTypeDescr(conf, true, Integer.MAX_VALUE);
 
-    objectInspector = OrcRecordUpdater.createEventSchema
+    objectInspector = OrcRecordUpdater.createEventObjectInspector
         (OrcStruct.createObjectInspector(0, OrcUtils.getOrcTypes(typeDescr)));
     assert !(mergerOptions.isCompacting() && reader != null) : "don't need a reader for compaction";
 
     // modify the options to reflect the event instead of the base row
-    Reader.Options eventOptions = createEventOptions(options);
+    Reader.Options eventOptions = createEventOptions(options, typeDescr);
     //suppose it's the first Major compaction so we only have deltas
     boolean isMajorNoBase = mergerOptions.isCompacting() && mergerOptions.isMajorCompaction()
       && mergerOptions.getBaseDir() == null;

@@ -125,8 +125,10 @@ public final class OrcFile extends org.apache.orc.OrcFile {
      * @return this
      */
     public WriterOptions setSchema(TypeDescription schema) {
-      this.explicitSchema = true;
-      super.setSchema(schema);
+      if (schema != null) {
+        this.explicitSchema = true;
+        super.setSchema(schema);
+      }
       return this;
     }
 
