@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * Generated from template DateColumnArithmeticIntervalYearMonthColumn.txt, which covers binary arithmetic
@@ -100,44 +100,44 @@ public class <ClassName> extends VectorExpression {
      */
     if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
       scratchIntervalYearMonth1.set((int) vector1[0]);
-      scratchDate2.setTime(DateWritable.daysToMillis((int) vector2[0]));
+      scratchDate2.setTime(DateWritableV2.daysToMillis((int) vector2[0]));
       dtm.<OperatorMethod>(
           scratchIntervalYearMonth1, scratchDate2, outputDate);
-      outputVector[0] = DateWritable.dateToDays(outputDate);
+      outputVector[0] = DateWritableV2.dateToDays(outputDate);
     } else if (inputColVector1.isRepeating) {
       scratchIntervalYearMonth1.set((int) vector1[0]);
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          scratchDate2.setTime(DateWritable.daysToMillis((int) vector2[i]));
+          scratchDate2.setTime(DateWritableV2.daysToMillis((int) vector2[i]));
           dtm.<OperatorMethod>(
               scratchIntervalYearMonth1, scratchDate2, outputDate);
-          outputVector[i] = DateWritable.dateToDays(outputDate);
+          outputVector[i] = DateWritableV2.dateToDays(outputDate);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          scratchDate2.setTime(DateWritable.daysToMillis((int) vector2[i]));
+          scratchDate2.setTime(DateWritableV2.daysToMillis((int) vector2[i]));
           dtm.<OperatorMethod>(
               scratchIntervalYearMonth1, scratchDate2, outputDate);
-          outputVector[i] = DateWritable.dateToDays(outputDate);
+          outputVector[i] = DateWritableV2.dateToDays(outputDate);
         }
       }
     } else if (inputColVector2.isRepeating) {
-      scratchDate2.setTime(DateWritable.daysToMillis((int) vector2[0]));
+      scratchDate2.setTime(DateWritableV2.daysToMillis((int) vector2[0]));
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           scratchIntervalYearMonth1.set((int) vector1[i]);
           dtm.<OperatorMethod>(
               scratchIntervalYearMonth1, scratchDate2, outputDate);
-          outputVector[i] = DateWritable.dateToDays(outputDate);
+          outputVector[i] = DateWritableV2.dateToDays(outputDate);
         }
       } else {
         for(int i = 0; i != n; i++) {
           scratchIntervalYearMonth1.set((int) vector1[i]);
           dtm.<OperatorMethod>(
               scratchIntervalYearMonth1, scratchDate2, outputDate);
-          outputVector[i] = DateWritable.dateToDays(outputDate);
+          outputVector[i] = DateWritableV2.dateToDays(outputDate);
         }
       }
     } else {
@@ -145,18 +145,18 @@ public class <ClassName> extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           scratchIntervalYearMonth1.set((int) vector1[i]);
-          scratchDate2.setTime(DateWritable.daysToMillis((int) vector2[i]));
+          scratchDate2.setTime(DateWritableV2.daysToMillis((int) vector2[i]));
           dtm.<OperatorMethod>(
               scratchIntervalYearMonth1, scratchDate2, outputDate);
-          outputVector[i] = DateWritable.dateToDays(outputDate);
+          outputVector[i] = DateWritableV2.dateToDays(outputDate);
         }
       } else {
         for(int i = 0; i != n; i++) {
           scratchIntervalYearMonth1.set((int) vector1[i]);
-          scratchDate2.setTime(DateWritable.daysToMillis((int) vector2[i]));
+          scratchDate2.setTime(DateWritableV2.daysToMillis((int) vector2[i]));
           dtm.<OperatorMethod>(
               scratchIntervalYearMonth1, scratchDate2, outputDate);
-          outputVector[i] = DateWritable.dateToDays(outputDate);
+          outputVector[i] = DateWritableV2.dateToDays(outputDate);
         }
       }
     }

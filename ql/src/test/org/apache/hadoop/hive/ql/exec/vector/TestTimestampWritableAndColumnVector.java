@@ -23,7 +23,7 @@ import org.junit.Test;
 import java.sql.Timestamp;
 import java.util.Random;
 
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
 
 import static org.junit.Assert.*;
@@ -45,7 +45,7 @@ public class TestTimestampWritableAndColumnVector {
     Timestamp[] randTimestamps = new Timestamp[VectorizedRowBatch.DEFAULT_SIZE];
 
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
-      Timestamp randTimestamp = RandomTypeUtil.getRandTimestamp(r);
+      Timestamp randTimestamp = RandomTypeUtil.getRandTimestamp(r).toSqlTimestamp();
       randTimestamps[i] = randTimestamp;
       timestampColVector.set(i, randTimestamp);
     }

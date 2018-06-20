@@ -81,7 +81,7 @@ public class TimestampColumnVector extends ColumnVector {
 
     scratchWritable = null;     // Allocated by caller.
 
-    isUTC = false;
+    isUTC = true;
   }
 
   /**

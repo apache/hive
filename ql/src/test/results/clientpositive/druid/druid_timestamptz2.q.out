@@ -1,0 +1,308 @@
+PREHOOK: query: CREATE database druid_test_dst
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:druid_test_dst
+POSTHOOK: query: CREATE database druid_test_dst
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:druid_test_dst
+PREHOOK: query: use druid_test_dst
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:druid_test_dst
+POSTHOOK: query: use druid_test_dst
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:druid_test_dst
+PREHOOK: query: create table test_base_table(`timecolumn` timestamp, `interval_marker` string, `num_l` double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:druid_test_dst
+PREHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: query: create table test_base_table(`timecolumn` timestamp, `interval_marker` string, `num_l` double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:druid_test_dst
+POSTHOOK: Output: druid_test_dst@test_base_table
+PREHOOK: query: insert into test_base_table values ('2015-03-08 00:00:00', 'i1-start', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: query: insert into test_base_table values ('2015-03-08 00:00:00', 'i1-start', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
+POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
+POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
+PREHOOK: query: insert into test_base_table values ('2015-03-08 23:59:59', 'i1-end', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: query: insert into test_base_table values ('2015-03-08 23:59:59', 'i1-end', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
+POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
+POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
+PREHOOK: query: insert into test_base_table values ('2015-03-09 00:00:00', 'i2-start', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: query: insert into test_base_table values ('2015-03-09 00:00:00', 'i2-start', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
+POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
+POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
+PREHOOK: query: insert into test_base_table values ('2015-03-09 23:59:59', 'i2-end', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: query: insert into test_base_table values ('2015-03-09 23:59:59', 'i2-end', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
+POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
+POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
+PREHOOK: query: insert into test_base_table values ('2015-03-10 00:00:00', 'i3-start', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: query: insert into test_base_table values ('2015-03-10 00:00:00', 'i3-start', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
+POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
+POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
+PREHOOK: query: insert into test_base_table values ('2015-03-10 23:59:59', 'i3-end', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: query: insert into test_base_table values ('2015-03-10 23:59:59', 'i3-end', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@test_base_table
+POSTHOOK: Lineage: test_base_table.interval_marker SCRIPT []
+POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
+POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
+PREHOOK: query: CREATE TABLE druid_test_table_1
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+AS
+select cast(`timecolumn` as timestamp with local time zone) as `__time`, `interval_marker`, `num_l`
+FROM druid_test_dst.test_base_table
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: druid_test_dst@test_base_table
+PREHOOK: Output: database:druid_test_dst
+PREHOOK: Output: druid_test_dst@druid_test_table_1
+POSTHOOK: query: CREATE TABLE druid_test_table_1
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+AS
+select cast(`timecolumn` as timestamp with local time zone) as `__time`, `interval_marker`, `num_l`
+FROM druid_test_dst.test_base_table
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: druid_test_dst@test_base_table
+POSTHOOK: Output: database:druid_test_dst
+POSTHOOK: Output: druid_test_dst@druid_test_table_1
+POSTHOOK: Lineage: druid_test_table_1.__time EXPRESSION [(test_base_table)test_base_table.FieldSchema(name:timecolumn, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: druid_test_table_1.interval_marker SIMPLE [(test_base_table)test_base_table.FieldSchema(name:interval_marker, type:string, comment:null), ]
+POSTHOOK: Lineage: druid_test_table_1.num_l SIMPLE [(test_base_table)test_base_table.FieldSchema(name:num_l, type:double, comment:null), ]
+PREHOOK: query: select * FROM druid_test_table_1
+PREHOOK: type: QUERY
+PREHOOK: Input: druid_test_dst@druid_test_table_1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * FROM druid_test_table_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: druid_test_dst@druid_test_table_1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2015-03-08 00:00:00.0 US/Pacific	i1-start	4.0
+2015-03-08 23:59:59.0 US/Pacific	i1-end	1.0
+2015-03-09 00:00:00.0 US/Pacific	i2-start	4.0
+2015-03-09 23:59:59.0 US/Pacific	i2-end	1.0
+2015-03-10 00:00:00.0 US/Pacific	i3-start	2.0
+2015-03-10 23:59:59.0 US/Pacific	i3-end	2.0
+PREHOOK: query: CREATE TABLE druid_test_table_2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:druid_test_dst
+PREHOOK: Output: druid_test_dst@druid_test_table_2
+POSTHOOK: query: CREATE TABLE druid_test_table_2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:druid_test_dst
+POSTHOOK: Output: druid_test_dst@druid_test_table_2
+PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_2
+POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_2
+PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_2
+POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_2
+PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_2
+POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_2
+PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_2
+POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_2
+PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_2
+POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_2
+PREHOOK: query: insert into druid_test_table_2 values (cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_2
+POSTHOOK: query: insert into druid_test_table_2 values (cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_2
+PREHOOK: query: select * FROM druid_test_table_2
+PREHOOK: type: QUERY
+PREHOOK: Input: druid_test_dst@druid_test_table_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * FROM druid_test_table_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: druid_test_dst@druid_test_table_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2015-03-08 00:00:00.0 US/Pacific	i1-start	4.0
+2015-03-08 23:59:59.0 US/Pacific	i1-end	1.0
+2015-03-09 00:00:00.0 US/Pacific	i2-start	4.0
+2015-03-09 23:59:59.0 US/Pacific	i2-end	1.0
+2015-03-10 00:00:00.0 US/Pacific	i3-start	2.0
+2015-03-10 23:59:59.0 US/Pacific	i3-end	2.0
+PREHOOK: query: CREATE TABLE druid_test_table_utc
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+AS
+select cast(`timecolumn` as timestamp with local time zone) as `__time`, `interval_marker`, `num_l`
+FROM druid_test_dst.test_base_table
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: druid_test_dst@test_base_table
+PREHOOK: Output: database:druid_test_dst
+PREHOOK: Output: druid_test_dst@druid_test_table_utc
+POSTHOOK: query: CREATE TABLE druid_test_table_utc
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+AS
+select cast(`timecolumn` as timestamp with local time zone) as `__time`, `interval_marker`, `num_l`
+FROM druid_test_dst.test_base_table
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: druid_test_dst@test_base_table
+POSTHOOK: Output: database:druid_test_dst
+POSTHOOK: Output: druid_test_dst@druid_test_table_utc
+POSTHOOK: Lineage: druid_test_table_utc.__time EXPRESSION [(test_base_table)test_base_table.FieldSchema(name:timecolumn, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: druid_test_table_utc.interval_marker SIMPLE [(test_base_table)test_base_table.FieldSchema(name:interval_marker, type:string, comment:null), ]
+POSTHOOK: Lineage: druid_test_table_utc.num_l SIMPLE [(test_base_table)test_base_table.FieldSchema(name:num_l, type:double, comment:null), ]
+PREHOOK: query: select * FROM druid_test_table_utc
+PREHOOK: type: QUERY
+PREHOOK: Input: druid_test_dst@druid_test_table_utc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * FROM druid_test_table_utc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: druid_test_dst@druid_test_table_utc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2015-03-08 00:00:00.0 UTC	i1-start	4.0
+2015-03-08 23:59:59.0 UTC	i1-end	1.0
+2015-03-09 00:00:00.0 UTC	i2-start	4.0
+2015-03-09 23:59:59.0 UTC	i2-end	1.0
+2015-03-10 00:00:00.0 UTC	i3-start	2.0
+2015-03-10 23:59:59.0 UTC	i3-end	2.0
+PREHOOK: query: CREATE TABLE druid_test_table_utc2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:druid_test_dst
+PREHOOK: Output: druid_test_dst@druid_test_table_utc2
+POSTHOOK: query: CREATE TABLE druid_test_table_utc2 (`__time` timestamp with local time zone, `interval_marker` string, `num_l` double)
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:druid_test_dst
+POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
+PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_utc2
+POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-08 00:00:00' as timestamp with local time zone), 'i1-start', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
+PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_utc2
+POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-08 23:59:59' as timestamp with local time zone), 'i1-end', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
+PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_utc2
+POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-09 00:00:00' as timestamp with local time zone), 'i2-start', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
+PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_utc2
+POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-09 23:59:59' as timestamp with local time zone), 'i2-end', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
+PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_utc2
+POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-10 00:00:00' as timestamp with local time zone), 'i3-start', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
+PREHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_dst@druid_test_table_utc2
+POSTHOOK: query: insert into druid_test_table_utc2 values (cast('2015-03-10 23:59:59' as timestamp with local time zone), 'i3-end', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_dst@druid_test_table_utc2
+PREHOOK: query: select * FROM druid_test_table_utc2
+PREHOOK: type: QUERY
+PREHOOK: Input: druid_test_dst@druid_test_table_utc2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * FROM druid_test_table_utc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: druid_test_dst@druid_test_table_utc2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2015-03-08 00:00:00.0 UTC	i1-start	4.0
+2015-03-08 23:59:59.0 UTC	i1-end	1.0
+2015-03-09 00:00:00.0 UTC	i2-start	4.0
+2015-03-09 23:59:59.0 UTC	i2-end	1.0
+2015-03-10 00:00:00.0 UTC	i3-start	2.0
+2015-03-10 23:59:59.0 UTC	i3-end	2.0

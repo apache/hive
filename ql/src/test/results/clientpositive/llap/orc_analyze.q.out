@@ -102,7 +102,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3236                
+	totalSize           	3222                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -150,7 +150,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3236                
+	totalSize           	3222                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -237,7 +237,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3236                
+	totalSize           	3222                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -345,7 +345,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2134                
+	totalSize           	2123                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -386,7 +386,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2147                
+	totalSize           	2134                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -439,7 +439,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2134                
+	totalSize           	2123                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -480,7 +480,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2147                
+	totalSize           	2134                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -576,7 +576,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2134                
+	totalSize           	2123                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -617,7 +617,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2147                
+	totalSize           	2134                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -731,7 +731,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	21955               
-	totalSize           	5394                
+	totalSize           	5341                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -772,7 +772,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5388                
+	totalSize           	5339                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -825,7 +825,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	21955               
-	totalSize           	5394                
+	totalSize           	5341                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -866,7 +866,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5388                
+	totalSize           	5339                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -968,7 +968,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	21955               
-	totalSize           	5394                
+	totalSize           	5341                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1009,7 +1009,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5388                
+	totalSize           	5339                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1117,7 +1117,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2134                
+	totalSize           	2123                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1170,7 +1170,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2134                
+	totalSize           	2123                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

@@ -289,15 +289,15 @@ public final class FunctionRegistry {
     system.registerGenericUDF(UNARY_PLUS_FUNC_NAME, GenericUDFOPPositive.class);
     system.registerGenericUDF(UNARY_MINUS_FUNC_NAME, GenericUDFOPNegative.class);
 
-    system.registerUDF("day", UDFDayOfMonth.class, false);
-    system.registerUDF("dayofmonth", UDFDayOfMonth.class, false);
+    system.registerGenericUDF("day", UDFDayOfMonth.class);
+    system.registerGenericUDF("dayofmonth", UDFDayOfMonth.class);
     system.registerUDF("dayofweek", UDFDayOfWeek.class, false);
-    system.registerUDF("month", UDFMonth.class, false);
+    system.registerGenericUDF("month", UDFMonth.class);
     system.registerGenericUDF("quarter", GenericUDFQuarter.class);
-    system.registerUDF("year", UDFYear.class, false);
-    system.registerUDF("hour", UDFHour.class, false);
-    system.registerUDF("minute", UDFMinute.class, false);
-    system.registerUDF("second", UDFSecond.class, false);
+    system.registerGenericUDF("year", UDFYear.class);
+    system.registerGenericUDF("hour", UDFHour.class);
+    system.registerGenericUDF("minute", UDFMinute.class);
+    system.registerGenericUDF("second", UDFSecond.class);
     system.registerUDF("from_unixtime", UDFFromUnixTime.class, false);
     system.registerGenericUDF("to_date", GenericUDFDate.class);
     system.registerUDF("weekofyear", UDFWeekOfYear.class, false);

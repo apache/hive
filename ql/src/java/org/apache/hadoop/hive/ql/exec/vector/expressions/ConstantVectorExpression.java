@@ -307,7 +307,8 @@ public class ConstantVectorExpression extends VectorExpression {
         value = decimalValue.toString();
         break;
       case TIMESTAMP:
-        value = timestampValue.toString();
+        value = org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(
+            timestampValue.getTime(), timestampValue.getNanos()).toString();
         break;
       case INTERVAL_DAY_TIME:
         value = intervalDayTimeValue.toString();

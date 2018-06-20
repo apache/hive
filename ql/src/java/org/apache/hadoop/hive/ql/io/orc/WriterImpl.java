@@ -19,19 +19,17 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -43,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
@@ -63,8 +62,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectIn
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.apache.orc.PhysicalWriter;
 import org.apache.orc.TypeDescription;
 
 /**
@@ -206,9 +203,9 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
             }
             case TIMESTAMP: {
               TimestampColumnVector vector = (TimestampColumnVector) column;
-              Timestamp ts = ((TimestampObjectInspector) inspector)
-                  .getPrimitiveJavaObject(obj);
-              vector.set(rowId, ts);
+              vector.setIsUTC(true);
+              vector.set(rowId, ((TimestampObjectInspector) inspector)
+                  .getPrimitiveJavaObject(obj).toSqlTimestamp());
               break;
             }
             case DATE: {

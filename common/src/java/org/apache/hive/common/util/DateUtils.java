@@ -20,6 +20,7 @@ package org.apache.hive.common.util;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 /**
  * DateUtils. Thread-safe class
@@ -32,6 +33,7 @@ public class DateUtils {
     protected SimpleDateFormat initialValue() {
       SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
       simpleDateFormat.setLenient(false);
+      simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
       return simpleDateFormat;
     }
   };

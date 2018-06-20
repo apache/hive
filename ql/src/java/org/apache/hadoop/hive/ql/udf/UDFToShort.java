@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToLong;
@@ -29,7 +28,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyShort;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.io.BooleanWritable;
@@ -185,7 +184,7 @@ public class UDFToShort extends UDF {
     }
   }
 
-  public ShortWritable evaluate(TimestampWritable i) {
+  public ShortWritable evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {

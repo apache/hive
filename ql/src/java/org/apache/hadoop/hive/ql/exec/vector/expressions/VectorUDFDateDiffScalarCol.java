@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
@@ -105,7 +105,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
 
       case TIMESTAMP:
         date.setTime(timestampValue.getTime());
-        baseDate = DateWritable.dateToDays(date);
+        baseDate = DateWritableV2.dateToDays(date);
         break;
 
       case STRING:
@@ -113,7 +113,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
       case VARCHAR:
         try {
           date.setTime(formatter.parse(new String(stringValue, "UTF-8")).getTime());
-          baseDate = DateWritable.dateToDays(date);
+          baseDate = DateWritableV2.dateToDays(date);
           break;
         } catch (Exception e) {
           outputColVector.noNulls = false;
@@ -346,7 +346,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
   protected int evaluateTimestamp(ColumnVector columnVector, int index) {
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
     date.setTime(tcv.getTime(index));
-    return baseDate - DateWritable.dateToDays(date);
+    return baseDate - DateWritableV2.dateToDays(date);
   }
 
   protected int evaluateDate(ColumnVector columnVector, int index) {
@@ -359,7 +359,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
     text.set(bcv.vector[i], bcv.start[i], bcv.length[i]);
     try {
       date.setTime(formatter.parse(text.toString()).getTime());
-      output.vector[i] = baseDate - DateWritable.dateToDays(date);
+      output.vector[i] = baseDate - DateWritableV2.dateToDays(date);
     } catch (ParseException e) {
       output.vector[i] = 1;
       output.isNull[i] = true;

@@ -18,17 +18,17 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hive.common.util.DateParser;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
 
@@ -46,7 +46,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
   protected boolean isPositive = true;
 
   private transient final DateParser dateParser = new DateParser();
-  private transient final Date baseDate = new Date(0);
+  private transient final Date baseDate = new Date();
 
   // Transient members initialized by transientInit method.
   private transient PrimitiveCategory primitiveCategory;
@@ -99,11 +99,11 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
 
     switch (primitiveCategory) {
       case DATE:
-        baseDate.setTime(DateWritable.daysToMillis((int) longValue));
+        baseDate.setTimeInMillis(DateWritableV2.daysToMillis((int) longValue));
         break;
 
       case TIMESTAMP:
-        baseDate.setTime(timestampValue.getTime());
+        baseDate.setTimeInMillis(timestampValue.getTime());
         break;
 
       case STRING:
@@ -137,7 +137,7 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
     // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
 
-    long baseDateDays = DateWritable.millisToDays(baseDate.getTime());
+    long baseDateDays = DateWritableV2.millisToDays(baseDate.toEpochMilli());
     if (inputCol.isRepeating) {
       if (inputCol.noNulls || !inputCol.isNull[0]) {
         outputColVector.isNull[0] = false;
@@ -245,11 +245,12 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
   public String vectorExpressionParameters() {
     String value;
     if (object instanceof Long) {
-      Date tempDate = new Date(0);
-      tempDate.setTime(DateWritable.daysToMillis((int) longValue));
+      Date tempDate = new Date();
+      tempDate.setTimeInMillis(DateWritableV2.daysToMillis((int) longValue));
       value = tempDate.toString();
     } else if (object instanceof Timestamp) {
-      value = this.timestampValue.toString();
+      value = org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(
+          timestampValue.getTime(), timestampValue.getNanos()).toString();
     } else if (object instanceof byte []) {
       value = new String(this.stringValue, StandardCharsets.UTF_8);
     } else {

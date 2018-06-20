@@ -30,11 +30,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanVi
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDateToBoolean;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToBoolean;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -179,12 +179,12 @@ public class UDFToBoolean extends UDF {
     return booleanWritable;
   }
 
-  public BooleanWritable evaluate(DateWritable d) {
+  public BooleanWritable evaluate(DateWritableV2 d) {
     // date value to boolean doesn't make any sense.
     return null;
   }
 
-  public BooleanWritable evaluate(TimestampWritable i) {
+  public BooleanWritable evaluate(TimestampWritableV2 i) {
     if (i == null) {
       return null;
     } else {

@@ -13,18 +13,17 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
-import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 
 
@@ -42,7 +41,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal.set(Calendar.HOUR_OF_DAY, 0);
     cal.setTimeZone(TimeZone.getTimeZone("GMT"));
 
-    Timestamp ts = new Timestamp(cal.getTimeInMillis());
+    Timestamp ts = Timestamp.ofEpochMilli(cal.getTimeInMillis());
     NanoTime nt = NanoTimeUtils.getNanoTime(ts, false);
     Assert.assertEquals(nt.getJulianDay(), 2440000);
 
@@ -57,7 +56,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal1.set(Calendar.HOUR_OF_DAY, 0);
     cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
 
-    Timestamp ts1 = new Timestamp(cal1.getTimeInMillis());
+    Timestamp ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis());
     NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, false);
 
     Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
@@ -70,7 +69,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal2.set(Calendar.HOUR_OF_DAY, 0);
     cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-    Timestamp ts2 = new Timestamp(cal2.getTimeInMillis());
+    Timestamp ts2 = Timestamp.ofEpochMilli(cal2.getTimeInMillis());
     NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, false);
 
     Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, false);
@@ -86,7 +85,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal1.set(Calendar.HOUR_OF_DAY, 0);
     cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
 
-    ts1 = new Timestamp(cal1.getTimeInMillis());
+    ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis());
     nt1 = NanoTimeUtils.getNanoTime(ts1, false);
 
     ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
@@ -99,7 +98,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal2.set(Calendar.HOUR_OF_DAY, 0);
     cal2.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-    ts2 = new Timestamp(cal2.getTimeInMillis());
+    ts2 = Timestamp.ofEpochMilli(cal2.getTimeInMillis());
     nt2 = NanoTimeUtils.getNanoTime(ts2, false);
 
     ts2Fetched = NanoTimeUtils.getTimestamp(nt2, false);
@@ -117,8 +116,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal.set(Calendar.MINUTE, 1);
     cal.set(Calendar.SECOND, 1);
     cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-    Timestamp ts = new Timestamp(cal.getTimeInMillis());
-    ts.setNanos(1);
+    Timestamp ts = Timestamp.ofEpochMilli(cal.getTimeInMillis(), 1);
 
     //(1*60*60 + 1*60 + 1) * 10e9 + 1
     NanoTime nt = NanoTimeUtils.getNanoTime(ts, false);
@@ -133,8 +131,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal.set(Calendar.MINUTE, 59);
     cal.set(Calendar.SECOND, 59);
     cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-    ts = new Timestamp(cal.getTimeInMillis());
-    ts.setNanos(999999999);
+    ts = Timestamp.ofEpochMilli(cal.getTimeInMillis(), 999999999);
 
     //(23*60*60 + 59*60 + 59)*10e9 + 999999999
     nt = NanoTimeUtils.getNanoTime(ts, false);
@@ -149,8 +146,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal2.set(Calendar.MINUTE, 10);
     cal2.set(Calendar.SECOND, 0);
     cal2.setTimeZone(TimeZone.getTimeZone("GMT"));
-    Timestamp ts2 = new Timestamp(cal2.getTimeInMillis());
-    ts2.setNanos(10);
+    Timestamp ts2 = Timestamp.ofEpochMilli(cal2.getTimeInMillis(), 10);
 
     Calendar cal1 = Calendar.getInstance();
     cal1.set(Calendar.YEAR,  1968);
@@ -160,8 +156,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal1.set(Calendar.MINUTE, 0);
     cal1.set(Calendar.SECOND, 0);
     cal1.setTimeZone(TimeZone.getTimeZone("GMT"));
-    Timestamp ts1 = new Timestamp(cal1.getTimeInMillis());
-    ts1.setNanos(1);
+    Timestamp ts1 = Timestamp.ofEpochMilli(cal1.getTimeInMillis(), 1);
 
     NanoTime n2 = NanoTimeUtils.getNanoTime(ts2, false);
     NanoTime n1 = NanoTimeUtils.getNanoTime(ts1, false);
@@ -183,8 +178,7 @@ public class TestParquetTimestampUtils extends TestCase {
     cal.set(Calendar.MINUTE, 1);
     cal.set(Calendar.SECOND, 1);
     cal.setTimeZone(TimeZone.getTimeZone("US/Pacific"));
-    Timestamp ts = new Timestamp(cal.getTimeInMillis());
-    ts.setNanos(1);
+    Timestamp ts = Timestamp.ofEpochMilli(cal.getTimeInMillis(), 1);
 
     /**
      * 17:00 PDT = 00:00 GMT (daylight-savings)
@@ -212,15 +206,15 @@ public class TestParquetTimestampUtils extends TestCase {
   public void testTimezoneless() {
     Timestamp ts1 = Timestamp.valueOf("2011-01-01 00:30:30.111111111");
     NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, true);
-    Assert.assertEquals(nt1.getJulianDay(), 2455563);
-    Assert.assertEquals(nt1.getTimeOfDayNanos(), 1830111111111L);
+    Assert.assertEquals(nt1.getJulianDay(), 2455562);
+    Assert.assertEquals(nt1.getTimeOfDayNanos(), 59430111111111L);
     Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, true);
     Assert.assertEquals(ts1Fetched.toString(), ts1.toString());
 
     Timestamp ts2 = Timestamp.valueOf("2011-02-02 08:30:30.222222222");
     NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, true);
     Assert.assertEquals(nt2.getJulianDay(), 2455595);
-    Assert.assertEquals(nt2.getTimeOfDayNanos(), 30630222222222L);
+    Assert.assertEquals(nt2.getTimeOfDayNanos(), 1830222222222L);
     Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, true);
     Assert.assertEquals(ts2Fetched.toString(), ts2.toString());
   }
@@ -251,7 +245,7 @@ public class TestParquetTimestampUtils extends TestCase {
 
     //test some extreme cases.
     verifyTsString("9999-09-09 09:09:09.999999999", local);
-    verifyTsString("0001-01-01 00:00:00.0", local);
+    verifyTsString("0001-01-01 00:00:00", local);
   }
 
   private void verifyTsString(String tsString, boolean local) {

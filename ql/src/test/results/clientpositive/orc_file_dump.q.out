@@ -129,7 +129,7 @@ File Statistics:
   Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22405 rows: 1049 tail: 253 index: 8956
+  Stripe: offset: 3 data: 22405 rows: 1049 tail: 242 index: 8956
     Stream: column 0 section ROW_INDEX start: 3 length 20
     Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 34
     Stream: column 1 section ROW_INDEX start: 57 length 58
@@ -269,7 +269,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
-File length: 32309 bytes
+File length: 32298 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -326,7 +326,7 @@ File Statistics:
   Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22405 rows: 1049 tail: 248 index: 13603
+  Stripe: offset: 3 data: 22405 rows: 1049 tail: 240 index: 13603
     Stream: column 0 section ROW_INDEX start: 3 length 20
     Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 43
     Stream: column 1 section ROW_INDEX start: 66 length 58
@@ -466,7 +466,7 @@ Stripes:
       Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 174 loadFactor: 0.0181 expectedFpp: 6.426078E-13
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 181 loadFactor: 0.0189 expectedFpp: 8.4693775E-13
 
-File length: 36950 bytes
+File length: 36943 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -535,7 +535,7 @@ File Statistics:
   Column 11: count: 1049 hasNull: false bytesOnDisk: 2468 sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22405 rows: 1049 tail: 253 index: 8956
+  Stripe: offset: 3 data: 22405 rows: 1049 tail: 242 index: 8956
     Stream: column 0 section ROW_INDEX start: 3 length 20
     Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 34
     Stream: column 1 section ROW_INDEX start: 57 length 58
@@ -675,7 +675,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
-File length: 32309 bytes
+File length: 32298 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

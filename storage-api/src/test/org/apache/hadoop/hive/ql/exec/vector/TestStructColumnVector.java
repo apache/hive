@@ -110,7 +110,7 @@ public class TestStructColumnVector {
     batch.cols[0] = x;
     batch.cols[1] = y;
     batch.reset();
-    Timestamp ts = Timestamp.valueOf("2000-01-01 00:00:00");
+    Timestamp ts = new Timestamp(946684800000L);
     for(int r=0; r < 10; ++r) {
       batch.size += 1;
       x1.vector[r] = 3 * r;
@@ -120,16 +120,16 @@ public class TestStructColumnVector {
       y.setRef(r, buffer, 0, buffer.length);
     }
     final String EXPECTED = ("Column vector types: 0:STRUCT<LONG, TIMESTAMP>, 1:BYTES\n" +
-        "[[0, 2000-01-01 00:00:01.0], \"value 0\"]\n" +
-        "[[3, 2000-01-01 00:00:02.0], \"value 1\"]\n" +
-        "[[6, 2000-01-01 00:00:03.0], \"value 2\"]\n" +
-        "[[9, 2000-01-01 00:00:04.0], \"value 3\"]\n" +
-        "[[12, 2000-01-01 00:00:05.0], \"value 4\"]\n" +
-        "[[15, 2000-01-01 00:00:06.0], \"value 5\"]\n" +
-        "[[18, 2000-01-01 00:00:07.0], \"value 6\"]\n" +
-        "[[21, 2000-01-01 00:00:08.0], \"value 7\"]\n" +
-        "[[24, 2000-01-01 00:00:09.0], \"value 8\"]\n" +
-        "[[27, 2000-01-01 00:00:10.0], \"value 9\"]");
+        "[[0, 2000-01-01 00:00:01], \"value 0\"]\n" +
+        "[[3, 2000-01-01 00:00:02], \"value 1\"]\n" +
+        "[[6, 2000-01-01 00:00:03], \"value 2\"]\n" +
+        "[[9, 2000-01-01 00:00:04], \"value 3\"]\n" +
+        "[[12, 2000-01-01 00:00:05], \"value 4\"]\n" +
+        "[[15, 2000-01-01 00:00:06], \"value 5\"]\n" +
+        "[[18, 2000-01-01 00:00:07], \"value 6\"]\n" +
+        "[[21, 2000-01-01 00:00:08], \"value 7\"]\n" +
+        "[[24, 2000-01-01 00:00:09], \"value 8\"]\n" +
+        "[[27, 2000-01-01 00:00:10], \"value 9\"]");
     assertEquals(EXPECTED, batch.toString());
   }
 
