@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.sql.Date;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +43,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -60,7 +61,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
-import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -96,7 +96,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentUser;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -108,9 +108,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * BaseSemanticAnalyzer.
@@ -2098,14 +2095,19 @@ public abstract class BaseSemanticAnalyzer {
   private static String normalizeDateCol(
       Object colValue, String originalColSpec) throws SemanticException {
     Date value;
-    if (colValue instanceof DateWritable) {
-      value = ((DateWritable) colValue).get(false); // Time doesn't matter.
+    if (colValue instanceof DateWritableV2) {
+      value = ((DateWritableV2) colValue).get(); // Time doesn't matter.
     } else if (colValue instanceof Date) {
       value = (Date) colValue;
     } else {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
-    return MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(value);
+    try {
+      return MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(
+          MetaStoreUtils.PARTITION_DATE_FORMAT.get().parse(value.toString()));
+    } catch (ParseException e) {
+      throw new SemanticException(e);
+    }
   }
 
   protected WriteEntity toWriteEntity(String location) throws SemanticException {

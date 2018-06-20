@@ -18,13 +18,13 @@
 package org.apache.hive.common.util;
 
 import static org.junit.Assert.*;
-import org.junit.Test;
 
-import java.sql.Date;
+import org.apache.hadoop.hive.common.type.Date;
+import org.junit.Test;
 
 public class TestDateParser {
   DateParser parser = new DateParser();
-  Date date = new Date(0);
+  Date date = new Date();
 
   void checkValidCase(String strValue, Date expected) {
     Date dateValue = parser.parseDate(strValue);
@@ -57,7 +57,6 @@ public class TestDateParser {
     checkValidCase(" 1946-01-01", Date.valueOf("1946-01-01"));
     checkValidCase(" 2001-11-12 01:02:03", Date.valueOf("2001-11-12"));
 
-    // Current date parsing is lenient
     checkValidCase("2001-13-12", Date.valueOf("2002-01-12"));
     checkValidCase("2001-11-31", Date.valueOf("2001-12-01"));
   }

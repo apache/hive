@@ -84,4 +84,4 @@ POSTHOOK: query: select mask('TestString-123', 'X', 'x', '0', ':'),
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-XxxxXxxxxx:000	XxxxXxxxxx:000	XxxxXxxxxx:000::::::::::                                                                                                                                                                                                                                       	43	-9981	55555	55555	1900-01-01	1900-01-20	1900-04-01	2016-01-01	2016-04-01	2016-01-20	1900-04-20	2016-04-20
+XxxxXxxxxx:000	XxxxXxxxxx:000	XxxxXxxxxx:000::::::::::                                                                                                                                                                                                                                       	43	-9981	55555	55555	0001-01-01	0001-01-20	0001-04-01	2016-01-01	2016-04-01	2016-01-20	0001-04-20	2016-04-20

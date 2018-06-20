@@ -1863,18 +1863,18 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-23 07:00:00	12
-2010-10-25 07:00:00	12
-2010-10-22 07:00:00	11
+2010-10-21 07:00:00	12
 2010-10-24 07:00:00	12
-2010-10-26 07:00:00	13
+2010-10-31 07:00:00	8
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-30 07:00:00	11
 2010-10-20 07:00:00	11
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
+2010-10-27 07:00:00	11
 2010-10-28 07:00:00	12
 2010-10-29 07:00:00	12
-2010-10-30 07:00:00	11
-2010-10-31 07:00:00	8
-2010-10-21 07:00:00	12
-2010-10-27 07:00:00	11
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_orc_partitioned_timestamp
 PREHOOK: type: QUERY
@@ -2439,18 +2439,18 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-23 07:00:00	12
-2010-10-25 07:00:00	12
-2010-10-22 07:00:00	11
+2010-10-21 07:00:00	12
 2010-10-24 07:00:00	12
-2010-10-26 07:00:00	13
+2010-10-31 07:00:00	8
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-30 07:00:00	11
 2010-10-20 07:00:00	11
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
+2010-10-27 07:00:00	11
 2010-10-28 07:00:00	12
 2010-10-29 07:00:00	12
-2010-10-30 07:00:00	11
-2010-10-31 07:00:00	8
-2010-10-21 07:00:00	12
-2010-10-27 07:00:00	11
 PREHOOK: query: CREATE TABLE flights_tiny_parquet STORED AS PARQUET AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
 FROM flights_tiny_n1
@@ -4288,18 +4288,18 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-23 07:00:00	12
-2010-10-25 07:00:00	12
-2010-10-22 07:00:00	11
+2010-10-21 07:00:00	12
 2010-10-24 07:00:00	12
-2010-10-26 07:00:00	13
+2010-10-31 07:00:00	8
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-30 07:00:00	11
 2010-10-20 07:00:00	11
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
+2010-10-27 07:00:00	11
 2010-10-28 07:00:00	12
 2010-10-29 07:00:00	12
-2010-10-30 07:00:00	11
-2010-10-31 07:00:00	8
-2010-10-21 07:00:00	12
-2010-10-27 07:00:00	11
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_parquet_partitioned_timestamp
 PREHOOK: type: QUERY
@@ -4864,15 +4864,15 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-23 07:00:00	12
-2010-10-25 07:00:00	12
-2010-10-22 07:00:00	11
+2010-10-21 07:00:00	12
 2010-10-24 07:00:00	12
-2010-10-26 07:00:00	13
+2010-10-31 07:00:00	8
+2010-10-22 07:00:00	11
+2010-10-23 07:00:00	12
+2010-10-30 07:00:00	11
 2010-10-20 07:00:00	11
+2010-10-25 07:00:00	12
+2010-10-26 07:00:00	13
+2010-10-27 07:00:00	11
 2010-10-28 07:00:00	12
 2010-10-29 07:00:00	12
-2010-10-30 07:00:00	11
-2010-10-31 07:00:00	8
-2010-10-21 07:00:00	12
-2010-10-27 07:00:00	11

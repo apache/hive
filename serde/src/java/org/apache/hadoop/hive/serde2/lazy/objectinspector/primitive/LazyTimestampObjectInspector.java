@@ -17,17 +17,17 @@
  */
 package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import java.sql.Timestamp;
 import java.util.List;
 
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.common.util.TimestampParser;
 
 public class LazyTimestampObjectInspector
-    extends AbstractPrimitiveLazyObjectInspector<TimestampWritable>
+    extends AbstractPrimitiveLazyObjectInspector<TimestampWritableV2>
     implements TimestampObjectInspector {
 
   protected List<String> timestampFormats = null;

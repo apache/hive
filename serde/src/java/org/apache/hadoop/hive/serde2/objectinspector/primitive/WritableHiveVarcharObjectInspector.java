@@ -18,13 +18,13 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.FloatWritable;
@@ -52,7 +52,7 @@ implements SettableHiveVarcharObjectInspector {
       return null;
     }
 
-    if ((o instanceof Text) || (o instanceof TimestampWritable)
+    if ((o instanceof Text) || (o instanceof TimestampWritableV2)
         || (o instanceof HiveDecimalWritable) || (o instanceof DoubleWritable)
         || (o instanceof FloatWritable) || (o instanceof LongWritable) || (o instanceof IntWritable)
         || (o instanceof BooleanWritable)) {
@@ -75,7 +75,7 @@ implements SettableHiveVarcharObjectInspector {
       return null;
     }
 
-    if ((o instanceof Text) || (o instanceof TimestampWritable)
+    if ((o instanceof Text) || (o instanceof TimestampWritableV2)
         || (o instanceof HiveDecimalWritable) || (o instanceof DoubleWritable)
         || (o instanceof FloatWritable) || (o instanceof LongWritable) || (o instanceof IntWritable)
         || (o instanceof BooleanWritable)) {

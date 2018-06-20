@@ -31,7 +31,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 
 /**
- * Writable for TimestampTZ. Copied from TimestampWritable.
+ * Writable for TimestampTZ. Copied from TimestampWritableV2.
  * After we replace {@link java.sql.Timestamp} with {@link java.time.LocalDateTime} for Timestamp,
  * it'll need a new Writable.
  * All timestamp with time zone will be serialized as UTC retaining the instant.
@@ -45,7 +45,7 @@ public class TimestampLocalTZWritable implements WritableComparable<TimestampLoc
   private static final long SEVEN_BYTE_LONG_SIGN_FLIP = 0xff80L << 48; // only need flip the MSB?
 
   /**
-   * The maximum number of bytes required for a TimestampWritable
+   * The maximum number of bytes required for a TimestampWritableV2
    */
   public static final int MAX_BYTES = 13;
 

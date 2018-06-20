@@ -133,7 +133,7 @@ Stage-0
                                     Select Operator [SEL_52] (rows=8116 width=1119)
                                       Output:["_col0","_col1"]
                                       Filter Operator [FIL_51] (rows=8116 width=1119)
-                                        predicate:(CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-08 23:00:00.0' AND TIMESTAMP'1998-05-08 00:00:00.0' and d_date_sk is not null)
+                                        predicate:(CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-09 00:00:00' AND TIMESTAMP'1998-05-08 00:00:00' and d_date_sk is not null)
                                         TableScan [TS_3] (rows=73049 width=1119)
                                           default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
 

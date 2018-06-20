@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -163,7 +163,7 @@ public class GenericUDFReflect2 extends AbstractGenericUDFReflect {
         ((Text)returnObj).set((String)result);
         return returnObj;
       case TIMESTAMP:
-        ((TimestampWritable)returnObj).set((Timestamp)result);
+        ((TimestampWritableV2)returnObj).set((Timestamp)result);
         return returnObj;
       case BINARY:
         ((BytesWritable)returnObj).set((byte[])result, 0, ((byte[]) result).length);

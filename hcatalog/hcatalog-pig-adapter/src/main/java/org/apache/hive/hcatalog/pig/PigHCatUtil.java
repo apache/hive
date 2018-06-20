@@ -20,8 +20,6 @@ package org.apache.hive.hcatalog.pig;
 
 
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,9 +29,11 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -62,6 +62,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.util.UDFContext;
 import org.apache.pig.impl.util.Utils;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -429,7 +430,7 @@ class PigHCatUtil {
       * e.g. d = new java.sql.Date(System.currentMillis()).toString() so if you do this just after
       * midnight in Palo Alto, you'll get yesterday's date printed out.*/
       Date d = (Date)o;
-      result = new DateTime(d.getYear() + 1900, d.getMonth() + 1, d.getDate(), 0, 0);//uses local TZ
+      result = new DateTime(d.getYear(), d.getMonth(), d.getDay(), 0, 0, DateTimeZone.UTC);
       break;
     case TIMESTAMP:
       /*DATA TRUNCATION!!!
@@ -437,7 +438,7 @@ class PigHCatUtil {
        object in local TZ; This is arbitrary, since Hive value doesn't have any TZ notion, but
        we need to set something for TZ.
        Timestamp is consistently in GMT (unless you call toString() on it) so we use millis*/
-      result = new DateTime(((Timestamp)o).getTime());//uses local TZ
+      result = new DateTime(((Timestamp)o).toEpochMilli(), DateTimeZone.UTC);
       break;
     default:
       result = o;

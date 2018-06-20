@@ -27,7 +27,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -35,20 +34,11 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.util.concurrent.SettableFuture;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.response.HttpResponseHandler;
-import io.druid.data.input.Row;
-import io.druid.query.Result;
-import io.druid.query.select.SelectResultValue;
-import io.druid.query.timeseries.TimeseriesResultValue;
-import io.druid.query.topn.TopNResultValue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
@@ -62,11 +52,10 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -80,17 +69,25 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.SettableFuture;
+import com.metamx.http.client.HttpClient;
+import com.metamx.http.client.response.HttpResponseHandler;
 
+import io.druid.data.input.Row;
 import io.druid.query.Query;
+import io.druid.query.Result;
+import io.druid.query.select.SelectResultValue;
+import io.druid.query.timeseries.TimeseriesResultValue;
+import io.druid.query.topn.TopNResultValue;
 
 /**
  * Basic tests for Druid SerDe. The examples are taken from Druid 0.9.1.1
@@ -778,7 +775,7 @@ public class TestDruidSerDe {
       new IntWritable(1112123),
       new ShortWritable((short) 12),
       new ByteWritable((byte) 0),
-      new TimestampWritable(new Timestamp(1377907200000L)) // granularity
+      new TimestampWritableV2(Timestamp.ofEpochSecond(1377907200L)) // granularity
   };
   private static final DruidWritable DRUID_WRITABLE = new DruidWritable(
       ImmutableMap.<String, Object>builder()

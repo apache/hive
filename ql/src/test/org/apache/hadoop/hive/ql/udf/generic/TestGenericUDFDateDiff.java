@@ -18,21 +18,21 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
-import junit.framework.TestCase;
-
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateDiff;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+
+import junit.framework.TestCase;
 
 public class TestGenericUDFDateDiff extends TestCase {
   public void testStringToDate() throws HiveException {
@@ -67,10 +67,10 @@ public class TestGenericUDFDateDiff extends TestCase {
     ObjectInspector[] arguments = {valueOI1, valueOI2};
 
     udf.initialize(arguments);
-    DeferredObject valueObj1 = new DeferredJavaObject(new TimestampWritable(new Timestamp(109, 06,
-        20, 0, 0, 0, 0)));
-    DeferredObject valueObj2 = new DeferredJavaObject(new TimestampWritable(new Timestamp(109, 06,
-        17, 0, 0, 0, 0)));
+    DeferredObject valueObj1 = new DeferredJavaObject(new TimestampWritableV2(
+        Timestamp.valueOf(LocalDateTime.of(109, 06, 20, 0, 0, 0, 0).toString())));
+    DeferredObject valueObj2 = new DeferredJavaObject(new TimestampWritableV2(
+        Timestamp.valueOf(LocalDateTime.of(109, 06, 17, 0, 0, 0, 0).toString())));
     DeferredObject[] args = {valueObj1, valueObj2};
     IntWritable output = (IntWritable) udf.evaluate(args);
 
@@ -95,8 +95,8 @@ public class TestGenericUDFDateDiff extends TestCase {
 
 
     udf.initialize(arguments);
-    DeferredObject valueObj1 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 20)));
-    DeferredObject valueObj2 = new DeferredJavaObject(new DateWritable(new Date(109, 06, 10)));
+    DeferredObject valueObj1 = new DeferredJavaObject(new DateWritableV2(Date.of(109, 06, 20)));
+    DeferredObject valueObj2 = new DeferredJavaObject(new DateWritableV2(Date.of(109, 06, 10)));
     DeferredObject[] args = {valueObj1, valueObj2};
     IntWritable output = (IntWritable) udf.evaluate(args);
 

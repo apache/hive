@@ -420,12 +420,12 @@ public class TestOrcSerDeStats {
     long rowCount = writer.getNumberOfRows();
     long rawDataSize = writer.getRawDataSize();
     assertEquals(2, rowCount);
-    assertEquals(1740, rawDataSize);
+    assertEquals(1668, rawDataSize);
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
 
     assertEquals(2, reader.getNumberOfRows());
-    assertEquals(1740, reader.getRawDataSize());
+    assertEquals(1668, reader.getRawDataSize());
     assertEquals(8, reader.getRawDataSizeOfColumns(Lists.newArrayList("boolean1")));
     assertEquals(8, reader.getRawDataSizeOfColumns(Lists.newArrayList("byte1")));
     assertEquals(8, reader.getRawDataSizeOfColumns(Lists.newArrayList("short1")));
@@ -438,9 +438,9 @@ public class TestOrcSerDeStats {
     assertEquals(455, reader.getRawDataSizeOfColumns(Lists.newArrayList("list")));
     assertEquals(368, reader.getRawDataSizeOfColumns(Lists.newArrayList("map")));
     assertEquals(364, reader.getRawDataSizeOfColumns(Lists.newArrayList("middle")));
-    assertEquals(80, reader.getRawDataSizeOfColumns(Lists.newArrayList("ts")));
+    assertEquals(8, reader.getRawDataSizeOfColumns(Lists.newArrayList("ts")));
     assertEquals(224, reader.getRawDataSizeOfColumns(Lists.newArrayList("decimal1")));
-    assertEquals(88, reader.getRawDataSizeOfColumns(Lists.newArrayList("ts", "int1")));
+    assertEquals(16, reader.getRawDataSizeOfColumns(Lists.newArrayList("ts", "int1")));
     assertEquals(1195,
         reader.getRawDataSizeOfColumns(Lists.newArrayList("middle", "list", "map", "float1")));
     assertEquals(185,
@@ -514,12 +514,12 @@ public class TestOrcSerDeStats {
     long rowCount = writer.getNumberOfRows();
     long rawDataSize = writer.getRawDataSize();
     assertEquals(2, rowCount);
-    assertEquals(1740, rawDataSize);
+    assertEquals(1668, rawDataSize);
     Reader reader = OrcFile.createReader(testFilePath,
         OrcFile.readerOptions(conf).filesystem(fs));
 
     assertEquals(2, reader.getNumberOfRows());
-    assertEquals(1740, reader.getRawDataSize());
+    assertEquals(1668, reader.getRawDataSize());
     assertEquals(8, reader.getRawDataSizeOfColumns(Lists.newArrayList("boolean1")));
     assertEquals(8, reader.getRawDataSizeOfColumns(Lists.newArrayList("byte1")));
     assertEquals(8, reader.getRawDataSizeOfColumns(Lists.newArrayList("short1")));
@@ -532,9 +532,9 @@ public class TestOrcSerDeStats {
     assertEquals(455, reader.getRawDataSizeOfColumns(Lists.newArrayList("list")));
     assertEquals(368, reader.getRawDataSizeOfColumns(Lists.newArrayList("map")));
     assertEquals(364, reader.getRawDataSizeOfColumns(Lists.newArrayList("middle")));
-    assertEquals(80, reader.getRawDataSizeOfColumns(Lists.newArrayList("ts")));
+    assertEquals(8, reader.getRawDataSizeOfColumns(Lists.newArrayList("ts")));
     assertEquals(224, reader.getRawDataSizeOfColumns(Lists.newArrayList("decimal1")));
-    assertEquals(88, reader.getRawDataSizeOfColumns(Lists.newArrayList("ts", "int1")));
+    assertEquals(16, reader.getRawDataSizeOfColumns(Lists.newArrayList("ts", "int1")));
     assertEquals(1195,
         reader.getRawDataSizeOfColumns(Lists.newArrayList("middle", "list", "map", "float1")));
     assertEquals(185,

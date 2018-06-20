@@ -20,7 +20,7 @@ create table date_udf_flight (
 LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE date_udf_flight;
 
 -- Test UDFs with date input
-select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
+select unix_timestamp(cast(d as timestamp with local time zone)), unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
     weekofyear(d), to_date(d)
   from date_udf;
 

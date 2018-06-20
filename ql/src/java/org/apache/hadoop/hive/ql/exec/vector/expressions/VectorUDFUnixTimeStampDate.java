@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * Return Unix Timestamp.
@@ -28,7 +28,7 @@ public final class VectorUDFUnixTimeStampDate extends VectorUDFTimestampFieldDat
 
   private static final long serialVersionUID = 1L;
 
-  private DateWritable dateWritable;
+  private DateWritableV2 dateWritable;
 
   @Override
   protected long getDateField(long days) {
@@ -39,7 +39,7 @@ public final class VectorUDFUnixTimeStampDate extends VectorUDFTimestampFieldDat
   public VectorUDFUnixTimeStampDate(int colNum, int outputColumnNum) {
     /* not a real field */
     super(-1, colNum, outputColumnNum);
-    dateWritable = new DateWritable();
+    dateWritable = new DateWritableV2();
   }
 
   public VectorUDFUnixTimeStampDate() {
