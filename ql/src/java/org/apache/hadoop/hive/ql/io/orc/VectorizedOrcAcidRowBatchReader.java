@@ -182,7 +182,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
     reporter.setStatus(orcSplit.toString());
-    readerOptions = OrcRawRecordMerger.createEventOptions(OrcInputFormat.createOptionsForReader(conf));
+    readerOptions = OrcInputFormat.createOptionsForReader(conf);
 
     this.offset = orcSplit.getStart();
     this.length = orcSplit.getLength();
