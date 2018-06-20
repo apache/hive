@@ -12,9 +12,9 @@ POSTHOOK: Lineage: date_decimal_test.cdate EXPRESSION [(alltypesorc)alltypesorc.
 POSTHOOK: Lineage: date_decimal_test.cdecimal EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: date_decimal_test.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: date_decimal_test.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdate, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdate, cint, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdate, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cdate, cint, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -45,12 +45,12 @@ STAGE PLANS:
                     predicate: (cdouble is not null and cint is not null) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 1651260 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cdate (type: date), cdecimal (type: decimal(20,10))
-                      outputColumnNames: _col0, _col1
+                      expressions: cdate (type: date), cint (type: int), cdecimal (type: decimal(20,10))
+                      outputColumnNames: _col0, _col1, _col2
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 3]
+                          projectedOutputColumnNums: [2, 0, 3]
                       Statistics: Num rows: 12288 Data size: 1651260 Basic stats: COMPLETE Column stats: NONE
                       Limit
                         Number of rows: 10
@@ -85,21 +85,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cdate, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
+PREHOOK: query: SELECT cdate, cint, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_decimal_test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cdate, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
+POSTHOOK: query: SELECT cdate, cint, cdecimal from date_decimal_test where cint IS NOT NULL AND cdouble IS NOT NULL LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_decimal_test
 #### A masked pattern was here ####
-1970-01-06	-7959.5837837838
-1970-01-06	-2516.4135135135
-1970-01-06	-9445.0621621622
-1970-01-06	-5713.7459459459
-1970-01-06	8963.6405405405
-1970-01-06	4193.6243243243
-1970-01-06	2964.3864864865
-1970-01-06	-4673.2540540541
-1970-01-06	-9216.8945945946
-1970-01-06	-9287.3756756757
+1970-01-07	528534767	-7959.5837837838
+1970-01-07	528534767	-2516.4135135135
+1970-01-07	528534767	-9445.0621621622
+1970-01-07	528534767	-5713.7459459459
+1970-01-07	528534767	8963.6405405405
+1970-01-07	528534767	4193.6243243243
+1970-01-07	528534767	2964.3864864865
+1970-01-07	528534767	-4673.2540540541
+1970-01-07	528534767	-9216.8945945946
+1970-01-07	528534767	-9287.3756756757

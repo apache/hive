@@ -139,7 +139,7 @@ STAGE PLANS:
             alias: t_n18
             Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (DATE'2012-01-01' + IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), (DATE'2012-01-01' - IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), TIMESTAMP'2012-01-04 00:00:00.0' (type: timestamp), (DATE'2012-01-01' + IntervalYearMonthLiteralProcessor(concat(dt, '-1'))) (type: date)
+              expressions: (DATE'2012-01-01' + IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), (DATE'2012-01-01' - IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), TIMESTAMP'2012-01-04 00:00:00' (type: timestamp), (DATE'2012-01-01' + IntervalYearMonthLiteralProcessor(concat(dt, '-1'))) (type: date)
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
               File Output Operator

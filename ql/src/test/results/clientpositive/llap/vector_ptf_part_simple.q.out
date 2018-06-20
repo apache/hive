@@ -5640,13 +5640,13 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
+                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     sort order: ++
-                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
+                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkMultiKeyOperator
                         keyColumnNums: [0, 6]
-                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 5:timestamp) -> 6:timestamp
+                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 5:timestamp) -> 6:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: [1, 2]
@@ -5690,13 +5690,13 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col0 ASC NULLS FIRST, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END ASC NULLS FIRST
-                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END
+                        order by: _col0 ASC NULLS FIRST, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END ASC NULLS FIRST
+                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END
                         raw input shape:
                         window functions:
                             window function definition
                               alias: rank_window_0
-                              arguments: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END
+                              arguments: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END
                               name: rank
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
@@ -5733,6 +5733,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	r
+Manufacturer#5	almond antique blue firebrick mint	1789.69	1
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
+Manufacturer#5	almond antique sky peru orange	1788.73	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
 Manufacturer#2	almond aquamarine rose maroon antique	900.66	1
 Manufacturer#2	almond aquamarine rose maroon antique	1698.66	1
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
@@ -5741,37 +5747,31 @@ Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	1
 Manufacturer#2	almond aquamarine midnight light salmon	2031.98	1
-Manufacturer#5	almond antique sky peru orange	1788.73	1
-Manufacturer#5	almond antique medium spring khaki	1611.66	1
-Manufacturer#5	almond antique medium spring khaki	1611.66	1
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	1
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1
-Manufacturer#5	almond antique blue firebrick mint	1789.69	1
 Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
-Manufacturer#4	almond antique violet mint lemon	1375.42	1
 Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	1
 Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
+Manufacturer#4	almond antique violet mint lemon	1375.42	1
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1
 Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
 Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
 Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
 Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
 Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	1
 Manufacturer#1	almond antique burnished rose metallic	1173.15	1
 Manufacturer#1	almond aquamarine burnished black steel	1414.42	1
 Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	1
 Manufacturer#1	almond antique burnished rose metallic	1173.15	1
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
-Manufacturer#3	almond antique metallic orange dim	55.39	1
 Manufacturer#3	almond antique olive coral navajo	1337.29	1
-Manufacturer#3	almond antique chartreuse khaki white	99.68	1
 Manufacturer#3	almond antique forest lavender goldenrod	590.27	1
+Manufacturer#3	almond antique chartreuse khaki white	99.68	1
+Manufacturer#3	almond antique metallic orange dim	55.39	1
 Manufacturer#3	almond antique misty red olive	1922.98	1
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
 Manufacturer#3	almond antique forest lavender goldenrod	NULL	1
 PREHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
@@ -5809,13 +5809,13 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp), p_name (type: string)
+                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp), p_name (type: string)
                     sort order: +++
-                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
+                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumnNums: [0, 6, 1]
-                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 5:timestamp) -> 6:timestamp
+                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 5:timestamp) -> 6:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [0, 9]
@@ -5873,7 +5873,7 @@ STAGE PLANS:
                         input alias: ptf_1
                         name: windowingtablefunction
                         order by: _col1 ASC NULLS FIRST
-                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END
+                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END
                         raw input shape:
                         window functions:
                             window function definition
@@ -5894,7 +5894,7 @@ STAGE PLANS:
                       orderExpressions: [col 2:string]
                       outputColumns: [4, 0, 2, 3]
                       outputTypes: [int, string, string, double]
-                      partitionExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 6:timestamp) -> 7:timestamp]
+                      partitionExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 6:timestamp) -> 7:timestamp]
                       streamingColumns: [4]
                   Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -6541,13 +6541,13 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp), p_name (type: string)
+                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp), p_name (type: string)
                     sort order: +++
-                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
+                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumnNums: [0, 6, 1]
-                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 5:timestamp) -> 6:timestamp
+                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 5:timestamp) -> 6:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumnNums: [0, 9]
@@ -6605,7 +6605,7 @@ STAGE PLANS:
                         input alias: ptf_1
                         name: windowingtablefunction
                         order by: _col1 ASC NULLS FIRST
-                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END
+                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END
                         raw input shape:
                         window functions:
                             window function definition
@@ -6626,7 +6626,7 @@ STAGE PLANS:
                       orderExpressions: [col 2:string]
                       outputColumns: [4, 0, 2, 3]
                       outputTypes: [int, string, string, double]
-                      partitionExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 6:timestamp) -> 7:timestamp]
+                      partitionExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 6:timestamp) -> 7:timestamp]
                       streamingColumns: [4]
                   Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -6743,13 +6743,13 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
+                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     sort order: ++
-                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
+                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkMultiKeyOperator
                         keyColumnNums: [0, 6]
-                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 5:timestamp) -> 6:timestamp
+                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 5:timestamp) -> 6:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumnNums: [1, 2]
@@ -6793,13 +6793,13 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col0 ASC NULLS FIRST, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END ASC NULLS FIRST
-                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END
+                        order by: _col0 ASC NULLS FIRST, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END ASC NULLS FIRST
+                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END
                         raw input shape:
                         window functions:
                             window function definition
                               alias: rank_window_0
-                              arguments: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END
+                              arguments: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00') ELSE (CAST( null AS TIMESTAMP)) END
                               name: rank
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
@@ -6836,6 +6836,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	r
+Manufacturer#5	almond antique blue firebrick mint	1789.69	1
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
+Manufacturer#5	almond antique sky peru orange	1788.73	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
 Manufacturer#2	almond aquamarine rose maroon antique	900.66	1
 Manufacturer#2	almond aquamarine rose maroon antique	1698.66	1
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
@@ -6844,35 +6850,29 @@ Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	1
 Manufacturer#2	almond aquamarine midnight light salmon	2031.98	1
-Manufacturer#5	almond antique sky peru orange	1788.73	1
-Manufacturer#5	almond antique medium spring khaki	1611.66	1
-Manufacturer#5	almond antique medium spring khaki	1611.66	1
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	1
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1
-Manufacturer#5	almond antique blue firebrick mint	1789.69	1
 Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
-Manufacturer#4	almond antique violet mint lemon	1375.42	1
 Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	1
 Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
+Manufacturer#4	almond antique violet mint lemon	1375.42	1
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1
 Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
 Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
 Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
 Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
 Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	1
 Manufacturer#1	almond antique burnished rose metallic	1173.15	1
 Manufacturer#1	almond aquamarine burnished black steel	1414.42	1
 Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	1
 Manufacturer#1	almond antique burnished rose metallic	1173.15	1
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
-Manufacturer#3	almond antique metallic orange dim	55.39	1
 Manufacturer#3	almond antique olive coral navajo	1337.29	1
-Manufacturer#3	almond antique chartreuse khaki white	99.68	1
 Manufacturer#3	almond antique forest lavender goldenrod	590.27	1
+Manufacturer#3	almond antique chartreuse khaki white	99.68	1
+Manufacturer#3	almond antique metallic orange dim	55.39	1
 Manufacturer#3	almond antique misty red olive	1922.98	1
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
 Manufacturer#3	almond antique forest lavender goldenrod	NULL	1

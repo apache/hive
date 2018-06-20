@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -25,14 +26,11 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateParser;
-
-import java.util.Arrays;
-import java.sql.Date;
 
 public class VectorUDFDateAddColCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -43,7 +41,6 @@ public class VectorUDFDateAddColCol extends VectorExpression {
   protected boolean isPositive = true;
 
   private transient final Text text = new Text();
-  private transient final Date date = new Date(0);
   private transient final DateParser dateParser = new DateParser();
 
   // Transient members initialized by transientInit method.
@@ -261,7 +258,7 @@ public class VectorUDFDateAddColCol extends VectorExpression {
   protected long evaluateTimestamp(ColumnVector columnVector, int index, long numDays) {
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
     // Convert to date value (in days)
-    long days = DateWritable.millisToDays(tcv.getTime(index));
+    long days = DateWritableV2.millisToDays(tcv.getTime(index));
     if (isPositive) {
       days += numDays;
     } else {
@@ -281,7 +278,7 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     }
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
     // Convert to date value (in days)
-    long days = DateWritable.millisToDays(tcv.getTime(0));
+    long days = DateWritableV2.millisToDays(tcv.getTime(0));
 
     evaluateRepeatedCommon(days, vector2, outputVector, selectedInUse, selected, n);
   }
@@ -292,13 +289,14 @@ public class VectorUDFDateAddColCol extends VectorExpression {
       outputVector.isNull[index] = true;
     } else {
       text.set(inputColumnVector1.vector[index], inputColumnVector1.start[index], inputColumnVector1.length[index]);
-      boolean parsed = dateParser.parseDate(text.toString(), date);
+      Date hDate = new Date();
+      boolean parsed = dateParser.parseDate(text.toString(), hDate);
       if (!parsed) {
         outputVector.noNulls = false;
         outputVector.isNull[index] = true;
         return;
       }
-      long days = DateWritable.millisToDays(date.getTime());
+      long days = DateWritableV2.millisToDays(hDate.toEpochMilli());
       if (isPositive) {
         days += numDays;
       } else {
@@ -319,6 +317,7 @@ public class VectorUDFDateAddColCol extends VectorExpression {
     }
     text.set(
         inputColumnVector1.vector[0], inputColumnVector1.start[0], inputColumnVector1.length[0]);
+    Date date = new Date();
     boolean parsed = dateParser.parseDate(text.toString(), date);
     if (!parsed) {
       outputVector.noNulls = false;
@@ -326,7 +325,7 @@ public class VectorUDFDateAddColCol extends VectorExpression {
       outputVector.isRepeating = true;
       return;
     }
-    long days = DateWritable.millisToDays(date.getTime());
+    long days = DateWritableV2.millisToDays(date.toEpochMilli());
 
     evaluateRepeatedCommon(days, vector2, outputVector, selectedInUse, selected, n);
   }

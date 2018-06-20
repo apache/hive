@@ -520,4 +520,4 @@ POSTHOOK: query: select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc_n
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2korc_n4
 #### A masked pattern was here ####
-2013-02-18 21:06:48	2081-02-22 01:21:53	4.591384881081E12	2.4254542425150557E9
+2013-02-18 21:06:48	2081-02-22 01:21:53	4.591334884281E12	2.4254278311045957E9

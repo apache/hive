@@ -17,13 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
@@ -36,7 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @NDV(maxNdv = 1)
 public class GenericUDFCurrentTimestamp extends GenericUDF {
 
-  protected TimestampWritable currentTimestamp;
+  protected TimestampWritableV2 currentTimestamp;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
@@ -48,7 +49,9 @@ public class GenericUDFCurrentTimestamp extends GenericUDF {
     }
 
     if (currentTimestamp == null) {
-      currentTimestamp = new TimestampWritable(SessionState.get().getQueryCurrentTimestamp());
+      java.sql.Timestamp ts = SessionState.get().getQueryCurrentTimestamp();
+      currentTimestamp = new TimestampWritableV2(
+          Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
     }
 
     return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
@@ -59,11 +62,11 @@ public class GenericUDFCurrentTimestamp extends GenericUDF {
     return currentTimestamp;
   }
 
-  public TimestampWritable getCurrentTimestamp() {
+  public TimestampWritableV2 getCurrentTimestamp() {
     return currentTimestamp;
   }
 
-  public void setCurrentTimestamp(TimestampWritable currentTimestamp) {
+  public void setCurrentTimestamp(TimestampWritableV2 currentTimestamp) {
     this.currentTimestamp = currentTimestamp;
   }
 
@@ -78,7 +81,7 @@ public class GenericUDFCurrentTimestamp extends GenericUDF {
     // Need to preserve currentTimestamp
     GenericUDFCurrentTimestamp other = (GenericUDFCurrentTimestamp) newInstance;
     if (this.currentTimestamp != null) {
-      other.currentTimestamp = new TimestampWritable(this.currentTimestamp);
+      other.currentTimestamp = new TimestampWritableV2(this.currentTimestamp);
     }
   }
 }

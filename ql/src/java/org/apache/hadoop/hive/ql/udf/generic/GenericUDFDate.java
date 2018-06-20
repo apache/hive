@@ -17,9 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -28,8 +27,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateTimestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -57,8 +56,8 @@ public class GenericUDFDate extends GenericUDF {
   private transient PrimitiveCategory inputType;
   private transient PrimitiveObjectInspector argumentOI;
   private transient DateParser dateParser = new DateParser();
-  private transient final DateWritable output = new DateWritable();
-  private transient final Date date = new Date(0);
+  private transient final DateWritableV2 output = new DateWritableV2();
+  private transient final Date date = new Date();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -117,13 +116,13 @@ public class GenericUDFDate extends GenericUDF {
       }
       break;
     case TIMESTAMP:
-      Timestamp ts = ((TimestampWritable) timestampConverter.convert(arguments[0].get()))
+      Timestamp ts = ((TimestampWritableV2) timestampConverter.convert(arguments[0].get()))
           .getTimestamp();
-      output.set(DateWritable.millisToDays(ts.getTime()));
+      output.set(DateWritableV2.millisToDays(ts.toEpochMilli()));
       break;
     case TIMESTAMPLOCALTZ:
     case DATE:
-      DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
+      DateWritableV2 dw = (DateWritableV2) dateWritableConverter.convert(arguments[0].get());
       output.set(dw);
       break;
     default:

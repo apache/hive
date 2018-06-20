@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.udf;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.junit.Test;
 
 import junit.framework.TestCase;
@@ -37,56 +36,56 @@ public class TestUDFDateFormatGranularity extends TestCase {
   public void testTimestampToTimestampWithGranularity() throws Exception {
     // Running example
     // Friday 30th August 1985 02:47:02 AM
-    final TimestampWritable t = new TimestampWritable(new Timestamp(494243222000L));
+    final TimestampWritableV2 t = new TimestampWritableV2(Timestamp.ofEpochMilli(494243222000L));
     UDFDateFloor g;
 
     // Year granularity
     // Tuesday 1st January 1985 12:00:00 AM
     g = new UDFDateFloorYear();
-    TimestampWritable i1 = g.evaluate(t);
-    assertEquals(473414400000L, i1.getTimestamp().getTime());
+    TimestampWritableV2 i1 = g.evaluate(t);
+    assertEquals(473385600000L, i1.getTimestamp().toEpochMilli());
     
     // Quarter granularity
     // Monday 1st July 1985 12:00:00 AM
     g = new UDFDateFloorQuarter();
-    TimestampWritable i2 = g.evaluate(t);
-    assertEquals(489049200000L, i2.getTimestamp().getTime());
+    TimestampWritableV2 i2 = g.evaluate(t);
+    assertEquals(489024000000L, i2.getTimestamp().toEpochMilli());
 
     // Month granularity
     // Thursday 1st August 1985 12:00:00 AM
     g = new UDFDateFloorMonth();
-    TimestampWritable i3 = g.evaluate(t);
-    assertEquals(491727600000L, i3.getTimestamp().getTime());
+    TimestampWritableV2 i3 = g.evaluate(t);
+    assertEquals(491702400000L, i3.getTimestamp().toEpochMilli());
 
     // Week granularity
     // Monday 26th August 1985 12:00:00 AM
     g = new UDFDateFloorWeek();
-    TimestampWritable i4 = g.evaluate(t);
-    assertEquals(493887600000L, i4.getTimestamp().getTime());
+    TimestampWritableV2 i4 = g.evaluate(t);
+    assertEquals(493862400000L, i4.getTimestamp().toEpochMilli());
 
     // Day granularity
     // Friday 30th August 1985 12:00:00 AM
     g = new UDFDateFloorDay();
-    TimestampWritable i5 = g.evaluate(t);
-    assertEquals(494233200000L, i5.getTimestamp().getTime());
+    TimestampWritableV2 i5 = g.evaluate(t);
+    assertEquals(494208000000L, i5.getTimestamp().toEpochMilli());
 
     // Hour granularity
     // Friday 30th August 1985 02:00:00 AM
     g = new UDFDateFloorHour();
-    TimestampWritable i6 = g.evaluate(t);
-    assertEquals(494240400000L, i6.getTimestamp().getTime());
+    TimestampWritableV2 i6 = g.evaluate(t);
+    assertEquals(494240400000L, i6.getTimestamp().toEpochMilli());
 
     // Minute granularity
     // Friday 30th August 1985 02:47:00 AM
     g = new UDFDateFloorMinute();
-    TimestampWritable i7 = g.evaluate(t);
-    assertEquals(494243220000L, i7.getTimestamp().getTime());
+    TimestampWritableV2 i7 = g.evaluate(t);
+    assertEquals(494243220000L, i7.getTimestamp().toEpochMilli());
 
     // Second granularity
     // Friday 30th August 1985 02:47:02 AM
     g = new UDFDateFloorSecond();
-    TimestampWritable i8 = g.evaluate(t);
-    assertEquals(494243222000L, i8.getTimestamp().getTime());
+    TimestampWritableV2 i8 = g.evaluate(t);
+    assertEquals(494243222000L, i8.getTimestamp().toEpochMilli());
   }
 
   @Test

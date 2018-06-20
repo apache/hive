@@ -105,7 +105,7 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
 
   public static final class SerDeStripeMetadata implements ConsumerStripeMetadata {
     // The writer is local to the process.
-    private final String writerTimezone = TimeZone.getDefault().getID();
+    private final String writerTimezone = "UTC";
     private List<ColumnEncoding> encodings;
     private final int stripeIx;
     private long rowCount = -1;

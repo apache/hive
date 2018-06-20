@@ -22,12 +22,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +31,7 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -43,12 +39,10 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
@@ -88,7 +82,7 @@ public class TestVectorTypeCasts {
     expr.evaluate(b);
     for (int i = 0; i < intValues.length; i++) {
       Timestamp timestamp = resultV.asScratchTimestamp(i);
-      long actual = DateWritable.millisToDays(timestamp.getTime());
+      long actual = DateWritableV2.millisToDays(timestamp.getTime());
       assertEquals(actual, intValues[i]);
     }
   }
@@ -155,7 +149,8 @@ public class TestVectorTypeCasts {
     expr.evaluate(b);
     for (int i = 0; i < longValues.length; i++) {
       Timestamp timestamp = resultV.asScratchTimestamp(i);
-      long actual = TimestampWritable.getLong(timestamp);
+      long actual = TimestampWritableV2.getLong(
+          org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(timestamp.getTime(), timestamp.getNanos()));
       assertEquals(actual, longValues[i]);
     }
   }
@@ -518,7 +513,8 @@ public class TestVectorTypeCasts {
       Timestamp ts = new Timestamp(millis);
       int nanos = RandomTypeUtil.randomNanos(r);
       ts.setNanos(nanos);
-      TimestampWritable tsw = new TimestampWritable(ts);
+      TimestampWritableV2 tsw = new TimestampWritableV2(
+          org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
       double asDouble = tsw.getDouble();
       doubleValues[i] = asDouble;
       HiveDecimal hiveDecimal = HiveDecimal.create(new BigDecimal(asDouble));
@@ -582,7 +578,8 @@ public class TestVectorTypeCasts {
       long millis = RandomTypeUtil.randomMillis(r);
       Timestamp ts = new Timestamp(millis);
       ts.setNanos(optionalNanos);
-      TimestampWritable tsw = new TimestampWritable(ts);
+      TimestampWritableV2 tsw = new TimestampWritableV2(
+          org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
       hiveDecimalValues[i] = tsw.getHiveDecimal();
 
       tcv.set(i, ts);

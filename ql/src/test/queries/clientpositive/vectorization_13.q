@@ -32,8 +32,8 @@ FROM     alltypesorc
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > 11)
-              AND ((ctimestamp2 != 12)
+          OR ((ctimestamp1 > -28789)
+              AND ((ctimestamp2 != -28788)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -64,8 +64,8 @@ FROM     alltypesorc
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > 11)
-              AND ((ctimestamp2 != 12)
+          OR ((ctimestamp1 > -28789)
+              AND ((ctimestamp2 != -28788)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -98,8 +98,8 @@ FROM     alltypesorc
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > -1.388)
-              AND ((ctimestamp2 != -1.3359999999999999)
+          OR ((ctimestamp1 > -28801.388)
+              AND ((ctimestamp2 != -28801.3359999999999999)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -130,8 +130,8 @@ FROM     alltypesorc
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > -1.388)
-              AND ((ctimestamp2 != -1.3359999999999999)
+          OR ((ctimestamp1 > -28801.388)
+              AND ((ctimestamp2 != -28801.3359999999999999)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16

@@ -18,17 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hive.common.util.DateParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.sql.Date;
-
 /**
  * Vectorized version of TO_DATE(STRING)
  * As TO_DATE() now returns DATE type, this should be the same behavior as the DATE cast operator.

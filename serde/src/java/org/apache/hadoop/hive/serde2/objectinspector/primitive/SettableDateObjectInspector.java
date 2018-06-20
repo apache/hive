@@ -17,17 +17,22 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Date;
-
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * A SettableDecimalObjectInspector can set a Date value to an object.
  */
 public interface SettableDateObjectInspector extends DateObjectInspector {
+  @Deprecated
+  Object set(Object o, java.sql.Date d);
+
   Object set(Object o, Date d);
 
-  Object set(Object o, DateWritable d);
+  Object set(Object o, DateWritableV2 d);
+
+  @Deprecated
+  Object create(java.sql.Date d);
 
   Object create(Date d);
 }

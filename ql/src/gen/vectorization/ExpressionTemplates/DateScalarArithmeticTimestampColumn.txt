@@ -36,8 +36,8 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * Generated from template DateTimeScalarArithmeticTimestampColumnBase.txt.
@@ -57,7 +57,7 @@ public class <ClassName> extends VectorExpression {
     super(outputColumnNum);
     // Scalar input #1 is type date (days).  For the math we convert it to a timestamp.
     this.value = new Timestamp(0);
-    this.value.setTime(DateWritable.daysToMillis((int) value));
+    this.value.setTime(DateWritableV2.daysToMillis((int) value));
     this.colNum = colNum;
   }
 
@@ -189,7 +189,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + value + ", " + getColumnParamString(1, colNum);
+    return "val " + org.apache.hadoop.hive.common.type.Date.ofEpochMilli(value.getTime()) + ", " + getColumnParamString(1, colNum);
   }
 
   @Override

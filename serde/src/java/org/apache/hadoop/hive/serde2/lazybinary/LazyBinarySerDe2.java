@@ -27,11 +27,11 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -337,7 +337,7 @@ public class LazyBinarySerDe2 extends LazyBinarySerDe {
     @Override
     void serialize(RandomAccessOutput byteStream, Object obj, ObjectInspector objInspector,
         boolean skipLengthPrefix, BooleanRef warnedOnceNullMapKey) {
-      DateWritable d = ((DateObjectInspector) objInspector).getPrimitiveWritableObject(obj);
+      DateWritableV2 d = ((DateObjectInspector) objInspector).getPrimitiveWritableObject(obj);
       LazyBinarySerDe.writeDateToByteStream(byteStream, d);
     }
   }
@@ -347,7 +347,7 @@ public class LazyBinarySerDe2 extends LazyBinarySerDe {
     void serialize(RandomAccessOutput byteStream, Object obj, ObjectInspector objInspector,
         boolean skipLengthPrefix, BooleanRef warnedOnceNullMapKey) {
       TimestampObjectInspector toi = (TimestampObjectInspector) objInspector;
-      TimestampWritable t = toi.getPrimitiveWritableObject(obj);
+      TimestampWritableV2 t = toi.getPrimitiveWritableObject(obj);
       t.writeToByteStream(byteStream);
     }
   }

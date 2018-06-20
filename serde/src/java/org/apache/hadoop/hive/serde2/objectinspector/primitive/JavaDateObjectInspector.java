@@ -17,9 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Date;
-
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
@@ -33,8 +32,8 @@ public class JavaDateObjectInspector
     super(TypeInfoFactory.dateTypeInfo);
   }
 
-  public DateWritable getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new DateWritable((Date) o);
+  public DateWritableV2 getPrimitiveWritableObject(Object o) {
+    return o == null ? null : new DateWritableV2((Date) o);
   }
 
   @Override
@@ -50,20 +49,34 @@ public class JavaDateObjectInspector
     if (value == null) {
       return null;
     }
-    ((Date) o).setTime(value.getTime());
+    ((Date) o).setTimeInDays(value.toEpochDay());
     return o;
   }
 
-  public Object set(Object o, DateWritable d) {
+  @Deprecated
+  public Object set(Object o, java.sql.Date value) {
+    if (value == null) {
+      return null;
+    }
+    ((Date) o).setTimeInMillis(value.getTime());
+    return o;
+  }
+
+  public Object set(Object o, DateWritableV2 d) {
     if (d == null) {
       return null;
     }
-    ((Date) o).setTime(d.get().getTime());
+    ((Date) o).setTimeInDays(d.get().toEpochDay());
     return o;
   }
 
+  @Deprecated
+  public Object create(java.sql.Date value) {
+    return Date.ofEpochMilli(value.getTime());
+  }
+
   public Object create(Date value) {
-    return new Date(value.getTime());
+    return Date.ofEpochDay(value.toEpochDay());
   }
 
 }

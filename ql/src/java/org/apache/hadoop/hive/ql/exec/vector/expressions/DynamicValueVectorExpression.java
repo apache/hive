@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicValue;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -181,9 +181,9 @@ public class DynamicValueVectorExpression extends VectorExpression {
         decimalValue = PrimitiveObjectInspectorUtils.getHiveDecimal(val, poi);
         break;
       case DATE:
-        longValue = DateWritable.dateToDays(PrimitiveObjectInspectorUtils.getDate(val, poi));
+        longValue = DateWritableV2.dateToDays(PrimitiveObjectInspectorUtils.getDate(val, poi));
       case TIMESTAMP:
-        timestampValue = PrimitiveObjectInspectorUtils.getTimestamp(val, poi);
+        timestampValue = PrimitiveObjectInspectorUtils.getTimestamp(val, poi).toSqlTimestamp();
         break;
       case INTERVAL_YEAR_MONTH:
         longValue = PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(val, poi).getTotalMonths();

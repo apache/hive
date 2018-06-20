@@ -13,6 +13,7 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -387,7 +388,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         switch (descriptor.getType()) {
         //INT64 is not yet supported
         case INT96:
-          c.set(rowId, dataColumn.readTimestamp());
+          c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
           break;
         default:
           throw new IOException(
@@ -510,7 +511,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     case TIMESTAMP:
       for (int i = rowId; i < rowId + num; ++i) {
         ((TimestampColumnVector) column)
-            .set(i, dictionary.readTimestamp((int) dictionaryIds.vector[i]));
+            .set(i, dictionary.readTimestamp((int) dictionaryIds.vector[i]).toSqlTimestamp());
       }
       break;
     case INTERVAL_DAY_TIME:

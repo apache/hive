@@ -71,7 +71,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -1867,8 +1867,8 @@ public class TestVectorGroupByOperator {
           } else if (key instanceof LongWritable) {
             LongWritable lwKey = (LongWritable)key;
             keyValue.add(lwKey.get());
-          } else if (key instanceof TimestampWritable) {
-            TimestampWritable twKey = (TimestampWritable)key;
+          } else if (key instanceof TimestampWritableV2) {
+            TimestampWritableV2 twKey = (TimestampWritableV2)key;
             keyValue.add(twKey.getTimestamp());
           } else if (key instanceof DoubleWritable) {
             DoubleWritable dwKey = (DoubleWritable)key;
@@ -1988,9 +1988,9 @@ public class TestVectorGroupByOperator {
         } else if (key instanceof LongWritable) {
           LongWritable lwKey = (LongWritable)key;
           keyValue = lwKey.get();
-        } else if (key instanceof TimestampWritable) {
-          TimestampWritable twKey = (TimestampWritable)key;
-          keyValue = twKey.getTimestamp();
+        } else if (key instanceof TimestampWritableV2) {
+          TimestampWritableV2 twKey = (TimestampWritableV2)key;
+          keyValue = twKey.getTimestamp().toSqlTimestamp();
         } else if (key instanceof DoubleWritable) {
           DoubleWritable dwKey = (DoubleWritable)key;
           keyValue = dwKey.get();
