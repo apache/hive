@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
+import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -1578,9 +1579,19 @@ public class Driver implements IDriver {
                   Utilities.getTableName(tableInfo.getTableName()));
           desc.setTableWriteId(writeId);
 
-          //it's possible to have > 1 FileSink writing to the same table/partition
-          //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
+          /**
+           * it's possible to have > 1 FileSink writing to the same table/partition
+           * e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
+           * Insert ... Select ... Union All Select ... using
+           * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
+           */
           desc.setStatementId(queryTxnMgr.getStmtIdAndIncrement());
+          String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
+          if(desc.getInsertOverwrite() && desc.getDirName().toString().contains(unionAllSubdir) &&
+              desc.isFullAcidTable()) {
+            throw new UnsupportedOperationException("QueryId=" + plan.getQueryId() +
+                " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
+          }
         }
       }
 
