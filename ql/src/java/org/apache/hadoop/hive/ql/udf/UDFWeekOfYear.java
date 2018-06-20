@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearDate
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFWeekOfYearTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
@@ -49,10 +49,11 @@ import org.apache.hadoop.io.Text;
 @VectorizedExpressions({VectorUDFWeekOfYearDate.class, VectorUDFWeekOfYearString.class, VectorUDFWeekOfYearTimestamp.class})
 @NDV(maxNdv = 52)
 public class UDFWeekOfYear extends UDF {
-  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private final Calendar calendar = Calendar.getInstance();
 
   private final IntWritable result = new IntWritable();
+
+  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+
 
   public UDFWeekOfYear() {
     calendar.setFirstDayOfWeek(Calendar.MONDAY);
@@ -73,31 +74,32 @@ public class UDFWeekOfYear extends UDF {
       return null;
     }
     try {
-      Date date = formatter.parse(dateString.toString());
-      calendar.setTime(date);
+      Date date = Date.valueOf(dateString.toString());
+      calendar.setTimeInMillis(date.toEpochMilli());
       result.set(calendar.get(Calendar.WEEK_OF_YEAR));
       return result;
-    } catch (ParseException e) {
+    } catch (IllegalArgumentException e) {
       return null;
     }
   }
 
-  public IntWritable evaluate(DateWritable d) {
+  public IntWritable evaluate(DateWritableV2 d) {
     if (d == null) {
       return null;
     }
-
-    calendar.setTime(d.get(false));  // Time doesn't matter.
+    Date date = d.get();
+    calendar.setTimeInMillis(date.toEpochMilli());
     result.set(calendar.get(Calendar.WEEK_OF_YEAR));
     return result;
   }
 
-  public IntWritable evaluate(TimestampWritable t) {
+  public IntWritable evaluate(TimestampWritableV2 t) {
     if (t == null) {
       return null;
     }
 
-    calendar.setTime(t.getTimestamp());
+    Timestamp ts = t.getTimestamp();
+    calendar.setTimeInMillis(ts.toEpochMilli());
     result.set(calendar.get(Calendar.WEEK_OF_YEAR));
     return result;
   }

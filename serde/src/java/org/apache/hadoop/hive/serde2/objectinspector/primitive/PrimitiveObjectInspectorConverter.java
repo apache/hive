@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.ZoneId;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
@@ -255,7 +255,7 @@ public class PrimitiveObjectInspectorConverter {
         SettableDateObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create(new Date(0));
+      r = outputOI.create(new Date());
     }
 
     public Object convert(Object input) {
@@ -277,7 +277,7 @@ public class PrimitiveObjectInspectorConverter {
         SettableTimestampObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create(new Timestamp(0));
+      r = outputOI.create(new Timestamp());
     }
 
     public void setIntToTimestampInSeconds(boolean intToTimestampInSeconds) {

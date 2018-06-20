@@ -102,7 +102,7 @@ public class HBaseRowSerializer {
         timestamp = ((LongObjectInspector)inspector).get(value);
       } else {
         PrimitiveObjectInspector primitive = (PrimitiveObjectInspector) inspector;
-        timestamp = PrimitiveObjectInspectorUtils.getTimestamp(value, primitive).getTime();
+        timestamp = PrimitiveObjectInspectorUtils.getTimestamp(value, primitive).toEpochMilli();
       }
     }
 

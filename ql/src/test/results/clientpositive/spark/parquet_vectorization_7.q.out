@@ -16,11 +16,11 @@ SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0)
+        AND (((ctimestamp1 <= -28800)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > -15)
+              OR ((ctimestamp2 > -28815)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
@@ -43,11 +43,11 @@ SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0)
+        AND (((ctimestamp1 <= -28800)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > -15)
+              OR ((ctimestamp2 > -28815)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
@@ -79,8 +79,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val 0.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 988888.0), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -15.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 3569.0))))
-                    predicate: (((UDFToDouble(ctimestamp1) <= 0.0D) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and ((cdouble > 988888.0D) or ((UDFToDouble(ctimestamp2) > -15.0D) and (cdouble <= 3569.0D))) and (ctinyint <> 0Y)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val -28800.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 988888.0), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -28815.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 3569.0))))
+                    predicate: (((UDFToDouble(ctimestamp1) <= -28800.0D) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and ((cdouble > 988888.0D) or ((UDFToDouble(ctimestamp2) > -28815.0D) and (cdouble <= 3569.0D))) and (ctinyint <> 0Y)) (type: boolean)
                     Statistics: Num rows: 5461 Data size: 65532 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), cbigint (type: bigint), csmallint (type: smallint), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cstring1 (type: string), (cbigint + cbigint) (type: bigint), (UDFToInteger(csmallint) % -257) (type: int), (- csmallint) (type: smallint), (- ctinyint) (type: tinyint), (UDFToInteger((- ctinyint)) + 17) (type: int), (cbigint * UDFToLong((- csmallint))) (type: bigint), (cint % UDFToInteger(csmallint)) (type: int), (- ctinyint) (type: tinyint), ((- ctinyint) % ctinyint) (type: tinyint)
@@ -182,11 +182,11 @@ PREHOOK: query: SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0)
+        AND (((ctimestamp1 <= -28800)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > -15)
+              OR ((ctimestamp2 > -28815)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
@@ -210,11 +210,11 @@ POSTHOOK: query: SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0)
+        AND (((ctimestamp1 <= -28800)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > -15)
+              OR ((ctimestamp2 > -28815)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
@@ -264,11 +264,11 @@ SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0.0)
+        AND (((ctimestamp1 <= -28800.0)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > 7.6850000000000005)
+              OR ((ctimestamp2 > -28792.3149999999999995)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
@@ -291,11 +291,11 @@ SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0.0)
+        AND (((ctimestamp1 <= -28800.0)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > 7.6850000000000005)
+              OR ((ctimestamp2 > -28792.3149999999999995)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
@@ -326,8 +326,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val 0.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 988888.0), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val 7.6850000000000005)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 3569.0))))
-                    predicate: (((UDFToDouble(ctimestamp1) <= 0.0D) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and ((cdouble > 988888.0D) or ((UDFToDouble(ctimestamp2) > 7.6850000000000005D) and (cdouble <= 3569.0D))) and (ctinyint <> 0Y)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColNotEqualLongScalar(col 0:tinyint, val 0), FilterExprOrExpr(children: FilterDoubleColLessEqualDoubleScalar(col 13:double, val -28800.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterLongColEqualLongColumn(col 0:int, col 2:int)(children: col 0:tinyint), FilterStringColLikeStringScalar(col 7:string, pattern ss)), FilterExprOrExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 988888.0), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -28792.315)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 3569.0))))
+                    predicate: (((UDFToDouble(ctimestamp1) <= -28800.0D) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and ((cdouble > 988888.0D) or ((UDFToDouble(ctimestamp2) > -28792.315D) and (cdouble <= 3569.0D))) and (ctinyint <> 0Y)) (type: boolean)
                     Statistics: Num rows: 5461 Data size: 65532 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), cbigint (type: bigint), csmallint (type: smallint), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cstring1 (type: string), (cbigint + cbigint) (type: bigint), (UDFToInteger(csmallint) % -257) (type: int), (- csmallint) (type: smallint), (- ctinyint) (type: tinyint), (UDFToInteger((- ctinyint)) + 17) (type: int), (cbigint * UDFToLong((- csmallint))) (type: bigint), (cint % UDFToInteger(csmallint)) (type: int), (- ctinyint) (type: tinyint), ((- ctinyint) % ctinyint) (type: tinyint)
@@ -414,11 +414,11 @@ PREHOOK: query: SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0.0)
+        AND (((ctimestamp1 <= -28800.0)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > 7.6850000000000005)
+              OR ((ctimestamp2 > -28792.3149999999999995)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
@@ -442,11 +442,11 @@ POSTHOOK: query: SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0.0)
+        AND (((ctimestamp1 <= -28800.0)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > 7.6850000000000005)
+              OR ((ctimestamp2 > -28792.3149999999999995)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25

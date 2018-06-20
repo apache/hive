@@ -2074,13 +2074,13 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(18,9)/DECIMAL_64, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: 1355944339.1234567 (type: decimal(30,8))
+                    expressions: 1355915539.1234567 (type: decimal(30,8))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [2]
-                        selectExpressions: ConstantVectorExpression(val 1355944339.1234567) -> 2:decimal(30,8)
+                        selectExpressions: ConstantVectorExpression(val 1355915539.1234567) -> 2:decimal(30,8)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -2124,7 +2124,7 @@ POSTHOOK: query: select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-1355944339.12345670
+1355915539.12345670
 PREHOOK: query: explain vectorization detail
 select cast(true as decimal) as c from decimal_2 order by c
 PREHOOK: type: QUERY

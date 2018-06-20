@@ -18,7 +18,7 @@ import java.nio.charset.CharacterCodingException;
 
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
@@ -29,7 +29,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.BooleanWritable;
 
 /**
- * The ParquetStringInspector inspects a BytesWritable, TimestampWritable, HiveDecimalWritable,
+ * The ParquetStringInspector inspects a BytesWritable, TimestampWritableV2, HiveDecimalWritable,
  * DoubleWritable, FloatWritable, LongWritable, IntWritable, and BooleanWritable to give a Text
  * or String.
  *
@@ -58,7 +58,7 @@ public class ParquetStringInspector extends JavaStringObjectInspector implements
       return new Text((String) o);
     }
 
-    if ((o instanceof TimestampWritable) || (o instanceof HiveDecimalWritable)
+    if ((o instanceof TimestampWritableV2) || (o instanceof HiveDecimalWritable)
         || (o instanceof DoubleWritable) || (o instanceof FloatWritable)
         || (o instanceof LongWritable) || (o instanceof IntWritable)
         || (o instanceof BooleanWritable)) {
@@ -90,7 +90,7 @@ public class ParquetStringInspector extends JavaStringObjectInspector implements
       return (String) o;
     }
 
-    if ((o instanceof TimestampWritable) || (o instanceof HiveDecimalWritable)
+    if ((o instanceof TimestampWritableV2) || (o instanceof HiveDecimalWritable)
         || (o instanceof DoubleWritable) || (o instanceof FloatWritable)
         || (o instanceof LongWritable) || (o instanceof IntWritable)
         || (o instanceof BooleanWritable)) {

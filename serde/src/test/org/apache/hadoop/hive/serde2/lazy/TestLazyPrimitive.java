@@ -17,11 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;

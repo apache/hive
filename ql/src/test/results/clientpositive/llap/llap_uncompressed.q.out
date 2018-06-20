@@ -162,7 +162,7 @@ POSTHOOK: query: select sum(hash(*)) from llap_temp_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
-212787774304
+251958877792
 PREHOOK: query: explain
 select * from orc_llap_n0 where cint > 10 and cint < 5000000
 PREHOOK: type: QUERY

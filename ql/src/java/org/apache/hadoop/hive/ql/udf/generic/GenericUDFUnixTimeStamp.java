@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -44,7 +45,7 @@ public class GenericUDFUnixTimeStamp extends GenericUDFToUnixTimeStamp {
     } else {
       if (currentTimestamp == null) {
         currentTimestamp = new LongWritable(0);
-        setValueFromTs(currentTimestamp, SessionState.get().getQueryCurrentTimestamp());
+        setValueFromTs(currentTimestamp, Timestamp.ofEpochMilli(SessionState.get().getQueryCurrentTimestamp().getTime()));
         String msg = "unix_timestamp(void) is deprecated. Use current_timestamp instead.";
         SessionState.getConsole().printInfo(msg, false);
       }

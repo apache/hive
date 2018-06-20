@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Random;
 
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.serde2.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -56,7 +56,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDoub
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSqrtDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncTanDoubleToDouble;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
@@ -287,8 +287,8 @@ public class TestVectorMathFunctions {
     outV = new LongColumnVector(longValues.length);
     for (int i = 0; i < longValues.length; i++) {
       Timestamp randTimestamp = RandomTypeUtil.getRandTimestamp(r);
-      longValues[i] = TimestampWritable.getLong(randTimestamp);
-      inV.set(0, randTimestamp);
+      longValues[i] = TimestampWritableV2.getLong(randTimestamp);
+      inV.set(0, randTimestamp.toSqlTimestamp());
     }
 
     batch.cols[0] = inV;

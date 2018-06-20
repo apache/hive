@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hive.common.util.DateParser;
 
 import java.nio.charset.StandardCharsets;
@@ -38,7 +38,6 @@ public class CastStringToDate extends VectorExpression {
 
   private final int inputColumn;
 
-  private transient final java.sql.Date sqlDate = new java.sql.Date(0);
   private transient final DateParser dateParser = new DateParser();
 
   public CastStringToDate() {
@@ -154,8 +153,9 @@ public class CastStringToDate extends VectorExpression {
 
   private void evaluate(LongColumnVector outputColVector, BytesColumnVector inV, int i) {
     String dateString = new String(inV.vector[i], inV.start[i], inV.length[i], StandardCharsets.UTF_8);
-    if (dateParser.parseDate(dateString, sqlDate)) {
-      outputColVector.vector[i] = DateWritable.dateToDays(sqlDate);
+    Date hDate = new Date();
+    if (dateParser.parseDate(dateString, hDate)) {
+      outputColVector.vector[i] = DateWritableV2.dateToDays(hDate);
       return;
     }
 

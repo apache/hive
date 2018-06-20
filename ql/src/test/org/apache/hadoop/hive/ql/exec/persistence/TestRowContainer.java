@@ -19,17 +19,17 @@ package org.apache.hadoop.hive.ql.exec.persistence;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -55,7 +55,7 @@ public class TestRowContainer {
       ObjectInspectorUtils.getStandardObjectInspector(serde.getObjectInspector()));
     result.setTableDesc(
       PTFRowContainer.createTableDesc((StructObjectInspector) serde.getObjectInspector()));
-    TimestampWritable key = new TimestampWritable(new Timestamp(10));
+    TimestampWritableV2 key = new TimestampWritableV2(Timestamp.ofEpochMilli(10));
     result.setKeyObject(Lists.newArrayList(key));
     List<Writable> row;
     // will trigger 2 spills

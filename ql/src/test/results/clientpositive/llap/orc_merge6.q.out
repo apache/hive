@@ -170,9 +170,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5a_n1
 POSTHOOK: Output: default@orc_merge5a_n1
 POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
-Found 2 items
+Found 1 items
 #### A masked pattern was here ####
-Found 2 items
+Found 1 items
 #### A masked pattern was here ####
 PREHOOK: query: show partitions orc_merge5a_n1
 PREHOOK: type: SHOWPARTITIONS
@@ -466,9 +466,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5a_n1
 POSTHOOK: Output: default@orc_merge5a_n1
 POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
-Found 2 items
+Found 1 items
 #### A masked pattern was here ####
-Found 2 items
+Found 1 items
 #### A masked pattern was here ####
 PREHOOK: query: show partitions orc_merge5a_n1
 PREHOOK: type: SHOWPARTITIONS

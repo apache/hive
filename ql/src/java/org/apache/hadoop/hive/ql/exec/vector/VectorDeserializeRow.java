@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -31,7 +32,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionConversion;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -39,7 +40,6 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -556,7 +556,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       break;
     case TIMESTAMP:
       ((TimestampColumnVector) colVector).set(
-          batchIndex, deserializeRead.currentTimestampWritable.getTimestamp());
+          batchIndex, deserializeRead.currentTimestampWritable.getTimestamp().toSqlTimestamp());
       break;
     case DATE:
       ((LongColumnVector) colVector).vector[batchIndex] = deserializeRead.currentDateWritable.getDays();
@@ -1079,17 +1079,17 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     case TIMESTAMP:
       {
         if (writable == null) {
-          writable = new TimestampWritable();
+          writable = new TimestampWritableV2();
         }
-        ((TimestampWritable) writable).set(deserializeRead.currentTimestampWritable);
+        ((TimestampWritableV2) writable).set(deserializeRead.currentTimestampWritable);
       }
       break;
     case DATE:
       {
         if (writable == null) {
-          writable = new DateWritable();
+          writable = new DateWritableV2();
         }
-        ((DateWritable) writable).set(deserializeRead.currentDateWritable);
+        ((DateWritableV2) writable).set(deserializeRead.currentDateWritable);
       }
       break;
     case FLOAT:

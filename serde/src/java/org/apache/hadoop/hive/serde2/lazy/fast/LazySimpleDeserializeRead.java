@@ -21,10 +21,10 @@ package org.apache.hadoop.hive.serde2.lazy.fast;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;

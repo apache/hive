@@ -35,7 +35,7 @@ STAGE PLANS:
             Row Limit Per Split: 1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: DATE'2013-11-17' (type: date), TIMESTAMP'2011-04-29 20:46:56.4485' (type: timestamp)
+              expressions: DATE'2013-11-17' (type: date), TIMESTAMP'2011-04-30 03:46:56.4485' (type: timestamp)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 48000 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
@@ -123,7 +123,7 @@ POSTHOOK: query: SELECT * FROM dest1_n26
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n26
 #### A masked pattern was here ####
-2013-11-17	2011-04-29 20:46:56.4485
+2013-11-17	2011-04-30 03:46:56.4485
 PREHOOK: query: SELECT key, value FROM src WHERE key = cast(86 as double)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
