@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.ReplCopyWork;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -165,7 +166,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
-      return (1);
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }
 

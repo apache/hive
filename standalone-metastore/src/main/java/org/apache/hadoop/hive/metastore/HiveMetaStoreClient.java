@@ -130,6 +130,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   static final protected Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClient.class);
 
+  //copied from ErrorMsg.java
+  private static final String REPL_EVENTS_MISSING_IN_METASTORE = "Notification events are missing in the meta store.";
+
   public HiveMetaStoreClient(Configuration conf) throws MetaException {
     this(conf, null, true);
   }
@@ -2706,7 +2709,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                   + "Try setting higher value for hive.metastore.event.db.listener.timetolive. "
                   + "Also, bootstrap the system again to get back the consistent replicated state.",
                   nextEventId, e.getEventId());
-          throw new IllegalStateException("Notification events are missing.");
+          throw new IllegalStateException(REPL_EVENTS_MISSING_IN_METASTORE);
         }
         if ((filter != null) && filter.accept(e)) {
           filtered.addToEvents(e);
