@@ -275,6 +275,24 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     };
     checkExpected(rs, expected, "Unexpected row count after ctas");
   }
+  @Test
+  public void testInsertOverwriteToAcidWithUnionRemove() throws Exception {
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE, true);
+    hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    d.close();
+    d = new Driver(hiveConf);
+    int[][] values = {{1, 2}, {3, 4}, {5, 6}, {7, 8}, {9, 10}};
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("create table T (a int, b int) stored as ORC  TBLPROPERTIES ('transactional'='true')");
+
+    CommandProcessorResponse cpr = runStatementOnDriverNegative(
+        "insert overwrite table T select a, b from " + TxnCommandsBaseForTests.Table.ACIDTBL +
+            " where a between 1 and 3 group by a, b union all select a, b from " +
+            TxnCommandsBaseForTests.Table.ACIDTBL +
+            " where a between 5 and 7 union all select a, b from " +
+            TxnCommandsBaseForTests.Table.ACIDTBL + " where a >= 9");
+    Assert.assertTrue("", cpr.getErrorMessage().contains("not supported due to OVERWRITE and UNION ALL"));
+  }
   /**
    * The idea here is to create a non acid table that was written by multiple writers, i.e.
    * unbucketed table that has 000000_0 & 000001_0, for example.
