@@ -300,6 +300,15 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
       return AcidUtils.isInsertOnlyTable(getTableInfo().getProperties());
     }
   }
+  public boolean isFullAcidTable() {
+    if(getTable() != null) {
+      return AcidUtils.isFullAcidTable(table);
+    }
+    else {
+      return AcidUtils.isTablePropertyTransactional(getTableInfo().getProperties()) &&
+          !AcidUtils.isInsertOnlyTable(getTableInfo().getProperties());
+    }
+  }
 
   public boolean isMaterialization() {
     return materialization;
