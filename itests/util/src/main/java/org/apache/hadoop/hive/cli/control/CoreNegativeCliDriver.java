@@ -50,6 +50,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
       qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
        hiveConfDir, hadoopVer, initScript, cleanupScript, false);
       // do a one time initialization
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
     } catch (Exception e) {
@@ -64,7 +65,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
   @Before
   public void setUp() {
     try {
-      qt.clearTestSideEffects();
+      qt.newSession();
     } catch (Throwable e) {
       e.printStackTrace();
       System.err.flush();
@@ -76,6 +77,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
   @After
   public void tearDown() {
     try {
+      qt.clearTestSideEffects();
       qt.clearPostTestEffects();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
@@ -118,7 +120,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
       qt.addFile(fpath);
 
 
-      qt.cliInit(new File(fpath), false);
+      qt.cliInit(new File(fpath));
       int ecode = qt.executeClient(fname);
       if (ecode == 0) {
         qt.failed(fname, debugHint);

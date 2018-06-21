@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.cli.control;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 
@@ -43,7 +44,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   @BeforeClass
   public void beforeClass() {
     setup = new AccumuloTestSetup();
-    
+
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
@@ -51,20 +52,21 @@ public class CoreAccumuloCliDriver extends CliAdapter {
     try {
       qt = new AccumuloQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
           setup, initScript, cleanupScript);
-      
+
       // do a one time initialization
+      qt.newSession();
       qt.cleanUp();
       qt.createSources();
     } catch (Exception e) {
       throw new RuntimeException("Unexpected exception in setUp",e);
     }
   }
-  
+
   @Override
   @AfterClass
   public void shutdown() throws Exception {
     setup.tearDown();
-    
+
     try {
       qt.shutdown();
     }
@@ -72,16 +74,33 @@ public class CoreAccumuloCliDriver extends CliAdapter {
       throw new RuntimeException("Unexpected exception in tearDown",e);
     }
   }
+
   @Override
   @Before
   public void setUp() {
+    try {
+      qt.newSession();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in setup");
+    }
   }
 
   @Override
   @After
   public void tearDown() {
+    try {
+      qt.clearPostTestEffects();
+      qt.clearTestSideEffects();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in tearDown");
+    }
   }
-
   @Override
   public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
@@ -90,8 +109,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
 
       qt.addFile(fpath);
 
-      qt.cliInit(new File(fpath), false);
-      qt.clearTestSideEffects();
+      qt.cliInit(new File(fpath));
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         qt.failed(ecode, fname, null);
