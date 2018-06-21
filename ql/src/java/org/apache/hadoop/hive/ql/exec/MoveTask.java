@@ -133,7 +133,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         deletePath = createTargetPath(targetPath, tgtFs);
       }
       Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
-      if (!Hive.moveFile(conf, sourcePath, targetPath, true, false)) {
+      // Set isManaged to false as this is not load data operation for which it is needed.
+      if (!Hive.moveFile(conf, sourcePath, targetPath, true, false, false)) {
         try {
           if (deletePath != null) {
             tgtFs.delete(deletePath, true);
