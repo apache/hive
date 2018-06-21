@@ -416,7 +416,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
 
-      HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork, generateSingleSplit);
+      HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork,
+          generateSingleSplit, numSplits);
       List<Event> eventList = splitGenerator.initialize();
       InputSplit[] result = new InputSplit[eventList.size() - 1];
 

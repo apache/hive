@@ -118,8 +118,12 @@ public class TestJdbcGenericUDTFGetSplits {
 
   @Test(timeout = 200000)
   public void testGenericUDTFOrderBySplitCount1() throws Exception {
-    String query = "select get_splits(" + "'select value from " + tableName + "', 5)";
+    String query = "select get_splits(" + "'select value from " + tableName + "', 10)";
     runQuery(query, getConfigs(), 10);
+
+    // Check number of splits is respected
+    query = "select get_splits(" + "'select value from " + tableName + "', 3)";
+    runQuery(query, getConfigs(), 3);
 
     query = "select get_splits(" + "'select value from " + tableName + " order by under_col', 5)";
     runQuery(query, getConfigs(), 1);
@@ -131,7 +135,7 @@ public class TestJdbcGenericUDTFGetSplits {
     List<String> setCmds = getConfigs();
     setCmds.add("set hive.llap.external.splits.order.by.force.single.split=false");
     query = "select get_splits(" +
-      "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 5)";
+      "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 10)";
     runQuery(query, setCmds, 10);
   }
 
