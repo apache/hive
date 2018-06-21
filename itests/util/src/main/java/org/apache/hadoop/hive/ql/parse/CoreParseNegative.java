@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.Serializable;
+import java.io.File;
 import java.util.List;
 
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
@@ -56,6 +57,7 @@ public class CoreParseNegative extends CliAdapter{
       String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR, null,
           hadoopVer, initScript, cleanupScript, false);
+      qt.newSession();
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -104,6 +106,9 @@ public class CoreParseNegative extends CliAdapter{
         qt.init(fname);
         firstRun = false;
       }
+
+      qt.cliInit(new File(fpath));
+
       ASTNode tree = qt.parseQuery(fname);
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
       fail("Unexpected success for query: " + fname + debugHint);

@@ -29,6 +29,7 @@ cbo_t2
 cbo_t3
 lineitem
 part
+primitives
 q1
 src
 src1
@@ -233,6 +234,7 @@ cbo_t2
 cbo_t3
 lineitem
 part
+primitives
 q1
 src
 src1
@@ -273,6 +275,7 @@ cbo_t2
 cbo_t3
 lineitem
 part
+primitives
 src
 src1
 src_cbo
@@ -476,6 +479,7 @@ cbo_t2
 cbo_t3
 lineitem
 part
+primitives
 src
 src1
 src_cbo

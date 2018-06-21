@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.cli.control;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 
@@ -43,15 +44,6 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   @BeforeClass
   public void beforeClass() {
     setup = new AccumuloTestSetup();
-  }
-  @Override
-  @AfterClass
-  public void shutdown() throws Exception {
-    setup.tearDown();
-  }
-  @Override
-  @Before
-  public void setUp() {
 
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
@@ -60,14 +52,21 @@ public class CoreAccumuloCliDriver extends CliAdapter {
     try {
       qt = new AccumuloQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
           setup, initScript, cleanupScript);
+
+      // do a one time initialization
+      qt.newSession();
+      qt.cleanUp();
+      qt.createSources();
     } catch (Exception e) {
       throw new RuntimeException("Unexpected exception in setUp",e);
     }
   }
 
   @Override
-  @After
-  public void tearDown() {
+  @AfterClass
+  public void shutdown() throws Exception {
+    setup.tearDown();
+
     try {
       qt.shutdown();
     }
@@ -77,6 +76,32 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   }
 
   @Override
+  @Before
+  public void setUp() {
+    try {
+      qt.newSession();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in setup");
+    }
+  }
+
+  @Override
+  @After
+  public void tearDown() {
+    try {
+      qt.clearPostTestEffects();
+      qt.clearTestSideEffects();
+    } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
+      fail("Unexpected exception in tearDown");
+    }
+  }
+  @Override
   public void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
@@ -84,13 +109,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
 
       qt.addFile(fpath);
 
-      if (qt.shouldBeSkipped(fname)) {
-        System.err.println("Test " + fname + " skipped");
-        return;
-      }
-
       qt.cliInit(new File(fpath));
-      qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         qt.failed(ecode, fname, null);
@@ -111,4 +130,3 @@ public class CoreAccumuloCliDriver extends CliAdapter {
     assertTrue("Test passed", true);
   }
 }
-
