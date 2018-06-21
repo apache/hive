@@ -57,7 +57,13 @@ public class HiveObjectRefBuilder {
   }
 
   public HiveObjectRef buildColumnReference(Table table, String columnName) {
-    return new HiveObjectRef(HiveObjectType.TABLE, table.getDbName(), table.getTableName(),
+    return new HiveObjectRef(HiveObjectType.COLUMN, table.getDbName(), table.getTableName(),
         Collections.emptyList(), columnName);
+  }
+
+  public HiveObjectRef buildPartitionColumnReference(Table table, String columnName,
+                                                     List<String> partValues) {
+    return new HiveObjectRef(HiveObjectType.COLUMN, table.getDbName(), table.getTableName(),
+        partValues, columnName);
   }
 }
