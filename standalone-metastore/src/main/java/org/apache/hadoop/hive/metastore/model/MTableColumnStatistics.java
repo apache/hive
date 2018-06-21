@@ -53,7 +53,6 @@ public class MTableColumnStatistics {
   private Long numTrues;
   private Long numFalses;
   private long lastAnalyzed;
-  private long txnId;
 
   public MTableColumnStatistics() {}
 
@@ -269,13 +268,5 @@ public class MTableColumnStatistics {
 
   public void setBitVector(byte[] bitVector) {
     this.bitVector = bitVector;
-  }
-
-  public long getTxnId() {
-    return txnId;
-  }
-
-  public void setTxnId(long txnId) {
-    this.txnId = txnId;
   }
 }

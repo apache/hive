@@ -4094,7 +4094,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (newTable.getValidWriteIdList() != null &&
           TxnUtils.isTransactionalTable(newTable)) {
         // Check concurrent INSERT case and set false to the flag.
-        if (isCurrentStatsValidForTheQuery(oldt, newt.getTxnId(), newt.getWriteIdList(),
+        if (!isCurrentStatsValidForTheQuery(oldt, newt.getTxnId(), newt.getWriteIdList(),
                 -1, true)) {
           StatsSetupConst.setBasicStatsState(oldt.getParameters(), StatsSetupConst.FALSE);
           LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table " +
@@ -12235,6 +12235,11 @@ public class ObjectStore implements RawStore, Configurable {
       long queryTxnId, String queryValidWriteIdList,
       long statsWriteId, boolean checkConcurrentWrites)
       throws MetaException {
+    // if statsWriteIdList is null,
+    // return true since the stats does not seem to be transactional.
+    if (statsWriteIdList == null) {
+      return true;
+    }
     // If the current query is a stats updater, then we can return true
     // to avoid implementing a logic inside TxnIdUtils.checkEquivalentWriteIds().
     if (statsTxnId == queryTxnId) {

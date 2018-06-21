@@ -594,63 +594,46 @@ class CompactionTxnHandler extends TxnHandler {
         StringBuilder suffix = new StringBuilder();
 
         // Turn off COLUMN_STATS_ACCURATE for txnids' components in TBLS and PARTITIONS
-        for (Long txnId : txnids) {
-          // Get table ids for the current txnId.
-          s = "select tbl_id from TBLS where txn_id = " + txnId;
-          LOG.debug("Going to execute query <" + s + ">");
-          rs = stmt.executeQuery(s);
-          List<Long> tblIds = new ArrayList<>();
-          while (rs.next()) {
-            tblIds.add(rs.getLong(1));
-          }
-          close(rs);
-          if(tblIds.size() <= 0) {
-            continue;
-          }
+        prefix.append("select tbl_id from TBLS where ");
+        suffix.append("");
+        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", true, false);
 
-          // Update COLUMN_STATS_AcCURATE.BASIC_STATS to false for each tableId.
-          prefix.append("delete from TABLE_PARAMS " +
-              " where param_key = '" + "COLUMN_STATS_ACCURATE" + "' and ");
-          suffix.append("");
-          TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, tblIds, "tbl_id", true, false);
-
-          for (String query : queries) {
-            LOG.debug("Going to execute update <" + query + ">");
-            int rc = stmt.executeUpdate(query);
-            LOG.info("Turned off " + rc + " COLUMN_STATE_ACCURATE.BASIC_STATS states from TBLS");
-          }
-
-          queries.clear();
-          prefix.setLength(0);
-          suffix.setLength(0);
-
-          // Get partition ids for the current txnId.
-          s = "select part_id from PARTITIONS where txn_id = " + txnId;
-          LOG.debug("Going to execute query <" + s + ">");
-          rs = stmt.executeQuery(s);
-          List<Long> ptnIds = new ArrayList<>();
-          while (rs.next()) ptnIds.add(rs.getLong(1));
-          close(rs);
-          if(ptnIds.size() <= 0) {
-            continue;
-          }
-
-          // Update COLUMN_STATS_AcCURATE.BASIC_STATS to false for each ptnId.
-          prefix.append("delete from PARTITION_PARAMS " +
-              " where param_key = '" + "COLUMN_STATS_ACCURATE" + "' and ");
-          suffix.append("");
-          TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, ptnIds, "part_id", true, false);
-
-          for (String query : queries) {
-            LOG.debug("Going to execute update <" + query + ">");
-            int rc = stmt.executeUpdate(query);
-            LOG.info("Turned off " + rc + " COLUMN_STATE_ACCURATE.BASIC_STATS states from PARTITIONS");
-          }
-
-          queries.clear();
-          prefix.setLength(0);
-          suffix.setLength(0);
+        // Delete COLUMN_STATS_ACCURATE.BASIC_STATS rows from TABLE_PARAMS for the txnids.
+        List<StringBuilder> finalCommands = new ArrayList<>(queries.size());
+        for (int i = 0; i < queries.size(); i++) {
+          String query = queries.get(i);
+          finalCommands.add(i, new StringBuilder("delete from TABLE_PARAMS " +
+                  " where param_key = '" + "COLUMN_STATS_ACCURATE" + "' and tbl_id in ("));
+          finalCommands.get(i).append(query + ")");
+          LOG.debug("Going to execute update <" + finalCommands.get(i) + ">");
+          int rc = stmt.executeUpdate(finalCommands.get(i).toString());
+          LOG.info("Turned off " + rc + " COLUMN_STATE_ACCURATE.BASIC_STATS states from TBLS");
         }
+
+        queries.clear();
+        prefix.setLength(0);
+        suffix.setLength(0);
+        finalCommands.clear();
+
+        // Delete COLUMN_STATS_ACCURATE.BASIC_STATS rows from PARTITIONS_PARAMS for the txnids.
+        prefix.append("select part_id from PARTITIONS where ");
+        suffix.append("");
+        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", true, false);
+
+        for (int i = 0; i < queries.size(); i++) {
+          String query = queries.get(i);
+          finalCommands.add(i, new StringBuilder("delete from PARTITION_PARAMS " +
+                  " where param_key = '" + "COLUMN_STATS_ACCURATE" + "' and part_id in ("));
+          finalCommands.get(i).append(query + ")");
+          LOG.debug("Going to execute update <" + finalCommands.get(i) + ">");
+          int rc = stmt.executeUpdate(finalCommands.get(i).toString());
+          LOG.info("Turned off " + rc + " COLUMN_STATE_ACCURATE.BASIC_STATS states from PARTITIONS");
+        }
+
+        queries.clear();
+        prefix.setLength(0);
+        suffix.setLength(0);
+        finalCommands.clear();
 
         // Delete from TXNS.
         prefix.append("delete from TXNS where ");

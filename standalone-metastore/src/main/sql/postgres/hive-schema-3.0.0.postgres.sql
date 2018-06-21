@@ -166,9 +166,7 @@ CREATE TABLE "PARTITIONS" (
     "LAST_ACCESS_TIME" bigint NOT NULL,
     "PART_NAME" character varying(767) DEFAULT NULL::character varying,
     "SD_ID" bigint,
-    "TBL_ID" bigint,
-    "TXN_ID" bigint,
-    "WRITEID_LIST" text
+    "TBL_ID" bigint
 );
 
 
@@ -390,9 +388,7 @@ CREATE TABLE "TBLS" (
     "TBL_TYPE" character varying(128) DEFAULT NULL::character varying,
     "VIEW_EXPANDED_TEXT" text,
     "VIEW_ORIGINAL_TEXT" text,
-    "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false,
-    "TXN_ID" bigint,
-    "WRITEID_LIST" text
+    "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false
 );
 
 --
@@ -543,8 +539,7 @@ CREATE TABLE "TAB_COL_STATS" (
  "MAX_COL_LEN" bigint,
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
- "LAST_ANALYZED" bigint NOT NULL,
- "TXN_ID" bigint
+ "LAST_ANALYZED" bigint NOT NULL
 );
 
 --
@@ -582,8 +577,7 @@ CREATE TABLE "PART_COL_STATS" (
  "MAX_COL_LEN" bigint,
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
- "LAST_ANALYZED" bigint NOT NULL,
- "TXN_ID" bigint
+ "LAST_ANALYZED" bigint NOT NULL
 );
 
 --
@@ -1079,8 +1073,6 @@ ALTER TABLE ONLY "WM_MAPPING"
 
 ALTER TABLE ONLY "WM_MAPPING"
     ADD CONSTRAINT "UNIQUE_WM_MAPPING" UNIQUE ("RP_ID", "ENTITY_TYPE", "ENTITY_NAME");
-
--- Transactional table stats PK constraints
 
 --
 -- Name: BUCKETING_COLS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
@@ -1626,8 +1618,6 @@ ALTER TABLE ONLY "MV_TABLES_USED"
 ALTER TABLE ONLY "MV_TABLES_USED"
     ADD CONSTRAINT "MV_TABLES_USED_FK2" FOREIGN KEY ("TBL_ID") REFERENCES "TBLS" ("TBL_ID") DEFERRABLE;
 
--- Transactional table stats FK constraints
-
 --
 -- Name: public; Type: ACL; Schema: -; Owner: hiveuser
 --
@@ -1831,6 +1821,7 @@ CREATE TABLE RUNTIME_STATS (
 );
 
 CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
+
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
