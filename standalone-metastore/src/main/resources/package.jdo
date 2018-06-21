@@ -1001,9 +1001,6 @@
       <field name="lastAnalyzed">
         <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
       </field>
-      <field name="txnId">
-        <column name="TXN_ID"/>
-      </field>
     </class>
 
     <class name="MPartitionColumnStatistics" table="PART_COL_STATS" identity-type="datastore" detachable="true">
@@ -1073,9 +1070,6 @@
       </field>
       <field name="lastAnalyzed">
         <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
-      </field>
-      <field name="txnId">
-        <column name="TXN_ID"/>
       </field>
     </class>
     <class name="MVersionTable" table="VERSION" identity-type="datastore" detachable="true">
