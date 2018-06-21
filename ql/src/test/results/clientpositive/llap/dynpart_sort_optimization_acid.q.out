@@ -94,7 +94,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part
-                  Statistics: Num rows: 160 Data size: 61011 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 160 Data size: 61001 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1906 Basic stats: COMPLETE Column stats: NONE
@@ -189,7 +189,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part
-                  Statistics: Num rows: 159 Data size: 104357 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 159 Data size: 104317 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1355 Basic stats: COMPLETE Column stats: PARTIAL
@@ -380,7 +380,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part_sdpo
-                  Statistics: Num rows: 176 Data size: 67083 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 176 Data size: 67063 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1905 Basic stats: COMPLETE Column stats: NONE
@@ -475,7 +475,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part_sdpo
-                  Statistics: Num rows: 171 Data size: 112202 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 171 Data size: 112152 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1355 Basic stats: COMPLETE Column stats: PARTIAL
@@ -675,7 +675,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
-                  Statistics: Num rows: 157 Data size: 60537 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 157 Data size: 60527 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
@@ -1095,7 +1095,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
-                  Statistics: Num rows: 157 Data size: 60537 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 157 Data size: 60527 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
@@ -1515,7 +1515,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
-                  Statistics: Num rows: 97 Data size: 82932 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 97 Data size: 82922 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1860 Basic stats: COMPLETE Column stats: PARTIAL
