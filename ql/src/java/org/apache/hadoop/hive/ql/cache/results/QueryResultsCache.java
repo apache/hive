@@ -540,6 +540,12 @@ public final class QueryResultsCache {
       } else {
         // No actual result directory, no need to move anything.
         cachedResultsPath = zeroRowsPath;
+        // Even if there are no results to move, at least check that we have permission
+        // to check the existence of zeroRowsPath, or the read using the cache will fail.
+        // A failure here will cause this query to not be added to the cache.
+        FileSystem cacheFs = cachedResultsPath.getFileSystem(conf);
+        boolean fakePathExists = cacheFs.exists(zeroRowsPath);
+
         resultSize = 0;
         requiresMove = false;
       }
