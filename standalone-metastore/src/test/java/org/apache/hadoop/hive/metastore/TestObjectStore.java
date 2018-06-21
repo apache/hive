@@ -23,11 +23,18 @@ import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.metastore.ObjectStore.RetryingExecutor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -37,6 +44,8 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -46,6 +55,9 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.HiveObjectPrivilegeBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.HiveObjectRefBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.PrivilegeGrantInfoBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
@@ -69,6 +81,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -427,8 +440,8 @@ public class TestObjectStore {
    */
   @Test
   public void testDirectSQLDropPartitionsCacheInSession()
-      throws MetaException, InvalidObjectException, NoSuchObjectException {
-    createPartitionedTable();
+      throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
+    createPartitionedTable(false, false);
     // query the partitions with JDO
     Deadline.startTimer("getPartition");
     List<Partition> partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
@@ -454,11 +467,11 @@ public class TestObjectStore {
    */
   @Test
   public void testDirectSQLDropPartitionsCacheCrossSession()
-      throws MetaException, InvalidObjectException, NoSuchObjectException {
+      throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     ObjectStore objectStore2 = new ObjectStore();
     objectStore2.setConf(conf);
 
-    createPartitionedTable();
+    createPartitionedTable(false, false);
     // query the partitions with JDO in the 1st session
     Deadline.startTimer("getPartition");
     List<Partition> partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
@@ -490,9 +503,24 @@ public class TestObjectStore {
    */
   @Test
   public void testDirectSQLDropParitionsCleanup() throws MetaException, InvalidObjectException,
-      NoSuchObjectException, SQLException {
+      NoSuchObjectException, SQLException, InvalidInputException {
 
-    createPartitionedTable();
+    createPartitionedTable(true, true);
+
+    // Check, that every table in the expected state before the drop
+    checkBackendTableSize("PARTITIONS", 3);
+    checkBackendTableSize("PART_PRIVS", 3);
+    checkBackendTableSize("PART_COL_PRIVS", 3);
+    checkBackendTableSize("PART_COL_STATS", 3);
+    checkBackendTableSize("PARTITION_PARAMS", 3);
+    checkBackendTableSize("PARTITION_KEY_VALS", 3);
+    checkBackendTableSize("SD_PARAMS", 3);
+    checkBackendTableSize("BUCKETING_COLS", 3);
+    checkBackendTableSize("SKEWED_COL_NAMES", 3);
+    checkBackendTableSize("SDS", 4); // Table has an SDS
+    checkBackendTableSize("SORT_COLS", 3);
+    checkBackendTableSize("SERDE_PARAMS", 3);
+    checkBackendTableSize("SERDES", 4); // Table has a serde
 
     // drop the partitions
     Deadline.startTimer("dropPartitions");
@@ -517,10 +545,13 @@ public class TestObjectStore {
 
   /**
    * Creates DB1 database, TABLE1 table with 3 partitions.
+   * @param withPrivileges Should we create privileges as well
+   * @param withStatistics Should we create statitics as well
    * @throws MetaException
    * @throws InvalidObjectException
    */
-  private void createPartitionedTable() throws MetaException, InvalidObjectException {
+  private void createPartitionedTable(boolean withPrivileges, boolean withStatistics)
+      throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     Database db1 = new DatabaseBuilder()
                        .setName(DB1)
                        .setDescription("description")
@@ -534,16 +565,77 @@ public class TestObjectStore {
             .addCol("test_col1", "int")
             .addCol("test_col2", "int")
             .addPartCol("test_part_col", "int")
+            .addCol("test_bucket_col", "int", "test bucket col comment")
+            .addCol("test_skewed_col", "int", "test skewed col comment")
+            .addCol("test_sort_col", "int", "test sort col comment")
             .build(conf);
     objectStore.createTable(tbl1);
 
+    PrivilegeBag privilegeBag = new PrivilegeBag();
     // Create partitions for the partitioned table
     for(int i=0; i < 3; i++) {
       Partition part = new PartitionBuilder()
                            .inTable(tbl1)
                            .addValue("a" + i)
+                           .addSerdeParam("serdeParam", "serdeParamValue")
+                           .addStorageDescriptorParam("sdParam", "sdParamValue")
+                           .addBucketCol("test_bucket_col")
+                           .addSkewedColName("test_skewed_col")
+                           .addSortCol("test_sort_col", 1)
                            .build(conf);
       objectStore.addPartition(part);
+
+      if (withPrivileges) {
+        HiveObjectRef partitionReference = new HiveObjectRefBuilder().buildPartitionReference(part);
+        HiveObjectRef partitionColumnReference = new HiveObjectRefBuilder()
+            .buildPartitionColumnReference(tbl1, "test_part_col", part.getValues());
+        PrivilegeGrantInfo privilegeGrantInfo = new PrivilegeGrantInfoBuilder()
+            .setPrivilege("a")
+            .build();
+        HiveObjectPrivilege partitionPriv = new HiveObjectPrivilegeBuilder()
+                                                .setHiveObjectRef(partitionReference)
+                                                .setPrincipleName("a")
+                                                .setPrincipalType(PrincipalType.USER)
+                                                .setGrantInfo(privilegeGrantInfo)
+                                                .build();
+        privilegeBag.addToPrivileges(partitionPriv);
+        HiveObjectPrivilege partitionColPriv = new HiveObjectPrivilegeBuilder()
+                                                   .setHiveObjectRef(partitionColumnReference)
+                                                   .setPrincipleName("a")
+                                                   .setPrincipalType(PrincipalType.USER)
+                                                   .setGrantInfo(privilegeGrantInfo)
+                                                   .build();
+        privilegeBag.addToPrivileges(partitionColPriv);
+      }
+
+      if (withStatistics) {
+        ColumnStatistics stats = new ColumnStatistics();
+        ColumnStatisticsDesc desc = new ColumnStatisticsDesc();
+        desc.setCatName(tbl1.getCatName());
+        desc.setDbName(tbl1.getDbName());
+        desc.setTableName(tbl1.getTableName());
+        desc.setPartName("test_part_col=a" + i);
+        stats.setStatsDesc(desc);
+
+        List<ColumnStatisticsObj> statsObjList = new ArrayList<>(1);
+        stats.setStatsObj(statsObjList);
+        stats.setEngine(ENGINE);
+
+        ColumnStatisticsData data = new ColumnStatisticsData();
+        BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+        boolStats.setNumTrues(0);
+        boolStats.setNumFalses(0);
+        boolStats.setNumNulls(0);
+        data.setBooleanStats(boolStats);
+
+        ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
+        statsObjList.add(partStats);
+
+        objectStore.updatePartitionColumnStatistics(stats, part.getValues(), null, -1);
+      }
+    }
+    if (withPrivileges) {
+      objectStore.grantPrivileges(privilegeBag);
     }
   }
 
