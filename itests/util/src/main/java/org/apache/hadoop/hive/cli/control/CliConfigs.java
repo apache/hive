@@ -85,7 +85,7 @@ public class CliConfigs {
         setResultsDir("ql/src/test/results/compiler/errors");
         setLogDir("itests/qtest/target/qfile-results/negative");
 
-        setInitScript("q_test_init.sql");
+        setInitScript("q_test_init_parse.sql");
         setCleanupScript("q_test_cleanup.sql");
 
         setHiveConfDir("data/conf/perf-reg/");
