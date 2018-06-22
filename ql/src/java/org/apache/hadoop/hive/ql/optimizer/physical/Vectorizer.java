@@ -221,6 +221,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -1288,6 +1290,7 @@ public class Vectorizer implements PhysicalPlanResolver {
      */
     private boolean verifyAndSetVectorPartDesc(
         PartitionDesc pd, boolean isFullAcidTable,
+        List<TypeInfo> allTypeInfoList,
         Set<String> inputFileFormatClassNameSet,
         Map<VectorPartitionDesc, VectorPartitionDesc> vectorPartitionDescMap,
         Set<String> enabledConditionsMetSet, ArrayList<String> enabledConditionsNotMetList,
@@ -1332,8 +1335,13 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       if (useVectorizedInputFileFormat) {
 
-        if (isInputFileFormatVectorized && !isInputFormatExcluded(inputFileFormatClassName,
-            vectorizedInputFormatExcludes)) {
+        if (isInputFileFormatVectorized &&
+            !isInputFormatExcluded(
+                inputFileFormatClassName,
+                vectorizedInputFormatExcludes) &&
+            !hasUnsupportedVectorizedParquetDataType(
+                inputFileFormatClass,
+                allTypeInfoList)) {
 
           addVectorizedInputFileFormatSupport(
               newSupportSet, isInputFileFormatVectorized, inputFileFormatClass);
@@ -1517,6 +1525,57 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
+    private boolean hasUnsupportedVectorizedParquetDataType(
+        Class<? extends InputFormat> inputFileFormatClass, List<TypeInfo> allTypeInfoList) {
+      if (!inputFileFormatClass.equals(org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat.class)) {
+        return false;
+      }
+
+      /*
+       * Currently, VectorizedParquetRecordReader cannot handle nested complex types.
+       */
+      for (TypeInfo typeInfo : allTypeInfoList) {
+        if (!(typeInfo instanceof PrimitiveTypeInfo)) {
+          switch (typeInfo.getCategory()) {
+          case LIST:
+            if (!(((ListTypeInfo) typeInfo).getListElementTypeInfo() instanceof PrimitiveTypeInfo)) {
+              return true;
+            }
+            break;
+          case MAP:
+            {
+              MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
+              if (!(mapTypeInfo.getMapKeyTypeInfo() instanceof PrimitiveTypeInfo)) {
+                return true;
+              }
+              if (!(mapTypeInfo.getMapValueTypeInfo() instanceof PrimitiveTypeInfo)) {
+                return true;
+              }
+            }
+            break;
+          case STRUCT:
+            {
+              StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+              List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+              for (TypeInfo fieldTypeInfo : fieldTypeInfos) {
+                if (!(fieldTypeInfo instanceof PrimitiveTypeInfo)) {
+                  return true;
+                }
+              }
+            }
+            break;
+          case UNION:
+            // Not supported at all.
+            return false;
+          default:
+            throw new RuntimeException(
+                "Unsupported complex type category " + typeInfo.getCategory());
+          }
+        }
+      }
+      return false;
+    }
+
     private void setValidateInputFormatAndSchemaEvolutionExplain(MapWork mapWork,
         Set<String> inputFileFormatClassNameSet,
         Map<VectorPartitionDesc, VectorPartitionDesc> vectorPartitionDescMap,
@@ -1594,6 +1653,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         final boolean isVerifiedVectorPartDesc =
             verifyAndSetVectorPartDesc(
               partDesc, isFullAcidTable,
+              allTypeInfoList,
               inputFileFormatClassNameSet,
               vectorPartitionDescMap,
               enabledConditionsMetSet, enabledConditionsNotMetList,

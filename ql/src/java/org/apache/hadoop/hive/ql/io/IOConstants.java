@@ -35,6 +35,7 @@ public final class IOConstants {
   public static final String PARQUETFILE = "PARQUETFILE";
   public static final String AVRO = "AVRO";
   public static final String AVROFILE = "AVROFILE";
+  public static final String JSONFILE = "JSONFILE";
 
   /**
    * The desired TABLE column names and types for input format schema evolution.

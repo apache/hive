@@ -75,6 +75,9 @@ public class TestHCatLoaderComplexSchema {
         put(IOConstants.PARQUETFILE, new HashSet<String>() {{
           add("testMapNullKey");
         }});
+        put(IOConstants.JSONFILE, new HashSet<String>() {{
+          add("testMapNullKey");
+        }});
       }};
 
   private String storageFormat;
