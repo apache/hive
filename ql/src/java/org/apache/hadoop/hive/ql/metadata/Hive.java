@@ -1753,7 +1753,7 @@ public class Hive {
           Utilities.FILE_OP_LOGGER.trace("moving " + loadPath + " to " + destPath);
         }
 
-        boolean isManaged = tbl.getTableType().equals(TableType.MANAGED_TABLE.toString());
+        boolean isManaged = tbl.getTableType() == TableType.MANAGED_TABLE;
         // TODO: why is "&& !isAcidIUDoperation" needed here?
         if (!isTxnTable && ((loadFileType == LoadFileType.REPLACE_ALL) || (oldPart == null && !isAcidIUDoperation))) {
           //for fullAcid tables we don't delete files for commands with OVERWRITE - we create a new
@@ -2324,7 +2324,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Utilities.FILE_OP_LOGGER.debug("moving " + loadPath + " to " + tblPath
           + " (replace = " + loadFileType + ")");
 
-      boolean isManaged = tbl.getTableType().equals(TableType.MANAGED_TABLE.toString());
+      boolean isManaged = tbl.getTableType() == TableType.MANAGED_TABLE;
 
       if (loadFileType == LoadFileType.REPLACE_ALL && !isTxnTable) {
         //for fullAcid we don't want to delete any files even for OVERWRITE see HIVE-14988/HIVE-17361
