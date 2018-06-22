@@ -286,6 +286,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
+                                                   String baseLocationToNotShow, int max) {
+    return objectStore.getPartitionLocations(catName, dbName, tblName, baseLocationToNotShow, max);
+  }
+
+  @Override
   public Table alterTable(String catName, String dbName, String name, Table newTable,
       String queryValidWriteIds)
       throws InvalidObjectException, MetaException {

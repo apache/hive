@@ -1439,6 +1439,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
+                                                   String baseLocationToNotShow, int max) {
+    return rawStore.getPartitionLocations(catName, dbName, tblName, baseLocationToNotShow, max);
+  }
+
+  @Override
   public Table alterTable(String catName, String dbName, String tblName, Table newTable, String validWriteIds)
       throws InvalidObjectException, MetaException {
     newTable = rawStore.alterTable(catName, dbName, tblName, newTable, validWriteIds);

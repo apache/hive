@@ -57,6 +57,7 @@ public final class MetaStoreFactoryForTests {
     // set some values to use for getting conf. vars
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX, 2);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_OBJECTS_MAX, 2);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST,
         DEFAULT_LIMIT_PARTITION_REQUEST);
     MetaStoreTestUtils.setConfForStandloneMode(conf);

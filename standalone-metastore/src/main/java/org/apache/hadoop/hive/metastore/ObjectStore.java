@@ -2963,6 +2963,52 @@ public class ObjectStore implements RawStore, Configurable {
     return getPartitionsInternal(catName, dbName, tableName, maxParts, true, true);
   }
 
+  @Override
+  public Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
+      String baseLocationToNotShow, int max) {
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+
+    boolean success = false;
+    Query query = null;
+    Map<String, String> partLocations = new HashMap<>();
+    try {
+      openTransaction();
+      LOG.debug("Executing getPartitionLocations");
+
+      query = pm.newQuery(MPartition.class);
+      query.setFilter("this.table.database.catalogName == t1 && this.table.database.name == t2 "
+          + "&& this.table.tableName == t3");
+      query.declareParameters("String t1, String t2, String t3");
+      query.setResult("this.partitionName, this.sd.location");
+      if (max >= 0) {
+        //Row limit specified, set it on the Query
+        query.setRange(0, max);
+      }
+
+      List<Object[]> result = (List<Object[]>)query.execute(catName, dbName, tblName);
+      for(Object[] row:result) {
+        String location = (String)row[1];
+        if (baseLocationToNotShow != null && location != null
+            && FileUtils.isSubdirectory(baseLocationToNotShow, location)) {
+          location = null;
+        }
+        partLocations.put((String)row[0], location);
+      }
+      LOG.debug("Done executing query for getPartitionLocations");
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return partLocations;
+  }
+
   protected List<Partition> getPartitionsInternal(String catName, String dbName, String tblName,
                                                   final int maxParts, boolean allowSql, boolean allowJdo)
           throws MetaException, NoSuchObjectException {

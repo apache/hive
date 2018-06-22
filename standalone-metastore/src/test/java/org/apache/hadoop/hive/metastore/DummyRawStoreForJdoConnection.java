@@ -284,6 +284,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
+                                                   String baseLocationToNotShow, int max) {
+    return Collections.emptyMap();
+  }
+
+  @Override
   public Table alterTable(String catName, String dbname, String name, Table newTable, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
     return newTable;
