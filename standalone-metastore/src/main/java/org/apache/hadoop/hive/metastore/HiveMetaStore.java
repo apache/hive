@@ -1505,7 +1505,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                       " which is not writable by " + SecurityUtils.getUser());
                 }
 
-                if (!isSubdirectory(databasePath, materializedViewPath)) {
+                if (!FileUtils.isSubdirectory(databasePath.toString(),
+                    materializedViewPath.toString())) {
                   tablePaths.add(materializedViewPath);
                 }
               }
@@ -1545,7 +1546,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                       " which is not writable by " + SecurityUtils.getUser());
                 }
 
-                if (!isSubdirectory(databasePath, tablePath)) {
+                if (!FileUtils.isSubdirectory(databasePath.toString(), tablePath.toString())) {
                   tablePaths.add(tablePath);
                 }
               }
@@ -1553,7 +1554,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // For each partition in each table, drop the partitions and get a list of
               // partitions' locations which might need to be deleted
               partitionPaths = dropPartitionsAndGetLocations(ms, catName, name, table.getTableName(),
-                  tablePath, table.getPartitionKeys(), deleteData && !isExternal(table));
+                  tablePath, deleteData && !isExternal(table));
 
               // Drop the table but not its data
               drop_table(MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
@@ -1602,20 +1603,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                 transactionalListenerResponses, ms);
         }
       }
-    }
-
-    /**
-     * Returns a BEST GUESS as to whether or not other is a subdirectory of parent. It does not
-     * take into account any intricacies of the underlying file system, which is assumed to be
-     * HDFS. This should not return any false positives, but may return false negatives.
-     *
-     * @param parent
-     * @param other
-     * @return
-     */
-    private boolean isSubdirectory(Path parent, Path other) {
-      return other.toString().startsWith(parent.toString().endsWith(Path.SEPARATOR) ?
-          parent.toString() : parent.toString() + Path.SEPARATOR);
     }
 
     @Override
@@ -2482,7 +2469,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         // Drop the partitions and get a list of locations which need to be deleted
         partPaths = dropPartitionsAndGetLocations(ms, catName, dbname, name, tblPath,
-            tbl.getPartitionKeys(), deleteData && !isExternal);
+            deleteData && !isExternal);
 
         // Drop any constraints on the table
         ms.dropConstraint(catName, dbname, name, null, true);
@@ -2567,79 +2554,75 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     /**
-     * Retrieves the partitions specified by partitionKeys. If checkLocation, for locations of
-     * partitions which may not be subdirectories of tablePath checks to make the locations are
-     * writable.
+     * Deletes the partitions specified by catName, dbName, tableName. If checkLocation is true, for
+     * locations of partitions which may not be subdirectories of tablePath checks to make sure the
+     * locations are writable.
      *
      * Drops the metadata for each partition.
      *
      * Provides a list of locations of partitions which may not be subdirectories of tablePath.
      *
-     * @param ms
-     * @param dbName
-     * @param tableName
-     * @param tablePath
-     * @param partitionKeys
-     * @param checkLocation
-     * @return
+     * @param ms RawStore to use for metadata retrieval and delete
+     * @param catName The catName
+     * @param dbName The dbName
+     * @param tableName The tableName
+     * @param tablePath The tablePath of which subdirectories does not have to be checked
+     * @param checkLocation Should we check the locations at all
+     * @return The list of the Path objects to delete (only in case checkLocation is true)
      * @throws MetaException
      * @throws IOException
-     * @throws InvalidInputException
-     * @throws InvalidObjectException
      * @throws NoSuchObjectException
      */
     private List<Path> dropPartitionsAndGetLocations(RawStore ms, String catName, String dbName,
-      String tableName, Path tablePath, List<FieldSchema> partitionKeys, boolean checkLocation)
-      throws MetaException, IOException, NoSuchObjectException, InvalidObjectException,
-      InvalidInputException {
-      int partitionBatchSize = MetastoreConf.getIntVar(conf,
-          ConfVars.BATCH_RETRIEVE_MAX);
-      Path tableDnsPath = null;
+        String tableName, Path tablePath, boolean checkLocation)
+        throws MetaException, IOException, NoSuchObjectException {
+      int batchSize = MetastoreConf.getIntVar(conf, ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
+      String tableDnsPath = null;
       if (tablePath != null) {
-        tableDnsPath = wh.getDnsPath(tablePath);
+        tableDnsPath = wh.getDnsPath(tablePath).toString();
       }
+
       List<Path> partPaths = new ArrayList<>();
-      Table tbl = ms.getTable(catName, dbName, tableName);
-
-      // call dropPartition on each of the table's partitions to follow the
-      // procedure for cleanly dropping partitions.
       while (true) {
-        List<Partition> partsToDelete = ms.getPartitions(catName, dbName, tableName, partitionBatchSize);
-        if (partsToDelete == null || partsToDelete.isEmpty()) {
-          break;
+        Map<String, String> partitionLocations = ms.getPartitionLocations(catName, dbName, tableName,
+            tableDnsPath, batchSize);
+        if (partitionLocations == null || partitionLocations.isEmpty()) {
+          // No more partitions left to drop. Return with the collected path list to delete.
+          return partPaths;
         }
-        List<String> partNames = new ArrayList<>();
-        for (Partition part : partsToDelete) {
-          if (checkLocation && part.getSd() != null &&
-              part.getSd().getLocation() != null) {
 
-            Path partPath = wh.getDnsPath(new Path(part.getSd().getLocation()));
-            if (tableDnsPath == null ||
-                (partPath != null && !isSubdirectory(tableDnsPath, partPath))) {
-              if (!wh.isWritable(partPath.getParent())) {
-                throw new MetaException("Table metadata not deleted since the partition " +
-                    Warehouse.makePartName(partitionKeys, part.getValues()) +
-                    " has parent location " + partPath.getParent() + " which is not writable " +
-                    "by " + SecurityUtils.getUser());
+        if (checkLocation) {
+          for (String partName : partitionLocations.keySet()) {
+            String pathString = partitionLocations.get(partName);
+            if (pathString != null) {
+              Path partPath = wh.getDnsPath(new Path(pathString));
+              // Double check here. Maybe Warehouse.getDnsPath revealed relationship between the
+              // path objects
+              if (tableDnsPath == null ||
+                      !FileUtils.isSubdirectory(tableDnsPath, partPath.toString())) {
+                if (!wh.isWritable(partPath.getParent())) {
+                  throw new MetaException("Table metadata not deleted since the partition "
+                      + partName + " has parent location " + partPath.getParent()
+                      + " which is not writable by " + SecurityUtils.getUser());
+                }
+                partPaths.add(partPath);
               }
-              partPaths.add(partPath);
             }
           }
-          partNames.add(Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues()));
         }
+
         for (MetaStoreEventListener listener : listeners) {
           //No drop part listener events fired for public listeners historically, for drop table case.
           //Limiting to internal listeners for now, to avoid unexpected calls for public listeners.
           if (listener instanceof HMSMetricsListener) {
-            for (@SuppressWarnings("unused") Partition part : partsToDelete) {
+            for (@SuppressWarnings("unused") String partName : partitionLocations.keySet()) {
               listener.onDropPartition(null);
             }
           }
         }
-        ms.dropPartitions(catName, dbName, tableName, partNames);
-      }
 
-      return partPaths;
+        ms.dropPartitions(catName, dbName, tableName, new ArrayList<>(partitionLocations.keySet()));
+      }
     }
 
     @Override
