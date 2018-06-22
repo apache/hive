@@ -72,20 +72,15 @@ import java.util.Set;
 import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.escapeSQLString;
 
 /**
- * This utility is designed to help with upgrading to Hive 3.0.  On-disk layout for transactional
- * tables has changed in 3.0 and require pre-processing before upgrade to ensure they are readable
- * by Hive 3.0.  Some transactional tables (identified by this utility) require Major compaction
- * to be run on them before upgrading to 3.0.  Once this compaction starts, no more
- * update/delete/merge statements may be executed on these tables until upgrade is finished.
+ * This utility is designed to help with upgrading Hive 2.x to Hive 3.0.  On-disk layout for
+ * transactional tables has changed in 3.0 and require pre-processing before upgrade to ensure
+ * they are readable by Hive 3.0.  Some transactional tables (identified by this utility) require
+ * Major compaction to be run on them before upgrading to 3.0.  Once this compaction starts, no
+ * more update/delete/merge statements may be executed on these tables until upgrade is finished.
  *
  * Additionally, a new type of transactional tables was added in 3.0 - insert-only tables.  These
  * tables support ACID semantics and work with any Input/OutputFormat.  Any Managed tables may
  * be made insert-only transactional table. These tables don't support Update/Delete/Merge commands.
- *
- * This utility works in 2 modes: preUpgrade and postUpgrade.
- * In preUpgrade mode it has to have 2.x Hive jars on the classpath.  It will perform analysis on
- * existing transactional tables, determine which require compaction and generate a set of SQL
- * commands to launch all of these compactions.
  *
  * Note that depending on the number of tables/partitions and amount of data in them compactions
  * may take a significant amount of time and resources.  The script output by this utility includes
@@ -96,18 +91,20 @@ import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.escapeSQLStri
  * hive.compactor.job.queue may be used to set a Yarn queue ame where all compaction jobs will be
  * submitted.
  *
- * In postUpgrade mode, Hive 3.0 jars/hive-site.xml should be on the classpath. This utility will
- * find all the tables that may be made transactional (with ful CRUD support) and generate
- * Alter Table commands to do so.  It will also find all tables that may not support full CRUD
- * but can be made insert-only transactional tables and generate corresponding Alter Table commands.
- *
- * TODO: rename files
- *
- * "execute" option may be supplied in both modes to have the utility automatically execute the
+ * "execute" option may be supplied to have the utility automatically execute the
  * equivalent of the generated commands
  *
  * "location" option may be supplied followed by a path to set the location for the generated
  * scripts.
+ *
+ * Random:
+ * This utility connects to the Metastore via API.  It may be necessary to set
+ * -Djavax.security.auth.useSubjectCredsOnly=false in Kerberized environment if errors like
+ * "org.ietf.jgss.GSSException: No valid credentials provided (
+ *    Mechanism level: Failed to find any Kerberos tgt)"
+ * show up after kinit.
+ *
+ * See also org.apache.hadoop.hive.ql.util.UpgradeTool in Hive 3.x
  */
 public class PreUpgradeTool {
   private static final Logger LOG = LoggerFactory.getLogger(PreUpgradeTool.class);
@@ -143,11 +140,11 @@ public class PreUpgradeTool {
 
     try {
       String hiveVer = HiveVersionInfo.getShortVersion();
-      if(!hiveVer.startsWith("2.")) {
-        //throw new IllegalStateException("preUpgrade requires Hive 2.x.  Actual: " + hiveVer);
-      }
-      LOG.warn("Using Hive Version: " + HiveVersionInfo.getVersion() + " build: " +
+      LOG.info("Using Hive Version: " + HiveVersionInfo.getVersion() + " build: " +
           HiveVersionInfo.getBuildVersion());
+      if(!hiveVer.startsWith("2.")) {
+        throw new IllegalStateException("preUpgrade requires Hive 2.x.  Actual: " + hiveVer);
+      }
       tool.prepareAcidUpgradeInternal(outputDir, execute);
     }
     catch(Exception ex) {
@@ -198,14 +195,7 @@ public class PreUpgradeTool {
   }
 
   /**
-   * todo: this should accept a file of table names to exclude from non-acid to acid conversion
    * todo: change script comments to a preamble instead of a footer
-   *
-   * how does rename script work?  "hadoop fs -mv oldname newname"    * and what what about S3?
-   * How does this actually get executed?
-   * all other actions are done via embedded JDBC
-   *
-   *
    */
   private void prepareAcidUpgradeInternal(String scriptLocation, boolean execute)
       throws HiveException, TException, IOException {

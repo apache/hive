@@ -33,17 +33,22 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -61,42 +66,28 @@ import java.util.function.Function;
 
 
 /**
- * This utility is designed to help with upgrading to Hive 3.0.  On-disk layout for transactional
- * tables has changed in 3.0 and require pre-processing before upgrade to ensure they are readable
- * by Hive 3.0.  Some transactional tables (identified by this utility) require Major compaction
- * to be run on them before upgrading to 3.0.  Once this compaction starts, no more
- * update/delete/merge statements may be executed on these tables until upgrade is finished.
- *
- * Additionally, a new type of transactional tables was added in 3.0 - insert-only tables.  These
+ * A new type of transactional tables was added in 3.0 - insert-only tables.  These
  * tables support ACID semantics and work with any Input/OutputFormat.  Any Managed tables may
  * be made insert-only transactional table. These tables don't support Update/Delete/Merge commands.
  *
- * This utility works in 2 modes: preUpgrade and postUpgrade.
- * In preUpgrade mode it has to have 2.x Hive jars on the classpath.  It will perform analysis on
- * existing transactional tables, determine which require compaction and generate a set of SQL
- * commands to launch all of these compactions.
- *
- * Note that depending on the number of tables/partitions and amount of data in them compactions
- * may take a significant amount of time and resources.  The script output by this utility includes
- * some heuristics that may help estimate the time required.  If no script is produced, no action
- * is needed.  For compactions to run an instance of standalone Hive Metastore must be running.
- * Please make sure hive.compactor.worker.threads is sufficiently high - this specifies the limit
- * of concurrent compactions that may be run.  Each compaction job is a Map-Reduce job.
- * hive.compactor.job.queue may be used to set a Yarn queue ame where all compaction jobs will be
- * submitted.
- *
  * In postUpgrade mode, Hive 3.0 jars/hive-site.xml should be on the classpath. This utility will
  * find all the tables that may be made transactional (with ful CRUD support) and generate
- * Alter Table commands to do so.  It will also find all tables that may not support full CRUD
+ * Alter Table commands to do so.  It will also find all tables that may do not support full CRUD
  * but can be made insert-only transactional tables and generate corresponding Alter Table commands.
  *
- * TODO: rename files
+ * Note that to convert a table to full CRUD table requires that all files follow a naming
+ * convention, namely 0000N_0 or 0000N_0_copy_M, N >= 0, M > 0.  This utility can perform this
+ * rename with "execute" option.  It will also produce a script (with and w/o "execute" to
+ * perform the renames).
  *
  * "execute" option may be supplied in both modes to have the utility automatically execute the
  * equivalent of the generated commands
  *
  * "location" option may be supplied followed by a path to set the location for the generated
  * scripts.
+ *
+ * See also org.apache.hadoop.hive.upgrade.acid.PreUpgradeTool for steps which may be necessary to
+ * perform before upgrading to Hive 3.
  */
 public class UpgradeTool {
   private static final Logger LOG = LoggerFactory.getLogger(UpgradeTool.class);
@@ -132,6 +123,8 @@ public class UpgradeTool {
 
     try {
       String hiveVer = HiveVersionInfo.getShortVersion();
+      LOG.info("Using Hive Version: " + HiveVersionInfo.getVersion() + " build: " +
+          HiveVersionInfo.getBuildVersion());
       if(!hiveVer.startsWith("3.")) {
         throw new IllegalStateException("postUpgrade w/execute requires Hive 3.x.  Actual: " +
             hiveVer);
@@ -165,19 +158,34 @@ public class UpgradeTool {
       throw ex;
     }
   }
+  private static IMetaStoreClient getHMS(HiveConf conf) {
+    UserGroupInformation loggedInUser = null;
+    try {
+      loggedInUser = UserGroupInformation.getLoginUser();
+    } catch (IOException e) {
+      LOG.warn("Unable to get logged in user via UGI. err: {}", e.getMessage());
+    }
+    boolean secureMode = loggedInUser != null && loggedInUser.hasKerberosCredentials();
+    if (secureMode) {
+      MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL, true);
+    }
+    try {
+      LOG.info("Creating metastore client for {}", "PreUpgradeTool");
+      return RetryingMetaStoreClient.getProxy(conf, true);
+    } catch (MetaException e) {
+      throw new RuntimeException("Error connecting to Hive Metastore URI: "
+          + conf.getVar(HiveConf.ConfVars.METASTOREURIS) + ". " + e.getMessage(), e);
+    }
+  }
   /**
    * todo: this should accept a file of table names to exclude from non-acid to acid conversion
    * todo: change script comments to a preamble instead of a footer
-   *
-   * how does rename script work?  "hadoop fs -mv oldname newname"    * and what what about S3?
-   * How does this actually get executed?
-   * all other actions are done via embedded JDBC
    */
   private void performUpgradeInternal(String scriptLocation, boolean execute)
       throws HiveException, TException, IOException {
     HiveConf conf = hiveConf != null ? hiveConf : new HiveConf();
     boolean isAcidEnabled = isAcidEnabled(conf);
-    HiveMetaStoreClient hms = new HiveMetaStoreClient(conf);//MetaException
+    IMetaStoreClient hms = getHMS(conf);
     LOG.debug("Looking for databases");
     List<String> databases = hms.getAllDatabases();//TException
     LOG.debug("Found " + databases.size() + " databases to process");
@@ -187,6 +195,7 @@ public class UpgradeTool {
     if(execute) {
       db = Hive.get(conf);
     }
+    PrintWriter pw = makeRenameFileScript(scriptLocation);
 
     for(String dbName : databases) {
       List<String> tables = hms.getAllTables(dbName);
@@ -196,14 +205,12 @@ public class UpgradeTool {
         LOG.debug("processing table " + Warehouse.getQualifiedName(t));
         if(isAcidEnabled) {
           //if acid is off post upgrade, you can't make any tables acid - will throw
-          processConversion(t, convertToAcid, convertToMM, hms, db, execute);
+          processConversion(t, convertToAcid, convertToMM, hms, db, execute, pw);
         }
-        /*todo: handle renaming files somewhere*/
       }
     }
+    pw.close();
     makeConvertTableScript(convertToAcid, convertToMM, scriptLocation);
-    makeRenameFileScript(scriptLocation);//todo: is this pre or post upgrade?
-    //todo: can different tables be in different FileSystems?
   }
 
   /**
@@ -227,16 +234,17 @@ public class UpgradeTool {
    * How does this work with Storage Based Auth?
    * @param p partition root or table root if not partitioned
    */
-  private static void handleRenameFiles(Table t, Path p, boolean execute, HiveConf conf, boolean isBucketed)
-      throws IOException {
+  private static void handleRenameFiles(Table t, Path p, boolean execute, HiveConf conf,
+      boolean isBucketed, PrintWriter pw) throws IOException {
     AcidUtils.BUCKET_DIGIT_PATTERN.matcher("foo");
     if (isBucketed) {
       /* For bucketed tables we assume that Hive wrote them and 0000M_0 and 0000M_0_copy_8
       are the only possibilities.  Since we can't move files across buckets the only thing we
       can do is put 0000M_0_copy_N into delta_N_N as 0000M_0.
-       *
-       * If M > 4096 - should error out - better yet, make this table external one - can those be bucketed?  don't think so
-       */
+
+      If M > 4096 - should error out - better yet, make this table external one - can those
+      be bucketed?  don't think so
+      */
       //Known deltas
       Map<Integer, List<Path>> deltaToFileMap = new HashMap<>();
       FileSystem fs = FileSystem.get(conf);
@@ -275,6 +283,9 @@ public class UpgradeTool {
           }
         }
       }
+      if(!deltaToFileMap.isEmpty()) {
+        pw.println("#Begin file renames for bucketed table " + Warehouse.getQualifiedName(t));
+      }
       for (Map.Entry<Integer, List<Path>> ent : deltaToFileMap.entrySet()) {
         /* create delta and move each files to it.  HIVE-19750 ensures wer have reserved
          * enough write IDs to do this.*/
@@ -293,10 +304,13 @@ public class UpgradeTool {
               LOG.error(msg);
               throw new IllegalStateException(msg);
             }
-          } else {
-            //todo: generate a rename command; what if FS is not hdfs?
           }
+          //do this with and w/o execute to know what was done
+          makeRenameCommand(file, newFile, pw);
         }
+      }
+      if(!deltaToFileMap.isEmpty()) {
+        pw.println("#End file renames for bucketed table " + Warehouse.getQualifiedName(t));
       }
       return;
     }
@@ -333,7 +347,8 @@ public class UpgradeTool {
       }
       int wrtieId = fileId / numBuckets + 1;//start with delta_1 (not delta_0)
       Path deltaDir = new Path(p, AcidUtils.deltaSubdir(wrtieId, wrtieId));
-      Path newPath = new Path(deltaDir, String.format(AcidUtils.BUCKET_DIGITS, fileId % numBuckets)+ "_0");
+      Path newPath =
+          new Path(deltaDir, String.format(AcidUtils.BUCKET_DIGITS, fileId % numBuckets)+ "_0");
       /*we could track reason for rename in RenamePair so that the decision can be made later to
        rename or not.  For example, if we need to minimize renames (say we are on S3), then we'd
         only rename if it's absolutely required, i.e. if it's a 'bad file name'*/
@@ -345,26 +360,36 @@ public class UpgradeTool {
       //help 3.0 Compactor generated more balanced splits
       return;
     }
+    if(!renames.isEmpty()) {
+      pw.println("#Begin file renames for unbucketed table " + Warehouse.getQualifiedName(t));
+    }
     for(RenamePair renamePair : renames) {
       LOG.debug("need to rename: " + renamePair.getOldPath() + " to " + renamePair.getNewPath());
       if (fs.exists(renamePair.getNewPath())) {
-        String msg = Warehouse.getQualifiedName(t) + ": " + renamePair.getNewPath() + " already exists?!";
+        String msg = Warehouse.getQualifiedName(t) + ": " + renamePair.getNewPath() +
+            " already exists?!";
         LOG.error(msg);
         throw new IllegalStateException(msg);
       }
       if (execute) {
         if (!fs.rename(renamePair.getOldPath(), renamePair.getNewPath())) {
-          String msg = Warehouse.getQualifiedName(t) + ": " + renamePair.getNewPath() + ": failed to rename";
+          String msg = Warehouse.getQualifiedName(t) + ": " + renamePair.getNewPath() +
+              ": failed to rename";
           LOG.error(msg);
           throw new IllegalStateException(msg);
         }
-      } else {
-        //todo: generate a rename command; what if FS is not hdfs?
       }
-
+      //do this with and w/o execute to know what was done
+      makeRenameCommand(renamePair.getOldPath(), renamePair.getNewPath(), pw);
+    }
+    if(!renames.isEmpty()) {
+      pw.println("#End file renames for unbucketed table " + Warehouse.getQualifiedName(t));
     }
   }
-
+  private static void makeRenameCommand(Path file, Path newFile, PrintWriter pw) {
+    //https://hadoop.apache.org/docs/r3.0.0-alpha2/hadoop-project-dist/hadoop-common/FileSystemShell.html#mv
+    pw.println("hadoop fs -mv " + file + " " + newFile + ";");
+  }
   /**
    * Need better impl to be more memory efficient - there could be a lot of these objects.
    * For example, remember partition root Path elsewhere,
@@ -443,7 +468,7 @@ public class UpgradeTool {
    * Figures out which tables to make Acid, MM and (optionally, performs the operation)
    */
   private static void processConversion(Table t, List<String> convertToAcid,
-      List<String> convertToMM, HiveMetaStoreClient hms, Hive db, boolean execute)
+      List<String> convertToMM, IMetaStoreClient hms, Hive db, boolean execute, PrintWriter pw)
       throws TException, HiveException, IOException {
     if(isFullAcidTable(t)) {
       return;
@@ -465,7 +490,7 @@ public class UpgradeTool {
         //do this before alterTable in case files need to be renamed, else
         // TransactionalMetastoreListerner will squak
         handleRenameFiles(t, new Path(t.getSd().getLocation()), execute, db.getConf(),
-            t.getSd().getBucketColsSize() > 0);
+            t.getSd().getBucketColsSize() > 0, pw);
         if(execute) {
           alterTable(t, db, false);
         }
@@ -497,7 +522,7 @@ public class UpgradeTool {
             partNames.subList(i * batchSize, (i + 1) * batchSize));
         for(Partition part : partitionList) {
           handleRenameFiles(t, new Path(part.getSd().getLocation()), execute, db.getConf(),
-              t.getSd().getBucketColsSize() > 0);
+              t.getSd().getBucketColsSize() > 0, pw);
         }
       }
       if(numWholeBatches * batchSize < partNames.size()) {
@@ -506,7 +531,7 @@ public class UpgradeTool {
             partNames.subList(numWholeBatches * batchSize, partNames.size()));
         for(Partition part : partitionList) {
           handleRenameFiles(t, new Path(part.getSd().getLocation()), execute, db.getConf(),
-              t.getSd().getBucketColsSize() > 0);
+              t.getSd().getBucketColsSize() > 0, pw);
         }
       }
       //if here, handled all parts and they are no wAcid compatible - make it acid
@@ -552,8 +577,7 @@ public class UpgradeTool {
       String fileName = "convertToAcid_" + System.currentTimeMillis() + ".sql";
       LOG.debug("Writing CRUD conversion commands to " + fileName);
       try(PrintWriter pw = createScript(alterTableAcid, fileName, scriptLocation)) {
-        //todo: fix this - it has to run in 3.0 since tables may be unbucketed
-        pw.println("-- These commands may be executed by Hive 1.x later");
+        pw.println("-- These commands may be executed by Hive 3.x later");
       }
     }
 
@@ -577,16 +601,10 @@ public class UpgradeTool {
     }
     return pw;
   }
-  private static void makeRenameFileScript(String scriptLocation) throws IOException {
-    List<String> commands = Collections.emptyList();
-    if (commands.isEmpty()) {
-      LOG.info("No file renaming is necessary");
-    } else {
-      String fileName = "normalizeFileNames_" + System.currentTimeMillis() + ".sh";
-      LOG.debug("Writing file renaming commands to " + fileName);
-      PrintWriter pw = createScript(commands, fileName, scriptLocation);
-      pw.close();
-    }
+  private static PrintWriter makeRenameFileScript(String scriptLocation) throws IOException {
+    String fileName = "normalizeFileNames_" + System.currentTimeMillis() + ".sh";
+    LOG.info("Writing file renaming commands to " + fileName);
+    return createScript(Collections.emptyList(), fileName, scriptLocation);
   }
   private static boolean isFullAcidTable(Table t) {
     if (t.getParametersSize() <= 0) {
