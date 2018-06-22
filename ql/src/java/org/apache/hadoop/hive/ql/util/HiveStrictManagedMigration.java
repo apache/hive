@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -264,7 +263,7 @@ public class HiveStrictManagedMigration {
 
   HiveStrictManagedMigration(RunOptions runOptions) {
     this.runOptions = runOptions;
-    this.conf = MetastoreConf.newMetastoreConf();
+    this.conf = new HiveConf();
   }
 
   void run() throws Exception {
