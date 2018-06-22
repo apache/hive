@@ -541,8 +541,8 @@ public class StatsOptimizer extends Transform {
                   hive.getMSC().getTableColumnStatistics(
                     tbl.getDbName(), tbl.getTableName(),
                     Lists.newArrayList(colName),
-                      tableSnapshot.getTxnId(),
-                      tableSnapshot.getValidWriteIdList());
+                      tableSnapshot != null ? tableSnapshot.getTxnId() : -1,
+                      tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
               if (stats.isEmpty()) {
                 Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
                 return null;
@@ -685,8 +685,8 @@ public class StatsOptimizer extends Transform {
               ColumnStatisticsData statData =
                   hive.getMSC().getTableColumnStatistics(
                     tbl.getDbName(), tbl.getTableName(), Lists.newArrayList(colName),
-                      tableSnapshot.getTxnId(),
-                      tableSnapshot.getValidWriteIdList())
+                      tableSnapshot != null ? tableSnapshot.getTxnId() : -1,
+                      tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null)
                     .get(0).getStatsData();
               String name = colDesc.getTypeString().toUpperCase();
               switch (type) {
