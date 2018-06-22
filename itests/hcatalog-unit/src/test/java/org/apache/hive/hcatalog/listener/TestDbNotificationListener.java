@@ -1029,6 +1029,7 @@ public class TestDbNotificationListener {
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(EventType.CREATE_INDEX.toString(), event.getEventType());
     assertEquals(dbName, event.getDbName());
+    assertEquals(tableName.toLowerCase(), event.getTableName().toLowerCase());
 
     // Parse the message field
     CreateIndexMessage createIdxMessage = md.getCreateIndexMessage(event.getMessage());
@@ -1102,6 +1103,7 @@ public class TestDbNotificationListener {
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(EventType.DROP_INDEX.toString(), event.getEventType());
     assertEquals(dbName, event.getDbName());
+    assertEquals(tableName.toLowerCase(), event.getTableName().toLowerCase());
 
     // Parse the message field
     DropIndexMessage dropIdxMsg = md.getDropIndexMessage(event.getMessage());
@@ -1180,6 +1182,7 @@ public class TestDbNotificationListener {
     assertTrue(event.getEventTime() >= startTime);
     assertEquals(EventType.ALTER_INDEX.toString(), event.getEventType());
     assertEquals(dbName, event.getDbName());
+    assertEquals(tableName.toLowerCase(), event.getTableName().toLowerCase());
 
     // Parse the message field
     AlterIndexMessage alterIdxMsg = md.getAlterIndexMessage(event.getMessage());

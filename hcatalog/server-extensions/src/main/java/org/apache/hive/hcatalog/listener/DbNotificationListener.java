@@ -411,6 +411,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.CREATE_INDEX.toString(), msgFactory
             .buildCreateIndexMessage(index).toString());
     event.setDbName(index.getDbName());
+    event.setTableName(index.getOrigTableName());
     process(event, indexEvent);
   }
 
@@ -425,6 +426,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.DROP_INDEX.toString(), msgFactory
             .buildDropIndexMessage(index).toString());
     event.setDbName(index.getDbName());
+    event.setTableName(index.getOrigTableName());
     process(event, indexEvent);
   }
 
@@ -440,6 +442,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.ALTER_INDEX.toString(), msgFactory
             .buildAlterIndexMessage(before, after).toString());
     event.setDbName(before.getDbName());
+    event.setTableName(before.getOrigTableName());
     process(event, indexEvent);
   }
 
