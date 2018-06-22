@@ -510,4 +510,18 @@ public class FileUtils {
 
     return new Path(scheme, authority, pathUri.getPath());
   }
+
+
+  /**
+   * Returns a BEST GUESS as to whether or not other is a subdirectory of parent. It does not
+   * take into account any intricacies of the underlying file system, which is assumed to be
+   * HDFS. This should not return any false positives, but may return false negatives.
+   *
+   * @param parent
+   * @param other Directory to check if it is a subdirectory of parent
+   * @return True, if other is subdirectory of parent
+   */
+  public static boolean isSubdirectory(String parent, String other) {
+    return other.startsWith(parent.endsWith(Path.SEPARATOR) ? parent : parent + Path.SEPARATOR);
+  }
 }

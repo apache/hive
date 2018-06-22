@@ -78,6 +78,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.*;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
@@ -1751,16 +1752,9 @@ public class Hive {
       } else {
         newPartPath = oldPartPath;
       }
-      List<Path> newFiles = null;
+      List<Path> newFiles = Collections.synchronizedList(new ArrayList<Path>());
 
       perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
-      // If config is set, table is not temporary and partition being inserted exists, capture
-      // the list of files added. For not yet existing partitions (insert overwrite to new partition
-      // or dynamic partition inserts), the add partition event will capture the list of files added.
-      if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && (null != oldPart)) {
-        newFiles = Collections.synchronizedList(new ArrayList<Path>());
-      }
-
 
       // Note: the stats for ACID tables do not have any coordination with either Hive ACID logic
       //       like txn commits, time outs, etc.; nor the lower level sync in metastore pertaining
@@ -1795,6 +1789,8 @@ public class Hive {
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("moving " + loadPath + " to " + destPath);
         }
+
+        boolean isManaged = tbl.getTableType().equals(TableType.MANAGED_TABLE.toString());
         // TODO: why is "&& !isAcidIUDoperation" needed here?
         if (!isTxnTable && ((loadFileType == LoadFileType.REPLACE_ALL) || (oldPart == null && !isAcidIUDoperation))) {
           //for fullAcid tables we don't delete files for commands with OVERWRITE - we create a new
@@ -1803,12 +1799,12 @@ public class Hive {
           boolean needRecycle = !tbl.isTemporary()
                   && ReplChangeManager.isSourceOfReplication(Hive.get().getDatabase(tbl.getDbName()));
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(), isSrcLocal,
-              isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle);
+              isAutoPurge, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged);
         } else {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
               (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles,
-              tbl.getNumBuckets() > 0, isFullAcidTable);
+              tbl.getNumBuckets() > 0, isFullAcidTable, isManaged);
         }
       }
       perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
@@ -1817,13 +1813,13 @@ public class Hive {
       validatePartition(newTPart);
       setTableSnapshotForTransactionalPartition(conf, newTPart);
 
+      // If config is set, table is not temporary and partition being inserted exists, capture
+      // the list of files added. For not yet existing partitions (insert overwrite to new partition
+      // or dynamic partition inserts), the add partition event will capture the list of files added.
       // Generate an insert event only if inserting into an existing partition
       // When inserting into a new partition, the add partition event takes care of insert event
-      if ((null != oldPart) && (null != newFiles)) {
+      if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && (null != oldPart)) {
         fireInsertEvent(tbl, partSpec, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
-      } else {
-        LOG.debug("No new files were created, and is not a replace, or we're inserting into a "
-                + "partition that does not exist yet. Skipping generating INSERT event.");
       }
 
       // column stats will be inaccurate
@@ -1896,6 +1892,7 @@ public class Hive {
       } else {
         setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
       }
+
       perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_PARTITION);
       return newTPart;
     } catch (IOException e) {
@@ -2341,15 +2338,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin("MoveTask", PerfLogger.LOAD_TABLE);
 
-    List<Path> newFiles = null;
+    List<Path> newFiles = Collections.synchronizedList(new ArrayList<Path>());
     Table tbl = getTable(tableName);
     assert tbl.getPath() != null : "null==getPath() for " + tbl.getTableName();
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
     boolean isMmTable = AcidUtils.isInsertOnlyTable(tbl);
     boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
-    if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
-      newFiles = Collections.synchronizedList(new ArrayList<Path>());
-    }
 
     // Note: this assumes both paths are qualified; which they are, currently.
     if ((isMmTable || isFullAcidTable) && loadPath.equals(tbl.getPath())) {
@@ -2381,19 +2375,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
 
+      boolean isManaged = tbl.getTableType().equals(TableType.MANAGED_TABLE.toString());
+
       if (loadFileType == LoadFileType.REPLACE_ALL && !isTxnTable) {
         //for fullAcid we don't want to delete any files even for OVERWRITE see HIVE-14988/HIVE-17361
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
         boolean needRecycle = !tbl.isTemporary()
                 && ReplChangeManager.isSourceOfReplication(Hive.get().getDatabase(tbl.getDbName()));
         replaceFiles(tblPath, loadPath, destPath, tblPath, conf, isSrcLocal, isAutopurge,
-            newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle);
+            newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged);
       } else {
         try {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
               loadFileType == LoadFileType.OVERWRITE_EXISTING, newFiles,
-              tbl.getNumBuckets() > 0 ? true : false, isFullAcidTable);
+              tbl.getNumBuckets() > 0, isFullAcidTable, isManaged);
         } catch (IOException e) {
           throw new HiveException("addFiles: filesystem error in check phase", e);
         }
@@ -2431,7 +2427,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     alterTable(tbl, environmentContext);
 
-    fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
+    if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
+      fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
+    } else {
+      fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), null);
+    }
 
     perfLogger.PerfLogEnd("MoveTask", PerfLogger.LOAD_TABLE);
   }
@@ -3359,7 +3359,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static void copyFiles(final HiveConf conf, final FileSystem destFs,
             FileStatus[] srcs, final FileSystem srcFs, final Path destf,
             final boolean isSrcLocal, boolean isOverwrite,
-            final List<Path> newFiles, boolean acidRename) throws HiveException {
+            final List<Path> newFiles, boolean acidRename, boolean isManaged) throws HiveException {
 
     final HdfsUtils.HadoopFileStatus fullDestStatus;
     try {
@@ -3381,6 +3381,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     int taskId = 0;
     // Sort the files
     Arrays.sort(srcs);
+    String configuredOwner = HiveConf.getVar(conf, ConfVars.HIVE_LOAD_DATA_OWNER);
     for (FileStatus src : srcs) {
       FileStatus[] files;
       if (src.isDirectory()) {
@@ -3401,7 +3402,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Arrays.sort(files);
       for (final FileStatus srcFile : files) {
         final Path srcP = srcFile.getPath();
-        final boolean needToCopy = needToCopy(srcP, destf, srcFs, destFs);
+        final boolean needToCopy = needToCopy(srcP, destf, srcFs, destFs, configuredOwner, isManaged);
 
         final boolean isRenameAllowed = !needToCopy && !isSrcLocal;
 
@@ -3643,7 +3644,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   //from mv command if the destf is a directory, it replaces the destf instead of moving under
   //the destf. in this case, the replaced destf still preserves the original destf's permission
   public static boolean moveFile(final HiveConf conf, Path srcf, final Path destf, boolean replace,
-                                 boolean isSrcLocal) throws HiveException {
+                                 boolean isSrcLocal, boolean isManaged) throws HiveException {
     final FileSystem srcFs, destFs;
     try {
       destFs = destf.getFileSystem(conf);
@@ -3659,6 +3660,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     HdfsUtils.HadoopFileStatus destStatus = null;
+    String configuredOwner = HiveConf.getVar(conf, ConfVars.HIVE_LOAD_DATA_OWNER);
 
     // If source path is a subdirectory of the destination path (or the other way around):
     //   ex: INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300;
@@ -3692,7 +3694,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         destFs.copyFromLocalFile(srcf, destf);
         return true;
       } else {
-        if (needToCopy(srcf, destf, srcFs, destFs)) {
+        if (needToCopy(srcf, destf, srcFs, destFs, configuredOwner, isManaged)) {
           //copy if across file system or encryption zones.
           LOG.debug("Copying source " + srcf + " to " + destf + " because HDFS encryption zones are different.");
           return FileUtils.copy(srcf.getFileSystem(conf), srcf, destf.getFileSystem(conf), destf,
@@ -3841,10 +3843,45 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * TODO- consider if need to do this for different file authority.
    * @throws HiveException
    */
-  static protected boolean needToCopy(Path srcf, Path destf, FileSystem srcFs, FileSystem destFs) throws HiveException {
+  static private boolean needToCopy(Path srcf, Path destf, FileSystem srcFs,
+                                      FileSystem destFs, String configuredOwner, boolean isManaged) throws HiveException {
     //Check if different FileSystems
     if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
       return true;
+    }
+
+    if (isManaged && !configuredOwner.isEmpty() && srcFs instanceof DistributedFileSystem) {
+      // Need some extra checks
+      // Get the running owner
+      FileStatus srcs;
+
+      try {
+        srcs = srcFs.getFileStatus(srcf);
+        String runningUser = UserGroupInformation.getLoginUser().getUserName();
+        boolean isOwned = FileUtils.isOwnerOfFileHierarchy(srcFs, srcs, configuredOwner, false);
+        if (configuredOwner.equals(runningUser)) {
+          // Check if owner has write permission, else it will have to copy
+          if (!(isOwned &&
+              FileUtils.isActionPermittedForFileHierarchy(
+                  srcFs, srcs, configuredOwner, FsAction.WRITE, false))) {
+            return true;
+          }
+        } else {
+          // If the configured owner does not own the file, throw
+          if (!isOwned) {
+            throw new HiveException("Load Data failed for " + srcf + " as the file is not owned by "
+            + configuredOwner + " and load data is also not ran as " + configuredOwner);
+          } else {
+            return true;
+          }
+        }
+      } catch (IOException e) {
+        throw new HiveException("Could not fetch FileStatus for source file");
+      } catch (HiveException e) {
+        throw new HiveException(e);
+      } catch (Exception e) {
+        throw new HiveException(" Failed in looking up Permissions on file + " + srcf);
+      }
     }
 
     //Check if different encryption zones
@@ -3872,12 +3909,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isOverwrite if true, then overwrite if destination file exist, else add a duplicate copy
    * @param newFiles if this is non-null, a list of files that were created as a result of this
    *                 move will be returned.
+   * @param isManaged if table is managed.
    * @throws HiveException
    */
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf, FileSystem fs,
                                   boolean isSrcLocal, boolean isAcidIUD,
                                   boolean isOverwrite, List<Path> newFiles, boolean isBucketed,
-                                  boolean isFullAcidTable) throws HiveException {
+                                  boolean isFullAcidTable, boolean isManaged) throws HiveException {
     try {
       // create the destination if it does not exist
       if (!fs.exists(destf)) {
@@ -3913,7 +3951,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // i.e, like 000000_0, 000001_0_copy_1, 000002_0.gz etc.
       // The extension is only maintained for files which are compressed.
       copyFiles(conf, fs, srcs, srcFs, destf, isSrcLocal, isOverwrite,
-              newFiles, isFullAcidTable && !isBucketed);
+              newFiles, isFullAcidTable && !isBucketed, isManaged);
     }
   }
 
@@ -4069,10 +4107,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          If the source directory is LOCAL
    * @param newFiles
    *          Output the list of new files replaced in the destination path
+   * @param isManaged
+   *          If the table is managed.
    */
   protected void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
           boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
-          boolean isNeedRecycle) throws HiveException {
+          boolean isNeedRecycle, boolean isManaged) throws HiveException {
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
@@ -4109,7 +4149,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // 2. srcs must be a list of files -- ensured by LoadSemanticAnalyzer
       // in both cases, we move the file under destf
       if (srcs.length == 1 && srcs[0].isDirectory()) {
-        if (!moveFile(conf, srcs[0].getPath(), destf, true, isSrcLocal)) {
+        if (!moveFile(conf, srcs[0].getPath(), destf, true, isSrcLocal, isManaged)) {
           throw new IOException("Error moving: " + srcf + " into: " + destf);
         }
 
@@ -4121,7 +4161,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // its either a file or glob
         for (FileStatus src : srcs) {
           Path destFile = new Path(destf, src.getPath().getName());
-          if (!moveFile(conf, src.getPath(), destFile, true, isSrcLocal)) {
+          if (!moveFile(conf, src.getPath(), destFile, true, isSrcLocal, isManaged)) {
             throw new IOException("Error moving: " + srcf + " into: " + destf);
           }
 
@@ -4373,7 +4413,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return metaStoreClient;
   }
 
-  private String getUserName() {
+  private static String getUserName() {
     return SessionState.getUserFromAuthenticator();
   }
 
