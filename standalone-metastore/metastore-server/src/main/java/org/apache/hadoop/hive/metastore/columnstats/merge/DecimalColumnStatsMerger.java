@@ -24,13 +24,15 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 
+import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.decimalInspectorFromStats;
+
 public class DecimalColumnStatsMerger extends ColumnStatsMerger {
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     DecimalColumnStatsDataInspector aggregateData =
-        (DecimalColumnStatsDataInspector) aggregateColStats.getStatsData().getDecimalStats();
+        decimalInspectorFromStats(aggregateColStats);
     DecimalColumnStatsDataInspector newData =
-        (DecimalColumnStatsDataInspector) newColStats.getStatsData().getDecimalStats();
+        decimalInspectorFromStats(newColStats);
 
     Decimal lowValue = getMin(aggregateData.getLowValue(), newData.getLowValue());
     aggregateData.setLowValue(lowValue);
