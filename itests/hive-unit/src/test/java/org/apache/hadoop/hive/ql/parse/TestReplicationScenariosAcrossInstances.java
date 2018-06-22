@@ -68,6 +68,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.junit.Assert;
 
 public class TestReplicationScenariosAcrossInstances {
   @Rule
@@ -879,41 +882,6 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
-  public void testIfCkptSetForObjectsByBootstrapReplLoad() throws Throwable {
-    WarehouseInstance.Tuple tuple = primary
-            .run("use " + primaryDbName)
-            .run("create table t1 (id int)")
-            .run("insert into table t1 values (10)")
-            .run("create table t2 (place string) partitioned by (country string)")
-            .run("insert into table t2 partition(country='india') values ('bangalore')")
-            .run("insert into table t2 partition(country='uk') values ('london')")
-            .run("insert into table t2 partition(country='us') values ('sfo')")
-            .dump(primaryDbName, null);
-
-    replica.load(replicatedDbName, tuple.dumpLocation)
-            .run("use " + replicatedDbName)
-            .run("repl status " + replicatedDbName)
-            .verifyResult(tuple.lastReplicationId)
-            .run("show tables")
-            .verifyResults(new String[] { "t1", "t2" })
-            .run("select country from t2")
-            .verifyResults(Arrays.asList("india", "uk", "us"));
-
-    Database db = replica.getDatabase(replicatedDbName);
-    verifyIfCkptSet(db.getParameters(), tuple.dumpLocation);
-    Table t1 = replica.getTable(replicatedDbName, "t1");
-    verifyIfCkptSet(t1.getParameters(), tuple.dumpLocation);
-    Table t2 = replica.getTable(replicatedDbName, "t2");
-    verifyIfCkptSet(t2.getParameters(), tuple.dumpLocation);
-    Partition india = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("india"));
-    verifyIfCkptSet(india.getParameters(), tuple.dumpLocation);
-    Partition us = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("us"));
-    verifyIfCkptSet(us.getParameters(), tuple.dumpLocation);
-    Partition uk = replica.getPartition(replicatedDbName, "t2", Collections.singletonList("uk"));
-    verifyIfCkptSet(uk.getParameters(), tuple.dumpLocation);
-  }
-
-  @Test
   public void testIncrementalDumpMultiIteration() throws Throwable {
     WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
 
@@ -1182,7 +1150,9 @@ public class TestReplicationScenariosAcrossInstances {
     assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
 
     // Retry with different dump should fail.
-    replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
+    CommandProcessorResponse ret = replica.runCommand("REPL LOAD " + replicatedDbName +
+            " FROM '" + tuple2.dumpLocation + "'");
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
 
     // Verify if create table is not called on table t1 but called for t2 and t3.
     // Also, allow constraint creation only on t1 and t3. Foreign key creation on t2 fails.

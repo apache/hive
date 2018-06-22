@@ -32,6 +32,10 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.slf4j.Logger;
@@ -63,10 +67,11 @@ public class TestReplicationScenariosAcidTables {
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private static WarehouseInstance primary, replica, replicaNonAcid;
   private String primaryDbName, replicatedDbName;
+  private static HiveConf conf;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
-    Configuration conf = new Configuration();
+    conf = new HiveConf(TestReplicationScenariosAcidTables.class);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
@@ -431,5 +436,50 @@ public class TestReplicationScenariosAcidTables {
             .verifyResults(Arrays.asList("1"))
             .run("select name from t2 order by name")
             .verifyResults(Arrays.asList("bob", "carl"));
+  }
+
+  @Test
+  public void testDumpAcidTableWithPartitionDirMissing() throws Throwable {
+    String dbName = testName.getMethodName();
+    primary.run("CREATE DATABASE " + dbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')")
+    .run("CREATE TABLE " + dbName + ".normal (a int) PARTITIONED BY (part int)" +
+            " STORED AS ORC TBLPROPERTIES ('transactional'='true')")
+    .run("INSERT INTO " + dbName + ".normal partition (part= 124) values (1)");
+
+    Path path = new Path(primary.warehouseRoot, dbName.toLowerCase()+".db");
+    path = new Path(path, "normal");
+    path = new Path(path, "part=124");
+    FileSystem fs = path.getFileSystem(conf);
+    fs.delete(path);
+
+    CommandProcessorResponse ret = primary.runCommand("REPL DUMP " + dbName +
+            " with ('hive.repl.dump.include.acid.tables' = 'true')");
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+
+    primary.run("DROP TABLE " + dbName + ".normal");
+    primary.run("drop database " + dbName);
+  }
+
+  @Test
+  public void testDumpAcidTableWithTableDirMissing() throws Throwable {
+    String dbName = testName.getMethodName();
+    primary.run("CREATE DATABASE " + dbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')")
+            .run("CREATE TABLE " + dbName + ".normal (a int) " +
+                    " STORED AS ORC TBLPROPERTIES ('transactional'='true')")
+            .run("INSERT INTO " + dbName + ".normal values (1)");
+
+    Path path = new Path(primary.warehouseRoot, dbName.toLowerCase()+".db");
+    path = new Path(path, "normal");
+    FileSystem fs = path.getFileSystem(conf);
+    fs.delete(path);
+
+    CommandProcessorResponse ret = primary.runCommand("REPL DUMP " + dbName +
+            " with ('hive.repl.dump.include.acid.tables' = 'true')");
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+
+    primary.run("DROP TABLE " + dbName + ".normal");
+    primary.run("drop database " + dbName);
   }
 }
