@@ -243,10 +243,6 @@ public class VectorRandomRowSource {
     return rowStructObjectInspector;
   }
 
-  public List<ObjectInspector> objectInspectorList() {
-    return objectInspectorList;
-  }
-
   public StructObjectInspector partialRowStructObjectInspector(int partialFieldCount) {
     ArrayList<ObjectInspector> partialObjectInspectorList =
         new ArrayList<ObjectInspector>(partialFieldCount);
@@ -449,11 +445,11 @@ public class VectorRandomRowSource {
     return getDecoratedTypeName(r, typeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
   }
 
-  public static ObjectInspector getObjectInspector(TypeInfo typeInfo) {
+  private ObjectInspector getObjectInspector(TypeInfo typeInfo) {
     return getObjectInspector(typeInfo, DataTypePhysicalVariation.NONE);
   }
 
-  public static ObjectInspector getObjectInspector(TypeInfo typeInfo,
+  private ObjectInspector getObjectInspector(TypeInfo typeInfo,
       DataTypePhysicalVariation dataTypePhysicalVariation) {
 
     final ObjectInspector objectInspector;
