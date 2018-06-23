@@ -86,19 +86,40 @@ public class <ClassName> extends VectorExpression {
      */
     boolean hasDivBy0 = false;
     if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
-      <OperandType2> denom = vector2[0];
-      outputVector[0] = vector1[0] <OperatorSymbol> denom;
+      final <OperandType2> denom = vector2[0];
       hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+      if (denom != 0) {
+        outputVector[0] = vector1[0] <OperatorSymbol> denom;
+      }
+#ELSE
+      outputVector[0] = vector1[0] <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
     } else if (inputColVector1.isRepeating) {
       final <OperandType1> vector1Value = vector1[0];
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          <OperandType2> denom = vector2[i];
-          outputVector[i] = vector1Value <OperatorSymbol> denom;
+          final <OperandType2> denom = vector2[i];
           hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = vector1Value <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = vector1Value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
         }
       } else {
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+        for(int i = 0; i != n; i++) {
+          final <OperandType2> denom = vector2[i];
+          hasDivBy0 = hasDivBy0 || (denom == 0);
+          if (denom != 0) {
+            outputVector[i] = vector1Value <OperatorSymbol> denom;
+          }
+        }
+#ELSE
         for(int i = 0; i != n; i++) {
           outputVector[i] = vector1Value <OperatorSymbol> vector2[i];
         }
@@ -106,6 +127,7 @@ public class <ClassName> extends VectorExpression {
         for(int i = 0; i != n; i++) {
           hasDivBy0 = hasDivBy0 || (vector2[i] == 0);
         }
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
       }
     } else if (inputColVector2.isRepeating) {
       final <OperandType2> vector2Value = vector2[0];
@@ -128,11 +150,26 @@ public class <ClassName> extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          <OperandType2> denom = vector2[i];
-          outputVector[i] = vector1[i] <OperatorSymbol> denom;
+          final <OperandType2> denom = vector2[i];
           hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = vector1[i] <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = vector1[i] <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
         }
       } else {
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+        for(int i = 0; i != n; i++) {
+          final <OperandType2> denom = vector2[i];
+          hasDivBy0 = hasDivBy0 || (denom == 0);
+          if (denom != 0) {
+            outputVector[i] = vector1[i] <OperatorSymbol> denom;
+          }
+        }
+#ELSE
         for(int i = 0; i != n; i++) {
           outputVector[i] = vector1[i] <OperatorSymbol> vector2[i];
         }
@@ -140,13 +177,14 @@ public class <ClassName> extends VectorExpression {
         for(int i = 0; i != n; i++) {
           hasDivBy0 = hasDivBy0 || (vector2[i] == 0);
         }
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
       }
     }
 
 #IF CHECKED
-        //when operating in checked mode make sure we handle overflows similar to non-vectorized expression
-        OverflowUtils.accountForOverflow<CamelReturnType>(getOutputTypeInfo(), outputColVector,
-          batch.selectedInUse, sel, n);
+    //when operating in checked mode make sure we handle overflows similar to non-vectorized expression
+    OverflowUtils.accountForOverflow<CamelReturnType>(getOutputTypeInfo(), outputColVector,
+        batch.selectedInUse, sel, n);
 #ELSE
 #ENDIF CHECKED
     /* For the case when the output can have null values, follow
