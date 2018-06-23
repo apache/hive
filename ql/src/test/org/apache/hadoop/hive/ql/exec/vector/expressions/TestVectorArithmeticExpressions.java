@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarAddDec
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarSubtractDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarMultiplyDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalarChecked;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
