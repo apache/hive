@@ -1355,6 +1355,18 @@ public class TestStreaming {
     }
   }
 
+  /**
+   * Make sure that creating an already existing partion is handled gracefully
+   * @throws Exception
+   */
+  @Test
+  public void testCreatePartition() throws Exception {
+    final HiveEndPoint ep = new HiveEndPoint(metaStoreURI, dbName, tblName, partitionVals);
+    StreamingConnection conn = ep.newConnection(true);
+    conn.close();
+    conn = ep.newConnection(true);
+    conn.close();
+  }
   @Test
   public void testConcurrentTransactionBatchCommits() throws Exception {
     final HiveEndPoint ep = new HiveEndPoint(metaStoreURI, dbName, tblName, partitionVals);
