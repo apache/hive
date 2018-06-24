@@ -179,23 +179,57 @@
                       </excludes>
                     </filter>
                     <filter>
+                      <artifact>org.apache.hadoop:hadoop-common</artifact>
+                      <includes>
+                        <include>org/apache/hadoop/security/*</include>
+                        <include>org/apache/hadoop/conf/*</include>
+                        <include>org/apache/hadoop/fs/*</include>
+                        <include>org/apache/hadoop/metrics2/*</include>
+                        <include>org/apache/hadoop/metrics2/lib/*</include>
+                        <include>org/apache/hadoop/metrics2/impl/*</include>
+                        <include>org/apache/hadoop/util/ReflectionUtils.class</include>
+                        <include>org/apache/hadoop/util/ReflectionUtils$1.class</include>
+                        <include>org/apache/hadoop/io/Writable.class</include>
+                        <include>org/apache/hadoop/io/DataOutputBuffer.class</include>
+                        <include>org/apache/hadoop/io/DataInputBuffer.class</include>
+                        <include>org/apache/hadoop/HadoopIllegalArgumentException.class</include>
+                      </includes>
+                    </filter>
+                    <filter>
                       <artifact>*:*</artifact>
                       <excludes>
                         <exclude>META-INF/*.SF</exclude>
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
                         <exclude>core-default.xml</exclude>
-			<exclude>webapps/</exclude>
-			<exclude>hive-webapps/</exclude>
-			<exclude>hbase-webapps/</exclude>
-			<exclude>static/</exclude>
+						<exclude>webapps/</exclude>
+						<exclude>hive-webapps/</exclude>
+						<exclude>hbase-webapps/</exclude>
+						<exclude>static/</exclude>
                       </excludes>
                     </filter>
                   </filters>
                   <artifactSet>
                     <excludes>
                       <exclude>org.apache.commons:commons-compress</exclude>
-                      <exclude>org.apache.hadoop:*</exclude>
+                      <exclude>org.apache.hadoop:hadoop-hdfs</exclude>
+                      <exclude>org.apache.hadoop:hadoop-client</exclude>
+                      <exclude>org.apache.hadoop:hadoop-hdfs-client</exclude>
+                      <exclude>org.apache.hadoop:hadoop-mapreduce-client-jobclient</exclude>
+                      <exclude>org.apache.hadoop:hadoop-mapreduce-client-common</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-registry</exclude>
+                      <exclude>org.apache.hadoop:hadoop-mapreduce-client-core</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-client</exclude>
+                      <exclude>org.apache.hadoop:hadoop-distcp</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-server-resourcemanager</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-common</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-api</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-server-common</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-server-applicationhistoryservice</exclude>
+                      <exclude>org.apache.hadoop:hadoop-yarn-server-web-proxy</exclude>
+                      <exclude>org.apache.hadoop:hadoop-annotations</exclude>
+                      <exclude>org.apache.hadoop:hadoop-auth</exclude>
+                      <exclude>org.apache.hbase*:*</exclude>
                       <exclude>org.apache.hive:hive-vector-code-gen</exclude>
                       <exclude>org.apache.ant:*</exclude>
                       <exclude>junit:*</exclude>
