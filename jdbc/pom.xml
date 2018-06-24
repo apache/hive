@@ -196,16 +196,29 @@
                       </includes>
                     </filter>
                     <filter>
+                      <artifact>org.apache.hadoop:hadoop-yarn-registry</artifact>
+                      <includes>
+                        <include>org/apache/hadoop/registry/client/binding/*</include>
+                        <include>org/apache/hadoop/registry/client/types/*</include>
+                      </includes>
+                    </filter>
+                    <filter>
+                      <artifact>org.apache.hadoop:hadoop-yarn-api</artifact>
+                      <includes>
+			<include>org/apache/hadoop/yarn/api/records/ApplicationId.class</include>
+                      </includes>
+                    </filter>
+                    <filter>
                       <artifact>*:*</artifact>
                       <excludes>
                         <exclude>META-INF/*.SF</exclude>
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
                         <exclude>core-default.xml</exclude>
-						<exclude>webapps/</exclude>
-						<exclude>hive-webapps/</exclude>
-						<exclude>hbase-webapps/</exclude>
-						<exclude>static/</exclude>
+                        <exclude>webapps/</exclude>
+                        <exclude>hive-webapps/</exclude>
+                        <exclude>hbase-webapps/</exclude>
+                        <exclude>static/</exclude>
                       </excludes>
                     </filter>
                   </filters>
@@ -217,13 +230,11 @@
                       <exclude>org.apache.hadoop:hadoop-hdfs-client</exclude>
                       <exclude>org.apache.hadoop:hadoop-mapreduce-client-jobclient</exclude>
                       <exclude>org.apache.hadoop:hadoop-mapreduce-client-common</exclude>
-                      <exclude>org.apache.hadoop:hadoop-yarn-registry</exclude>
                       <exclude>org.apache.hadoop:hadoop-mapreduce-client-core</exclude>
                       <exclude>org.apache.hadoop:hadoop-yarn-client</exclude>
                       <exclude>org.apache.hadoop:hadoop-distcp</exclude>
                       <exclude>org.apache.hadoop:hadoop-yarn-server-resourcemanager</exclude>
                       <exclude>org.apache.hadoop:hadoop-yarn-common</exclude>
-                      <exclude>org.apache.hadoop:hadoop-yarn-api</exclude>
                       <exclude>org.apache.hadoop:hadoop-yarn-server-common</exclude>
                       <exclude>org.apache.hadoop:hadoop-yarn-server-applicationhistoryservice</exclude>
                       <exclude>org.apache.hadoop:hadoop-yarn-server-web-proxy</exclude>
