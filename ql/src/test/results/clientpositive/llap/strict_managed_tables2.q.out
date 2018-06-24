@@ -1,0 +1,248 @@
+PREHOOK: query: drop table if exists smt2_tab1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists smt2_tab1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists smt2_tab2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists smt2_tab2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists smt2_tab3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists smt2_tab3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists smt2_tab4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists smt2_tab4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists smt2_tab5
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists smt2_tab5
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists smt2_tab6
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists smt2_tab6
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table smt2_tab1 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt2_tab1
+POSTHOOK: query: create external table smt2_tab1 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt2_tab1
+PREHOOK: query: show create table smt2_tab1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@smt2_tab1
+POSTHOOK: query: show create table smt2_tab1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@smt2_tab1
+CREATE EXTERNAL TABLE `smt2_tab1`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: create table smt2_tab2 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt2_tab2
+POSTHOOK: query: create table smt2_tab2 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt2_tab2
+PREHOOK: query: show create table smt2_tab2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@smt2_tab2
+POSTHOOK: query: show create table smt2_tab2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@smt2_tab2
+CREATE TABLE `smt2_tab2`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='default', 
+#### A masked pattern was here ####
+PREHOOK: query: create table smt2_tab3 (c1 string, c2 string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt2_tab3
+POSTHOOK: query: create table smt2_tab3 (c1 string, c2 string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt2_tab3
+PREHOOK: query: show create table smt2_tab3
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@smt2_tab3
+POSTHOOK: query: show create table smt2_tab3
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@smt2_tab3
+CREATE TABLE `smt2_tab3`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='default', 
+#### A masked pattern was here ####
+PREHOOK: query: create external table smt2_tab4 (c1 string, c2 string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt2_tab4
+POSTHOOK: query: create external table smt2_tab4 (c1 string, c2 string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt2_tab4
+PREHOOK: query: show create table smt2_tab4
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@smt2_tab4
+POSTHOOK: query: show create table smt2_tab4
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@smt2_tab4
+CREATE EXTERNAL TABLE `smt2_tab4`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: create table smt2_tab5 (c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt2_tab5
+POSTHOOK: query: create table smt2_tab5 (c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt2_tab5
+PREHOOK: query: show create table smt2_tab5
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@smt2_tab5
+POSTHOOK: query: show create table smt2_tab5
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@smt2_tab5
+CREATE TABLE `smt2_tab5`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='insert_only', 
+#### A masked pattern was here ####
+PREHOOK: query: create table smt2_tab6 (c1 string, c2 string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@smt2_tab6
+POSTHOOK: query: create table smt2_tab6 (c1 string, c2 string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@smt2_tab6
+PREHOOK: query: show create table smt2_tab6
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@smt2_tab6
+POSTHOOK: query: show create table smt2_tab6
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@smt2_tab6
+CREATE TABLE `smt2_tab6`(
+  `c1` string, 
+  `c2` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='insert_only', 
+#### A masked pattern was here ####
+PREHOOK: query: drop table if exists smt2_tab1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@smt2_tab1
+PREHOOK: Output: default@smt2_tab1
+POSTHOOK: query: drop table if exists smt2_tab1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@smt2_tab1
+POSTHOOK: Output: default@smt2_tab1
+PREHOOK: query: drop table if exists smt2_tab2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@smt2_tab2
+PREHOOK: Output: default@smt2_tab2
+POSTHOOK: query: drop table if exists smt2_tab2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@smt2_tab2
+POSTHOOK: Output: default@smt2_tab2
+PREHOOK: query: drop table if exists smt2_tab3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@smt2_tab3
+PREHOOK: Output: default@smt2_tab3
+POSTHOOK: query: drop table if exists smt2_tab3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@smt2_tab3
+POSTHOOK: Output: default@smt2_tab3
+PREHOOK: query: drop table if exists smt2_tab4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@smt2_tab4
+PREHOOK: Output: default@smt2_tab4
+POSTHOOK: query: drop table if exists smt2_tab4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@smt2_tab4
+POSTHOOK: Output: default@smt2_tab4
+PREHOOK: query: drop table if exists smt2_tab5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@smt2_tab5
+PREHOOK: Output: default@smt2_tab5
+POSTHOOK: query: drop table if exists smt2_tab5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@smt2_tab5
+POSTHOOK: Output: default@smt2_tab5
+PREHOOK: query: drop table if exists smt2_tab6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@smt2_tab6
+PREHOOK: Output: default@smt2_tab6
+POSTHOOK: query: drop table if exists smt2_tab6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@smt2_tab6
+POSTHOOK: Output: default@smt2_tab6
