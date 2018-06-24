@@ -243,9 +243,9 @@ public class TestHiveAccumuloTypes {
 
     // tiemestamp
     baos.reset();
-    Timestamp timestampValue = Timestamp.valueOf(LocalDateTime.now().toString());
+    Timestamp timestampValue = Timestamp.ofEpochMilli(System.currentTimeMillis());
     ByteStream.Output output = new ByteStream.Output();
-    TimestampWritableV2 timestampWritable = new TimestampWritableV2(Timestamp.valueOf(LocalDateTime.now().toString()));
+    TimestampWritableV2 timestampWritable = new TimestampWritableV2(timestampValue);
     timestampWritable.write(new DataOutputStream(output));
     output.close();
     m.put(cfBytes, "timestamp".getBytes(), output.toByteArray());
