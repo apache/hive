@@ -516,6 +516,22 @@ public class HiveStrictManagedMigration {
     }
   }
 
+  void renameFilesToConformToAcid(Table tableObj) throws IOException, TException {
+    if (isPartitionedTable(tableObj)) {
+      String dbName = tableObj.getDbName();
+      String tableName = tableObj.getTableName();
+      List<String> partNames = hms.listPartitionNames(dbName, tableName, Short.MAX_VALUE);
+      for (String partName : partNames) {
+        Partition partObj = hms.getPartition(dbName, tableName, partName);
+        UpgradeTool.handleRenameFiles(tableObj, new Path(partObj.getSd().getLocation()),
+            !runOptions.dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
+      }
+    } else {
+      UpgradeTool.handleRenameFiles(tableObj, new Path(tableObj.getSd().getLocation()),
+          !runOptions.dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
+    }
+  }
+
   TableMigrationOption determineMigrationTypeAutomatically(Table tableObj, TableType tableType)
       throws IOException, MetaException, TException {
     TableMigrationOption result = TableMigrationOption.NONE;
@@ -584,7 +600,13 @@ public class HiveStrictManagedMigration {
     return false;
   }
 
-  boolean migrateToManagedTable(Table tableObj, TableType tableType) throws HiveException, MetaException {
+  boolean canTableBeFullAcid(Table tableObj) throws MetaException {
+    // Table must be acid-compatible table format, and no sorting columns.
+    return TransactionalValidationListener.conformToAcid(tableObj) &&
+        (tableObj.getSd().getSortColsSize() > 0);
+  }
+
+  boolean migrateToManagedTable(Table tableObj, TableType tableType) throws HiveException, IOException, MetaException, TException {
 
     String externalFalse = "";
     switch (tableType) {
@@ -612,7 +634,7 @@ public class HiveStrictManagedMigration {
         return false;
       }
       // If table is already transactional, no migration needed.
-      if (AcidUtils.isFullAcidTable(tableObj)) {
+      if (AcidUtils.isTransactionalTable(tableObj)) {
         String msg = createManagedConversionExcuse(tableObj,
             "Table is already a transactional table");
         LOG.debug(msg);
@@ -621,9 +643,12 @@ public class HiveStrictManagedMigration {
 
       // ORC files can be converted to full acid transactional tables
       // Other formats can be converted to insert-only transactional tables
-      if (TransactionalValidationListener.conformToAcid(tableObj)) {
+      if (canTableBeFullAcid(tableObj)) {
         // TODO: option to allow converting ORC file to insert-only transactional?
         LOG.info("Converting {} to full transactional table", getQualifiedName(tableObj));
+
+        renameFilesToConformToAcid(tableObj);
+
         if (!runOptions.dryRun) {
           String command = String.format(
               "ALTER TABLE %s SET TBLPROPERTIES ('transactional'='true')",

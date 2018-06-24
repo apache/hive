@@ -26,6 +26,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -234,7 +235,7 @@ public class UpgradeTool {
    * How does this work with Storage Based Auth?
    * @param p partition root or table root if not partitioned
    */
-  private static void handleRenameFiles(Table t, Path p, boolean execute, HiveConf conf,
+  static void handleRenameFiles(Table t, Path p, boolean execute, Configuration conf,
       boolean isBucketed, PrintWriter pw) throws IOException {
     AcidUtils.BUCKET_DIGIT_PATTERN.matcher("foo");
     if (isBucketed) {
@@ -284,7 +285,7 @@ public class UpgradeTool {
         }
       }
       if(!deltaToFileMap.isEmpty()) {
-        pw.println("#Begin file renames for bucketed table " + Warehouse.getQualifiedName(t));
+        println(pw, "#Begin file renames for bucketed table " + Warehouse.getQualifiedName(t));
       }
       for (Map.Entry<Integer, List<Path>> ent : deltaToFileMap.entrySet()) {
         /* create delta and move each files to it.  HIVE-19750 ensures wer have reserved
@@ -310,7 +311,7 @@ public class UpgradeTool {
         }
       }
       if(!deltaToFileMap.isEmpty()) {
-        pw.println("#End file renames for bucketed table " + Warehouse.getQualifiedName(t));
+        println(pw, "#End file renames for bucketed table " + Warehouse.getQualifiedName(t));
       }
       return;
     }
@@ -361,7 +362,7 @@ public class UpgradeTool {
       return;
     }
     if(!renames.isEmpty()) {
-      pw.println("#Begin file renames for unbucketed table " + Warehouse.getQualifiedName(t));
+      println(pw, "#Begin file renames for unbucketed table " + Warehouse.getQualifiedName(t));
     }
     for(RenamePair renamePair : renames) {
       LOG.debug("need to rename: " + renamePair.getOldPath() + " to " + renamePair.getNewPath());
@@ -383,13 +384,20 @@ public class UpgradeTool {
       makeRenameCommand(renamePair.getOldPath(), renamePair.getNewPath(), pw);
     }
     if(!renames.isEmpty()) {
-      pw.println("#End file renames for unbucketed table " + Warehouse.getQualifiedName(t));
+      println(pw, "#End file renames for unbucketed table " + Warehouse.getQualifiedName(t));
     }
   }
   private static void makeRenameCommand(Path file, Path newFile, PrintWriter pw) {
     //https://hadoop.apache.org/docs/r3.0.0-alpha2/hadoop-project-dist/hadoop-common/FileSystemShell.html#mv
-    pw.println("hadoop fs -mv " + file + " " + newFile + ";");
+    println(pw, "hadoop fs -mv " + file + " " + newFile + ";");
   }
+
+  private static void println(PrintWriter pw, String msg) {
+    if (pw != null) {
+      pw.println(msg);
+    }
+  }
+
   /**
    * Need better impl to be more memory efficient - there could be a lot of these objects.
    * For example, remember partition root Path elsewhere,
@@ -412,7 +420,7 @@ public class UpgradeTool {
   /**
    * @param location - path to a partition (or table if not partitioned) dir
    */
-  private static long getDataSize(Path location, HiveConf conf) throws IOException {
+  private static long getDataSize(Path location, Configuration conf) throws IOException {
     FileSystem fs = location.getFileSystem(conf);
     ContentSummary cs = fs.getContentSummary(location);
     return cs.getLength();
