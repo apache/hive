@@ -204,6 +204,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_demographics
+                  filterExpr: (((cd_education_status = 'Unknown') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'W')) and (((cd_marital_status = 'M') and (cd_education_status = 'Unknown')) or ((cd_marital_status = 'W') and (cd_education_status = 'Advanced Degree'))) and cd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((cd_education_status) IN ('Unknown', 'Advanced Degree') and (cd_marital_status) IN ('M', 'W') and (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown'), const struct('W','Advanced Degree')) and cd_demo_sk is not null) (type: boolean)
@@ -223,6 +224,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: ((ca_gmt_offset = -7) and ca_address_sk is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ca_gmt_offset = -7) and ca_address_sk is not null) (type: boolean)

@@ -218,6 +218,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_partkey is not null (type: boolean)
@@ -234,6 +235,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p2
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_partkey is not null (type: boolean)
@@ -1114,6 +1116,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_partkey is not null (type: boolean)
@@ -1259,6 +1262,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_partkey is not null (type: boolean)
@@ -2427,6 +2431,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_partkey is not null (type: boolean)

@@ -186,6 +186,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hive_14349
+                  filterExpr: (a like 'XYZ%a%') (type: boolean)
                   Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -277,6 +278,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hive_14349
+                  filterExpr: (a like 'XYZ%a_') (type: boolean)
                   Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

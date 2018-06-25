@@ -649,6 +649,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
@@ -808,6 +809,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
@@ -967,6 +969,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
@@ -1126,6 +1129,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
@@ -2493,6 +2497,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
@@ -2608,6 +2613,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
@@ -2723,6 +2729,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
@@ -2838,6 +2845,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)

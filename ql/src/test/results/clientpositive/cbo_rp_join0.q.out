@@ -28,6 +28,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -44,6 +45,7 @@ STAGE PLANS:
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t2:cbo_t2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -687,6 +689,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -703,6 +706,7 @@ STAGE PLANS:
                   value expressions: c_int (type: int)
           TableScan
             alias: cbo_t2:cbo_t2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 1691 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: key is not null (type: boolean)

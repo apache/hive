@@ -420,6 +420,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1_n0
+            filterExpr: (s1.f1 = false) (type: boolean)
             Pruned Column Paths: s1.f2, s1.f1
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -470,6 +471,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1_n0
+            filterExpr: (s1.f3.f4 = 4) (type: boolean)
             Pruned Column Paths: s1.f3.f5, s1.f3.f4
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -520,6 +522,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1_n0
+            filterExpr: ((s1.f2 = 'foo') and (size(s2.f8.f10) > 1) and s2.f8.f11['key1']) (type: boolean)
             Pruned Column Paths: s1.f2, s2.f8
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -996,6 +999,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: s1.f3.f4 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s1.f3.f4 is not null (type: boolean)
@@ -1012,6 +1016,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
+            filterExpr: ((s2.f8.f9 = false) and s1.f6 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 1126 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((not s2.f8.f9) and s1.f6 is not null) (type: boolean)
@@ -1094,6 +1099,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: s1.f3.f4 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s1.f3.f4 is not null (type: boolean)
@@ -1110,6 +1116,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
+            filterExpr: (s2.f8.f9 and s1.f6 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s1.f6 is not null and s2.f8.f9) (type: boolean)
@@ -1188,6 +1195,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: s1.f3.f4 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s1.f3.f4 is not null (type: boolean)
@@ -1204,6 +1212,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
+            filterExpr: (s2.f8.f9 and s1.f6 is not null and s2.f8.f9 is not null) (type: boolean)
             Pruned Column Paths: s1.f6, s2.f8.f9
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -1371,6 +1380,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: s1.f3.f4 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s1.f3.f4 is not null (type: boolean)
@@ -1387,6 +1397,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
+            filterExpr: s1.f6 is not null (type: boolean)
             Pruned Column Paths: s1.f6
             Statistics: Num rows: 1 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Filter Operator

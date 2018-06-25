@@ -152,6 +152,7 @@ STAGE PLANS:
         $hdt$_1:dim1 
           TableScan
             alias: dim1
+            filterExpr: f1 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: f1 is not null (type: boolean)
@@ -170,6 +171,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact
+            filterExpr: d1 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: d1 is not null (type: boolean)
@@ -258,6 +260,7 @@ STAGE PLANS:
         $hdt$_1:dim1 
           TableScan
             alias: dim1
+            filterExpr: f1 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: f1 is not null (type: boolean)
@@ -273,6 +276,7 @@ STAGE PLANS:
         $hdt$_2:dim2 
           TableScan
             alias: dim2
+            filterExpr: f3 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: f3 is not null (type: boolean)
@@ -291,6 +295,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact
+            filterExpr: (d1 is not null and d2 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (d1 is not null and d2 is not null) (type: boolean)
@@ -389,6 +394,7 @@ STAGE PLANS:
         $hdt$_0:dim1 
           TableScan
             alias: dim1
+            filterExpr: (f1 is not null and f2 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (f1 is not null and f2 is not null) (type: boolean)
@@ -404,6 +410,7 @@ STAGE PLANS:
         $hdt$_2:fact 
           TableScan
             alias: fact
+            filterExpr: d1 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: d1 is not null (type: boolean)
@@ -422,6 +429,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: dim2
+            filterExpr: f3 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: f3 is not null (type: boolean)

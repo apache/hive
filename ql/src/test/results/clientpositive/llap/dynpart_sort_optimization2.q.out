@@ -94,6 +94,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_n0
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -355,6 +356,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_n0
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -597,6 +599,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_n0
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -865,6 +868,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_n0
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -1182,6 +1186,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_orc
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)
@@ -1450,6 +1455,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss_orc
+                  filterExpr: ((ss_sold_date_sk >= 2452617) and (ss_sold_date_sk <= 2452638)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((ss_sold_date_sk <= 2452638) and (ss_sold_date_sk >= 2452617)) (type: boolean)

@@ -52,6 +52,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
+                  filterExpr: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
                   Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -151,6 +152,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
+                  filterExpr: ((cdate <> DATE'1969-10-26') and (cdate <> DATE'1969-07-14') and (cdate <> DATE'1970-01-21')) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -265,6 +267,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
+                  filterExpr: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -364,6 +367,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
+                  filterExpr: ((cdecimal1 <> 2365.8945945946) and (cdecimal1 <> 881.0135135135) and (cdecimal1 <> -3367.6517567568)) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -478,6 +482,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
+                  filterExpr: cdate BETWEEN DATE'1969-12-30' AND DATE'1970-01-02' (type: boolean)
                   Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -577,6 +582,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
+                  filterExpr: cdate NOT BETWEEN DATE'1968-05-01' AND DATE'1971-09-01' (type: boolean)
                   Statistics: Num rows: 12289 Data size: 339304 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -676,6 +682,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
+                  filterExpr: cdecimal1 BETWEEN -20 AND 45.9918918919 (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -775,6 +782,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
+                  filterExpr: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
                   Statistics: Num rows: 12289 Data size: 1027600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

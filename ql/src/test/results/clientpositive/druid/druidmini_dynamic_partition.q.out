@@ -124,6 +124,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ctimestamp1 is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ctimestamp1 is not null (type: boolean)
@@ -362,6 +363,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ctimestamp2 is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ctimestamp2 is not null (type: boolean)
@@ -502,6 +504,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ctimestamp1 is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ctimestamp1 is not null (type: boolean)

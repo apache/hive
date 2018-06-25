@@ -27,6 +27,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
+                  filterExpr: (UDFToDouble(key) = 97.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)
@@ -45,6 +46,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2
+                  filterExpr: (UDFToDouble(key) = 97.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)
@@ -164,8 +166,14 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: src1
                   Statistics: Num rows: 148 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: src2
+                  filterExpr: (UDFToDouble(key) > 150.0D) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (UDFToDouble(key) > 150.0D) (type: boolean)
                     Statistics: Num rows: 49 Data size: 510 Basic stats: COMPLETE Column stats: NONE
@@ -182,8 +190,14 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: src2
                   Statistics: Num rows: 148 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: src1
+                  filterExpr: (UDFToDouble(key) > 150.0D) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (UDFToDouble(key) > 150.0D) (type: boolean)
                     Statistics: Num rows: 49 Data size: 510 Basic stats: COMPLETE Column stats: NONE
@@ -200,8 +214,14 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: src2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: src1
+                  filterExpr: (UDFToDouble(key) > 150.0D) (type: boolean)
+                  Statistics: Num rows: 148 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (UDFToDouble(key) > 150.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -219,8 +239,14 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: src1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: src2
+                  filterExpr: (UDFToDouble(key) > 150.0D) (type: boolean)
+                  Statistics: Num rows: 148 Data size: 1542 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (UDFToDouble(key) > 150.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE

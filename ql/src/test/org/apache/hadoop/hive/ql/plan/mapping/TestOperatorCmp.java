@@ -135,7 +135,8 @@ public class TestOperatorCmp {
     PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
     PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 2 group by u");
 
-    assertHelper(AssertHelperOp.SAME, pm0, pm1, TableScanOperator.class);
+    //Since we have hive.optimize.index.filter=true we will have different table scan operator
+    assertHelper(AssertHelperOp.NOT_SAME, pm0, pm1, TableScanOperator.class);
     assertHelper(AssertHelperOp.NOT_SAME, pm0, pm1, FilterOperator.class);
 
   }

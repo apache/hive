@@ -109,6 +109,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: ((key > '9') and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '9') and value is not null) (type: boolean)
@@ -133,6 +134,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: (key > '2') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key > '2') (type: boolean)
@@ -151,6 +153,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: ((key > '2') and key is null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '2') and key is null) (type: boolean)
@@ -532,6 +535,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: ((key > '9') and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '9') and value is not null) (type: boolean)
@@ -557,6 +561,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: (key > '2') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key > '2') (type: boolean)
@@ -576,6 +581,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: ((key > '2') and key is null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key > '2') and key is null) (type: boolean)

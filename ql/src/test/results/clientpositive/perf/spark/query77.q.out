@@ -251,6 +251,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: s_store_sk is not null (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_store_sk is not null (type: boolean)
@@ -275,6 +276,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: s_store_sk is not null (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_store_sk is not null (type: boolean)
@@ -299,6 +301,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00.0' AND TIMESTAMP'1998-09-03 00:00:00.0' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-09-03 00:00:00' and d_date_sk is not null) (type: boolean)
@@ -325,6 +328,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_returns
+                  filterExpr: cr_returned_date_sk is not null (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cr_returned_date_sk is not null (type: boolean)
@@ -379,6 +383,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00.0' AND TIMESTAMP'1998-09-03 00:00:00.0' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-09-03 00:00:00' and d_date_sk is not null) (type: boolean)
@@ -403,6 +408,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_page
+                  filterExpr: wp_web_page_sk is not null (type: boolean)
                   Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: wp_web_page_sk is not null (type: boolean)
@@ -427,6 +433,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_page
+                  filterExpr: wp_web_page_sk is not null (type: boolean)
                   Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: wp_web_page_sk is not null (type: boolean)
@@ -465,6 +472,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -484,6 +492,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00.0' AND TIMESTAMP'1998-09-03 00:00:00.0' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-09-03 00:00:00' and d_date_sk is not null) (type: boolean)
@@ -502,6 +511,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: cs_sold_date_sk is not null (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cs_sold_date_sk is not null (type: boolean)
@@ -541,6 +551,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: web_sales
+                  filterExpr: (ws_sold_date_sk is not null and ws_web_page_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: web_returns
@@ -566,6 +577,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: web_returns
+                  filterExpr: (wr_returned_date_sk is not null and wr_web_page_sk is not null) (type: boolean)
                   Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: web_sales
@@ -590,6 +602,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00.0' AND TIMESTAMP'1998-09-03 00:00:00.0' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-09-03 00:00:00' and d_date_sk is not null) (type: boolean)
@@ -608,6 +621,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00.0' AND TIMESTAMP'1998-09-03 00:00:00.0' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-09-03 00:00:00' and d_date_sk is not null) (type: boolean)
@@ -626,6 +640,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_returns
+                  filterExpr: (sr_returned_date_sk is not null and sr_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (sr_returned_date_sk is not null and sr_store_sk is not null) (type: boolean)

@@ -125,6 +125,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p
+            filterExpr: (c = 1) (type: boolean)
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: int)
@@ -270,6 +271,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p
+            filterExpr: (c = 4) (type: boolean)
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: int)
@@ -370,6 +372,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p
+            filterExpr: (c = 100) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: a (type: int)
@@ -440,6 +443,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: p
+            filterExpr: (c = 100) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: a (type: int)

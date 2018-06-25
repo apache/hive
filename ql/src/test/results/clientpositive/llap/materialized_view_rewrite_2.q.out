@@ -178,6 +178,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_n0
+          filterExpr: (deptno > 20) (type: boolean)
           Filter Operator
             predicate: (deptno > 20) (type: boolean)
             Select Operator
@@ -255,6 +256,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_n0
+          filterExpr: (deptno > 20) (type: boolean)
           Filter Operator
             predicate: (deptno > 20) (type: boolean)
             Select Operator
@@ -332,6 +334,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_n0
+          filterExpr: (deptno > 20) (type: boolean)
           Filter Operator
             predicate: (deptno > 20) (type: boolean)
             Select Operator
@@ -409,6 +412,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_n0
+          filterExpr: (empid > 15) (type: boolean)
           Filter Operator
             predicate: (empid > 15) (type: boolean)
             Select Operator
@@ -498,6 +502,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n0
+                  filterExpr: (empid > 15) (type: boolean)
                   Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (empid > 15) (type: boolean)
@@ -665,6 +670,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n0
+                  filterExpr: ((name = name2) and (deptno = deptno2)) (type: boolean)
                   Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno = deptno2) and (name = name2)) (type: boolean)

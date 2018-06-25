@@ -147,6 +147,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 21 AND 40 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 21 AND 40 (type: boolean)
@@ -170,6 +171,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 21 AND 40 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 21 AND 40 (type: boolean)
@@ -193,6 +195,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 41 AND 60 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 41 AND 60 (type: boolean)
@@ -214,6 +217,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 41 AND 60 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 41 AND 60 (type: boolean)
@@ -237,6 +241,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 41 AND 60 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 41 AND 60 (type: boolean)
@@ -260,6 +265,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 1 AND 20 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 1 AND 20 (type: boolean)
@@ -281,6 +287,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 61 AND 80 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 61 AND 80 (type: boolean)
@@ -302,6 +309,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 61 AND 80 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 61 AND 80 (type: boolean)
@@ -325,6 +333,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 61 AND 80 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 61 AND 80 (type: boolean)
@@ -348,6 +357,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 81 AND 100 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 81 AND 100 (type: boolean)
@@ -369,6 +379,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 81 AND 100 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 81 AND 100 (type: boolean)
@@ -392,6 +403,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 81 AND 100 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 81 AND 100 (type: boolean)
@@ -415,6 +427,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 1 AND 20 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 1 AND 20 (type: boolean)
@@ -438,6 +451,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 1 AND 20 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 1 AND 20 (type: boolean)
@@ -461,6 +475,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ss_quantity BETWEEN 21 AND 40 (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ss_quantity BETWEEN 21 AND 40 (type: boolean)
@@ -737,6 +752,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: reason
+                  filterExpr: (r_reason_sk = 1) (type: boolean)
                   Statistics: Num rows: 72 Data size: 14400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (r_reason_sk = 1) (type: boolean)

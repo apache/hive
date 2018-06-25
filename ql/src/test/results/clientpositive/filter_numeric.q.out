@@ -42,6 +42,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
+          filterExpr: (hr < 11) (type: boolean)
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (hr < 11) (type: boolean)
@@ -81,6 +82,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
+          filterExpr: ((hr <= 12) and (hr > 11)) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
@@ -621,6 +623,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
+          filterExpr: hr BETWEEN 11 AND 12 (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
@@ -1661,6 +1664,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
+          filterExpr: (not hr BETWEEN 12 AND 14) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
@@ -2201,6 +2205,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
+          filterExpr: (hr < 13) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)

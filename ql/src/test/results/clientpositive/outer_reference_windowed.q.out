@@ -426,6 +426,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e011_01
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
@@ -442,6 +443,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: decimal(15,2))
           TableScan
             alias: e011_03
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
@@ -609,6 +611,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e011_01
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
@@ -624,6 +627,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: e011_03
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
@@ -791,6 +795,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: e011_01
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
@@ -807,6 +812,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: decimal(15,2))
           TableScan
             alias: e011_03
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 4 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)

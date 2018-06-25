@@ -113,6 +113,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dynamic_part_table
+          filterExpr: ((partcol1 = '1') and (partcol2 = '1')) (type: boolean)
           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
@@ -192,6 +193,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dynamic_part_table
+          filterExpr: ((partcol1 = '1') and (partcol2 = '1')) (type: boolean)
           Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
@@ -320,6 +322,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dynamic_part_table
+          filterExpr: ((partcol1 = '1') and ((partcol2 = '1') or (partcol2 = '__HIVE_DEFAULT_PARTITION__'))) (type: boolean)
           Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator

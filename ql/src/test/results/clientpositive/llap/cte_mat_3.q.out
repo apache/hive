@@ -25,23 +25,23 @@ Stage-3
     Stage-4
       Reducer 3 llap
       File Output Operator [FS_18]
-        Merge Join Operator [MERGEJOIN_23] (rows=1 width=202)
-          Conds:RS_26._col0=RS_29._col0(Inner),Output:["_col0"]
+        Merge Join Operator [MERGEJOIN_33] (rows=1 width=202)
+          Conds:RS_36._col0=RS_39._col0(Inner),Output:["_col0"]
         <-Map 2 [SIMPLE_EDGE] vectorized, llap
-          SHUFFLE [RS_26]
+          SHUFFLE [RS_36]
             PartitionCols:_col0
-            Select Operator [SEL_25] (rows=1 width=184)
+            Select Operator [SEL_35] (rows=1 width=184)
               Output:["_col0"]
-              Filter Operator [FIL_24] (rows=1 width=184)
+              Filter Operator [FIL_34] (rows=1 width=184)
                 predicate:key is not null
                 TableScan [TS_8] (rows=1 width=184)
                   default@q1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
         <-Map 4 [SIMPLE_EDGE] vectorized, llap
-          SHUFFLE [RS_29]
+          SHUFFLE [RS_39]
             PartitionCols:_col0
-            Select Operator [SEL_28] (rows=1 width=184)
+            Select Operator [SEL_38] (rows=1 width=184)
               Output:["_col0"]
-              Filter Operator [FIL_27] (rows=1 width=184)
+              Filter Operator [FIL_37] (rows=1 width=184)
                 predicate:key is not null
                 TableScan [TS_11] (rows=1 width=184)
                   default@q1,b,Tbl:COMPLETE,Col:NONE,Output:["key"]

@@ -788,6 +788,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_date_1
+                  filterExpr: ((dt1 <> dt2) and (dt1 < dt2) and (dt1 <= dt2) and (dt2 > dt1) and (dt2 >= dt1)) (type: boolean)
                   Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -959,6 +960,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_date_1
+                  filterExpr: ((dt1 = DATE'2001-01-01') and (dt1 <> DATE'1970-01-01')) (type: boolean)
                   Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1075,6 +1077,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_date_1
+                  filterExpr: (dt1) IN (DATE'1970-01-01', DATE'2001-01-01') (type: boolean)
                   Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

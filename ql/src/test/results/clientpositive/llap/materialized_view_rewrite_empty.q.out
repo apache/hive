@@ -52,6 +52,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.emps_mv_rewrite_empty_mv1
+          filterExpr: (empid < 120) (type: boolean)
           Filter Operator
             predicate: (empid < 120) (type: boolean)
             Select Operator

@@ -1130,6 +1130,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1_n114
+          filterExpr: (a > 2Y) (type: boolean)
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (a > 2Y) (type: boolean)
@@ -1158,6 +1159,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1_n114
+          filterExpr: (b < 2S) (type: boolean)
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (b < 2S) (type: boolean)
@@ -1186,6 +1188,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1_n114
+          filterExpr: (UDFToInteger(a) < 200) (type: boolean)
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (UDFToInteger(a) < 200) (type: boolean)
@@ -1214,6 +1217,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t1_n114
+          filterExpr: (UDFToInteger(b) > 40000) (type: boolean)
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (UDFToInteger(b) > 40000) (type: boolean)

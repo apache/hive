@@ -36,6 +36,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: (key > 100) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

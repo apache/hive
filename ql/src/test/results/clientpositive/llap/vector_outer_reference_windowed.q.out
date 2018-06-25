@@ -736,6 +736,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_01_n0
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -788,6 +789,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_03_n0
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1052,6 +1054,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_01_n0
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1102,6 +1105,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_03_n0
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1367,6 +1371,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_01_n0
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1419,6 +1424,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_03_n0
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2065,6 +2071,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_01_small
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2117,6 +2124,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_03_small
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2381,6 +2389,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_01_small
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2431,6 +2440,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_03_small
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2696,6 +2706,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_01_small
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2748,6 +2759,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: e011_03_small
+                  filterExpr: c1 is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

@@ -378,6 +378,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: s_store_sk is not null (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -393,6 +394,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
+            filterExpr: ss_store_sk is not null (type: boolean)
             Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ss_store_sk is not null (type: boolean)
@@ -449,6 +451,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: s_store_sk is not null (type: boolean)
             Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -464,6 +467,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
+            filterExpr: ss_store_sk is not null (type: boolean)
             Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: UDFToLong(ss_store_sk) is not null (type: boolean)
@@ -520,6 +524,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: (s_store_sk > 0) (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (s_store_sk > 0) (type: boolean)
@@ -535,6 +540,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
+            filterExpr: (ss_store_sk > 0) (type: boolean)
             Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ss_store_sk > 0) (type: boolean)
@@ -591,6 +597,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: ((s_company_id > 0) and s_store_sk is not null) (type: boolean)
             Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: ((s_company_id > 0) and s_store_sk is not null) (type: boolean)
@@ -606,6 +613,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
           TableScan
             alias: ss
+            filterExpr: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 7676 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
@@ -662,6 +670,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: ((s_floor_space > 0) and s_store_sk is not null) (type: boolean)
             Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((s_floor_space > 0) and s_store_sk is not null) (type: boolean)
@@ -677,6 +686,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
+            filterExpr: ss_store_sk is not null (type: boolean)
             Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ss_store_sk is not null (type: boolean)
@@ -733,6 +743,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: s_store_sk is not null (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -748,6 +759,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: ss
+            filterExpr: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 7676 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
@@ -805,6 +817,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: ss_store_sk is not null (type: boolean)
             Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ss_store_sk is not null (type: boolean)
@@ -820,6 +833,7 @@ STAGE PLANS:
                   Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s
+            filterExpr: s_store_sk is not null (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -861,6 +875,7 @@ STAGE PLANS:
               value expressions: _col1 (type: int)
           TableScan
             alias: s1
+            filterExpr: s_store_sk is not null (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -922,6 +937,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: (ss_store_sk > 1000) (type: boolean)
             Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ss_store_sk > 1000) (type: boolean)
@@ -937,6 +953,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s
+            filterExpr: (s_store_sk > 1000) (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (s_store_sk > 1000) (type: boolean)
@@ -978,6 +995,7 @@ STAGE PLANS:
               value expressions: _col1 (type: int)
           TableScan
             alias: s1
+            filterExpr: (s_store_sk > 1000) (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (s_store_sk > 1000) (type: boolean)
@@ -1039,6 +1057,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: ss_store_sk is not null (type: boolean)
             Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ss_store_sk is not null (type: boolean)
@@ -1054,6 +1073,7 @@ STAGE PLANS:
                   Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s
+            filterExpr: ((s_floor_space > 1000) and s_store_sk is not null) (type: boolean)
             Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((s_floor_space > 1000) and s_store_sk is not null) (type: boolean)
@@ -1095,6 +1115,7 @@ STAGE PLANS:
               value expressions: _col1 (type: int)
           TableScan
             alias: s1
+            filterExpr: s_store_sk is not null (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -1156,6 +1177,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 7676 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((ss_quantity > 10) and ss_store_sk is not null) (type: boolean)
@@ -1171,6 +1193,7 @@ STAGE PLANS:
                   Statistics: Num rows: 321 Data size: 2468 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: s
+            filterExpr: s_store_sk is not null (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -1212,6 +1235,7 @@ STAGE PLANS:
               value expressions: _col2 (type: int)
           TableScan
             alias: s1
+            filterExpr: s_store_sk is not null (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -1275,6 +1299,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: (ss_store_sk is not null and ss_addr_sk is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 7664 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ss_addr_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -1291,6 +1316,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int)
           TableScan
             alias: s
+            filterExpr: s_store_sk is not null (type: boolean)
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: s_store_sk is not null (type: boolean)
@@ -1332,6 +1358,7 @@ STAGE PLANS:
               value expressions: _col2 (type: int)
           TableScan
             alias: ca
+            filterExpr: ca_address_sk is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ca_address_sk is not null (type: boolean)

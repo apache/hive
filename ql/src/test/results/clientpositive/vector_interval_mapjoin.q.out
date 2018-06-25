@@ -206,6 +206,7 @@ STAGE PLANS:
         $hdt$_1:vectortab_b_1korc 
           TableScan
             alias: vectortab_b_1korc
+            filterExpr: (dt is not null and ts is not null and s is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (CAST( ts AS DATE) is not null and dt is not null and s is not null) (type: boolean)
@@ -224,6 +225,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: vectortab_a_1korc
+            filterExpr: (dt is not null and ts is not null and s is not null) (type: boolean)
             Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

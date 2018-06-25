@@ -35,6 +35,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
@@ -55,6 +56,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -171,6 +173,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
@@ -190,6 +193,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -304,6 +308,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
@@ -324,6 +329,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -603,6 +609,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
@@ -623,6 +630,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -743,6 +751,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
@@ -762,6 +771,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
@@ -880,6 +890,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: cint BETWEEN 1000000 AND 3000000 (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
@@ -900,6 +911,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (cint BETWEEN 1000000 AND 3000000 and cbigint is not null) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)

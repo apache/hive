@@ -39,6 +39,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
+            filterExpr: (value is null or (value <> 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value <> 3) or value is null) (type: boolean)
@@ -95,6 +96,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
+            filterExpr: (value is null or (value < 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value < 3) or value is null) (type: boolean)
@@ -149,6 +151,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
+            filterExpr: (value is null or (value > 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value > 3) or value is null) (type: boolean)
@@ -203,6 +206,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
+            filterExpr: (value is null or (value <= 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value <= 3) or value is null) (type: boolean)
@@ -258,6 +262,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
+            filterExpr: (value is null or (value >= 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value >= 3) or value is null) (type: boolean)
@@ -313,6 +318,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
+            filterExpr: (value is null or (value = 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value = 3) or value is null) (type: boolean)
@@ -366,6 +372,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: predicate_fold_tb
+            filterExpr: (value is null or (value <= 1) or (value > 3)) (type: boolean)
             Statistics: Num rows: 6 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value <= 1) or (value > 3) or value is null) (type: boolean)

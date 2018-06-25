@@ -64,6 +64,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (c > 2) (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -141,6 +142,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (a > 2) (type: boolean)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -237,6 +239,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (c > 2) (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -307,6 +310,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (a > 2) (type: boolean)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -452,6 +456,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (c > 2) (type: boolean)
                   Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -530,6 +535,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (a > 2) (type: boolean)
                   Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -628,6 +634,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (a > 2) (type: boolean)
                   Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -680,6 +687,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (c > 2) (type: boolean)
                   Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -797,6 +805,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (c > 2) (type: boolean)
                   Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -877,6 +886,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (a > 2) (type: boolean)
                   Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -975,6 +985,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (c > 2) (type: boolean)
                   Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1054,6 +1065,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (a > 2) (type: boolean)
                   Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1152,6 +1164,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (c > 2) (type: boolean)
                   Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1231,6 +1244,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (a > 2) (type: boolean)
                   Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1329,6 +1343,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (a > 2) (type: boolean)
                   Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1381,6 +1396,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (c > 2) (type: boolean)
                   Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1506,6 +1522,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (a > 2) (type: boolean)
                   Statistics: Num rows: 4 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1558,6 +1575,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: (c > 2) (type: boolean)
                   Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

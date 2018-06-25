@@ -359,6 +359,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: regular_table1
+                  filterExpr: (col1 > 1) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (col1 > 1) (type: boolean)
@@ -395,6 +396,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table2
+                  filterExpr: (col > 3) (type: boolean)
                   Statistics: Num rows: 12 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (col > 3) (type: boolean)
@@ -449,6 +451,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table1
+                  filterExpr: (part_col > 1) (type: boolean)
                   Statistics: Num rows: 12 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: part_col (type: int)
@@ -563,6 +566,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt1
+                  filterExpr: ((col2 > 0) and col1 is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((col2 > 0) and col1 is not null) (type: boolean)
@@ -595,6 +599,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt2
+                  filterExpr: ((col2 > 1) and col1 is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((col2 > 1) and col1 is not null) (type: boolean)
@@ -759,6 +764,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt1
+                  filterExpr: ((col2 > 0) and col1 is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((col2 > 0) and col1 is not null) (type: boolean)
@@ -795,6 +801,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt2
+                  filterExpr: ((col2 > 1) and col1 is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((col2 > 1) and col1 is not null) (type: boolean)
@@ -834,6 +841,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table1
+                  filterExpr: part_col is not null (type: boolean)
                   Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: part_col (type: int)
@@ -857,6 +865,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table2
+                  filterExpr: part_col is not null (type: boolean)
                   Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: part_col (type: int)
@@ -990,6 +999,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: regular_table1
+                  filterExpr: (col2 BETWEEN 1 AND 3 and col1 is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (col1 is not null and col2 BETWEEN 1 AND 3) (type: boolean)
@@ -1028,6 +1038,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table1
+                  filterExpr: part_col is not null (type: boolean)
                   Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: part_col (type: int)
@@ -1136,6 +1147,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: regular_table1
+                  filterExpr: ((col2 > 1) and col1 is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((col2 > 1) and col1 is not null) (type: boolean)
@@ -1174,6 +1186,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table1
+                  filterExpr: (col > 1) (type: boolean)
                   Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (col > 1) (type: boolean)
@@ -1301,6 +1314,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table2
+                  filterExpr: (col > 1) (type: boolean)
                   Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (col > 1) (type: boolean)
@@ -1339,6 +1353,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table1
+                  filterExpr: part_col is not null (type: boolean)
                   Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: part_col (type: int)
@@ -1623,6 +1638,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: regular_table1
+                  filterExpr: col1 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col1 is not null (type: boolean)
@@ -1655,6 +1671,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: regular_table2
+                  filterExpr: col1 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col1 is not null (type: boolean)

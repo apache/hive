@@ -34,6 +34,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -89,6 +90,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: bigint)
           TableScan
             alias: x
+            filterExpr: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
@@ -129,6 +131,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -236,6 +239,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -255,6 +259,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -274,6 +279,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
           TableScan
             alias: x
+            filterExpr: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
@@ -448,6 +454,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -539,6 +546,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -670,6 +678,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -689,6 +698,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -894,6 +904,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -949,6 +960,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: bigint)
           TableScan
             alias: x
+            filterExpr: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
@@ -989,6 +1001,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -1068,6 +1081,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (UDFToDouble(key) < 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
@@ -1160,6 +1174,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x1
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)

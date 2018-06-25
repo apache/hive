@@ -87,6 +87,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_site
+                  filterExpr: ((web_company_name = 'pri') and web_site_sk is not null) (type: boolean)
                   Statistics: Num rows: 84 Data size: 155408 Basic stats: COMPLETE Column stats: NONE
 =======
         Map 7 
@@ -120,6 +121,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00.0' AND TIMESTAMP'1999-06-30 00:00:00.0' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
 =======
         Map 8 
@@ -173,6 +175,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws1
+                  filterExpr: (ws_order_number is not null and ws_ship_date_sk is not null and ws_ship_addr_sk is not null and ws_web_site_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_order_number is not null and ws_ship_addr_sk is not null and ws_ship_date_sk is not null and ws_web_site_sk is not null) (type: boolean)
@@ -215,6 +218,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws1
+                  filterExpr: ws_order_number is not null (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ws_order_number is not null (type: boolean)
@@ -234,6 +238,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws2
+                  filterExpr: ws_order_number is not null (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ws_order_number is not null (type: boolean)
@@ -253,6 +258,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws1
+                  filterExpr: ws_order_number is not null (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ws_order_number is not null (type: boolean)
@@ -272,6 +278,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws2
+                  filterExpr: ws_order_number is not null (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ws_order_number is not null (type: boolean)
@@ -291,6 +298,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_returns
+                  filterExpr: wr_order_number is not null (type: boolean)
                   Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: wr_order_number is not null (type: boolean)
@@ -313,6 +321,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: ((ca_state = 'TX') and ca_address_sk is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ca_state = 'TX') and ca_address_sk is not null) (type: boolean)

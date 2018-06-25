@@ -91,6 +91,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (UDFToInteger(key) > 0) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -149,6 +150,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -165,6 +167,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: src
+            filterExpr: ((UDFToInteger(key) > 0) and value is not null) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -224,6 +227,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -242,6 +246,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: src
+            filterExpr: ((UDFToInteger(key) > 0) and value is not null) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -326,6 +331,7 @@ STAGE PLANS:
                       Statistics: Num rows: 110 Data size: 1167 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
+            filterExpr: (UDFToInteger(key) > 0) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

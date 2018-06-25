@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain vectorization expression
 select *
 from src
@@ -295,7 +295,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select *
 from src
 where not key in
@@ -324,7 +324,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orcsrc
 POSTHOOK: Lineage: orcsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select *
 from orcsrc
 where not key in
@@ -341,7 +341,7 @@ order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcsrc
 #### A masked pattern was here ####
-Warning: Map Join MAPJOIN[28][bigTable=?] in task 'Map 1' is a cross product
+Warning: Map Join MAPJOIN[33][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: select *
 from orcsrc
 where not key in

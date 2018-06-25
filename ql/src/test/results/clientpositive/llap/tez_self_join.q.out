@@ -42,7 +42,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tez_self_join2
 POSTHOOK: Lineage: tez_self_join2.id1 SCRIPT []
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
 select s.id2, s.id3
 from  
@@ -127,6 +127,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: self2
+                  filterExpr: (id3 = 'ab') (type: boolean)
                   Statistics: Num rows: 3 Data size: 258 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (id3 = 'ab') (type: boolean)
@@ -182,7 +183,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select s.id2, s.id3
 from  
 (

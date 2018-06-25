@@ -192,6 +192,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
+                  filterExpr: (deptno > 10) (type: boolean)
                   Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 10) (type: boolean)
@@ -307,6 +308,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
+                  filterExpr: (deptno > 15) (type: boolean)
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 15) (type: boolean)
@@ -768,6 +770,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1
+          filterExpr: (CAST( name1 AS STRING) = 'Bill') (type: boolean)
           Filter Operator
             predicate: (CAST( name1 AS STRING) = 'Bill') (type: boolean)
             Select Operator

@@ -61,6 +61,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nzhang_test1
+            filterExpr: (key = 'key1') (type: boolean)
             Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -171,6 +172,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nzhang_test1
+            filterExpr: (key = 'key1') (type: boolean)
             Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

@@ -381,6 +381,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n127
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -399,6 +400,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n75
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -511,6 +513,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n127
+                  filterExpr: ((UDFToDouble(val) = 3.0D) and key is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(val) = 3.0D) and key is not null) (type: boolean)
@@ -530,6 +533,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n75
+                  filterExpr: ((UDFToDouble(val) = 3.0D) and key is not null) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(val) = 3.0D) and key is not null) (type: boolean)
@@ -612,6 +616,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n127
+                  filterExpr: ((UDFToDouble(key) = 5.0D) and val is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) = 5.0D) and val is not null) (type: boolean)
@@ -630,6 +635,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n75
+                  filterExpr: ((UDFToDouble(key) = 6.0D) and val is not null) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) = 6.0D) and val is not null) (type: boolean)
@@ -725,6 +731,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n75
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -743,6 +750,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n127
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -761,6 +769,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t3_n29
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)

@@ -24,6 +24,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n138
+            filterExpr: (ts_field = TIMESTAMP'2016-01-23 00:00:00.0') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00') (type: boolean)
@@ -65,6 +66,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n138
+            filterExpr: (date_field = DATE'2016-01-23') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (date_field = DATE'2016-01-23') (type: boolean)
@@ -106,6 +108,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n138
+            filterExpr: (ts_field = TIMESTAMP'2016-01-23 00:00:00.0') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00') (type: boolean)
@@ -147,6 +150,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n138
+            filterExpr: (date_field = DATE'2016-01-23') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (date_field = DATE'2016-01-23') (type: boolean)
@@ -188,6 +192,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n138
+            filterExpr: (CAST( date_field AS TIMESTAMP) = ts_field) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (CAST( date_field AS TIMESTAMP) = ts_field) (type: boolean)

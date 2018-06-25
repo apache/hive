@@ -414,6 +414,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: accumulo_pushdown
+            filterExpr: (not NVL((key < '90'),false)) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (key < '90') is not true (type: boolean)
@@ -457,6 +458,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: accumulo_pushdown
+            filterExpr: ((key <= '80') or (value like '%90%')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key <= '80') or (value like '%90%')) (type: boolean)

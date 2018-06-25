@@ -44,7 +44,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_merge5_n3
+<<<<<<< HEAD
                   Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
+=======
+                  filterExpr: (userid <= 13L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (userid <= 13L) (type: boolean)
                     Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE

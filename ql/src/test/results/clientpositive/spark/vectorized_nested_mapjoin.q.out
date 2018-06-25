@@ -24,6 +24,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v1
+                  filterExpr: (ctinyint is not null and csmallint is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (csmallint is not null and ctinyint is not null) (type: boolean)
@@ -56,7 +57,10 @@ STAGE PLANS:
 =======
                   alias: v3
                   filterExpr: csmallint is not null (type: boolean)
+<<<<<<< HEAD
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: csmallint is not null (type: boolean)
@@ -96,7 +100,10 @@ STAGE PLANS:
 =======
                   alias: v2
                   filterExpr: ctinyint is not null (type: boolean)
+<<<<<<< HEAD
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ctinyint is not null (type: boolean)

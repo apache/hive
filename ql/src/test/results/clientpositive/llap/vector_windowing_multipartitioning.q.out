@@ -10246,6 +10246,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_n6
+                  filterExpr: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -10527,6 +10528,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_n6
+                  filterExpr: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -10797,6 +10799,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_n6
+                  filterExpr: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -11073,6 +11076,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_n6
+                  filterExpr: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -11356,6 +11360,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_n6
+                  filterExpr: ((s = 'tom allen') or (s = 'bob steinbeck')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

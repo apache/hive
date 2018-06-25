@@ -103,6 +103,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: i1
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: ss1
@@ -134,6 +135,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
@@ -157,10 +159,14 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: ss1
+<<<<<<< HEAD
 =======
                   alias: store_sales
                   filterExpr: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+                  filterExpr: (ss_store_sk = 410) (type: boolean)
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
@@ -188,10 +194,14 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: i2
+<<<<<<< HEAD
 =======
                   alias: i1
                   filterExpr: i_item_sk is not null (type: boolean)
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+                  filterExpr: i_item_sk is not null (type: boolean)
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -212,6 +222,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: store_sales
+                  filterExpr: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: i2

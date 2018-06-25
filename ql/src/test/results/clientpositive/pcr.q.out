@@ -74,6 +74,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds <= '2000-04-09') and (key < 5)) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -280,6 +281,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds <= '2000-04-09') or (key < 5)) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -570,6 +572,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((key < 5) and (value <> 'val_2')) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -776,6 +779,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds < '2000-04-09') and (key < 5)) or ((ds > '2000-04-09') and (value = 'val_5'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -986,6 +990,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds < '2000-04-10') and (key < 5)) or ((ds > '2000-04-08') and (value = 'val_5'))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1255,6 +1260,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds < '2000-04-10') or (key < 5)) and ((ds > '2000-04-08') or (value = 'val_5'))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1531,6 +1537,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds = '2000-04-08') or (ds = '2000-04-09')) and (key = 14)) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1724,6 +1731,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds = '2000-04-08') or (ds = '2000-04-09')) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -1955,6 +1963,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds >= '2000-04-08') or (ds < '2000-04-10')) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -2255,6 +2264,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds = '2000-04-08') and (key = 1)) or ((ds = '2000-04-09') and (key = 2))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2453,6 +2463,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2474,6 +2485,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
+            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2735,6 +2747,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: ((ds = '2000-04-08') and key is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -2756,6 +2769,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t2
+            filterExpr: ((ds = '2000-04-09') and key is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -3076,6 +3090,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: (((ds > '2000-04-08') and (ds < '2000-04-11')) or (key = 2)) (type: boolean)
             Statistics: Num rows: 80 Data size: 640 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -3415,6 +3430,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1
+            filterExpr: ((ds > '2000-04-08') or ((ds <= '2000-04-09') and (key = 2))) (type: boolean)
             Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -4931,6 +4947,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -5075,6 +5092,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ((ds = '2008-04-08') and ((hr = '11') or (hr = '12')) and (UDFToDouble(key) = 11.0D)) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -5274,6 +5292,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ((hr = '11') and (UDFToDouble(key) = 11.0D)) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -5696,6 +5715,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: (11.0D = 11.0D) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -5725,6 +5745,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: (11.0D = 11.0D) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -5754,6 +5775,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: (11.0D = 11.0D) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)

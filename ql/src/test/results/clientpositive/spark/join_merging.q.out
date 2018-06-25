@@ -33,6 +33,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: p1
+                  filterExpr: (p_size > 10) (type: boolean)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((p_size > 10) and p_partkey is not null) (type: boolean)
@@ -199,6 +200,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: p1
+                  filterExpr: ((p_size > 10) and p_partkey is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((p_size > 10) and p_partkey is not null) (type: boolean)
@@ -220,6 +222,7 @@ STAGE PLANS:
 =======
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   alias: p2
+                  filterExpr: p_partkey is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (p_partkey is not null and p_size is not null) (type: boolean)

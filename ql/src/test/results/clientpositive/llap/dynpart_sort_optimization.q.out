@@ -134,6 +134,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -255,6 +256,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -392,6 +394,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -473,6 +476,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -623,6 +627,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -744,6 +749,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -881,6 +887,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -962,6 +969,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1498,6 +1506,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1615,6 +1624,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1839,6 +1849,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1963,6 +1974,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -2356,6 +2368,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -2473,6 +2486,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -2849,6 +2863,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (s = 'foo') (type: boolean)
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (s = 'foo') (type: boolean)
@@ -2970,6 +2985,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (t = 27Y) (type: boolean)
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (t = 27Y) (type: boolean)
@@ -3091,6 +3107,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: (i = 100) (type: boolean)
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (i = 100) (type: boolean)
@@ -3212,6 +3229,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: ((i = 100) and (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((i = 100) and (t = 27Y)) (type: boolean)
@@ -3333,6 +3351,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: ((i = 100) and (s = 'foo')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((i = 100) and (s = 'foo')) (type: boolean)
@@ -3454,6 +3473,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: ((t = 27Y) and (s = 'foo')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s = 'foo') and (t = 27Y)) (type: boolean)
@@ -3574,6 +3594,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_n3
+                  filterExpr: ((i = 100) and (t = 27Y) and (s = 'foo')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((i = 100) and (s = 'foo') and (t = 27Y)) (type: boolean)

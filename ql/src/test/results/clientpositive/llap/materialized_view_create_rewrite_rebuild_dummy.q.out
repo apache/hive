@@ -285,6 +285,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n1
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator
@@ -716,6 +717,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n1
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator
@@ -929,6 +931,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n1
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator
@@ -1009,6 +1012,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_n1
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator

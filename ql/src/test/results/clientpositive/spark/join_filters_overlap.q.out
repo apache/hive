@@ -115,6 +115,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (value = 50) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -192,6 +193,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (value = 60) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -367,6 +369,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a_n4
+                  filterExpr: (value = 50) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -517,6 +520,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (value = 60) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -692,6 +696,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a_n4
+                  filterExpr: (value = 50) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -842,6 +847,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (value = 60) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1165,6 +1171,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (value = 60) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1242,6 +1249,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
+                  filterExpr: (value = 40) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1488,6 +1496,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (value = 50) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1565,6 +1574,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (value = 60) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1642,6 +1652,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
+                  filterExpr: (value = 40) (type: boolean)
                   Statistics: Num rows: 3 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

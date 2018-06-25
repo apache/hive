@@ -144,6 +144,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
+            filterExpr: (ROW__ID.writeid = 3L) (type: boolean)
             Statistics: Num rows: 3 Data size: 19860 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (ROW__ID.writeid = 3L) (type: boolean)

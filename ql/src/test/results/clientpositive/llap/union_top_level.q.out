@@ -34,6 +34,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -56,6 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
@@ -78,6 +80,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
@@ -226,6 +229,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -252,6 +256,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -433,6 +438,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -455,6 +461,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
@@ -477,6 +484,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
@@ -732,6 +740,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -754,6 +763,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
@@ -776,6 +786,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
@@ -1019,6 +1030,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -1041,6 +1053,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
@@ -1063,6 +1076,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)

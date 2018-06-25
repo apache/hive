@@ -51,6 +51,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: non_string_part
+            filterExpr: (cint > 0) (type: boolean)
             Statistics: Num rows: 3073 Data size: 339150 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -160,6 +161,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: non_string_part
+            filterExpr: (cint > 0) (type: boolean)
             Statistics: Num rows: 3073 Data size: 339150 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

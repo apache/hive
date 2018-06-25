@@ -78,6 +78,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -92,6 +93,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -106,6 +108,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -120,6 +123,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -200,8 +204,14 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: a
                   Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: b
+                  filterExpr: (key = 5) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
@@ -218,8 +228,14 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: b
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: a
+                  filterExpr: (key = 5) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
@@ -237,6 +253,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -259,6 +276,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)

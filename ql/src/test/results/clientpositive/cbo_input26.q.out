@@ -30,6 +30,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -98,6 +99,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: ((ds = '2008-04-08') and (hr = '14')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((ds = '2008-04-08') and (hr = '14')) (type: boolean)
@@ -195,6 +197,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
@@ -262,6 +265,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: ((ds = '2008-04-08') and (hr = '14')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((ds = '2008-04-08') and (hr = '14')) (type: boolean)
@@ -359,6 +363,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
@@ -426,6 +431,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: ((ds = '2008-04-08') and (hr = '14')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((ds = '2008-04-08') and (hr = '14')) (type: boolean)
@@ -523,6 +529,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -589,6 +596,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: ((ds = '2008-04-08') and (hr = '14')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((ds = '2008-04-08') and (hr = '14')) (type: boolean)

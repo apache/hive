@@ -259,9 +259,15 @@ STAGE PLANS:
         Map 1
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: web_sales
                   filterExpr: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: catalog_sales
+                  filterExpr: (cs_bill_customer_sk is not null and cs_sold_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
@@ -318,9 +324,15 @@ STAGE PLANS:
         Map 15
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: web_sales
                   filterExpr: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: store_sales
+                  filterExpr: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
@@ -339,7 +351,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+<<<<<<< HEAD
                   filterExpr: ((d_year = 2001) and d_date_sk is not null) (type: boolean)
+=======
+                  filterExpr: ((d_year = 2002) and d_date_sk is not null) (type: boolean)
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 2001) and d_date_sk is not null) (type: boolean)
@@ -436,9 +452,15 @@ STAGE PLANS:
         Map 27
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: catalog_sales
                   filterExpr: (cs_bill_customer_sk is not null and cs_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: web_sales
+                  filterExpr: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (cs_bill_customer_sk is not null and cs_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
@@ -495,9 +517,15 @@ STAGE PLANS:
         Map 33
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: store_sales
                   filterExpr: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: web_sales
+                  filterExpr: (ws_bill_customer_sk is not null and ws_sold_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (ss_customer_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
@@ -516,7 +544,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+<<<<<<< HEAD
                   filterExpr: ((d_year = 2002) and d_date_sk is not null) (type: boolean)
+=======
+                  filterExpr: ((d_year = 2001) and d_date_sk is not null) (type: boolean)
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 2002) and d_date_sk is not null) (type: boolean)

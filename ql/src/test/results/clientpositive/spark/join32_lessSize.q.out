@@ -69,6 +69,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -155,7 +156,10 @@ STAGE PLANS:
 =======
                   alias: z
                   filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+<<<<<<< HEAD
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -251,7 +255,10 @@ STAGE PLANS:
 =======
                   alias: y
                   filterExpr: key is not null (type: boolean)
+<<<<<<< HEAD
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -572,6 +579,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -655,6 +663,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: z
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: w
@@ -748,7 +757,12 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: y
+=======
+                  alias: w
+                  filterExpr: value is not null (type: boolean)
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -826,7 +840,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
 <<<<<<< HEAD
+<<<<<<< HEAD
                   alias: w
+=======
+                  alias: y
+                  filterExpr: key is not null (type: boolean)
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
 =======
                   alias: z
@@ -1150,8 +1169,14 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: x
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: z
+                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -1232,8 +1257,14 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: y
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: x
+                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -1322,7 +1353,12 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: z
+=======
+                  alias: y
+                  filterExpr: key is not null (type: boolean)
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1643,8 +1679,14 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: x
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: z
+                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -1797,8 +1839,14 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
+<<<<<<< HEAD
                   alias: z
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+=======
+                  alias: x
+                  filterExpr: value is not null (type: boolean)
+                  Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -2135,10 +2183,34 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
+<<<<<<< HEAD
+=======
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col1 (type: string)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -2165,6 +2237,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2396,10 +2469,34 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
+<<<<<<< HEAD
+=======
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: y
+                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col1 (type: string)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -2426,6 +2523,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)

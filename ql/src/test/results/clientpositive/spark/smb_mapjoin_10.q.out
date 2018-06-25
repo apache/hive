@@ -89,7 +89,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+<<<<<<< HEAD
                   Statistics: Num rows: 13 Data size: 4140 Basic stats: PARTIAL Column stats: NONE
+=======
+                  filterExpr: (userid is not null and pageid is not null and postid is not null and type is not null) (type: boolean)
+                  Statistics: Num rows: 13 Data size: 4140 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: (pageid is not null and postid is not null and type is not null and userid is not null) (type: boolean)
                     Statistics: Num rows: 13 Data size: 4140 Basic stats: PARTIAL Column stats: NONE

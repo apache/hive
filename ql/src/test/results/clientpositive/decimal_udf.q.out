@@ -681,6 +681,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
+          filterExpr: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
@@ -1027,6 +1028,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
+          filterExpr: (key <> 0) (type: boolean)
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key <> 0) (type: boolean)
@@ -1097,6 +1099,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
+          filterExpr: (value <> 0) (type: boolean)
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (value <> 0) (type: boolean)
@@ -1157,6 +1160,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
+          filterExpr: (value <> 0) (type: boolean)
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (value <> 0) (type: boolean)

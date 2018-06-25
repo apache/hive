@@ -100,6 +100,7 @@ STAGE PLANS:
         $hdt$_1-subquery1-subquery1:$hdt$_0:src10_1_n0 
           TableScan
             alias: src10_1_n0
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -150,6 +151,7 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: src10_2_n0
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -271,6 +273,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src10_1_n0
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -287,6 +290,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: src10_2_n0
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

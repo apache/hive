@@ -689,6 +689,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
@@ -1425,6 +1426,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
@@ -1996,6 +1998,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
@@ -2665,6 +2668,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_subq_n3
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
@@ -2795,6 +2799,7 @@ STAGE PLANS:
               value expressions: _col0 (type: int), _col1 (type: string)
           TableScan
             alias: srcpart
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(key) is not null (type: boolean)
@@ -7068,6 +7073,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
@@ -7722,6 +7728,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_subq_n3
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key > 0) and UDFToDouble(key) is not null) (type: boolean)
@@ -8290,6 +8297,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((UDFToDouble(key) > 0.0D) and (UDFToDouble(key) < 10.0D) and ((UDFToDouble(key) % 2.0D) = 0.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((UDFToDouble(key) % 2.0D) = 0.0D) and (UDFToDouble(key) < 10.0D) and (UDFToDouble(key) > 0.0D)) (type: boolean)

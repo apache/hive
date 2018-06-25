@@ -88,6 +88,7 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -112,6 +113,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -265,6 +267,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 27500 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

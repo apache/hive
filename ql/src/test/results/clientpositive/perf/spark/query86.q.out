@@ -61,6 +61,34 @@ STAGE DEPENDENCIES:
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+<<<<<<< HEAD
+=======
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: d1
+                  filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223) (type: boolean)
+                    Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
   Stage: Stage-1
     Spark
       Edges:
@@ -75,6 +103,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_sold_date_sk is not null and ws_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
@@ -112,6 +141,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)

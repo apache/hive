@@ -61,6 +61,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -137,10 +138,14 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: z
+<<<<<<< HEAD
 =======
                   alias: y
                   filterExpr: key is not null (type: boolean)
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -222,10 +227,14 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: y
+<<<<<<< HEAD
 =======
                   alias: z
                   filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and value is not null) (type: boolean)
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
+=======
+                  filterExpr: key is not null (type: boolean)
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

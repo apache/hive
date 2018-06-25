@@ -2244,6 +2244,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: v is not null (type: boolean)
                   Statistics: Num rows: 1000 Data size: 188000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: k (type: int), v (type: string)
@@ -2277,6 +2278,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
+                  filterExpr: v is not null (type: boolean)
                   Statistics: Num rows: 240 Data size: 45120 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: k (type: int), v (type: string)

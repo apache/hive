@@ -496,7 +496,7 @@ Keys:val
 13.0	1
 17.0	1
 46.0	1
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT *
 FROM
 (

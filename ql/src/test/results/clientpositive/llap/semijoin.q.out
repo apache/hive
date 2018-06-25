@@ -1203,6 +1203,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -3074,7 +3075,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2_n33
 POSTHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select key, value from src outr left semi join
     (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
     on outr.key=inr.key and outr.value=inr.value
@@ -3209,7 +3210,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select key, value from src outr left semi join
     (select a.key, b.value from src a join (select distinct value from src) b on a.value > b.value group by a.key, b.value) inr
     on outr.key=inr.key and outr.value=inr.value

@@ -74,12 +74,46 @@ STAGE PLANS:
     Spark
 #### A masked pattern was here ####
       Vertices:
+<<<<<<< HEAD
         Map 13 
             Map Operator Tree:
                 TableScan
                   alias: store
                   filterExpr: s_store_sk is not null (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
+=======
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223) (type: boolean)
+                    Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_date_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-3
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: date_dim
+                  filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
+>>>>>>> f2c4f31936... HIVE-12342 : Set default value of hive.optimize.index.filter to true (Igor Kryvenko via Ashutosh Chauhan)
                   Filter Operator
                     predicate: s_store_sk is not null (type: boolean)
                     Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
@@ -111,6 +145,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_sold_date_sk is not null and ss_store_sk is not null and ss_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -149,6 +184,7 @@ STAGE PLANS:
                 TableScan
 <<<<<<< HEAD
                   alias: store
+                  filterExpr: s_store_sk is not null (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_store_sk is not null (type: boolean)
@@ -170,6 +206,7 @@ STAGE PLANS:
 =======
 >>>>>>> 6664c44c79... HIVE-21793: CBO retrieves column stats even if hive.stats.fetch.column.stats is set to false (Jesus Camacho Rodriguez, reviewed by Vineet Garg)
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -207,6 +244,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)

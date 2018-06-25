@@ -106,6 +106,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n48
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -174,6 +175,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n29
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -386,6 +388,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n48
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -454,6 +457,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n29
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -744,6 +748,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_small
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -812,6 +817,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1024,6 +1030,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_small
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1092,6 +1099,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1306,6 +1314,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_small
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1375,6 +1384,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 111776 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1588,6 +1598,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_small
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1657,6 +1668,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_small
+                  filterExpr: dec is not null (type: boolean)
                   Statistics: Num rows: 1049 Data size: 223552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

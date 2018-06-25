@@ -761,6 +761,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t2
+            filterExpr: c_int is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: c_int is not null (type: boolean)
@@ -806,6 +807,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t2
+            filterExpr: (c_int = (2 * c_int)) (type: boolean)
             Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (c_int = (2 * c_int)) (type: boolean)
@@ -851,6 +853,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t2
+            filterExpr: c_int is not null (type: boolean)
             Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: c_int is not null (type: boolean)
@@ -926,6 +929,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t2
+            filterExpr: (c_int is not null or (c_int = (2 * c_int))) (type: boolean)
             Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((c_int = (2 * c_int)) or c_int is not null) (type: boolean)
@@ -971,6 +975,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t2
+            filterExpr: (c_int is not null or (c_int = 0)) (type: boolean)
             Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((c_int = 0) or c_int is not null) (type: boolean)
