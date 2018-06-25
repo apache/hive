@@ -30,6 +30,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ((UDFToDouble(key) < 100.0D) and (ds = '2008-04-08') and (hr = '12')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

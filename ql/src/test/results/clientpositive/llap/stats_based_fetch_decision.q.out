@@ -36,6 +36,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          filterExpr: key is null (type: boolean)
           Filter Operator
             predicate: key is null (type: boolean)
             Select Operator
@@ -57,6 +58,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: key is null (type: boolean)
           Filter Operator
             predicate: key is null (type: boolean)
             Select Operator
@@ -105,6 +107,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is null (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is null (type: boolean)
@@ -146,6 +149,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: key is null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is null (type: boolean)

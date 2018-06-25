@@ -38,6 +38,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311')) (type: boolean)
@@ -57,6 +58,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((value <> 'val_50') or (key > '1')) and (key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and value is not null) (type: boolean)
@@ -76,6 +78,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
@@ -1721,6 +1724,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311')) (type: boolean)
@@ -1740,6 +1744,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((value <> 'val_50') or (key > '1')) and (key < '400') and (key <> '14') and (key <> '302') and (key <> '305') and (key <> '311') and value is not null) (type: boolean)
@@ -1759,6 +1764,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key <> '306') and (sqrt(key) <> 13.0D) and value is not null) (type: boolean)

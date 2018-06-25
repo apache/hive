@@ -16,6 +16,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
+            filterExpr: (cint) IN (UDFToInteger(ctinyint), UDFToInteger(cbigint)) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (cint) IN (UDFToInteger(ctinyint), UDFToInteger(cbigint)) (type: boolean)

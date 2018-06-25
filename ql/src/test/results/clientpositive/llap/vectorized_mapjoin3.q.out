@@ -119,6 +119,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -323,6 +324,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (int_col_1 is not null and decimal0801_col is not null) (type: boolean)
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -527,6 +529,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

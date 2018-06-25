@@ -658,6 +658,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alter5
+          filterExpr: (dt = 'a') (type: boolean)
           Select Operator
             expressions: col1 (type: string), 'a' (type: string)
             outputColumnNames: _col0, _col1
@@ -775,6 +776,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alter5
+          filterExpr: (dt = 'a') (type: boolean)
           Select Operator
             expressions: col1 (type: string), 'a' (type: string)
             outputColumnNames: _col0, _col1

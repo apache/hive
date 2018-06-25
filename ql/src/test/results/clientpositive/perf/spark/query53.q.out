@@ -66,6 +66,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: s_store_sk is not null (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_store_sk is not null (type: boolean)
@@ -95,6 +96,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -114,6 +116,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: (((i_class) IN ('personal', 'portable', 'reference', 'self-help') or (i_class) IN ('accessories', 'classical', 'fragrances', 'pants')) and ((i_brand) IN ('scholaramalgamalg #14', 'scholaramalgamalg #7', 'exportiunivamalg #9', 'scholaramalgamalg #9') or (i_brand) IN ('amalgimporto #1', 'edu packscholar #1', 'exportiimporto #1', 'importoamalg #1')) and ((i_category) IN ('Books', 'Children', 'Electronics') or (i_category) IN ('Women', 'Music', 'Men')) and (((i_category) IN ('Books', 'Children', 'Electronics') and (i_class) IN ('personal', 'portable', 'reference', 'self-help') and (i_brand) IN ('scholaramalgamalg #14', 'scholaramalgamalg #7', 'exportiunivamalg #9', 'scholaramalgamalg #9')) or ((i_category) IN ('Women', 'Music', 'Men') and (i_class) IN ('accessories', 'classical', 'fragrances', 'pants') and (i_brand) IN ('amalgimporto #1', 'edu packscholar #1', 'exportiimporto #1', 'importoamalg #1'))) and i_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((i_category) IN ('Books', 'Children', 'Electronics') and (i_class) IN ('personal', 'portable', 'reference', 'self-help') and (i_brand) IN ('scholaramalgamalg #14', 'scholaramalgamalg #7', 'exportiunivamalg #9', 'scholaramalgamalg #9')) or ((i_category) IN ('Women', 'Music', 'Men') and (i_class) IN ('accessories', 'classical', 'fragrances', 'pants') and (i_brand) IN ('amalgimporto #1', 'edu packscholar #1', 'exportiimporto #1', 'importoamalg #1'))) and ((i_brand) IN ('scholaramalgamalg #14', 'scholaramalgamalg #7', 'exportiunivamalg #9', 'scholaramalgamalg #9') or (i_brand) IN ('amalgimporto #1', 'edu packscholar #1', 'exportiimporto #1', 'importoamalg #1')) and ((i_category) IN ('Books', 'Children', 'Electronics') or (i_category) IN ('Women', 'Music', 'Men')) and ((i_class) IN ('personal', 'portable', 'reference', 'self-help') or (i_class) IN ('accessories', 'classical', 'fragrances', 'pants')) and i_item_sk is not null) (type: boolean)
@@ -133,6 +136,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_month_seq) IN (1212, 1213, 1214, 1215, 1216, 1217, 1218, 1219, 1220, 1221, 1222, 1223) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_month_seq) IN (1212, 1213, 1214, 1215, 1216, 1217, 1218, 1219, 1220, 1221, 1222, 1223) and d_date_sk is not null) (type: boolean)

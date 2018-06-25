@@ -173,6 +173,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: partsupp_hive
+            filterExpr: ps_partkey is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ps_partkey is not null (type: boolean)
@@ -189,6 +190,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: part_hive
+            filterExpr: ((p_size) IN (22, 14, 27, 49, 21, 33, 35, 28) and (p_brand <> 'Brand#34') and p_partkey is not null and (not (p_type like 'ECONOMY BRUSHED%'))) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((not (p_type like 'ECONOMY BRUSHED%')) and (p_brand <> 'Brand#34') and (p_size) IN (22, 14, 27, 49, 21, 33, 35, 28) and p_partkey is not null) (type: boolean)
@@ -345,6 +347,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: supplier_hive
+            filterExpr: (s_comment like '%Customer%Complaints%') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (s_comment like '%Customer%Complaints%') (type: boolean)
@@ -381,6 +384,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: supplier_hive
+            filterExpr: (s_comment like '%Customer%Complaints%') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (s_comment like '%Customer%Complaints%') (type: boolean)

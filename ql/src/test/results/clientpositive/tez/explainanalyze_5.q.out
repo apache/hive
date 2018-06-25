@@ -116,7 +116,7 @@ Stage-3
                     table:{"name:":"default.src_multi2_n7"}
                     Select Operator [SEL_18] (rows=830/508 width=178)
                       Output:["_col0","_col1"]
-                      Merge Join Operator [MERGEJOIN_32] (rows=830/508 width=178)
+                      Merge Join Operator [MERGEJOIN_43] (rows=830/508 width=178)
                         Conds:RS_15._col0=RS_16._col0(Inner),Output:["_col0","_col3"]
                       <-Map 7 [SIMPLE_EDGE]
                         SHUFFLE [RS_16]
@@ -136,22 +136,22 @@ Stage-3
                               Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
                             <-Union 2 [SIMPLE_EDGE]
                               <-Map 1 [CONTAINS]
-                                Reduce Output Operator [RS_37]
+                                Reduce Output Operator [RS_48]
                                   PartitionCols:_col0, _col1
-                                  Select Operator [SEL_35] (rows=500/500 width=178)
+                                  Select Operator [SEL_46] (rows=500/500 width=178)
                                     Output:["_col0","_col1"]
-                                    Filter Operator [FIL_34] (rows=500/500 width=178)
+                                    Filter Operator [FIL_45] (rows=500/500 width=178)
                                       predicate:key is not null
-                                      TableScan [TS_33] (rows=500/500 width=178)
+                                      TableScan [TS_44] (rows=500/500 width=178)
                                         Output:["key","value"]
                               <-Map 6 [CONTAINS]
-                                Reduce Output Operator [RS_42]
+                                Reduce Output Operator [RS_53]
                                   PartitionCols:_col0, _col1
-                                  Select Operator [SEL_40] (rows=25/25 width=175)
+                                  Select Operator [SEL_51] (rows=25/25 width=175)
                                     Output:["_col0","_col1"]
-                                    Filter Operator [FIL_39] (rows=25/25 width=175)
+                                    Filter Operator [FIL_50] (rows=25/25 width=175)
                                       predicate:key is not null
-                                      TableScan [TS_38] (rows=25/25 width=175)
+                                      TableScan [TS_49] (rows=25/25 width=175)
                                         Output:["key","value"]
                   PARTITION_ONLY_SHUFFLE [RS_22]
                     Select Operator [SEL_21] (rows=830/508 width=178)

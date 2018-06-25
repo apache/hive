@@ -63,6 +63,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesparquet
+            filterExpr: (((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D)) or ((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2))) (type: boolean)
             Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

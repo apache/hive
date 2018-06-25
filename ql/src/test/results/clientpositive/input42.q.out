@@ -109,6 +109,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: a
+          filterExpr: (ds = '2008-04-08') (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
@@ -1240,6 +1241,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: a
+          filterExpr: ((ds = '2008-04-08') and (UDFToDouble(key) < 200.0D)) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator

@@ -32,6 +32,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: ((value > 'val_9') and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((value > 'val_9') and key is not null) (type: boolean)
@@ -51,6 +52,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: ((value > 'val_9') and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((value > 'val_9') and key is not null) (type: boolean)
@@ -239,6 +241,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -259,6 +262,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -355,6 +359,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (value > 'val_9') (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (value > 'val_9') (type: boolean)
@@ -1131,6 +1136,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: u
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: a is not null (type: boolean)
@@ -1151,6 +1157,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v
+                  filterExpr: (a is not null and b is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (a is not null and b is not null) (type: boolean)
@@ -1285,6 +1292,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n68
+                  filterExpr: i is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: i is not null (type: boolean)
@@ -1305,6 +1313,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n41
+                  filterExpr: (j is not null and i is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (i is not null and j is not null) (type: boolean)

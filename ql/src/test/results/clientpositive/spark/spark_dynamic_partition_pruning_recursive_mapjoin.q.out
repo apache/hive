@@ -360,6 +360,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -518,6 +519,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -716,6 +718,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -958,6 +961,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rt
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)

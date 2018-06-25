@@ -179,6 +179,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: reason
+                  filterExpr: r_reason_sk is not null (type: boolean)
                   Statistics: Num rows: 72 Data size: 14400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: r_reason_sk is not null (type: boolean)
@@ -203,6 +204,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_page
+                  filterExpr: wp_web_page_sk is not null (type: boolean)
                   Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: wp_web_page_sk is not null (type: boolean)
@@ -235,6 +237,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_returns
+                  filterExpr: (wr_item_sk is not null and wr_order_number is not null and wr_refunded_cdemo_sk is not null and wr_returning_cdemo_sk is not null and wr_refunded_addr_sk is not null and wr_reason_sk is not null) (type: boolean)
                   Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (wr_item_sk is not null and wr_order_number is not null and wr_reason_sk is not null and wr_refunded_addr_sk is not null and wr_refunded_cdemo_sk is not null and wr_returning_cdemo_sk is not null) (type: boolean)
@@ -254,6 +257,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: ((ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and (ca_country = 'United States') and ca_address_sk is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ca_country = 'United States') and (ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and ca_address_sk is not null) (type: boolean)
@@ -273,6 +277,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
@@ -291,6 +296,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd1
+                  filterExpr: (((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_marital_status is not null and cd_education_status is not null) (type: boolean)
                   Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_education_status is not null and cd_marital_status is not null) (type: boolean)
@@ -310,6 +316,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd2
+                  filterExpr: (((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_marital_status is not null and cd_education_status is not null) (type: boolean)
                   Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_education_status is not null and cd_marital_status is not null) (type: boolean)
@@ -328,6 +335,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: ((ws_sales_price BETWEEN 100 AND 150 or ws_sales_price BETWEEN 50 AND 100 or ws_sales_price BETWEEN 150 AND 200) and (ws_net_profit BETWEEN 100 AND 200 or ws_net_profit BETWEEN 150 AND 300 or ws_net_profit BETWEEN 50 AND 250) and ws_item_sk is not null and ws_order_number is not null and ws_web_page_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ws_net_profit BETWEEN 100 AND 200 or ws_net_profit BETWEEN 150 AND 300 or ws_net_profit BETWEEN 50 AND 250) and (ws_sales_price BETWEEN 100 AND 150 or ws_sales_price BETWEEN 50 AND 100 or ws_sales_price BETWEEN 150 AND 200) and ws_item_sk is not null and ws_order_number is not null and ws_sold_date_sk is not null and ws_web_page_sk is not null) (type: boolean)

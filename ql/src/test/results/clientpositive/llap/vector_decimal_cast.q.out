@@ -19,6 +19,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (cdouble is not null and cint is not null and cboolean1 is not null and ctimestamp1 is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 638316 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -142,6 +143,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_small
+                  filterExpr: (cdouble is not null and cint is not null and cboolean1 is not null and ctimestamp1 is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

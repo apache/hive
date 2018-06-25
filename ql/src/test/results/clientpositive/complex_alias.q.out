@@ -143,6 +143,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: agg1
+            filterExpr: (col0 = col0) (type: boolean)
             Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (col0 = col0) (type: boolean)
@@ -165,6 +166,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 34 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: agg1
+            filterExpr: (col0 = col0) (type: boolean)
             Statistics: Num rows: 1 Data size: 17 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (col0 = col0) (type: boolean)

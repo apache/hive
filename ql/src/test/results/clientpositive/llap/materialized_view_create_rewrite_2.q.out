@@ -72,6 +72,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n9
+                  filterExpr: (c > 20) (type: boolean)
                   Statistics: Num rows: 5 Data size: 1030 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c > 20) (type: boolean)
@@ -162,6 +163,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n9
+                  filterExpr: (c > 20) (type: boolean)
                   Statistics: Num rows: 5 Data size: 1030 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (c > 20) (type: boolean)
@@ -252,6 +254,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_3
+                  filterExpr: (c > 20) (type: boolean)
                   Statistics: Num rows: 3 Data size: 1368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (c > 20) (type: boolean)
@@ -474,6 +477,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.cmv_mat_view_5
+          filterExpr: (c > 10.1) (type: boolean)
           Filter Operator
             predicate: (c > 10.1) (type: boolean)
             Select Operator
@@ -529,6 +533,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.cmv_mat_view_5
+                  filterExpr: (c > 10.1) (type: boolean)
                   Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (c > 10.1) (type: boolean)

@@ -101,6 +101,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: (p_size is not null and p_brand is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (p_brand is not null and p_size is not null) (type: boolean)
@@ -121,6 +122,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_size is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_size is not null (type: boolean)
@@ -141,6 +143,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_brand is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_brand is not null (type: boolean)
@@ -251,7 +254,7 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
@@ -277,6 +280,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -297,6 +301,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -443,7 +448,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -452,7 +457,7 @@ POSTHOOK: query: select * from part_null where p_name IN (select p_name from par
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
@@ -478,6 +483,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -498,6 +504,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -651,7 +658,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -686,7 +693,7 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[57][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
@@ -712,6 +719,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_brand is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_brand is not null (type: boolean)
@@ -732,6 +740,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_brand is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_brand is not null (type: boolean)
@@ -888,7 +897,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[57][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -897,7 +906,7 @@ POSTHOOK: query: select * from part_null where p_brand IN (select p_brand from p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part_null where p_name NOT IN (select c from tempty) AND p_brand IN (select p_brand from part_null)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_name NOT IN (select c from tempty) AND p_brand IN (select p_brand from part_null)
@@ -922,6 +931,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_brand is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_brand is not null (type: boolean)
@@ -970,6 +980,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_brand is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_brand is not null (type: boolean)
@@ -1086,7 +1097,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from part_null where p_name NOT IN (select c from tempty) AND p_brand IN (select p_brand from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -1124,7 +1135,7 @@ POSTHOOK: Input: default@tempty
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
@@ -1148,6 +1159,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -1168,6 +1180,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -1269,7 +1282,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -1306,7 +1319,7 @@ POSTHOOK: Input: default@tnull
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_size IN (select p_size from part_null) AND EXISTS (select c from tempty)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_size IN (select p_size from part_null) AND EXISTS (select c from tempty)
@@ -1330,6 +1343,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_size is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_size is not null (type: boolean)
@@ -1350,6 +1364,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_size is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_size is not null (type: boolean)
@@ -1451,7 +1466,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from part_null where p_size IN (select p_size from part_null) AND EXISTS (select c from tempty)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -1462,7 +1477,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 POSTHOOK: Input: default@tempty
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND NOT EXISTS (select c from tempty)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND NOT EXISTS (select c from tempty)
@@ -1486,6 +1501,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -1506,6 +1522,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -1613,7 +1630,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from part_null where p_name IN (select p_name from part_null) AND NOT EXISTS (select c from tempty)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_null
@@ -1680,6 +1697,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: (p_type is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (p_name is not null and p_type is not null) (type: boolean)
@@ -1700,6 +1718,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pp
+                  filterExpr: (p_type is not null and p_brand is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5096 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_brand is not null and p_type is not null) (type: boolean)
@@ -1729,6 +1748,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: (p_type is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_name is not null and p_type is not null) (type: boolean)
@@ -1753,6 +1773,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: ((p_type is not null and p_brand is not null) or (p_type is not null and p_brand is not null and p_container is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 7488 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_brand is not null and p_type is not null) (type: boolean)
@@ -1987,6 +2008,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: (p_name is not null and p_type is not null and p_brand is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (p_brand is not null and p_name is not null and p_type is not null) (type: boolean)
@@ -2007,6 +2029,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -2027,6 +2050,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: (p_type is not null and p_brand is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5096 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_brand is not null and p_type is not null) (type: boolean)
@@ -2164,6 +2188,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: (p_type is not null and p_container is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (p_container is not null and p_name is not null and p_type is not null) (type: boolean)
@@ -2184,6 +2209,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pp
+                  filterExpr: (p_type is not null and p_brand is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5096 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_brand is not null and p_type is not null) (type: boolean)
@@ -2213,6 +2239,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: (p_type is not null and p_container is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_container is not null and p_name is not null and p_type is not null) (type: boolean)
@@ -2237,6 +2264,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: ((p_type is not null and p_brand is not null) or (p_type is not null and p_brand is not null and p_container is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 7488 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_brand is not null and p_type is not null) (type: boolean)
@@ -2469,6 +2497,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: (p_type is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (p_name is not null and p_type is not null) (type: boolean)
@@ -2489,6 +2518,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: (p_type is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_name is not null and p_type is not null) (type: boolean)
@@ -2513,6 +2543,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: (p_size is not null or (p_size is not null and p_type is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_size is not null (type: boolean)
@@ -2700,6 +2731,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
+                  filterExpr: (p_type is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (p_name is not null and p_type is not null) (type: boolean)
@@ -2720,6 +2752,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: (p_type is not null and p_brand is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_brand is not null and p_name is not null and p_type is not null) (type: boolean)
@@ -2740,6 +2773,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pp
+                  filterExpr: (p_type is not null and p_brand is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5096 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_brand is not null and p_type is not null) (type: boolean)
@@ -2846,7 +2880,7 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[62][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 7' is a cross product
+Warning: Shuffle Join MERGEJOIN[82][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 7' is a cross product
 PREHOOK: query: explain select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey
 where li.l_linenumber = 1 and
@@ -2878,6 +2912,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: l_partkey is not null (type: boolean)
                   Statistics: Num rows: 100 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: l_partkey is not null (type: boolean)
@@ -2898,6 +2933,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: li
+                  filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
@@ -2918,6 +2954,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
+                  filterExpr: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
                   Statistics: Num rows: 100 Data size: 10400 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((l_linenumber = 1) and (l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
@@ -3087,7 +3124,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[62][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 7' is a cross product
+Warning: Shuffle Join MERGEJOIN[82][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 7' is a cross product
 PREHOOK: query: select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey
 where li.l_linenumber = 1 and
@@ -3138,6 +3175,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: ((value is not null and key is not null) or ((key > '9') and value is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -3170,6 +3208,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key is not null and value is not null) (type: boolean)
@@ -3194,6 +3233,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -3648,7 +3688,7 @@ POSTHOOK: Input: default@src
 96	val_96	1
 97	val_97	2
 98	val_98	2
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
@@ -3671,6 +3711,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: ((p_type <> '1') and p_name is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((p_type <> '1') and p_name is not null) (type: boolean)
@@ -3691,6 +3732,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -3709,6 +3751,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: (p_type <> '1') (type: boolean)
                   Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_type <> '1') (type: boolean)
@@ -3783,7 +3826,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -3828,7 +3871,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tnull
 POSTHOOK: Lineage: tnull.c SCRIPT []
 POSTHOOK: Lineage: tnull.i SCRIPT []
-Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part where p_partkey = 3 OR p_size NOT IN (select i from tnull)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part where p_partkey = 3 OR p_size NOT IN (select i from tnull)
@@ -3972,7 +4015,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from part where p_partkey = 3 OR p_size NOT IN (select i from tnull)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -3983,8 +4026,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@tnull
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[44][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[49][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select count(*)  from src
     where src.key in (select key from src s1 where s1.key > '9')
         or src.value is not null
@@ -4032,6 +4075,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: ((key > '9') or (key > '9')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > '9') (type: boolean)
@@ -4047,6 +4091,9 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
+                  Filter Operator
+                    predicate: (key > '9') (type: boolean)
+                    Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string)
                       mode: hash
@@ -4199,8 +4246,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[44][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[49][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select count(*)  from src
     where src.key in (select key from src s1 where s1.key > '9')
         or src.value is not null
@@ -4244,6 +4291,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws1
+                  filterExpr: p_type is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_type is not null (type: boolean)
@@ -4264,6 +4312,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws2
+                  filterExpr: (p_type is not null and p_retailprice is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 2912 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_retailprice is not null and p_type is not null) (type: boolean)
@@ -4289,6 +4338,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: wr1
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)

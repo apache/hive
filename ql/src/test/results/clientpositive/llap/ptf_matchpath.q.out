@@ -318,6 +318,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_n0
+                  filterExpr: (fl_num = -1142) (type: boolean)
                   Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (fl_num = -1142) (type: boolean)

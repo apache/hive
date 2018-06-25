@@ -26,6 +26,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: cint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
@@ -44,6 +45,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: cint is not null (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

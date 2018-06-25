@@ -186,6 +186,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n4
+          filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
           Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -268,6 +269,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n4
+          filterExpr: ((ds = '1') and (x = 495)) (type: boolean)
           Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -350,6 +352,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n4
+          filterExpr: ((ds = '1') and (x = 1)) (type: boolean)
           Statistics: Num rows: 1 Data size: 80 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator

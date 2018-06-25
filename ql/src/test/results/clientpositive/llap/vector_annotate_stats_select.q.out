@@ -2063,6 +2063,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n4
+                  filterExpr: (not bo1) (type: boolean)
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

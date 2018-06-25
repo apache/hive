@@ -59,6 +59,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (id1 is not null and id2 is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id1 is not null and id2 is not null) (type: boolean)
@@ -76,6 +77,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (d <= 1) (type: boolean)
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d <= 1) (type: boolean)
@@ -93,6 +95,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: ((d <= 1) and id is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d <= 1) and id is not null) (type: boolean)

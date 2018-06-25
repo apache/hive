@@ -213,6 +213,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: userid is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: userid is not null (type: boolean)
@@ -224,6 +225,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: fa
+                  filterExpr: userid is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: userid is not null (type: boolean)
@@ -315,6 +317,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
+                  filterExpr: userid is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: userid is not null (type: boolean)
@@ -326,6 +329,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: fa
+                  filterExpr: userid is not null (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: userid is not null (type: boolean)

@@ -79,6 +79,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (id = 'Id_1') (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (id = 'Id_1') (type: boolean)
@@ -93,6 +94,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: ((id = 'Id_1') and (val = 'val_103')) (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((id = 'Id_1') and (val = 'val_103')) (type: boolean)
@@ -205,6 +207,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: ((id = 'Id_2') and (val <> 'val_104')) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((id = 'Id_2') and (val <> 'val_104')) (type: boolean)
@@ -219,6 +222,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: ((val = 'val_104') and (id = 'Id_2')) (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((id = 'Id_2') and (val = 'val_104')) (type: boolean)
@@ -741,6 +745,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -753,6 +758,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -948,6 +954,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -960,6 +967,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1155,6 +1163,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1171,6 +1180,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1374,6 +1384,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -1390,6 +1401,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)

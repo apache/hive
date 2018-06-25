@@ -240,6 +240,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cbigint > 0L) and (cbigint < 100000000L)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 146792 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -459,6 +460,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cdouble >= -500.0D) and (cdouble < -199.0D)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 146792 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -678,6 +680,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cint > 500000000) or (cdouble > 1.0E9D) or (ctinyint = 0Y)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 220184 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

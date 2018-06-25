@@ -94,6 +94,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 160 Data size: 61001 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
@@ -189,6 +190,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part
+                  filterExpr: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
                   Statistics: Num rows: 159 Data size: 104317 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
@@ -380,6 +382,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part_sdpo
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 176 Data size: 67063 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
@@ -475,6 +478,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_part_sdpo
+                  filterExpr: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
                   Statistics: Num rows: 171 Data size: 112152 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
@@ -675,6 +679,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
                   Statistics: Num rows: 157 Data size: 60527 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
@@ -771,6 +776,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
                   Statistics: Num rows: 1600 Data size: 156727 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
@@ -897,6 +903,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part
+                  filterExpr: (value = 'bar') (type: boolean)
                   Statistics: Num rows: 1600 Data size: 451127 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
@@ -1095,6 +1102,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
                   Statistics: Num rows: 157 Data size: 60527 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
@@ -1191,6 +1199,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
                   Statistics: Num rows: 1600 Data size: 156727 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
@@ -1317,6 +1326,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo
+                  filterExpr: (value = 'bar') (type: boolean)
                   Statistics: Num rows: 1600 Data size: 451127 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
@@ -1515,6 +1525,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
                   Statistics: Num rows: 97 Data size: 82922 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
@@ -1613,6 +1624,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
+                  filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
                   Statistics: Num rows: 1600 Data size: 598664 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)

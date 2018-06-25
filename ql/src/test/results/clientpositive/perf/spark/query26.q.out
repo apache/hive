@@ -52,6 +52,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: promotion
+                  filterExpr: (((p_channel_email = 'N') or (p_channel_event = 'N')) and p_promo_sk is not null) (type: boolean)
                   Statistics: Num rows: 2300 Data size: 2713420 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((p_channel_email = 'N') or (p_channel_event = 'N')) and p_promo_sk is not null) (type: boolean)
@@ -82,6 +83,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: (cs_bill_cdemo_sk is not null and cs_sold_date_sk is not null and cs_item_sk is not null and cs_promo_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_bill_cdemo_sk is not null and cs_item_sk is not null and cs_promo_sk is not null and cs_sold_date_sk is not null) (type: boolean)
@@ -101,6 +103,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -120,6 +123,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_demographics
+                  filterExpr: ((cd_gender = 'F') and (cd_marital_status = 'W') and (cd_education_status = 'Primary') and cd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 1861800 Data size: 717186159 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((cd_education_status = 'Primary') and (cd_gender = 'F') and (cd_marital_status = 'W') and cd_demo_sk is not null) (type: boolean)
@@ -138,6 +142,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 1998) and d_date_sk is not null) (type: boolean)

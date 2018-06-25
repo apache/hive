@@ -44,6 +44,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: cint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 3093170 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -101,6 +102,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_n8
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -223,6 +225,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test2b_n0
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -280,6 +283,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test2a_n0
+                  filterExpr: a[1] is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -366,6 +370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test2b_n0
+                  filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -423,6 +428,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test2a_n0
+                  filterExpr: a[index] is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

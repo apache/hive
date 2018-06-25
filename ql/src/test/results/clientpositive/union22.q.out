@@ -141,6 +141,7 @@ STAGE PLANS:
         $hdt$_0-subquery2:$hdt$_1:dst_union22_delta 
           TableScan
             alias: dst_union22_delta
+            filterExpr: ((UDFToDouble(k0) > 50.0D) and (UDFToDouble(k1) > 20.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 16936 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -167,6 +168,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (UDFToDouble(k1) > 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 11124 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -323,6 +325,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: dst_union22_delta
+            filterExpr: ((ds = '1') and (UDFToDouble(k0) <= 50.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 16936 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -593,6 +596,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (UDFToDouble(k1) > 20.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 11124 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -614,6 +618,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: dst_union22_delta
+            filterExpr: ((UDFToDouble(k0) > 50.0D) and (UDFToDouble(k1) > 20.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 16936 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

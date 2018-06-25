@@ -30,6 +30,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((UDFToDouble(key) >= 200.0D) and (UDFToDouble(key) < 300.0D)) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(key) < 300.0D) and (UDFToDouble(key) >= 200.0D)) (type: boolean)
@@ -156,6 +157,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: int
+          filterExpr: (table = '2008-04-08') (type: boolean)
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (table = '2008-04-08') (type: boolean)

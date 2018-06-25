@@ -254,6 +254,7 @@ STAGE PLANS:
         $hdt$_1:test2_n3 
           TableScan
             alias: test2_n3
+            filterExpr: key BETWEEN 100 AND 102 (type: boolean)
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key BETWEEN 100 AND 102 (type: boolean)

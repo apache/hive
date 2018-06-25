@@ -62,6 +62,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1_n0
+            filterExpr: (((ds1 = '2000-04-08') and (ds2 = '2001-04-08') and (key = 1)) or ((ds1 = '2000-04-09') and (ds2 = '2001-04-09') and (key = 2))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -260,6 +261,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: pcr_t1_n0
+            filterExpr: ((struct(key,ds1,ds2)) IN (const struct(1,'2000-04-08','2001-04-08'), const struct(2,'2000-04-09','2001-04-09')) and (struct(ds1,ds2)) IN (struct('2000-04-08','2001-04-08'), struct('2000-04-09','2001-04-09'))) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

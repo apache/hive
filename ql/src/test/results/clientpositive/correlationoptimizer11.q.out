@@ -55,6 +55,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((partitionid = 1) and key is not null) (type: boolean)
             Statistics: Num rows: 100 Data size: 1070 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -70,6 +71,7 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 1070 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -184,6 +186,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((partitionid = 1) and key is not null) (type: boolean)
             Statistics: Num rows: 100 Data size: 1070 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -199,6 +202,7 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 1070 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -293,6 +297,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -308,6 +313,7 @@ STAGE PLANS:
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -433,6 +439,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -448,6 +455,7 @@ STAGE PLANS:
                   Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: y
+            filterExpr: ((partitionid = 2) and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

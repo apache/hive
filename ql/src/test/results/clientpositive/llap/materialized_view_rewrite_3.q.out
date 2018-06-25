@@ -216,6 +216,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_n5
+          filterExpr: (deptno = 1) (type: boolean)
           Filter Operator
             predicate: (deptno = 1) (type: boolean)
             Select Operator
@@ -289,6 +290,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_n5
+          filterExpr: (UDFToInteger(_c0) > 1) (type: boolean)
           Filter Operator
             predicate: (UDFToInteger(_c0) > 1) (type: boolean)
             Select Operator
@@ -366,6 +368,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_n5
+          filterExpr: (UDFToInteger(_c0) = 1) (type: boolean)
           Filter Operator
             predicate: (UDFToInteger(_c0) = 1) (type: boolean)
             Select Operator
@@ -451,6 +454,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n5
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 4 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -470,6 +474,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dependents_n5
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)

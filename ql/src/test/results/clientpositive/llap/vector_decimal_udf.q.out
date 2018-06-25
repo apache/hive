@@ -1134,6 +1134,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf_n0
+                  filterExpr: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1709,6 +1710,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf_n0
+                  filterExpr: (key <> 0) (type: boolean)
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1828,6 +1830,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf_n0
+                  filterExpr: (value <> 0) (type: boolean)
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1937,6 +1940,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf_n0
+                  filterExpr: (value <> 0) (type: boolean)
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -5111,6 +5115,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf_txt_small
+                  filterExpr: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -5686,6 +5691,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf_txt_small
+                  filterExpr: (key <> 0) (type: boolean)
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -5805,6 +5811,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf_txt_small
+                  filterExpr: (value <> 0) (type: boolean)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -5914,6 +5921,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf_txt_small
+                  filterExpr: (value <> 0) (type: boolean)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

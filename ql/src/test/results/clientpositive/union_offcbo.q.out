@@ -246,6 +246,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
@@ -262,6 +263,7 @@ STAGE PLANS:
                   value expressions: _col9 (type: string)
           TableScan
             alias: ttest2
+            filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
@@ -339,6 +341,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
@@ -355,6 +358,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: bigint), _col1 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
           TableScan
             alias: ttest2
+            filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
@@ -589,6 +593,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
@@ -608,6 +613,7 @@ STAGE PLANS:
                     value expressions: _col1 (type: string)
           TableScan
             alias: ttest2
+            filterExpr: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
@@ -682,6 +688,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
@@ -701,6 +708,7 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string)
           TableScan
             alias: ttest2
+            filterExpr: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
@@ -932,6 +940,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
@@ -948,6 +957,7 @@ STAGE PLANS:
                   value expressions: _col9 (type: string)
           TableScan
             alias: ttest2
+            filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
@@ -1036,6 +1046,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ttest1
+            filterExpr: (ts1 = '2015-11-20') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ts1 = '2015-11-20') (type: boolean)
@@ -1052,6 +1063,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: bigint), _col1 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
           TableScan
             alias: ttest2
+            filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)

@@ -556,6 +556,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a2
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: COMPLETE
                   GatherStats: false
                   Select Operator

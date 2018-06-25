@@ -149,6 +149,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -205,6 +206,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -316,6 +318,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -359,6 +362,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 324 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -485,6 +489,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -529,6 +534,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: c2 is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

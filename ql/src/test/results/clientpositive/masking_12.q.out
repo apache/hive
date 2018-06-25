@@ -672,6 +672,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n5
+            filterExpr: (key > 6) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1217,6 +1218,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n5
+            filterExpr: key is not null (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1235,6 +1237,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: masking_test_n5
+            filterExpr: (key > 6) (type: boolean)
             properties:
               insideView TRUE
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

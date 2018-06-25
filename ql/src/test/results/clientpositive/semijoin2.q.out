@@ -60,6 +60,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: (bigint_col_22 is not null and decimal1709_col_26 is not null and tinyint_col_8 is not null and timestamp_col_10 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (bigint_col_22 is not null and decimal1709_col_26 is not null and timestamp_col_10 is not null and tinyint_col_8 is not null) (type: boolean)
@@ -72,6 +73,7 @@ STAGE PLANS:
                 value expressions: smallint_col_25 (type: smallint), double_col_61 (type: double), timestamp_col_10 (type: timestamp)
           TableScan
             alias: t2
+            filterExpr: (UDFToLong(tinyint_col_6) is not null and decimal0504_col_37 is not null and tinyint_col_33 is not null and UDFToInteger(smallint_col_38) is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (UDFToInteger(smallint_col_38) is not null and UDFToLong(tinyint_col_6) is not null and decimal0504_col_37 is not null and tinyint_col_33 is not null) (type: boolean)
@@ -230,6 +232,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: tt1
+            filterExpr: decimal1208_col_20 is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: decimal1208_col_20 is not null (type: boolean)
@@ -241,6 +244,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: tt2
+            filterExpr: (decimal1611_col_22 is not null and timestamp_col_18 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (decimal1611_col_22 is not null and timestamp_col_18 is not null) (type: boolean)

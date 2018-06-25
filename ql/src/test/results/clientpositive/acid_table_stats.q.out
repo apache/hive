@@ -132,6 +132,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
+            filterExpr: (ds = '2008-04-08') (type: boolean)
             Statistics: Num rows: 83 Data size: 40630 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 83 Data size: 40630 Basic stats: COMPLETE Column stats: NONE
@@ -299,6 +300,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
+            filterExpr: (ds = '2008-04-08') (type: boolean)
             Statistics: Num rows: 1000 Data size: 208000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 1000 Data size: 208000 Basic stats: COMPLETE Column stats: NONE
@@ -459,6 +461,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
+            filterExpr: (ds = '2008-04-08') (type: boolean)
             Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
@@ -531,6 +534,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
+            filterExpr: (ds = '2008-04-08') (type: boolean)
             Statistics: Num rows: 2000 Data size: 416000 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)

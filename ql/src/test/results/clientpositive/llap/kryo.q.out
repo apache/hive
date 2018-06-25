@@ -44,6 +44,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: datetime_
+                  filterExpr: ((id = 1) or (id = 2) or (id = 3) or (id = 4) or (id = 5) or (id = 6)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((id = 1) or (id = 2) or (id = 3) or (id = 4) or (id = 5) or (id = 6)) (type: boolean)

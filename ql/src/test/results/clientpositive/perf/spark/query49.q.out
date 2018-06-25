@@ -282,6 +282,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws
+                  filterExpr: ((ws_net_profit > 1) and (ws_net_paid > 0) and (ws_quantity > 0) and ws_order_number is not null and ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ws_net_paid > 0) and (ws_net_profit > 1) and (ws_quantity > 0) and ws_item_sk is not null and ws_order_number is not null and ws_sold_date_sk is not null) (type: boolean)
@@ -301,6 +302,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 2000) and (d_moy = 12) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_moy = 12) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
@@ -319,6 +321,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: wr
+                  filterExpr: ((wr_return_amt > 10000) and wr_order_number is not null and wr_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 14398467 Data size: 1325194184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((wr_return_amt > 10000) and wr_item_sk is not null and wr_order_number is not null) (type: boolean)
@@ -338,6 +341,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cs
+                  filterExpr: ((cs_net_profit > 1) and (cs_net_paid > 0) and (cs_quantity > 0) and cs_order_number is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((cs_net_paid > 0) and (cs_net_profit > 1) and (cs_quantity > 0) and cs_item_sk is not null and cs_order_number is not null and cs_sold_date_sk is not null) (type: boolean)
@@ -357,6 +361,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cr
+                  filterExpr: ((cr_return_amount > 10000) and cr_order_number is not null and cr_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((cr_return_amount > 10000) and cr_item_sk is not null and cr_order_number is not null) (type: boolean)
@@ -376,6 +381,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sts
+                  filterExpr: ((ss_net_profit > 1) and (ss_net_paid > 0) and (ss_quantity > 0) and ss_ticket_number is not null and ss_item_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_net_paid > 0) and (ss_net_profit > 1) and (ss_quantity > 0) and ss_item_sk is not null and ss_sold_date_sk is not null and ss_ticket_number is not null) (type: boolean)
@@ -395,6 +401,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sr
+                  filterExpr: ((sr_return_amt > 10000) and sr_ticket_number is not null and sr_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((sr_return_amt > 10000) and sr_item_sk is not null and sr_ticket_number is not null) (type: boolean)

@@ -66,6 +66,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: s_store_sk is not null (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_store_sk is not null (type: boolean)
@@ -96,6 +97,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -115,6 +117,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: (((i_class) IN ('wallpaper', 'parenting', 'musical') or (i_class) IN ('womens', 'birdal', 'pants')) and ((i_category) IN ('Home', 'Books', 'Electronics') or (i_category) IN ('Shoes', 'Jewelry', 'Men')) and (((i_category) IN ('Home', 'Books', 'Electronics') and (i_class) IN ('wallpaper', 'parenting', 'musical')) or ((i_category) IN ('Shoes', 'Jewelry', 'Men') and (i_class) IN ('womens', 'birdal', 'pants'))) and i_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((i_category) IN ('Home', 'Books', 'Electronics') and (i_class) IN ('wallpaper', 'parenting', 'musical')) or ((i_category) IN ('Shoes', 'Jewelry', 'Men') and (i_class) IN ('womens', 'birdal', 'pants'))) and ((i_category) IN ('Home', 'Books', 'Electronics') or (i_category) IN ('Shoes', 'Jewelry', 'Men')) and ((i_class) IN ('wallpaper', 'parenting', 'musical') or (i_class) IN ('womens', 'birdal', 'pants')) and i_item_sk is not null) (type: boolean)
@@ -134,6 +137,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 2000) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 2000) and d_date_sk is not null) (type: boolean)

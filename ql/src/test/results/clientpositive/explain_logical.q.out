@@ -76,6 +76,7 @@ LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: ds is not null (type: boolean)
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
     Select Operator (SEL_2)
       expressions: key (type: string)
@@ -179,6 +180,7 @@ $hdt$_0-subquery1:src
 $hdt$_0-subquery2:srcpart 
   TableScan (TS_2)
     alias: srcpart
+    filterExpr: ds is not null (type: boolean)
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
     Select Operator (SEL_4)
       expressions: key (type: string), value (type: string)
@@ -197,6 +199,7 @@ LOGICAL PLAN:
 $hdt$_0:s1 
   TableScan (TS_0)
     alias: s1
+    filterExpr: key is not null (type: boolean)
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_11)
       predicate: key is not null (type: boolean)
@@ -232,6 +235,7 @@ $hdt$_0:s1
 $hdt$_1:s2 
   TableScan (TS_3)
     alias: s2
+    filterExpr: (key is not null and ds is not null) (type: boolean)
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_12)
       predicate: key is not null (type: boolean)
@@ -280,6 +284,7 @@ LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: ds is not null (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -297,6 +302,7 @@ LOGICAL PLAN:
 $hdt$_0:srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: (ds is not null and key is not null) (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -334,6 +340,7 @@ $hdt$_0:srcpart
 $hdt$_1:src2 
   TableScan (TS_3)
     alias: src2
+    filterExpr: key is not null (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -367,6 +374,7 @@ LOGICAL PLAN:
 $hdt$_0:srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: (ds is not null and key is not null) (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
@@ -407,6 +415,7 @@ $hdt$_0:srcpart
 $hdt$_1:src 
   TableScan (TS_3)
     alias: src
+    filterExpr: key is not null (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -435,6 +444,7 @@ $hdt$_1:src
 $hdt$_2:src3 
   TableScan (TS_6)
     alias: src3
+    filterExpr: key is not null (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -484,6 +494,7 @@ LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
+    filterExpr: (ds = '10') (type: boolean)
     properties:
       insideView TRUE
     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -504,6 +515,7 @@ LOGICAL PLAN:
 $hdt$_0:src 
   TableScan (TS_0)
     alias: src
+    filterExpr: key is not null (type: boolean)
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_17)
       predicate: key is not null (type: boolean)
@@ -563,6 +575,7 @@ $hdt$_0:src
 $hdt$_1:s2 
   TableScan (TS_7)
     alias: s2
+    filterExpr: key is not null (type: boolean)
     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
     Filter Operator (FIL_18)
       predicate: key is not null (type: boolean)

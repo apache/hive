@@ -58,6 +58,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cstring2 like '%b%') and ((cdouble >= -1.389D) or (cstring1 < 'a'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2308074 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

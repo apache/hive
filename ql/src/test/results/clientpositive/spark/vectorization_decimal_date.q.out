@@ -33,6 +33,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_decimal_test
+                  filterExpr: (cint is not null and cdouble is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1651260 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
