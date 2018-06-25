@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -35,25 +34,11 @@ import org.apache.hadoop.io.Text;
 @Description(name = "current_database",
     value = "_FUNC_() - returns currently using database name")
 @NDV(maxNdv = 1)
-public class UDFCurrentDB extends GenericUDF {
-
-  private MapredContext context;
-
-  @Override
-  public void configure(MapredContext context) {
-    this.context = context;
-  }
-
+public class GenericUDFCurrentDatabase extends GenericUDF {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    String database;
-    if (context != null) {
-      database = context.getJobConf().get("hive.current.database");
-    } else {
-      database = SessionState.get().getCurrentDatabase();
-    }
     return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-        TypeInfoFactory.stringTypeInfo, new Text(database));
+        TypeInfoFactory.stringTypeInfo, new Text(SessionState.get().getCurrentDatabase()));
   }
 
   @Override
