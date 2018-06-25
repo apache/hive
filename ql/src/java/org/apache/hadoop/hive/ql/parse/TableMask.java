@@ -124,7 +124,7 @@ public class TableMask {
       sb.append("(SELECT *");
     }
 
-    if (!maskAndFilterInfo.isView) {
+    if (!maskAndFilterInfo.isView && !maskAndFilterInfo.isNonNative) {
       // put all virtual columns in RowResolver.
       Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(conf).iterator();
       while (vcs.hasNext()) {
