@@ -748,6 +748,9 @@ public class MetastoreConf {
         "The class to use to read schemas from storage.  It must implement " +
         "org.apache.hadoop.hive.metastore.StorageSchemaReader"),
     STORE_MANAGER_TYPE("datanucleus.storeManagerType", "datanucleus.storeManagerType", "rdbms", "metadata store type"),
+    STRICT_MANAGED_TABLES("metastore.strict.managed.tables", "hive.strict.managed.tables", false,
+            "Whether strict managed tables mode is enabled. With this mode enabled, " +
+            "only transactional tables (both full and insert-only) are allowed to be created as managed tables"),
     SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES("metastore.support.special.characters.tablename",
         "hive.support.special.characters.tablename", true,
         "This flag should be set to true to enable support for special characters in table names.\n"
