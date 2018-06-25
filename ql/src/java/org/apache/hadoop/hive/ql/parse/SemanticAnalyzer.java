@@ -6865,6 +6865,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, true);
       }
     }
+    else {
+      if(updating(dest) || deleting(dest)) {
+        partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
+        enforceBucketing = true;
+      }
+    }
 
     if ((dest_tab.getSortCols() != null) &&
         (dest_tab.getSortCols().size() > 0)) {

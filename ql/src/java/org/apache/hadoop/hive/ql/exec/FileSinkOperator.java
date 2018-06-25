@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -377,6 +378,38 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
     public Collection<String> getStoredStats() {
       return stat.getStoredStats();
+    }
+
+    /**
+     * This method is intended for use with ACID unbucketed tables, where the DELETE ops behave as
+     * though they are bucketed, but without an explicit pre-specified bucket count. The bucketNum
+     * is read out of the middle value of the ROW__ID variable and this is written out from a single
+     * FileSink, in ways similar to the multi file spray, but without knowing the total number of
+     * buckets ahead of time.
+     *
+     * ROW__ID (1,2[0],3) => bucket_00002
+     * ROW__ID (1,3[0],4) => bucket_00003 etc
+     *
+     * A new FSP is created for each partition, so this only requires the bucket numbering and that
+     * is mapped in directly as an index.
+     */
+    public int createDynamicBucket(int bucketNum) {
+      // this assumes all paths are bucket names (which means no lookup is needed)
+      int writerOffset = bucketNum;
+      if (updaters.length <= writerOffset) {
+        this.updaters = Arrays.copyOf(updaters, writerOffset + 1);
+        this.outPaths = Arrays.copyOf(outPaths, writerOffset + 1);
+        this.finalPaths = Arrays.copyOf(finalPaths, writerOffset + 1);
+      }
+
+      if (this.finalPaths[writerOffset] == null) {
+        // uninitialized bucket
+        String bucketName =
+            Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), bucketNum);
+        this.finalPaths[writerOffset] = new Path(bDynParts ? buildTmpPath() : parent, bucketName);
+        this.outPaths[writerOffset] = new Path(buildTaskOutputTempPath(), bucketName);
+      }
+      return writerOffset;
     }
   } // class FSPaths
 
@@ -978,31 +1011,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               " from data but no mapping in 'bucketMap'." + extraMsg);
           }
           writerOffset = bucketMap.get(bucketNum);
+        } else if (!isBucketed) {
+          writerOffset = fpaths.createDynamicBucket(bucketNum);
         }
         if (fpaths.updaters[writerOffset] == null) {
-          /*data for delete commands always have ROW__ID which implies that the bucket ID
-          * for each row is known.  RecordUpdater creates bucket_N file based on 'bucketNum' thus
-          * delete events always land in the proper bucket_N file.  This could even handle
-          * cases where multiple writers are writing bucket_N file for the same N in which case
-          * Hive.copyFiles() will make one of them bucket_N_copy_M in the final location.  The
-          * reset of acid (read path) doesn't know how to handle copy_N files except for 'original'
-          * files (HIVE-16177)*/
-          int writerId = -1;
-          if(!isBucketed) {
-            assert !multiFileSpray;
-            assert writerOffset == 0;
-            /**For un-bucketed tables, Deletes with ROW__IDs with different 'bucketNum' values can
-            * be written to the same bucketN file.
-            * N in this case is writerId and there is no relationship
-            * between the file name and any property of the data in it.  Inserts will be written
-            * to bucketN file such that all {@link RecordIdentifier#getBucketProperty()} indeed
-            * contain writerId=N.
-            * Since taskId is unique (at least per statementId and thus
-            * per [delete_]delta_x_y_stmtId/) there will not be any copy_N files.*/
-            writerId = Integer.parseInt(Utilities.getTaskIdFromFilename(taskId));
-          }
           fpaths.updaters[writerOffset] = HiveFileFormatUtils.getAcidRecordUpdater(
-            jc, conf.getTableInfo(), writerId >= 0 ? writerId : bucketNum, conf,
+            jc, conf.getTableInfo(), bucketNum, conf,
             fpaths.outPaths[writerOffset], rowInspector, reporter, 0);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Created updater for bucket number " + bucketNum + " using file " +
