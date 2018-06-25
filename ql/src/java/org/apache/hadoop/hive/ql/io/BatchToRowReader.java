@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.llap.DebugUtils;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,6 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ListColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -48,12 +47,13 @@ import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -429,18 +429,18 @@ public abstract class BatchToRowReader<StructType, UnionType>
     }
   }
 
-  public static DateWritableV2 nextDate(ColumnVector vector,
-                                        int row,
-                                        Object previous) {
+  public static DateWritable nextDate(ColumnVector vector,
+                               int row,
+                               Object previous) {
     if (vector.isRepeating) {
       row = 0;
     }
     if (vector.noNulls || !vector.isNull[row]) {
-      DateWritableV2 result;
-      if (previous == null || previous.getClass() != DateWritableV2.class) {
-        result = new DateWritableV2();
+      DateWritable result;
+      if (previous == null || previous.getClass() != DateWritable.class) {
+        result = new DateWritable();
       } else {
-        result = (DateWritableV2) previous;
+        result = (DateWritable) previous;
       }
       int date = (int) ((LongColumnVector) vector).vector[row];
       result.set(date);
@@ -450,18 +450,18 @@ public abstract class BatchToRowReader<StructType, UnionType>
     }
   }
 
-  public static TimestampWritableV2 nextTimestamp(ColumnVector vector,
-                                                  int row,
-                                                  Object previous) {
+  public static TimestampWritable nextTimestamp(ColumnVector vector,
+                                         int row,
+                                         Object previous) {
     if (vector.isRepeating) {
       row = 0;
     }
     if (vector.noNulls || !vector.isNull[row]) {
-      TimestampWritableV2 result;
-      if (previous == null || previous.getClass() != TimestampWritableV2.class) {
-        result = new TimestampWritableV2();
+      TimestampWritable result;
+      if (previous == null || previous.getClass() != TimestampWritable.class) {
+        result = new TimestampWritable();
       } else {
-        result = (TimestampWritableV2) previous;
+        result = (TimestampWritable) previous;
       }
       TimestampColumnVector tcv = (TimestampColumnVector) vector;
       result.setInternal(tcv.time[row], tcv.nanos[row]);

@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 abstract public class TimestampToStringUnaryUDF extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  protected final int inputColumn;
+  private final int inputColumn;
 
   public TimestampToStringUnaryUDF(int inputColumn, int outputColumnNum) {
     super(outputColumnNum);

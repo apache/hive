@@ -17,12 +17,13 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.common.type.Date;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import java.sql.Date;
+
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
- * A WritableDateObjectInspector inspects a DateWritableV2 Object.
+ * A WritableDateObjectInspector inspects a DateWritable Object.
  */
 public class WritableDateObjectInspector extends
     AbstractPrimitiveWritableObjectInspector implements
@@ -33,49 +34,35 @@ public class WritableDateObjectInspector extends
   }
 
   @Override
-  public DateWritableV2 getPrimitiveWritableObject(Object o) {
-    return o == null ? null : (DateWritableV2) o;
+  public DateWritable getPrimitiveWritableObject(Object o) {
+    return o == null ? null : (DateWritable) o;
   }
 
   public Date getPrimitiveJavaObject(Object o) {
-    return o == null ? null : ((DateWritableV2) o).get();
+    return o == null ? null : ((DateWritable) o).get();
   }
 
   public Object copyObject(Object o) {
-    return o == null ? null : new DateWritableV2((DateWritableV2) o);
+    return o == null ? null : new DateWritable((DateWritable) o);
   }
 
   public Object set(Object o, Date d) {
     if (d == null) {
       return null;
     }
-    ((DateWritableV2) o).set(d);
+    ((DateWritable) o).set(d);
     return o;
   }
 
-  @Deprecated
-  public Object set(Object o, java.sql.Date d) {
+  public Object set(Object o, DateWritable d) {
     if (d == null) {
       return null;
     }
-    ((DateWritableV2) o).set(Date.ofEpochMilli(d.getTime()));
+    ((DateWritable) o).set(d);
     return o;
-  }
-
-  public Object set(Object o, DateWritableV2 d) {
-    if (d == null) {
-      return null;
-    }
-    ((DateWritableV2) o).set(d);
-    return o;
-  }
-
-  @Deprecated
-  public Object create(java.sql.Date value) {
-    return new DateWritableV2(Date.ofEpochMilli(value.getTime()));
   }
 
   public Object create(Date d) {
-    return new DateWritableV2(d);
+    return new DateWritable(d);
   }
 }

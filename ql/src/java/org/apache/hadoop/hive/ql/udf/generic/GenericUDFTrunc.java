@@ -20,21 +20,24 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -74,6 +77,7 @@ import org.apache.hadoop.io.Text;
         + " > SELECT _FUNC_(1234567891.1234567891);\n" + "OK\n" + " 1234567891")
 public class GenericUDFTrunc extends GenericUDF {
 
+  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient TimestampConverter timestampConverter;
   private transient Converter textConverter1;
   private transient Converter textConverter2;
@@ -84,7 +88,7 @@ public class GenericUDFTrunc extends GenericUDF {
   private transient Converter longConverter;
   private transient PrimitiveCategory inputType1;
   private transient PrimitiveCategory inputType2;
-  private final Date date = new Date();
+  private final Calendar calendar = Calendar.getInstance();
   private final Text output = new Text();
   private transient String fmtInput;
   private transient PrimitiveObjectInspector inputOI;
@@ -293,35 +297,36 @@ public class GenericUDFTrunc extends GenericUDF {
       fmtInput = textConverter2.convert(arguments[1].get()).toString();
     }
 
-    Date d;
+    Date date;
     switch (inputType1) {
     case STRING:
       String dateString = textConverter1.convert(arguments[0].get()).toString();
       try {
-        d = Date.valueOf(dateString.toString());
-      } catch (IllegalArgumentException e) {
+        date = formatter.parse(dateString.toString());
+      } catch (ParseException e) {
         return null;
       }
       break;
     case TIMESTAMP:
       Timestamp ts =
-          ((TimestampWritableV2) timestampConverter.convert(arguments[0].get())).getTimestamp();
-      d = Date.ofEpochMilli(ts.toEpochMilli());
+          ((TimestampWritable) timestampConverter.convert(arguments[0].get())).getTimestamp();
+      date = ts;
       break;
     case DATE:
-      DateWritableV2 dw = (DateWritableV2) dateWritableConverter.convert(arguments[0].get());
-      d = dw.get();
+      DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
+      date = dw.get();
       break;
     default:
       throw new UDFArgumentTypeException(0,
           "TRUNC() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType1);
     }
 
-    if (evalDate(d) == null) {
+    if (evalDate(date) == null) {
       return null;
     }
 
-    output.set(date.toString());
+    Date newDate = calendar.getTime();
+    output.set(formatter.format(newDate));
     return output;
   }
 
@@ -422,22 +427,22 @@ public class GenericUDFTrunc extends GenericUDF {
     return getStandardDisplayString("trunc", children);
   }
 
-  private Date evalDate(Date d) throws UDFArgumentException {
-    date.setTimeInDays(d.toEpochDay());
+  private Calendar evalDate(Date d) throws UDFArgumentException {
+    calendar.setTime(d);
     if ("MONTH".equals(fmtInput) || "MON".equals(fmtInput) || "MM".equals(fmtInput)) {
-      date.setDayOfMonth(1);
-      return date;
+      calendar.set(Calendar.DAY_OF_MONTH, 1);
+      return calendar;
     } else if ("QUARTER".equals(fmtInput) || "Q".equals(fmtInput)) {
-      int month = date.getMonth() - 1;
+      int month = calendar.get(Calendar.MONTH);
       int quarter = month / 3;
-      int monthToSet = quarter * 3 + 1;
-      date.setMonth(monthToSet);
-      date.setDayOfMonth(1);
-      return date;
+      int monthToSet = quarter * 3;
+      calendar.set(Calendar.MONTH, monthToSet);
+      calendar.set(Calendar.DAY_OF_MONTH, 1);
+      return calendar;
     } else if ("YEAR".equals(fmtInput) || "YYYY".equals(fmtInput) || "YY".equals(fmtInput)) {
-      date.setMonth(1);
-      date.setDayOfMonth(1);
-      return date;
+      calendar.set(Calendar.MONTH, 0);
+      calendar.set(Calendar.DAY_OF_MONTH, 1);
+      return calendar;
     } else {
       return null;
     }
@@ -480,5 +485,5 @@ public class GenericUDFTrunc extends GenericUDF {
     }
     return output;
   }
-
+  
 }

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hive.common.util.Murmur3;
 
 import java.sql.Date;
@@ -31,9 +30,11 @@ import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import com.google.common.base.Preconditions;
 
@@ -412,7 +413,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
           case DATE:
             {
               Date dt = new Date(0);
-              dt.setTime(DateWritableV2.daysToMillis((int) longValues[i]));
+              dt.setTime(DateWritable.daysToMillis((int) longValues[i]));
               sb.append(" date ");
               sb.append(dt.toString());
             }

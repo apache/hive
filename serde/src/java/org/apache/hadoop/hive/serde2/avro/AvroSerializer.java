@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,15 +28,16 @@ import java.util.Set;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
 import org.apache.avro.Schema.Type;
+import org.apache.avro.generic.GenericArray;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Fixed;
 import org.apache.avro.generic.GenericEnumSymbol;
-import org.apache.hadoop.hive.common.type.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -207,11 +210,11 @@ class AvroSerializer {
       return vc.getValue();
     case DATE:
       Date date = ((DateObjectInspector)fieldOI).getPrimitiveJavaObject(structFieldData);
-      return DateWritableV2.dateToDays(date);
+      return DateWritable.dateToDays(date);
     case TIMESTAMP:
       Timestamp timestamp =
         ((TimestampObjectInspector) fieldOI).getPrimitiveJavaObject(structFieldData);
-      return timestamp.toEpochMilli();
+      return timestamp.getTime();
     case UNKNOWN:
       throw new AvroSerdeException("Received UNKNOWN primitive category.");
     case VOID:

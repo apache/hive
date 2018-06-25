@@ -17,8 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import java.sql.Timestamp;
+
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class JavaTimestampObjectInspector
@@ -29,8 +30,8 @@ public class JavaTimestampObjectInspector
     super(TypeInfoFactory.timestampTypeInfo);
   }
 
-  public TimestampWritableV2 getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new TimestampWritableV2((Timestamp) o);
+  public TimestampWritable getPrimitiveWritableObject(Object o) {
+    return o == null ? null : new TimestampWritable((Timestamp) o);
   }
 
   @Override
@@ -44,54 +45,43 @@ public class JavaTimestampObjectInspector
       return null;
     }
     Timestamp source = (Timestamp) o;
-    return new Timestamp(source);
+    Timestamp copy = new Timestamp(source.getTime());
+    copy.setNanos(source.getNanos());
+    return copy;
   }
 
   public Timestamp get(Object o) {
     return (Timestamp) o;
   }
 
-  @Deprecated
-  public Object set(Object o, java.sql.Timestamp value) {
-    if (value == null) {
-      return null;
-    }
-    ((Timestamp) o).setTimeInMillis(value.getTime(), value.getNanos());
-    return o;
-  }
-
   public Object set(Object o, Timestamp value) {
     if (value == null) {
       return null;
     }
-    ((Timestamp) o).set(value);
+    ((Timestamp) o).setTime(value.getTime());
     return o;
   }
 
   public Object set(Object o, byte[] bytes, int offset) {
-    TimestampWritableV2.setTimestamp((Timestamp) o, bytes, offset);
+    TimestampWritable.setTimestamp((Timestamp) o, bytes, offset);
     return o;
   }
 
-  public Object set(Object o, TimestampWritableV2 tw) {
+  public Object set(Object o, TimestampWritable tw) {
     if (tw == null) {
       return null;
     }
     Timestamp t = (Timestamp) o;
-    t.set(tw.getTimestamp());
+    t.setTime(tw.getTimestamp().getTime());
+    t.setNanos(tw.getTimestamp().getNanos());
     return t;
   }
 
-  @Deprecated
-  public Object create(java.sql.Timestamp value) {
-    return Timestamp.ofEpochMilli(value.getTime(), value.getNanos());
-  }
-
   public Object create(Timestamp value) {
-    return new Timestamp(value);
+    return new Timestamp(value.getTime());
   }
 
   public Object create(byte[] bytes, int offset) {
-    return TimestampWritableV2.createTimestamp(bytes, offset);
+    return TimestampWritable.createTimestamp(bytes, offset);
   }
 }

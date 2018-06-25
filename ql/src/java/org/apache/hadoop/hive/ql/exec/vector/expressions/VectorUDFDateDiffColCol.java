@@ -20,12 +20,13 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -216,7 +217,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
         String string = new String(input.vector[0], input.start[0], input.length[0]);
         try {
           date.setTime(formatter.parse(string).getTime());
-          output.vector[0] = DateWritableV2.dateToDays(date);
+          output.vector[0] = DateWritable.dateToDays(date);
           output.isNull[0] = false;
         } catch (ParseException e) {
           output.isNull[0] = true;
@@ -295,7 +296,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     String string = new String(input.vector[i], input.start[i], input.length[i]);
     try {
       date.setTime(formatter.parse(string).getTime());
-      output.vector[i] = DateWritableV2.dateToDays(date);
+      output.vector[i] = DateWritable.dateToDays(date);
     } catch (ParseException e) {
       output.isNull[i] = true;
       output.noNulls = false;
@@ -313,7 +314,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
     if (input.isRepeating) {
       if (input.noNulls || !input.isNull[0]) {
         date.setTime(input.getTime(0));
-        output.vector[0] = DateWritableV2.dateToDays(date);
+        output.vector[0] = DateWritable.dateToDays(date);
         output.isNull[0] = false;
       } else {
         output.isNull[0] = true;
@@ -333,14 +334,14 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
           for (int j=0; j < size; j++) {
             int i = sel[j];
             date.setTime(input.getTime(i));
-            output.vector[i] = DateWritableV2.dateToDays(date);
+            output.vector[i] = DateWritable.dateToDays(date);
             output.isNull[i] = false;
           }
         } else {
           for (int j=0; j < size; j++) {
             int i = sel[j];
             date.setTime(input.getTime(i));
-            output.vector[i] = DateWritableV2.dateToDays(date);
+            output.vector[i] = DateWritable.dateToDays(date);
           }
         }
       } else {
@@ -351,7 +352,7 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
         }
         for (int i = 0; i < size; i++) {
           date.setTime(input.getTime(i));
-          output.vector[i] = DateWritableV2.dateToDays(date);
+          output.vector[i] = DateWritable.dateToDays(date);
         }
       }
     } else /* there are nulls in our column */ {
@@ -372,14 +373,14 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
           int i = sel[j];
           if (!input.isNull[i]) {
             date.setTime(input.getTime(i));
-            output.vector[i] = DateWritableV2.dateToDays(date);
+            output.vector[i] = DateWritable.dateToDays(date);
           }
         }
       } else {
         for (int i = 0; i < size; i++) {
           if (!input.isNull[i]) {
             date.setTime(input.getTime(i));
-            output.vector[i] = DateWritableV2.dateToDays(date);
+            output.vector[i] = DateWritable.dateToDays(date);
           }
         }
       }

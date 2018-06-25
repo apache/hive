@@ -17,8 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 /**
  * A WritableConstantTimestampObjectInspector is a WritableTimestampObjectInspector
@@ -28,18 +29,18 @@ public class WritableConstantTimestampObjectInspector extends
     WritableTimestampObjectInspector implements
     ConstantObjectInspector {
 
-  private TimestampWritableV2 value;
+  private TimestampWritable value;
 
   protected WritableConstantTimestampObjectInspector() {
     super();
   }
-  WritableConstantTimestampObjectInspector(TimestampWritableV2 value) {
+  WritableConstantTimestampObjectInspector(TimestampWritable value) {
     super();
     this.value = value;
   }
 
   @Override
-  public TimestampWritableV2 getWritableConstantValue() {
+  public TimestampWritable getWritableConstantValue() {
     return value;
   }
 }

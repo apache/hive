@@ -25,7 +25,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
 /**
  * Return Unix Timestamp.
@@ -35,9 +34,8 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
 
   private static final long serialVersionUID = 1L;
 
-  private transient final SimpleDateFormat format = getFormatter();
-  private transient final Calendar calendar = Calendar.getInstance(
-      TimeZone.getTimeZone("UTC"));
+  private transient final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+  private transient final Calendar calendar = Calendar.getInstance();
 
   public VectorUDFUnixTimeStampString(int colNum, int outputColumnNum) {
     super(colNum, outputColumnNum, -1, -1);
@@ -57,11 +55,5 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
     }
     calendar.setTime(date);
     return calendar.getTimeInMillis() / 1000;
-  }
-
-  private static SimpleDateFormat getFormatter() {
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    format.setTimeZone(TimeZone.getTimeZone("UTC"));
-    return format;
   }
 }

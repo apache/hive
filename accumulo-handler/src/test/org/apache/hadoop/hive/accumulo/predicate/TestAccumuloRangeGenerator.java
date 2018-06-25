@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.accumulo.TestAccumuloDefaultIndexScanner;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -53,6 +52,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +27,9 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -50,6 +50,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * This class is used as a static factory for VectorColumnAssign.
@@ -169,10 +170,10 @@ public class VectorColumnAssignFactory {
   extends VectorColumnAssignVectorBase<TimestampColumnVector> {
 
     protected void assignTimestamp(Timestamp value, int index) {
-      outCol.set(index, value.toSqlTimestamp());
+      outCol.set(index, value);
     }
-    protected void assignTimestamp(TimestampWritableV2 tw, int index) {
-      outCol.set(index, tw.getTimestamp().toSqlTimestamp());
+    protected void assignTimestamp(TimestampWritable tw, int index) {
+      outCol.set(index, tw.getTimestamp());
     }
   }
 
@@ -341,7 +342,7 @@ public class VectorColumnAssignFactory {
               assignNull(destIndex);
             }
             else {
-              assignTimestamp((TimestampWritableV2) val, destIndex);
+              assignTimestamp((TimestampWritable) val, destIndex);
             }
           }
         }.init(outputBatch, (TimestampColumnVector) destCol);
@@ -354,7 +355,7 @@ public class VectorColumnAssignFactory {
               assignNull(destIndex);
             }
             else {
-              DateWritableV2 bw = (DateWritableV2) val;
+              DateWritable bw = (DateWritable) val;
               assignLong(bw.getDays(), destIndex);
             }
           }
@@ -584,7 +585,7 @@ public class VectorColumnAssignFactory {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.STRING);
       } else if (writables[i] instanceof BytesWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.BINARY);
-      } else if (writables[i] instanceof TimestampWritableV2) {
+      } else if (writables[i] instanceof TimestampWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.TIMESTAMP);
       } else if (writables[i] instanceof HiveIntervalYearMonthWritable) {
         vcas[i] = buildObjectAssign(outputBatch, i, PrimitiveCategory.INTERVAL_YEAR_MONTH);

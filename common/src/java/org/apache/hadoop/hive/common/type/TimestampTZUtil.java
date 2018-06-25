@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
@@ -30,6 +31,7 @@ import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +44,9 @@ public class TimestampTZUtil {
 
   private static final LocalTime DEFAULT_LOCAL_TIME = LocalTime.of(0, 0);
   private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[\\+-]\\d:\\d\\d");
+
+  private static final ThreadLocal<DateFormat> CONVERT_FORMATTER =
+      ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 
   static final DateTimeFormatter FORMATTER;
   static {
@@ -121,14 +126,11 @@ public class TimestampTZUtil {
     }
   }
 
-  // Converts Date to TimestampTZ.
+  // Converts Date to TimestampTZ. The conversion is done text-wise since
+  // Date/Timestamp should be treated as description of date/time.
   public static TimestampTZ convert(Date date, ZoneId defaultTimeZone) {
-    return parse(date.toString(), defaultTimeZone);
-  }
-
-  // Converts Timestamp to TimestampTZ.
-  public static TimestampTZ convert(Timestamp ts, ZoneId defaultTimeZone) {
-    return parse(ts.toString(), defaultTimeZone);
+    String s = date instanceof Timestamp ? date.toString() : CONVERT_FORMATTER.get().format(date);
+    return parse(s, defaultTimeZone);
   }
 
   public static ZoneId parseTimeZone(String timeZoneStr) {

@@ -18,35 +18,29 @@
 
 package org.apache.hadoop.hive.serde2.io;
 
-import com.google.code.tempusfugit.concurrency.ConcurrentRule;
-import com.google.code.tempusfugit.concurrency.RepeatingRule;
-import com.google.code.tempusfugit.concurrency.annotations.Concurrent;
-import com.google.code.tempusfugit.concurrency.annotations.Repeating;
-import org.apache.hadoop.hive.common.type.Date;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import com.google.code.tempusfugit.concurrency.annotations.*;
+import com.google.code.tempusfugit.concurrency.*;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
+import static org.junit.Assert.*;
+import java.io.*;
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-public class TestDateWritableV2 {
-  private static final Logger LOG = LoggerFactory.getLogger(TestDateWritableV2.class);
+public class TestDateWritable {
+  private static final Logger LOG = LoggerFactory.getLogger(TestDateWritable.class);
 
   @Rule public ConcurrentRule concurrentRule = new ConcurrentRule();
   @Rule public RepeatingRule repeatingRule = new RepeatingRule();
@@ -56,9 +50,9 @@ public class TestDateWritableV2 {
   @Repeating(repetition=100)
   public void testConstructor() {
     Date date = Date.valueOf(getRandomDateString());
-    DateWritableV2 dw1 = new DateWritableV2(date);
-    DateWritableV2 dw2 = new DateWritableV2(dw1);
-    DateWritableV2 dw3 = new DateWritableV2(dw1.getDays());
+    DateWritable dw1 = new DateWritable(date);
+    DateWritable dw2 = new DateWritable(dw1);
+    DateWritable dw3 = new DateWritable(dw1.getDays());
 
     assertEquals(dw1, dw1);
     assertEquals(dw1, dw2);
@@ -79,9 +73,9 @@ public class TestDateWritableV2 {
       date2 = Date.valueOf(getRandomDateString());
     }
 
-    DateWritableV2 dw1 = new DateWritableV2(date1);
-    DateWritableV2 dw2 = new DateWritableV2(date2);
-    DateWritableV2 dw3 = new DateWritableV2(date1);
+    DateWritable dw1 = new DateWritable(date1);
+    DateWritable dw2 = new DateWritable(date2);
+    DateWritable dw3 = new DateWritable(date1);
 
     assertTrue("Dates should be equal", dw1.equals(dw1));
     assertTrue("Dates should be equal", dw1.equals(dw3));
@@ -103,14 +97,14 @@ public class TestDateWritableV2 {
     Date date1 = Date.valueOf(getRandomDateString());
     Date date2 = Date.valueOf(getRandomDateString());
     Date date3 = Date.valueOf(getRandomDateString());
-    DateWritableV2 dw1 = new DateWritableV2(date1);
-    DateWritableV2 dw2 = new DateWritableV2(date2);
-    DateWritableV2 dw3 = new DateWritableV2(date3);
-    DateWritableV2 dw4 = new DateWritableV2();
+    DateWritable dw1 = new DateWritable(date1);
+    DateWritable dw2 = new DateWritable(date2);
+    DateWritable dw3 = new DateWritable(date3);
+    DateWritable dw4 = new DateWritable();
 
     // Getters
     assertEquals(date1, dw1.get());
-    assertEquals(date1.toEpochSecond(), dw1.getTimeInSeconds());
+    assertEquals(date1.getTime() / 1000, dw1.getTimeInSeconds());
 
     dw4.set(Date.valueOf("1970-01-02"));
     assertEquals(1, dw4.getDays());
@@ -132,8 +126,8 @@ public class TestDateWritableV2 {
   @Concurrent(count=4)
   @Repeating(repetition=100)
   public void testWritableMethods() throws Throwable {
-    DateWritableV2 dw1 = new DateWritableV2(Date.valueOf(getRandomDateString()));
-    DateWritableV2 dw2 = new DateWritableV2();
+    DateWritable dw1 = new DateWritable(Date.valueOf(getRandomDateString()));
+    DateWritable dw2 = new DateWritable();
     ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     DataOutput out = new DataOutputStream(byteStream);
 
@@ -157,11 +151,12 @@ public class TestDateWritableV2 {
 
   @BeforeClass
   public static void setupDateStrings() {
+    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     Date initialDate = Date.valueOf("2014-01-01");
     Calendar cal = Calendar.getInstance();
-    cal.setTimeInMillis(initialDate.toEpochMilli());
+    cal.setTime(initialDate);
     for (int idx = 0; idx < 365; ++idx) {
-      dateStrings[idx] = Date.ofEpochMilli(cal.getTimeInMillis()).toString();
+      dateStrings[idx] = format.format(cal.getTime());
       cal.add(1, Calendar.DAY_OF_YEAR);
     }
   }
@@ -181,20 +176,21 @@ public class TestDateWritableV2 {
 
     @Override
     public Void call() throws Exception {
-      // Iterate through each day of the year, make sure Date/DateWritableV2 match
+      SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+      // Iterate through each day of the year, make sure Date/DateWritable match
       Date originalDate = Date.valueOf("1900-01-01");
       Calendar cal = Calendar.getInstance();
-      cal.setTimeInMillis(originalDate.toEpochMilli());
+      cal.setTimeInMillis(originalDate.getTime());
       for (int idx = 0; idx < 365*200; ++idx) {
-        originalDate = Date.ofEpochMilli(cal.getTimeInMillis());
+        originalDate = new Date(cal.getTimeInMillis());
         // Make sure originalDate is at midnight in the local time zone,
-        // since DateWritableV2 will generate dates at that time.
+        // since DateWritable will generate dates at that time.
         originalDate = Date.valueOf(originalDate.toString());
-        DateWritableV2 dateWritable = new DateWritableV2(originalDate);
-        Date actual = dateWritable.get();
+        DateWritable dateWritable = new DateWritable(originalDate);
+        Date actual = dateWritable.get(false);
         if (!originalDate.equals(actual)) {
-          String originalStr = originalDate.toString();
-          String actualStr = actual.toString();
+          String originalStr = sdf.format(originalDate);
+          String actualStr = sdf.format(actual);
           if (originalStr.substring(0, 10).equals(actualStr.substring(0, 10))) continue;
           bad.add(new DtMismatch(originalStr, actualStr, tz));
         }
