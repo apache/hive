@@ -18,10 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,14 +32,12 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.serde2.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
@@ -1299,11 +1298,15 @@ public class VectorRandomRowSource {
   }
 
   public static String randomPrimitiveDateStringObject(Random r) {
-    return RandomTypeUtil.getRandDate(r).toString();
+    Date randomDate = RandomTypeUtil.getRandDate(r);
+    String randomDateString = randomDate.toString();
+    return randomDateString;
   }
 
   public static String randomPrimitiveTimestampStringObject(Random r) {
-    return RandomTypeUtil.getRandTimestamp(r).toString();
+    Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(r);
+    String randomTimestampString = randomTimestamp.toString();
+    return randomTimestampString;
   }
 
   public static HiveChar getRandHiveChar(Random r, CharTypeInfo charTypeInfo) {

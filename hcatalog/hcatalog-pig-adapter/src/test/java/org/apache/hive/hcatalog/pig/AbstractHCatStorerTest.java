@@ -213,17 +213,23 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
    */
   @Test
   public void testWriteTimestamp() throws Exception {
-    DateTime d = new DateTime(1991, 10, 11, 14, 23, 30, 10, DateTimeZone.UTC);// uses default TZ
+    DateTime d = new DateTime(1991, 10, 11, 14, 23, 30, 10);// uses default TZ
     pigValueRangeTest("junitTypeTest1", "timestamp", "datetime", null, d.toString(),
-        d.toDateTime(DateTimeZone.UTC).toString());
+        d.toDateTime(DateTimeZone.getDefault()).toString());
     d = d.plusHours(2);
     pigValueRangeTest("junitTypeTest2", "timestamp", "datetime",
         HCatBaseStorer.OOR_VALUE_OPT_VALUES.Null, d.toString(),
-        d.toDateTime(DateTimeZone.UTC).toString());
+        d.toDateTime(DateTimeZone.getDefault()).toString());
+    d = d.toDateTime(DateTimeZone.UTC);
+    pigValueRangeTest("junitTypeTest3", "timestamp", "datetime", null, d.toString(),
+        d.toDateTime(DateTimeZone.getDefault()).toString());
 
-    d = new DateTime(1991, 10, 11, 23, 24, 25, 26, DateTimeZone.UTC);
+    d = new DateTime(1991, 10, 11, 23, 24, 25, 26);
     pigValueRangeTest("junitTypeTest1", "timestamp", "datetime", null, d.toString(),
-        d.toDateTime(DateTimeZone.UTC).toString());
+        d.toDateTime(DateTimeZone.getDefault()).toString());
+    d = d.toDateTime(DateTimeZone.UTC);
+    pigValueRangeTest("junitTypeTest3", "timestamp", "datetime", null, d.toString(),
+        d.toDateTime(DateTimeZone.getDefault()).toString());
   }
 
   // End: tests that check values from Pig that are out of range for target column

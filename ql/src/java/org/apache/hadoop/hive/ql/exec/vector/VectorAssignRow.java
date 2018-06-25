@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.common.type.Date;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
@@ -38,10 +38,10 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionConversion;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -174,7 +174,7 @@ public class VectorAssignRow {
           ((PrimitiveTypeInfo) targetTypeInfos[logicalColumnIndex]).getPrimitiveCategory();
       switch (targetPrimitiveCategory) {
       case DATE:
-        convertTargetWritables[logicalColumnIndex] = new DateWritableV2();
+        convertTargetWritables[logicalColumnIndex] = new DateWritable();
         break;
       case STRING:
         convertTargetWritables[logicalColumnIndex] = new Text();
@@ -414,19 +414,19 @@ public class VectorAssignRow {
         case TIMESTAMP:
           if (object instanceof Timestamp) {
             ((TimestampColumnVector) columnVector).set(
-                batchIndex, ((Timestamp) object).toSqlTimestamp());
+                batchIndex, ((Timestamp) object));
           } else {
             ((TimestampColumnVector) columnVector).set(
-                batchIndex, ((TimestampWritableV2) object).getTimestamp().toSqlTimestamp());
+                batchIndex, ((TimestampWritable) object).getTimestamp());
           }
           break;
         case DATE:
           if (object instanceof Date) {
             ((LongColumnVector) columnVector).vector[batchIndex] =
-                DateWritableV2.dateToDays((Date) object);
+                DateWritable.dateToDays((Date) object);
           } else {
             ((LongColumnVector) columnVector).vector[batchIndex] =
-               ((DateWritableV2) object).getDays();
+               ((DateWritable) object).getDays();
           }
           break;
         case FLOAT:
@@ -711,7 +711,7 @@ public class VectorAssignRow {
               return;
             }
             ((TimestampColumnVector) columnVector).set(
-                batchIndex, timestamp.toSqlTimestamp());
+                batchIndex, timestamp);
           }
           break;
         case DATE:
@@ -722,9 +722,9 @@ public class VectorAssignRow {
               VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            DateWritableV2 dateWritable = (DateWritableV2) convertTargetWritable;
+            DateWritable dateWritable = (DateWritable) convertTargetWritable;
             if (dateWritable == null) {
-              dateWritable = new DateWritableV2();
+              dateWritable = new DateWritable();
             }
             dateWritable.set(date);
             ((LongColumnVector) columnVector).vector[batchIndex] =

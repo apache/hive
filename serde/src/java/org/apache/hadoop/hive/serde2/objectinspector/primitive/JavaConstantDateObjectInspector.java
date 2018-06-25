@@ -17,8 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.common.type.Date;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import java.sql.Date;
+
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 
 public class JavaConstantDateObjectInspector extends JavaDateObjectInspector
@@ -35,6 +36,6 @@ public class JavaConstantDateObjectInspector extends JavaDateObjectInspector
     if (value==null) {
       return null;
     }
-    return new DateWritableV2(value);
+    return new DateWritable(value);
   }
 }

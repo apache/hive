@@ -14,18 +14,18 @@
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -340,12 +340,12 @@ public enum ETypeConverter {
       };
     }
   },
-  ETIMESTAMP_CONVERTER(TimestampWritableV2.class) {
+  ETIMESTAMP_CONVERTER(TimestampWritable.class) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
-      return new BinaryConverter<TimestampWritableV2>(type, parent, index) {
+      return new BinaryConverter<TimestampWritable>(type, parent, index) {
         @Override
-        protected TimestampWritableV2 convert(Binary binary) {
+        protected TimestampWritable convert(Binary binary) {
           NanoTime nt = NanoTime.fromBinary(binary);
           Map<String, String> metadata = parent.getMetadata();
           //Current Hive parquet timestamp implementation stores it in UTC, but other components do not do that.
@@ -353,18 +353,18 @@ public enum ETypeConverter {
           boolean skipConversion = Boolean.parseBoolean(
               metadata.get(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname));
           Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipConversion);
-          return new TimestampWritableV2(ts);
+          return new TimestampWritable(ts);
         }
       };
     }
   },
-  EDATE_CONVERTER(DateWritableV2.class) {
+  EDATE_CONVERTER(DateWritable.class) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
       return new PrimitiveConverter() {
         @Override
         public void addInt(final int value) {
-          parent.set(index, new DateWritableV2(value));
+          parent.set(index, new DateWritable(value));
         }
       };
     }

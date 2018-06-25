@@ -23,7 +23,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
 import org.apache.hadoop.io.Text;
 
@@ -36,8 +35,7 @@ public final class VectorUDFDayOfWeekString extends VectorUDFTimestampFieldStrin
   private static final long serialVersionUID = 1L;
 
   private transient final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-  private transient final Calendar calendar = Calendar.getInstance(
-      TimeZone.getTimeZone("UTC"));
+  private transient final Calendar calendar = Calendar.getInstance();
 
   public VectorUDFDayOfWeekString(int colNum, int outputColumnNum) {
     super(colNum, outputColumnNum, -1, -1);

@@ -17,8 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.common.type.Date;
-import org.apache.hadoop.hive.common.type.Timestamp;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.sql.Date;
+
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -29,9 +32,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateDiffColCol
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateDiffColScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateDiffScalarCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -40,7 +43,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.IntWritable;
 
 import javax.annotation.Nullable;
@@ -63,6 +65,7 @@ import javax.annotation.Nullable;
         + "  1")
 @VectorizedExpressions({VectorUDFDateDiffColScalar.class, VectorUDFDateDiffColCol.class, VectorUDFDateDiffScalarCol.class})
 public class GenericUDFDateDiff extends GenericUDF {
+  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient Converter inputConverter1;
   private transient Converter inputConverter2;
   private IntWritable output = new IntWritable();
@@ -113,25 +116,21 @@ public class GenericUDFDateDiff extends GenericUDF {
     case CHAR:
       String dateString = converter.convert(argument.get()).toString();
       try {
-        return Date.valueOf(dateString);
-      } catch (IllegalArgumentException e) {
-        Timestamp ts = PrimitiveObjectInspectorUtils.getTimestampFromString(dateString);
-        if (ts != null) {
-          return Date.ofEpochMilli(ts.toEpochMilli());
-        }
+        return new Date(formatter.parse(dateString).getTime());
+      } catch (ParseException e) {
         return null;
       }
     case TIMESTAMP:
-      Timestamp ts = ((TimestampWritableV2) converter.convert(argument.get()))
+      Timestamp ts = ((TimestampWritable) converter.convert(argument.get()))
         .getTimestamp();
-      return Date.ofEpochMilli(ts.toEpochMilli());
+      return new Date(ts.getTime());
     case DATE:
-      DateWritableV2 dw = (DateWritableV2) converter.convert(argument.get());
+      DateWritable dw = (DateWritable) converter.convert(argument.get());
       return dw.get();
     case TIMESTAMPLOCALTZ:
       TimestampTZ tsz = ((TimestampLocalTZWritable) converter.convert(argument.get()))
           .getTimestampTZ();
-      return Date.ofEpochMilli(tsz.getEpochSecond() * 1000l);
+      return new Date(tsz.getEpochSecond() * 1000l);
     default:
       throw new UDFArgumentException(
         "TO_DATE() only takes STRING/TIMESTAMP/TIMESTAMPLOCALTZ types, got " + inputType);
@@ -176,7 +175,7 @@ public class GenericUDFDateDiff extends GenericUDF {
       return null;
     }
 
-    result.set(DateWritableV2.dateToDays(date) - DateWritableV2.dateToDays(date2));
+    result.set(DateWritable.dateToDays(date) - DateWritable.dateToDays(date2));
     return result;
   }
 }

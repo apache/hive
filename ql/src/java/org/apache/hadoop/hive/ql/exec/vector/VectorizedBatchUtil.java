@@ -19,22 +19,29 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -42,15 +49,19 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -59,6 +70,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -67,8 +79,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hive.common.util.DateUtils;
 
 public class VectorizedBatchUtil {
   private static final Logger LOG = LoggerFactory.getLogger(VectorizedBatchUtil.class);
@@ -367,7 +378,7 @@ public class VectorizedBatchUtil {
     case DATE: {
       LongColumnVector lcv = (LongColumnVector) batch.cols[offset + colIndex];
       if (writableCol != null) {
-        lcv.vector[rowIndex] = ((DateWritableV2) writableCol).getDays();
+        lcv.vector[rowIndex] = ((DateWritable) writableCol).getDays();
         lcv.isNull[rowIndex] = false;
       } else {
         lcv.vector[rowIndex] = 1;
@@ -400,7 +411,7 @@ public class VectorizedBatchUtil {
     case TIMESTAMP: {
       TimestampColumnVector lcv = (TimestampColumnVector) batch.cols[offset + colIndex];
       if (writableCol != null) {
-        lcv.set(rowIndex, ((TimestampWritableV2) writableCol).getTimestamp().toSqlTimestamp());
+        lcv.set(rowIndex, ((TimestampWritable) writableCol).getTimestamp());
         lcv.isNull[rowIndex] = false;
       } else {
         lcv.setNullValue(rowIndex);
@@ -733,7 +744,7 @@ public class VectorizedBatchUtil {
         if (sourceColVector.noNulls) {
           for (int i = 0; i < size; i++) {
             targetTime[i] = sourceTime[i];
-            targetNanos[i] = sourceNanos[i];
+            targetNanos[i] = targetNanos[i];
           }
         } else {
           boolean[] sourceIsNull = sourceColVector.isNull;
@@ -742,7 +753,7 @@ public class VectorizedBatchUtil {
           for (int i = 0; i < size; i++) {
             if (!sourceIsNull[i]) {
               targetTime[i] = sourceTime[i];
-              targetNanos[i] = sourceNanos[i];
+              targetNanos[i] = targetNanos[i];
             } else {
               targetTime[i] = 0;
               targetNanos[i] = 0;
@@ -888,9 +899,9 @@ public class VectorizedBatchUtil {
     case LONG:
       return new LongWritable(0);
     case TIMESTAMP:
-      return new TimestampWritableV2(new Timestamp());
+      return new TimestampWritable(new Timestamp(0));
     case DATE:
-      return new DateWritableV2(new Date());
+      return new DateWritable(new Date(0));
     case FLOAT:
       return new FloatWritable(0);
     case DOUBLE:
@@ -965,9 +976,9 @@ public class VectorizedBatchUtil {
           } else if (colVector instanceof DecimalColumnVector) {
             sb.append(((DecimalColumnVector) colVector).vector[index].toString());
           } else if (colVector instanceof TimestampColumnVector) {
-            java.sql.Timestamp timestamp = new java.sql.Timestamp(0);
+            Timestamp timestamp = new Timestamp(0);
             ((TimestampColumnVector) colVector).timestampUpdate(timestamp, index);
-            sb.append(Timestamp.ofEpochMilli(timestamp.getTime(), timestamp.getNanos()).toString());
+            sb.append(timestamp.toString());
           } else if (colVector instanceof IntervalDayTimeColumnVector) {
             HiveIntervalDayTime intervalDayTime = ((IntervalDayTimeColumnVector) colVector).asScratchIntervalDayTime(index);
             sb.append(intervalDayTime.toString());

@@ -20,8 +20,9 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
+import java.util.Calendar;
+import java.util.Date;
 
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.DateUtils;
 
 /**
  * GenericUDFLastDay.
@@ -46,7 +48,7 @@ import org.apache.hadoop.io.Text;
 public class GenericUDFLastDay extends GenericUDF {
   private transient Converter[] converters = new Converter[1];
   private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[1];
-  private final Date date = new Date();
+  private final Calendar calendar = Calendar.getInstance();
   private final Text output = new Text();
 
   @Override
@@ -65,13 +67,14 @@ public class GenericUDFLastDay extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    Date d = getDateValue(arguments, 0, inputTypes, converters);
-    if (d == null) {
+    Date date = getDateValue(arguments, 0, inputTypes, converters);
+    if (date == null) {
       return null;
     }
 
-    lastDay(d);
-    output.set(date.toString());
+    lastDay(date);
+    Date newDate = calendar.getTime();
+    output.set(DateUtils.getDateFormat().format(newDate));
     return output;
   }
 
@@ -85,9 +88,10 @@ public class GenericUDFLastDay extends GenericUDF {
     return "last_day";
   }
 
-  protected Date lastDay(Date d) {
-    date.setTimeInDays(d.toEpochDay());
-    date.setDayOfMonth(date.lengthOfMonth());
-    return date;
+  protected Calendar lastDay(Date d) {
+    calendar.setTime(d);
+    int maxDd = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+    calendar.set(Calendar.DAY_OF_MONTH, maxDd);
+    return calendar;
   }
 }

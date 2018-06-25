@@ -18,25 +18,26 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.common.type.Date;
+import java.sql.Date;
+import java.sql.Timestamp;
+
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -281,8 +282,8 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
   public void testDateMinusIntervalYearMonth() throws Exception {
     GenericUDFOPMinus udf = new GenericUDFOPMinus();
 
-    DateWritableV2 left =
-        new DateWritableV2(Date.valueOf("2004-02-15"));
+    DateWritable left =
+        new DateWritable(Date.valueOf("2004-02-15"));
     HiveIntervalYearMonthWritable right =
         new HiveIntervalYearMonthWritable(HiveIntervalYearMonth.valueOf("2-8"));
     ObjectInspector[] inputOIs = {
@@ -296,7 +297,7 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
 
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.dateTypeInfo, oi.getTypeInfo());
-    DateWritableV2 res = (DateWritableV2) udf.evaluate(args);
+    DateWritable res = (DateWritable) udf.evaluate(args);
     Assert.assertEquals(Date.valueOf("2001-06-15"), res.get());
   }
 
@@ -304,8 +305,8 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
   public void testTimestampMinusIntervalYearMonth() throws Exception {
     GenericUDFOPMinus udf = new GenericUDFOPMinus();
 
-    TimestampWritableV2 left =
-        new TimestampWritableV2(Timestamp.valueOf("2004-01-15 01:02:03.123456789"));
+    TimestampWritable left =
+        new TimestampWritable(Timestamp.valueOf("2004-01-15 01:02:03.123456789"));
     HiveIntervalYearMonthWritable right =
         new HiveIntervalYearMonthWritable(HiveIntervalYearMonth.valueOf("2-2"));
     ObjectInspector[] inputOIs = {
@@ -319,7 +320,7 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
 
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.timestampTypeInfo, oi.getTypeInfo());
-    TimestampWritableV2 res = (TimestampWritableV2) udf.evaluate(args);
+    TimestampWritable res = (TimestampWritable) udf.evaluate(args);
     Assert.assertEquals(Timestamp.valueOf("2001-11-15 01:02:03.123456789"), res.getTimestamp());
   }
 
@@ -350,8 +351,8 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
   public void testTimestampMinusIntervalDayTime() throws Exception {
     GenericUDFOPMinus udf = new GenericUDFOPMinus();
 
-    TimestampWritableV2 left =
-        new TimestampWritableV2(Timestamp.valueOf("2001-01-02 2:3:4.567"));
+    TimestampWritable left =
+        new TimestampWritable(Timestamp.valueOf("2001-01-02 2:3:4.567"));
     HiveIntervalDayTimeWritable right =
         new HiveIntervalDayTimeWritable(HiveIntervalDayTime.valueOf("1 2:3:4.567"));
     ObjectInspector[] inputOIs = {
@@ -365,7 +366,7 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
 
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.timestampTypeInfo, oi.getTypeInfo());
-    TimestampWritableV2 res = (TimestampWritableV2) udf.evaluate(args);
+    TimestampWritable res = (TimestampWritable) udf.evaluate(args);
     Assert.assertEquals(Timestamp.valueOf("2001-01-01 00:00:00"), res.getTimestamp());
   }
 
@@ -373,8 +374,8 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
   public void testDateMinusIntervalDayTime() throws Exception {
     GenericUDFOPMinus udf = new GenericUDFOPMinus();
 
-    DateWritableV2 left =
-        new DateWritableV2(Date.valueOf("2001-01-01"));
+    DateWritable left =
+        new DateWritable(Date.valueOf("2001-01-01"));
     HiveIntervalDayTimeWritable right =
         new HiveIntervalDayTimeWritable(HiveIntervalDayTime.valueOf("1 0:0:0.555"));
     ObjectInspector[] inputOIs = {
@@ -388,7 +389,7 @@ public class TestGenericUDFOPMinus extends AbstractTestGenericUDFOPNumeric {
 
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.timestampTypeInfo, oi.getTypeInfo());
-    TimestampWritableV2 res = (TimestampWritableV2) udf.evaluate(args);
+    TimestampWritable res = (TimestampWritable) udf.evaluate(args);
     Assert.assertEquals(Timestamp.valueOf("2000-12-30 23:59:59.445"), res.getTimestamp());
   }
 }

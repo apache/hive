@@ -5,35 +5,35 @@ drop table `timestamptz_test`;
 create table `date_test` (`mydate1` date);
 
 insert into `date_test` VALUES
-  (cast('2011-01-01 01:01:01.123' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.123 Europe/Rome' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.123 GMT-05:00' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912 Europe/Rome' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912 GMT-05:00' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912 xyz' as timestamp with local time zone));
+  ('2011-01-01 01:01:01.123'),
+  ('2011-01-01 01:01:01.123 Europe/Rome'),
+  ('2011-01-01 01:01:01.123 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912'),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912 xyz');
 
 create table `timestamp_test` (`mydate1` timestamp);
 
 insert into `timestamp_test` VALUES
-  (cast('2011-01-01 01:01:01.123' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.123 Europe/Rome' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.123 GMT-05:00' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912 Europe/Rome' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912 GMT-05:00' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912 xyz' as timestamp with local time zone));
+  ('2011-01-01 01:01:01.123'),
+  ('2011-01-01 01:01:01.123 Europe/Rome'),
+  ('2011-01-01 01:01:01.123 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912'),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912 xyz');
 
 create table `timestamptz_test` (`mydate1` timestamp with local time zone);
 
 insert into `timestamptz_test` VALUES
-  (cast('2011-01-01 01:01:01.123' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.123 Europe/Rome' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.123 GMT-05:00' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912 Europe/Rome' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912 GMT-05:00' as timestamp with local time zone)),
-  (cast('2011-01-01 01:01:01.12345678912 xyz' as timestamp with local time zone));
+  ('2011-01-01 01:01:01.123'),
+  ('2011-01-01 01:01:01.123 Europe/Rome'),
+  ('2011-01-01 01:01:01.123 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912'),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912 xyz');
 
 select * from `date_test`;
 select * from `timestamp_test`;

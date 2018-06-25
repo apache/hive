@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
-import org.apache.hadoop.hive.ql.udf.UDFMonth;
-import org.apache.hadoop.hive.ql.udf.UDFYear;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.junit.Assert;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -32,8 +25,12 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
+import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.ql.udf.UDFYear;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IntWritable;
@@ -41,33 +38,34 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.internal.runners.statements.Fail;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
-import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 public class TestVectorDateExpressions {
 
   private ExecutorService runner;
 
   /* copied over from VectorUDFTimestampFieldLong */
-  private TimestampWritableV2 toTimestampWritable(long daysSinceEpoch) {
-    return new TimestampWritableV2(
-        org.apache.hadoop.hive.common.type.Timestamp.ofEpochMilli(
-            DateWritableV2.daysToMillis((int) daysSinceEpoch)));
+  private TimestampWritable toTimestampWritable(long daysSinceEpoch) {
+    Timestamp ts = new Timestamp(DateWritable.daysToMillis((int) daysSinceEpoch));
+    return new TimestampWritable(ts);
   }
 
   private int[] getAllBoundaries() {
     List<Integer> boundaries = new ArrayList<Integer>(1);
-    Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    Calendar c = Calendar.getInstance();
     c.setTimeInMillis(0); // c.set doesn't reset millis
     for (int year = 1902; year <= 2038; year++) {
       c.set(year, Calendar.JANUARY, 1, 0, 0, 0);
@@ -110,12 +108,10 @@ public class TestVectorDateExpressions {
     return batch;
   }
 
-  private void compareToUDFYearDate(long t, int y) throws HiveException {
+  private void compareToUDFYearDate(long t, int y) {
     UDFYear udf = new UDFYear();
-    udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableTimestampObjectInspector});
-    TimestampWritableV2 tsw = toTimestampWritable(t);
-    IntWritable res = (IntWritable) udf.evaluate(
-        new GenericUDF.DeferredObject[]{new GenericUDF.DeferredJavaObject(tsw)});
+    TimestampWritable tsw = toTimestampWritable(t);
+    IntWritable res = udf.evaluate(tsw);
     Assert.assertEquals(res.get(), y);
   }
 
@@ -174,12 +170,10 @@ public class TestVectorDateExpressions {
     verifyUDFYear(batch);
   }
 
-  private void compareToUDFDayOfMonthDate(long t, int y) throws HiveException {
+  private void compareToUDFDayOfMonthDate(long t, int y) {
     UDFDayOfMonth udf = new UDFDayOfMonth();
-    udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableTimestampObjectInspector});
-    TimestampWritableV2 tsw = toTimestampWritable(t);
-    IntWritable res = (IntWritable) udf.evaluate(
-        new GenericUDF.DeferredObject[]{new GenericUDF.DeferredJavaObject(tsw)});
+    TimestampWritable tsw = toTimestampWritable(t);
+    IntWritable res = udf.evaluate(tsw);
     Assert.assertEquals(res.get(), y);
   }
 
@@ -238,12 +232,10 @@ public class TestVectorDateExpressions {
     verifyUDFDayOfMonth(batch);
   }
 
-  private void compareToUDFMonthDate(long t, int y) throws HiveException {
+  private void compareToUDFMonthDate(long t, int y) {
     UDFMonth udf = new UDFMonth();
-    udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableTimestampObjectInspector});
-    TimestampWritableV2 tsw = toTimestampWritable(t);
-    IntWritable res = (IntWritable) udf.evaluate(
-        new GenericUDF.DeferredObject[]{new GenericUDF.DeferredJavaObject(tsw)});
+    TimestampWritable tsw = toTimestampWritable(t);
+    IntWritable res = udf.evaluate(tsw);
     Assert.assertEquals(res.get(), y);
   }
 
@@ -302,7 +294,7 @@ public class TestVectorDateExpressions {
     verifyUDFMonth(batch);
   }
 
-  private LongWritable getLongWritable(TimestampWritableV2 i) {
+  private LongWritable getLongWritable(TimestampWritable i) {
     LongWritable result = new LongWritable();
     if (i == null) {
       return null;
@@ -313,11 +305,11 @@ public class TestVectorDateExpressions {
   }
 
   private void compareToUDFUnixTimeStampDate(long t, long y) {
-    TimestampWritableV2 tsw = toTimestampWritable(t);
+    TimestampWritable tsw = toTimestampWritable(t);
     LongWritable res = getLongWritable(tsw);
     if(res.get() != y) {
       System.out.printf("%d vs %d for %d, %d\n", res.get(), y, t,
-              tsw.getTimestamp().toEpochMilli()/1000);
+              tsw.getTimestamp().getTime()/1000);
     }
 
     Assert.assertEquals(res.get(), y);
@@ -380,7 +372,7 @@ public class TestVectorDateExpressions {
 
   private void compareToUDFWeekOfYearDate(long t, int y) {
     UDFWeekOfYear udf = new UDFWeekOfYear();
-    TimestampWritableV2 tsw = toTimestampWritable(t);
+    TimestampWritable tsw = toTimestampWritable(t);
     IntWritable res = udf.evaluate(tsw);
     Assert.assertEquals(res.get(), y);
   }

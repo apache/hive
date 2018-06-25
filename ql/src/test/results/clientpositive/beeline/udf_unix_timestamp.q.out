@@ -41,7 +41,7 @@ FROM oneline
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline
 #### A masked pattern was here ####
-2009-03-20 11:30:01	1237548601
+2009-03-20 11:30:01	1237573801
 PREHOOK: query: SELECT
   '2009-03-20',
   unix_timestamp('2009-03-20', 'yyyy-MM-dd')
@@ -56,7 +56,7 @@ FROM oneline
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline
 #### A masked pattern was here ####
-2009-03-20	1237507200
+2009-03-20	1237532400
 PREHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
   unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
@@ -71,7 +71,7 @@ FROM oneline
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline
 #### A masked pattern was here ####
-2009 Mar 20 11:30:01 am	1237548601
+2009 Mar 20 11:30:01 am	1237573801
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 PREHOOK: query: create table foo_n3 as SELECT

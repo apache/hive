@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.text.ParseException;
 import java.util.Calendar;
-import java.util.TimeZone;
 
 /**
  * Abstract class to return various fields from a String.
@@ -40,8 +39,7 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
   protected final int fieldLength;
   private static final String patternMin = "0000-00-00 00:00:00.000000000";
   private static final String patternMax = "9999-19-99 29:59:59.999999999";
-  protected transient final Calendar calendar = Calendar.getInstance(
-      TimeZone.getTimeZone("UTC"));
+  protected transient final Calendar calendar = Calendar.getInstance();
 
   public VectorUDFTimestampFieldString(int colNum, int outputColumnNum, int fieldStart, int fieldLength) {
     super(outputColumnNum);

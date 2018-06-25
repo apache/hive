@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descript
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import java.util.Arrays;

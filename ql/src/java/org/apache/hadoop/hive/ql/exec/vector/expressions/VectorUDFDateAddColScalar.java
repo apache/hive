@@ -25,12 +25,13 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateParser;
 
+import java.sql.Date;
 import java.util.Arrays;
 
 public class VectorUDFDateAddColScalar extends VectorExpression {
@@ -43,6 +44,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
 
   private transient final Text text = new Text();
   private transient final DateParser dateParser = new DateParser();
+  private transient final Date date = new Date(0);
 
   // Transient members initialized by transientInit method.
   private transient PrimitiveCategory primitiveCategory;
@@ -303,7 +305,7 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   protected long evaluateTimestamp(ColumnVector columnVector, int index) {
     TimestampColumnVector tcv = (TimestampColumnVector) columnVector;
     // Convert to date value (in days)
-    long days = DateWritableV2.millisToDays(tcv.getTime(index));
+    long days = DateWritable.millisToDays(tcv.getTime(index));
     if (isPositive) {
       days += numDays;
     } else {
@@ -326,14 +328,13 @@ public class VectorUDFDateAddColScalar extends VectorExpression {
   protected void evaluateString(ColumnVector columnVector, LongColumnVector outputVector, int i) {
     BytesColumnVector bcv = (BytesColumnVector) columnVector;
     text.set(bcv.vector[i], bcv.start[i], bcv.length[i]);
-    org.apache.hadoop.hive.common.type.Date hDate = new org.apache.hadoop.hive.common.type.Date();
-    boolean parsed = dateParser.parseDate(text.toString(), hDate);
+    boolean parsed = dateParser.parseDate(text.toString(), date);
     if (!parsed) {
       outputVector.noNulls = false;
       outputVector.isNull[i] = true;
       return;
     }
-    long days = DateWritableV2.millisToDays(hDate.toEpochMilli());
+    long days = DateWritable.millisToDays(date.getTime());
     if (isPositive) {
       days += numDays;
     } else {

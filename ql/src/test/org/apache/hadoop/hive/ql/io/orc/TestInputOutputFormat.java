@@ -28,6 +28,8 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,9 +50,7 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -181,8 +181,8 @@ public class TestInputOutputFormat {
       decimalValue = HiveDecimal.create(x);
       long millisUtc = x * MILLIS_IN_DAY;
       millisUtc -= LOCAL_TIMEZONE.getOffset(millisUtc);
-      dateValue = Date.ofEpochMilli(millisUtc);
-      timestampValue = Timestamp.ofEpochMilli(millisUtc);
+      dateValue = new Date(millisUtc);
+      timestampValue = new Timestamp(millisUtc);
     }
 
     @Override

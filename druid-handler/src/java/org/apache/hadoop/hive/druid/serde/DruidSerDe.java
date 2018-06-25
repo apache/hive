@@ -19,21 +19,6 @@ package org.apache.hadoop.hive.druid.serde;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Function;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import io.druid.query.Druids;
@@ -42,10 +27,8 @@ import io.druid.query.metadata.metadata.ColumnAnalysis;
 import io.druid.query.metadata.metadata.SegmentAnalysis;
 import io.druid.query.metadata.metadata.SegmentMetadataQuery;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -59,13 +42,13 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -98,6 +81,23 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.druid.serde.DruidSerDeUtils.TIMESTAMP_FORMAT;
 import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
@@ -307,9 +307,9 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
       final Object res;
       switch (types[i].getPrimitiveCategory()) {
       case TIMESTAMP:
-        res = ((TimestampObjectInspector) fields.get(i).getFieldObjectInspector())
-            .getPrimitiveJavaObject(values.get(i)).toEpochMilli();
-          break;
+        res = ((TimestampObjectInspector) fields.get(i).getFieldObjectInspector()).getPrimitiveJavaObject(values.get(i))
+            .getTime();
+        break;
       case TIMESTAMPLOCALTZ:
         res = ((TimestampLocalTZObjectInspector) fields.get(i).getFieldObjectInspector())
             .getPrimitiveJavaObject(values.get(i)).getZonedDateTime().toInstant().toEpochMilli();
@@ -330,24 +330,22 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
         res = ((FloatObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
         break;
       case DOUBLE:
-        res = ((DoubleObjectInspector) fields.get(i).getFieldObjectInspector())
-            .get(values.get(i));
+        res = ((DoubleObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
         break;
       case CHAR:
-        res = ((HiveCharObjectInspector) fields.get(i).getFieldObjectInspector())
-            .getPrimitiveJavaObject(values.get(i)).getValue();
+        res = ((HiveCharObjectInspector) fields.get(i).getFieldObjectInspector()).getPrimitiveJavaObject(values.get(i))
+            .getValue();
         break;
       case VARCHAR:
-        res = ((HiveVarcharObjectInspector) fields.get(i).getFieldObjectInspector())
-            .getPrimitiveJavaObject(values.get(i)).getValue();
+        res =
+            ((HiveVarcharObjectInspector) fields.get(i).getFieldObjectInspector()).getPrimitiveJavaObject(values.get(i))
+                .getValue();
         break;
       case STRING:
-        res = ((StringObjectInspector) fields.get(i).getFieldObjectInspector())
-            .getPrimitiveJavaObject(values.get(i));
+        res = ((StringObjectInspector) fields.get(i).getFieldObjectInspector()).getPrimitiveJavaObject(values.get(i));
         break;
       case BOOLEAN:
-        res = ((BooleanObjectInspector) fields.get(i).getFieldObjectInspector())
-            .get(values.get(i));
+        res = ((BooleanObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
         break;
       default:
         throw new SerDeException("Unsupported type: " + types[i].getPrimitiveCategory());
@@ -362,7 +360,8 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
         fields.get(granularityFieldIndex).getFieldName().equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME));
     value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
         ((TimestampObjectInspector) fields.get(granularityFieldIndex).getFieldObjectInspector())
-            .getPrimitiveJavaObject(values.get(granularityFieldIndex)).toEpochMilli());
+            .getPrimitiveJavaObject(values.get(granularityFieldIndex)).getTime()
+    );
     if (values.size() == columns.length + 2) {
       // Then partition number if any.
       final int partitionNumPos = granularityFieldIndex + 1;
@@ -396,11 +395,11 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
       switch (types[i].getPrimitiveCategory()) {
       case TIMESTAMP:
         if (value instanceof Number) {
-          output.add(new TimestampWritableV2(Timestamp.valueOf(
+          output.add(new TimestampWritable(Timestamp.valueOf(
               ZonedDateTime.ofInstant(Instant.ofEpochMilli(((Number) value).longValue()), tsTZTypeInfo.timeZone())
                   .format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT)))));
         } else {
-          output.add(new TimestampWritableV2(Timestamp.valueOf((String) value)));
+          output.add(new TimestampWritable(Timestamp.valueOf((String) value)));
         }
 
         break;
@@ -418,14 +417,12 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
             ))));
         break;
       case DATE:
-        final DateWritableV2 dateWritable;
+        final DateWritable dateWritable;
         if (value instanceof Number) {
-          dateWritable = new DateWritableV2(
-              Date.ofEpochMilli((((Number) value).longValue())));
+          dateWritable = new DateWritable(new Date((((Number) value).longValue())));
         } else {
           // it is an extraction fn need to be parsed
-          dateWritable = new DateWritableV2(
-              Date.ofEpochMilli(dateOptionalTimeParser().parseDateTime((String) value).getMillis()));
+          dateWritable = new DateWritable(new Date(dateOptionalTimeParser().parseDateTime((String) value).getMillis()));
         }
         output.add(dateWritable);
         break;

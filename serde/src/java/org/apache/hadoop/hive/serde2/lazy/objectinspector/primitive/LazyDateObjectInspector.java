@@ -17,17 +17,18 @@
  */
 package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.hive.common.type.Date;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import java.sql.Date;
+
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyDate;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
- * A WritableDateObjectInspector inspects a DateWritableV2 Object.
+ * A WritableDateObjectInspector inspects a DateWritable Object.
  */
 public class LazyDateObjectInspector
-    extends AbstractPrimitiveLazyObjectInspector<DateWritableV2>
+    extends AbstractPrimitiveLazyObjectInspector<DateWritable>
     implements DateObjectInspector {
 
   protected LazyDateObjectInspector() {

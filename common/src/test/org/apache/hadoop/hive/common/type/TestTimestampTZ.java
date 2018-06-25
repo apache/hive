@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.common.type;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.TimeZone;

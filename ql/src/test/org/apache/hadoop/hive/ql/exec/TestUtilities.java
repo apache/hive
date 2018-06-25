@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -54,7 +55,6 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
@@ -132,7 +132,8 @@ public class TestUtilities {
 
   @Test
   public void testSerializeTimestamp() {
-    Timestamp ts = Timestamp.ofEpochMilli(1374554702000L, 123456);
+    Timestamp ts = new Timestamp(1374554702000L);
+    ts.setNanos(123456);
     ExprNodeConstantDesc constant = new ExprNodeConstantDesc(ts);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
     children.add(constant);

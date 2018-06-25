@@ -22,6 +22,7 @@ package org.apache.hive.hcatalog.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
@@ -29,16 +30,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.io.VLongWritable;
 
@@ -122,11 +121,11 @@ public abstract class ReaderWriter {
       hdw.readFields(in);
       return hdw.getHiveDecimal();
     case DataType.DATE:
-      DateWritableV2 dw = new DateWritableV2();
+      DateWritable dw = new DateWritable();
       dw.readFields(in);
       return dw.get();
     case DataType.TIMESTAMP:
-      TimestampWritableV2 tw = new TimestampWritableV2();
+      TimestampWritable tw = new TimestampWritable();
       tw.readFields(in);
       return tw.getTimestamp();
     default:
@@ -215,10 +214,10 @@ public abstract class ReaderWriter {
       new HiveDecimalWritable((HiveDecimal)val).write(out);
       return;
     case DataType.DATE:
-      new DateWritableV2((Date)val).write(out);
+      new DateWritable((Date)val).write(out);
       return;
     case DataType.TIMESTAMP:
-      new TimestampWritableV2((Timestamp)val).write(out);
+      new TimestampWritable((java.sql.Timestamp)val).write(out);
       return;
     default:
       throw new IOException("Unexpected data type " + type +

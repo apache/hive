@@ -26,14 +26,13 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -41,7 +40,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -58,6 +57,7 @@ import org.apache.hadoop.io.Text;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -111,20 +111,20 @@ public class TestArrowColumnarBatchSerDe {
   private final static Timestamp NEGATIVE_TIMESTAMP_WITHOUT_NANOS;
 
   static {
-    TIMESTAMP = Timestamp.ofEpochMilli(TIME_IN_MILLIS);
-    NEGATIVE_TIMESTAMP_WITHOUT_NANOS = Timestamp.ofEpochMilli(NEGATIVE_TIME_IN_MILLIS);
+    TIMESTAMP = new Timestamp(TIME_IN_MILLIS);
+    NEGATIVE_TIMESTAMP_WITHOUT_NANOS = new Timestamp(NEGATIVE_TIME_IN_MILLIS);
   }
 
   private final static Object[][] DTI_ROWS = {
       {
-          new DateWritableV2(DateWritableV2.millisToDays(TIME_IN_MILLIS)),
-          new TimestampWritableV2(TIMESTAMP),
+          new DateWritable(DateWritable.millisToDays(TIME_IN_MILLIS)),
+          new TimestampWritable(TIMESTAMP),
           new HiveIntervalYearMonthWritable(new HiveIntervalYearMonth(1, 2)),
           new HiveIntervalDayTimeWritable(new HiveIntervalDayTime(1, 2, 3, 4, 5_000_000))
       },
       {
-          new DateWritableV2(DateWritableV2.millisToDays(NEGATIVE_TIME_IN_MILLIS)),
-          new TimestampWritableV2(NEGATIVE_TIMESTAMP_WITHOUT_NANOS),
+          new DateWritable(DateWritable.millisToDays(NEGATIVE_TIME_IN_MILLIS)),
+          new TimestampWritable(NEGATIVE_TIMESTAMP_WITHOUT_NANOS),
           null,
           null
       },
@@ -364,10 +364,10 @@ public class TestArrowColumnarBatchSerDe {
                         newArrayList(text("hello")),
                         input -> text(input.toString().toUpperCase())),
                     intW(0))), // c16:array<struct<m:map<string,string>,n:int>>
-            new TimestampWritableV2(TIMESTAMP), // c17:timestamp
+            new TimestampWritable(TIMESTAMP), // c17:timestamp
             decimalW(HiveDecimal.create(0, 0)), // c18:decimal(16,7)
             new BytesWritable("Hello".getBytes()), // c19:binary
-            new DateWritableV2(123), // c20:date
+            new DateWritable(123), // c20:date
             varcharW("x", 20), // c21:varchar(20)
             charW("y", 15), // c22:char(15)
             new BytesWritable("world!".getBytes()), // c23:binary
@@ -508,9 +508,9 @@ public class TestArrowColumnarBatchSerDe {
     Object[][] rows = new Object[size][];
     for (int i = 0; i < size; i++) {
       long millis = ((long) rand.nextInt(Integer.MAX_VALUE)) * 1000;
-      Timestamp timestamp = Timestamp.ofEpochMilli(rand.nextBoolean() ? millis : -millis);
+      Timestamp timestamp = new Timestamp(rand.nextBoolean() ? millis : -millis);
       timestamp.setNanos(rand.nextInt(1000) * 1000);
-      rows[i] = new Object[] {new TimestampWritableV2(timestamp)};
+      rows[i] = new Object[] {new TimestampWritable(timestamp)};
     }
 
     initAndSerializeAndDeserialize(schema, rows);

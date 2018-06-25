@@ -38,19 +38,20 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.OrcFile;
 import org.apache.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -414,18 +415,18 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static DateWritableV2 nextDate(ColumnVector vector,
-                                 int row,
-                                 Object previous) {
+  static DateWritable nextDate(ColumnVector vector,
+                               int row,
+                               Object previous) {
     if (vector.isRepeating) {
       row = 0;
     }
     if (vector.noNulls || !vector.isNull[row]) {
-      DateWritableV2 result;
-      if (previous == null || previous.getClass() != DateWritableV2.class) {
-        result = new DateWritableV2();
+      DateWritable result;
+      if (previous == null || previous.getClass() != DateWritable.class) {
+        result = new DateWritable();
       } else {
-        result = (DateWritableV2) previous;
+        result = (DateWritable) previous;
       }
       int date = (int) ((LongColumnVector) vector).vector[row];
       result.set(date);
@@ -435,18 +436,18 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static TimestampWritableV2 nextTimestamp(ColumnVector vector,
-                                           int row,
-                                           Object previous) {
+  static TimestampWritable nextTimestamp(ColumnVector vector,
+                                         int row,
+                                         Object previous) {
     if (vector.isRepeating) {
       row = 0;
     }
     if (vector.noNulls || !vector.isNull[row]) {
-      TimestampWritableV2 result;
-      if (previous == null || previous.getClass() != TimestampWritableV2.class) {
-        result = new TimestampWritableV2();
+      TimestampWritable result;
+      if (previous == null || previous.getClass() != TimestampWritable.class) {
+        result = new TimestampWritable();
       } else {
-        result = (TimestampWritableV2) previous;
+        result = (TimestampWritable) previous;
       }
       TimestampColumnVector tcv = (TimestampColumnVector) vector;
       result.setInternal(tcv.time[row], tcv.nanos[row]);

@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.File;
-import java.time.LocalDateTime;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Random;
 
 import junit.framework.Assert;
@@ -27,9 +29,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -38,17 +38,18 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.TypeDescription;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -133,7 +134,7 @@ public class TestVectorizedORCReader {
     for (int i = 0; i < 21000; ++i) {
       if ((i % 7) != 0) {
         writer.addRow(new MyRecord(((i % 3) == 0), (byte)(i % 5), i, (long) 200, (short) (300 + i), (double) (400 + i),
-            words[r1.nextInt(words.length)], Timestamp.valueOf(LocalDateTime.now().toString()),
+            words[r1.nextInt(words.length)], new Timestamp(Calendar.getInstance().getTime().getTime()),
             Date.valueOf(dates[i % 3]), HiveDecimal.create(decimalStrings[i % decimalStrings.length])));
       } else {
         writer.addRow(new MyRecord(null, null, i, (long) 200, null, null, null, null, null, null));
@@ -173,21 +174,19 @@ public class TestVectorizedORCReader {
             Long temp = (long) (((BooleanWritable) a).get() ? 1 : 0);
             long b = ((LongColumnVector) cv).vector[rowId];
             Assert.assertEquals(temp.toString(), Long.toString(b));
-          } else if (a instanceof TimestampWritableV2) {
+          } else if (a instanceof TimestampWritable) {
             // Timestamps are stored as long, so convert and compare
-            TimestampWritableV2 t = ((TimestampWritableV2) a);
+            TimestampWritable t = ((TimestampWritable) a);
             TimestampColumnVector tcv = ((TimestampColumnVector) cv);
-            java.sql.Timestamp ts = tcv.asScratchTimestamp(rowId);
-            Assert.assertEquals(
-                t.getTimestamp(), Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos()));
+            Assert.assertEquals(t.getTimestamp(), tcv.asScratchTimestamp(rowId));
 
-          } else if (a instanceof DateWritableV2) {
+          } else if (a instanceof DateWritable) {
             // Dates are stored as long, so convert and compare
 
-            DateWritableV2 adt = (DateWritableV2) a;
+            DateWritable adt = (DateWritable) a;
             long b = ((LongColumnVector) cv).vector[rowId];
-            Assert.assertEquals(adt.get().toEpochMilli(),
-                DateWritableV2.daysToMillis((int) b));
+            Assert.assertEquals(adt.get().getTime(),
+                DateWritable.daysToMillis((int) b));
 
           } else if (a instanceof HiveDecimalWritable) {
             // Decimals are stored as BigInteger, so convert and compare

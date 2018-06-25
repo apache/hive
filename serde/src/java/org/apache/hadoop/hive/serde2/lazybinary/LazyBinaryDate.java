@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
-import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector;
@@ -29,17 +29,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjec
  *
  */
 public class LazyBinaryDate extends
-    LazyBinaryPrimitive<WritableDateObjectInspector, DateWritableV2> {
+    LazyBinaryPrimitive<WritableDateObjectInspector, DateWritable> {
   static final Logger LOG = LoggerFactory.getLogger(LazyBinaryDate.class);
 
   LazyBinaryDate(WritableDateObjectInspector oi) {
     super(oi);
-    data = new DateWritableV2();
+    data = new DateWritable();
   }
 
   LazyBinaryDate(LazyBinaryDate copy) {
     super(copy);
-    data = new DateWritableV2(copy.data);
+    data = new DateWritable(copy.data);
   }
 
   /**
