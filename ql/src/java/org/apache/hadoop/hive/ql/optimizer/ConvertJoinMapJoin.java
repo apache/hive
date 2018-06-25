@@ -30,6 +30,7 @@ import java.util.Stack;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
@@ -597,7 +598,14 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     int numBuckets = bigTableRS.getParentOperators().get(0).getOpTraits().getNumBuckets();
 
     int size = -1;
+    boolean shouldCheckExternalTables =
+        context.conf.getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS);
+    StringBuilder sb = new StringBuilder();
     for (Operator<?> parentOp : joinOp.getParentOperators()) {
+      if (shouldCheckExternalTables && hasExternalTableAncestor(parentOp, sb)) {
+        LOG.debug("External table {} found in join - disabling SMB join.", sb.toString());
+        return false;
+      }
       // each side better have 0 or more RS. if either side is unbalanced, cannot convert.
       // This is a workaround for now. Right fix would be to refactor code in the
       // MapRecordProcessor and ReduceRecordProcessor with respect to the sources.
@@ -730,6 +738,18 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (!checkColEquality(grandParentColNames, parentColNames, rs.getColumnExprMap(), true)) {
       LOG.info("No info available to check for bucket map join. Cannot convert");
       return false;
+    }
+
+    boolean shouldCheckExternalTables = tezBucketJoinProcCtx.getConf()
+        .getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS);
+    if (shouldCheckExternalTables) {
+      StringBuilder sb = new StringBuilder();
+      for (Operator<?> parentOp : joinOp.getParentOperators()) {
+        if (hasExternalTableAncestor(parentOp, sb)) {
+          LOG.debug("External table {} found in join - disabling bucket map join.", sb.toString());
+          return false;
+        }
+      }
     }
 
     /*
@@ -1399,5 +1419,18 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // Cap at fact-row-count, because numerical artifacts can cause it
     // to go a few % over.
     return Math.min(Math.round(v), numRows);
+  }
+
+  private static boolean hasExternalTableAncestor(Operator op, StringBuilder sb) {
+    boolean result = false;
+    Operator ancestor = OperatorUtils.findSingleOperatorUpstream(op, TableScanOperator.class);
+    if (ancestor != null) {
+      TableScanOperator ts = (TableScanOperator) ancestor;
+      if (MetaStoreUtils.isExternalTable(ts.getConf().getTableMetadata().getTTable())) {
+        sb.append(ts.getConf().getTableMetadata().getFullyQualifiedName());
+        return true;
+      }
+    }
+    return result;
   }
 }
