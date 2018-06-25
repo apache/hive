@@ -119,3 +119,21 @@ insert into big partition(k=1) values(1),(3),(5),(7),(9);
 insert into big partition(k=2) values(0),(2),(4),(6),(8);
 explain select small.i, big.i from small,big where small.i=big.i;
 select small.i, big.i from small,big where small.i=big.i order by small.i, big.i;
+
+-- Bucket map join disabled for external tables
+-- Create external table equivalent of tab_part_n11
+CREATE EXTERNAL TABLE tab_part_ext (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+insert overwrite table tab_part_ext partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n20;
+analyze table tab_part_ext compute statistics for columns;
+
+set hive.auto.convert.join.noconditionaltask.size=1500;
+set hive.convert.join.bucket.mapjoin.tez = true;
+set hive.disable.unsafe.external.table.operations=true;
+set test.comment=Bucket map join should work here;
+set test.comment;
+explain select a.key, b.key from tab_part_n11 a join tab_part_n11 c on a.key = c.key join tab_part_n11 b on a.value = b.value;
+
+set test.comment=External tables, bucket map join should be disabled;
+set test.comment;
+explain select a.key, b.key from tab_part_ext a join tab_part_ext c on a.key = c.key join tab_part_ext b on a.value = b.value;
