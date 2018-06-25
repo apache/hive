@@ -273,6 +273,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
+            filterExpr: customer_name is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: customer_name is not null (type: boolean)
@@ -289,6 +290,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: double), _col2 (type: double)
           TableScan
             alias: s2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -393,6 +395,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
+            filterExpr: customer_name is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: customer_name is not null (type: boolean)
@@ -409,6 +412,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: double), _col2 (type: double)
           TableScan
             alias: s2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -517,6 +521,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s1
+            filterExpr: customer_name is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: customer_name is not null (type: boolean)
@@ -533,6 +538,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: double), _col2 (type: double)
           TableScan
             alias: s2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

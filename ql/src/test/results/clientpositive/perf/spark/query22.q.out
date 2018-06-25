@@ -54,6 +54,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (d_date_sk is not null and d_month_seq BETWEEN 1212 AND 1223) (type: boolean)
@@ -73,6 +74,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: warehouse
+                  filterExpr: w_warehouse_sk is not null (type: boolean)
                   Statistics: Num rows: 27 Data size: 27802 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: w_warehouse_sk is not null (type: boolean)
@@ -101,6 +103,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory
+                  filterExpr: (inv_date_sk is not null and inv_item_sk is not null and inv_warehouse_sk is not null) (type: boolean)
                   Statistics: Num rows: 37584000 Data size: 593821104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (inv_date_sk is not null and inv_item_sk is not null and inv_warehouse_sk is not null) (type: boolean)
@@ -142,6 +145,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)

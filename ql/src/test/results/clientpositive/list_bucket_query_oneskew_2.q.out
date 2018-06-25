@@ -189,6 +189,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n5
+          filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
           Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -271,6 +272,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n5
+          filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
           Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -308,6 +310,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily_n5
+            filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
             Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -447,6 +450,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily_n5
+            filterExpr: ((ds = '1') and (x = 484)) (type: boolean)
             Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator

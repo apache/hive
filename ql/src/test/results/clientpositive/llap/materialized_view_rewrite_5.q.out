@@ -232,6 +232,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n1
+                  filterExpr: (deptno >= 20) (type: boolean)
                   Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno >= 20) (type: boolean)
@@ -341,6 +342,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n1
+                  filterExpr: (deptno > 15) (type: boolean)
                   Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 15) (type: boolean)
@@ -481,6 +483,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_n1
+                  filterExpr: ((deptno > 11) and (deptno < 19)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno < 19) and (deptno > 11)) (type: boolean)
@@ -1076,7 +1079,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select a.empid deptno from
 (select * from emps_n2 where empid = 1) a
@@ -1158,7 +1161,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select a.empid, a.deptno from
 (select * from emps_n2 where empid = 1) a
@@ -1307,7 +1310,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 on (emps_n2.deptno = depts_n1.deptno)
@@ -1389,7 +1392,7 @@ POSTHOOK: query: drop materialized view mv1_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mv1_n1
 POSTHOOK: Output: default@mv1_n1
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_2, $hdt$_3, $hdt$_1, $hdt$_0]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[48][tables = [$hdt$_2, $hdt$_3, $hdt$_1, $hdt$_0]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: create materialized view mv1_n1 as
 select emps_n2.empid, emps_n2.deptno from emps_n2
 join depts_n1 a on (emps_n2.deptno=a.deptno)

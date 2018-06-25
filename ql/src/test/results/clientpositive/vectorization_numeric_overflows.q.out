@@ -123,6 +123,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_overflow
+            filterExpr: ((cint1 - 2) > 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -227,6 +228,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_overflow
+            filterExpr: ((cint2 + 2) < 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -329,6 +331,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_overflow
+            filterExpr: ((cint2 * 2) < 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -431,6 +434,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_overflow
+            filterExpr: ((ctinyint1 - 2Y) > 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -535,6 +539,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_overflow
+            filterExpr: ((ctinyint2 + 2Y) < 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -637,6 +642,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_overflow
+            filterExpr: ((csmallint2 * 2S) < 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -728,6 +734,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_overflow
+            filterExpr: ((csmallint2 * 2S) < 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((csmallint2 * 2S) < 0) (type: boolean)
@@ -807,6 +814,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquettable
+            filterExpr: ((t1 - t2) < 50) (type: boolean)
             Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((t1 - t2) < 50) (type: boolean)
@@ -875,6 +883,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquettable
+            filterExpr: ((i1 - i2) < 50) (type: boolean)
             Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -1076,6 +1085,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test_overflow
+            filterExpr: ((csmallint1 pmod 16385S) > 0) (type: boolean)
             Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

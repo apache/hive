@@ -46,6 +46,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: reason
+                  filterExpr: ((r_reason_desc = 'Did not like the warranty') and r_reason_sk is not null) (type: boolean)
                   Statistics: Num rows: 72 Data size: 14400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((r_reason_desc = 'Did not like the warranty') and r_reason_sk is not null) (type: boolean)
@@ -74,6 +75,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_returns
+                  filterExpr: (sr_reason_sk is not null and sr_item_sk is not null and sr_ticket_number is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (sr_item_sk is not null and sr_reason_sk is not null and sr_ticket_number is not null) (type: boolean)
@@ -105,6 +107,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_item_sk is not null and ss_ticket_number is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_item_sk is not null and ss_ticket_number is not null) (type: boolean)

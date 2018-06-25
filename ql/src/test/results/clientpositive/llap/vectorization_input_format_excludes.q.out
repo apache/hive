@@ -73,6 +73,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_parquet_n0
+                  filterExpr: (cint = 528534767) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -409,6 +410,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_parquet_n0
+                  filterExpr: (cint = 528534767) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -735,6 +737,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_parquet_n0
+                  filterExpr: (cint = 528534767) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -1119,6 +1122,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc_n2
+                  filterExpr: (cint = 528534767) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -1459,6 +1463,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orctbl
+                  filterExpr: (UDFToInteger((t1 + t2)) > 10) (type: boolean)
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger((t1 + t2)) > 10) (type: boolean)
@@ -1537,6 +1542,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: parquettbl
+                  filterExpr: (UDFToInteger((t1 + t2)) > 10) (type: boolean)
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToInteger((t1 + t2)) > 10) (type: boolean)

@@ -39,6 +39,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_0:src 
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 200.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 200.0D) (type: boolean)
@@ -54,6 +55,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_1:src 
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
@@ -72,6 +74,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 100.0D) (type: boolean)

@@ -280,6 +280,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: s
+          filterExpr: (ds = '1') (type: boolean)
           Filter Operator
             predicate: (((hash(key) & 2147483647) % 2) = 0) (type: boolean)
             Select Operator

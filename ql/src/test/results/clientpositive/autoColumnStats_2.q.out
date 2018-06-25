@@ -664,6 +664,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alter5
+          filterExpr: (dt = 'a') (type: boolean)
           Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: col1 (type: string), 'a' (type: string)
@@ -783,6 +784,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alter5
+          filterExpr: (dt = 'a') (type: boolean)
           Statistics: Num rows: 49 Data size: 4263 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: col1 (type: string), 'a' (type: string)

@@ -57,6 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sourcetable
+                  filterExpr: ((ds = '2011-11-11') and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 99 Data size: 93448 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: one (type: string), two (type: string)
@@ -245,6 +246,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sourcetable
+                  filterExpr: ((ds = '2011-11-11') and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 99 Data size: 93448 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: one (type: string), two (type: string)
@@ -402,6 +404,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sourcetable
+                  filterExpr: ((ds = '2011-11-11') and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 99 Data size: 93448 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: one (type: string), two (type: string)

@@ -71,6 +71,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: (key = '238') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1409,6 +1410,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_n7
+                  filterExpr: (((s = 'oscar allen') or (s = 'oscar carson')) and (t = 10Y)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

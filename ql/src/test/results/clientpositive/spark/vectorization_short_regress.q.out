@@ -91,6 +91,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cbigint = 762L) or ((UDFToFloat(csmallint) < cfloat) and (UDFToDouble(ctimestamp2) > -5.0D) and (cdouble <> UDFToDouble(cint))) or (cstring1 = 'a') or ((CAST( cbigint AS decimal(22,3)) <= -1.389) and (cstring2 <> 'a') and (CAST( cint AS decimal(13,3)) <> 79.553) and (cboolean2 <> cboolean1))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -351,6 +352,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((cbigint <= 197L) and (UDFToLong(cint) < cbigint)) or ((cdouble >= -26.28D) and (UDFToDouble(csmallint) > cdouble)) or ((UDFToFloat(ctinyint) > cfloat) and cstring1 regexp '.*ss.*') or ((cfloat > 79.553) and (cstring2 like '10%'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -603,6 +605,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((ctimestamp1 = ctimestamp2) or (cfloat = 762) or (cstring1 = 'ss') or ((UDFToLong(csmallint) <= cbigint) and (cboolean2 = 1)) or (cboolean1 is not null and ctimestamp2 is not null and (cstring2 > 'a'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -834,6 +837,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((ctimestamp2 <= ctimestamp1) and (UDFToDouble(cbigint) <> cdouble) and (cstring1 >= 'ss')) or ((csmallint < UDFToShort(ctinyint)) and (UDFToDouble(ctimestamp1) >= 0.0D)) or (cfloat = 17)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1073,6 +1077,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cstring1 regexp 'a.*' and (cstring2 like '%ss%')) or ((cboolean2 <> 1) and (CAST( csmallint AS decimal(8,3)) < 79.553) and (UDFToInteger(ctinyint) <> -257)) or ((cdouble > UDFToDouble(ctinyint)) and (cfloat >= UDFToFloat(cint))) or ((UDFToLong(cint) < cbigint) and (UDFToLong(ctinyint) > cbigint))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1368,6 +1373,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((UDFToInteger(ctinyint) < 197) and (UDFToLong(cint) = cbigint)) or (cbigint = 359L) or (cboolean1 < 0) or ((cstring1 like '%ss') and (cfloat <= UDFToFloat(ctinyint)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1612,6 +1618,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((CAST( csmallint AS decimal(7,2)) > -26.28) and (cstring2 like 'ss')) or ((cdouble <= UDFToDouble(cbigint)) and (cstring1 >= 'ss') and (UDFToDouble(cint) <> cdouble)) or (UDFToInteger(ctinyint) = -89010) or ((UDFToFloat(cbigint) <= cfloat) and (CAST( csmallint AS decimal(7,2)) >= -26.28))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1914,6 +1921,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((CAST( cint AS decimal(13,3)) <= -1.389) and (csmallint < UDFToShort(ctinyint)) and (UDFToInteger(csmallint) < -6432)) or ((cdouble >= UDFToDouble(cfloat)) and (cstring2 <= 'a')) or ((cstring1 like 'ss%') and (CAST( cbigint AS decimal(22,3)) < 10.175))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2158,6 +2166,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((UDFToInteger(csmallint) >= -257) and ((UDFToInteger(csmallint) = -6432) or ((UDFToDouble(cint) >= cdouble) and (UDFToInteger(ctinyint) <= cint)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2433,6 +2442,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cdouble > 2563.58D) and (((cbigint >= UDFToLong(cint)) and (UDFToInteger(csmallint) < cint) and (cfloat < -5638.15)) or (CAST( ctinyint AS decimal(6,2)) = 2563.58) or ((cdouble <= UDFToDouble(cbigint)) and (CAST( cbigint AS decimal(21,2)) < -5638.15)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2752,6 +2762,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((UDFToDouble(ctimestamp1) <> 0.0D) and (((UDFToInteger(ctinyint) <> -257) and cboolean2 is not null and cstring1 regexp '.*ss' and (UDFToDouble(ctimestamp1) > -3.0D)) or (UDFToDouble(ctimestamp2) = -5.0D) or ((UDFToDouble(ctimestamp1) < 0.0D) and (cstring2 like '%b%')) or (cdouble = UDFToDouble(cint)) or (cboolean1 is null and (cfloat < UDFToFloat(cint))))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -3152,6 +3163,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((((cdouble < UDFToDouble(csmallint)) and (cboolean2 = cboolean1) and (CAST( cbigint AS decimal(22,3)) <= -863.257)) or ((cint >= -257) and cstring1 is not null and (cboolean1 >= 1)) or cstring2 regexp 'b' or ((csmallint >= UDFToShort(ctinyint)) and ctimestamp2 is null)) and cboolean1 is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

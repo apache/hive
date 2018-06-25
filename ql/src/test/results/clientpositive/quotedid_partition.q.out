@@ -41,6 +41,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src_p
+            filterExpr: ((!@#$%^&*()_q = 'a') and (x+1 = '10')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (x+1 = '10') (type: boolean)

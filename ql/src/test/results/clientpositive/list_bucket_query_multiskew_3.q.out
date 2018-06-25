@@ -248,6 +248,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n3
+          filterExpr: ((ds = '1') and (hr = '1') and (key = '145')) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -360,6 +361,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n3
+          filterExpr: ((key = '484') and (value = 'val_484')) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -447,6 +449,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n3
+          filterExpr: ((key = '327') and (value = 'val_327')) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator

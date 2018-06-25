@@ -126,6 +126,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: bin is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: bin is not null (type: boolean)
@@ -144,6 +145,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: bin is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -509,6 +511,7 @@ STAGE PLANS:
         $hdt$_0:t1 
           TableScan
             alias: t1
+            filterExpr: i is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: i is not null (type: boolean)
@@ -527,6 +530,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: i is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

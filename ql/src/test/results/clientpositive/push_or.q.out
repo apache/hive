@@ -44,6 +44,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: push_or
+            filterExpr: ((ds = '2000-04-09') or (key = 5)) (type: boolean)
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

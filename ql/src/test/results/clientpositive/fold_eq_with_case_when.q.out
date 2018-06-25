@@ -40,6 +40,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: lineitem
+            filterExpr: ((DATE'1996-03-30' = to_date(l_shipdate)) and (l_shipmode = 'RAIL')) (type: boolean)
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((DATE'1996-03-30' = to_date(l_shipdate)) and (l_shipmode = 'RAIL')) (type: boolean)
@@ -100,6 +101,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (key = '238') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = '238') (type: boolean)
@@ -137,6 +139,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: ((key = '238') or (key = '94')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key = '238') or (key = '94')) (type: boolean)
@@ -174,6 +177,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (key = '238') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = '238') (type: boolean)
@@ -211,6 +215,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: CASE WHEN ((key <> '238')) THEN ((key = '238')) WHEN ((key = '23')) THEN ((key = '238')) ELSE (null) END (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: CASE WHEN ((key <> '238')) THEN ((key = '238')) WHEN ((key = '23')) THEN ((key = '238')) ELSE (null) END (type: boolean)

@@ -24,6 +24,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((ds = '2008-04-08') and (key < 100)) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -49,6 +50,7 @@ STAGE PLANS:
                       auto parallelism: false
           TableScan
             alias: y
+            filterExpr: ((ds = '2008-04-08') and (key < 100)) (type: boolean)
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

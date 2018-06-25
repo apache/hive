@@ -172,6 +172,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable_n10
+            filterExpr: (a = 3) (type: boolean)
             Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (a = 3) (type: boolean)
@@ -186,6 +187,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: decimal(10,2))
           TableScan
             alias: cmv_basetable_n10
+            filterExpr: ((d = 3) and (a = 3)) (type: boolean)
             Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((a = 3) and (d = 3)) (type: boolean)
@@ -293,6 +295,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable_n10
+            filterExpr: ((a = 3) and (d = 3)) (type: boolean)
             Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((a = 3) and (d = 3)) (type: boolean)
@@ -393,6 +396,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable_n10
+            filterExpr: (a = 3) (type: boolean)
             Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (a = 3) (type: boolean)
@@ -407,6 +411,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: decimal(10,2))
           TableScan
             alias: cmv_basetable_n10
+            filterExpr: ((d = 3) and (a = 3)) (type: boolean)
             Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((a = 3) and (d = 3)) (type: boolean)

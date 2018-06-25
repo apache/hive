@@ -82,6 +82,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tmptab
+                  filterExpr: (UDFToDouble(key) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 0.0D) (type: boolean)
@@ -181,6 +182,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rct
+                  filterExpr: (UDFToDouble(key) = 0.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 0.0D) (type: boolean)
@@ -282,6 +284,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rct_part
+                  filterExpr: ((ds = '2008-04-08') and (UDFToDouble(key) = 0.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) = 0.0D) and (ds = '2008-04-08')) (type: boolean)

@@ -266,6 +266,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dependents_n4
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -307,6 +308,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: locations_n4
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -326,6 +328,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: depts_n6
+                  filterExpr: ((deptno > 10) and (deptno <= 11) and name is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno <= 11) and (deptno > 10) and name is not null) (type: boolean)
@@ -346,6 +349,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: emps_n8
+                  filterExpr: ((deptno > 10) and (deptno <= 11)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno <= 11) and (deptno > 10)) (type: boolean)
@@ -557,6 +561,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dependents_n4
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -600,6 +605,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: locations_n4
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -619,6 +625,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: emps_n8
+                  filterExpr: ((deptno > 10) and (deptno < 20) and ((deptno <= 11) or (deptno >= 19))) (type: boolean)
                   Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (((deptno <= 11) or (deptno >= 19)) and (deptno < 20) and (deptno > 10)) (type: boolean)
@@ -639,6 +646,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: depts_n6
+                  filterExpr: ((deptno > 10) and (deptno < 20) and ((deptno <= 11) or (deptno >= 19)) and name is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (((deptno <= 11) or (deptno >= 19)) and (deptno < 20) and (deptno > 10) and name is not null) (type: boolean)
@@ -870,6 +878,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: depts_n6
+                  filterExpr: ((deptno > 0) and (deptno < 10) and name is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno < 10) and (deptno > 0) and name is not null) (type: boolean)
@@ -890,6 +899,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: emps_n8
+                  filterExpr: ((deptno > 0) and (deptno < 10)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((deptno < 10) and (deptno > 0)) (type: boolean)
@@ -909,6 +919,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dependents_n4
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)

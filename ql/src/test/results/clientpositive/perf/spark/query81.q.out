@@ -82,6 +82,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer
+                  filterExpr: (c_current_addr_sk is not null and c_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (c_current_addr_sk is not null and c_customer_sk is not null) (type: boolean)
@@ -101,6 +102,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
@@ -119,6 +121,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: (ca_address_sk is not null and ca_state is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ca_address_sk is not null and ca_state is not null) (type: boolean)
@@ -138,6 +141,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_returns
+                  filterExpr: (cr_returned_date_sk is not null and cr_returning_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cr_returned_date_sk is not null and cr_returning_addr_sk is not null) (type: boolean)
@@ -157,6 +161,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 1998) and d_date_sk is not null) (type: boolean)
@@ -175,6 +180,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: (ca_address_sk is not null and ca_state is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ca_address_sk is not null and ca_state is not null) (type: boolean)
@@ -194,6 +200,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: ((ca_state = 'IL') and ca_address_sk is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ca_state = 'IL') and ca_address_sk is not null) (type: boolean)
@@ -213,6 +220,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_returns
+                  filterExpr: (cr_returned_date_sk is not null and cr_returning_addr_sk is not null and cr_returning_customer_sk is not null) (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cr_returned_date_sk is not null and cr_returning_addr_sk is not null and cr_returning_customer_sk is not null) (type: boolean)

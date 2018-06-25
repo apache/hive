@@ -20,6 +20,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c
+            filterExpr: (bar = 1) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (bar = 1) (type: boolean)
@@ -42,6 +43,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: d
+            filterExpr: (bar = 1) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (bar = 1) (type: boolean)

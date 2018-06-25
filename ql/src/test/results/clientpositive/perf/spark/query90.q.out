@@ -57,6 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: (t_hour BETWEEN 14 AND 15 and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (t_hour BETWEEN 14 AND 15 and t_time_sk is not null) (type: boolean)
@@ -76,6 +77,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((hd_dep_count = 8) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((hd_dep_count = 8) and hd_demo_sk is not null) (type: boolean)
@@ -95,6 +97,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_page
+                  filterExpr: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
                   Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
@@ -121,6 +124,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_ship_hdemo_sk is not null and ws_sold_time_sk is not null and ws_web_page_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_ship_hdemo_sk is not null and ws_sold_time_sk is not null and ws_web_page_sk is not null) (type: boolean)
@@ -193,6 +197,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_page
+                  filterExpr: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
                   Statistics: Num rows: 4602 Data size: 2696178 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (wp_char_count BETWEEN 5000 AND 5200 and wp_web_page_sk is not null) (type: boolean)
@@ -212,6 +217,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: (t_hour BETWEEN 6 AND 7 and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (t_hour BETWEEN 6 AND 7 and t_time_sk is not null) (type: boolean)
@@ -231,6 +237,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((hd_dep_count = 8) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((hd_dep_count = 8) and hd_demo_sk is not null) (type: boolean)
@@ -258,6 +265,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_ship_hdemo_sk is not null and ws_sold_time_sk is not null and ws_web_page_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_ship_hdemo_sk is not null and ws_sold_time_sk is not null and ws_web_page_sk is not null) (type: boolean)

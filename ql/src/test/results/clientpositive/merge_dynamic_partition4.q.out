@@ -147,6 +147,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart_merge_dp_rc_n1
+            filterExpr: (ds = '2008-04-08') (type: boolean)
             Statistics: Num rows: 1000 Data size: 9624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), if(((UDFToDouble(key) % 2.0D) = 0.0D), 'a1', 'b1') (type: string)

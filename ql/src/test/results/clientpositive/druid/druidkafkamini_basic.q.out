@@ -235,6 +235,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: languages
+                  filterExpr: shortname is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator

@@ -114,6 +114,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: expod1
+                  filterExpr: aid is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 5772 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: aid is not null (type: boolean)
@@ -199,6 +200,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: expod2
+                  filterExpr: bid is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 5772 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: bid is not null (type: boolean)

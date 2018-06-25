@@ -104,6 +104,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: int), _col2 (type: string)
           TableScan
             alias: srcpart
+            filterExpr: ((ds = '2008-04-08') and (hr = '12')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), array(1,2,3) (type: array<int>)

@@ -504,6 +504,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
+                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
@@ -523,6 +524,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s4
+                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
@@ -714,6 +716,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory
+                  filterExpr: (inv_item_sk is not null and inv_warehouse_sk is not null and inv_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (inv_date_sk is not null and inv_item_sk is not null and inv_warehouse_sk is not null) (type: boolean)
@@ -733,6 +736,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 1999) and (d_moy = 3) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((d_moy = 3) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
@@ -751,6 +755,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory
+                  filterExpr: (inv_item_sk is not null and inv_warehouse_sk is not null and inv_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: (inv_date_sk is not null and inv_item_sk is not null and inv_warehouse_sk is not null) (type: boolean)
@@ -770,6 +775,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -788,6 +794,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: warehouse
+                  filterExpr: w_warehouse_sk is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: w_warehouse_sk is not null (type: boolean)
@@ -807,6 +814,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_year = 1999) and (d_moy = 4) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: ((d_moy = 4) and (d_year = 1999) and d_date_sk is not null) (type: boolean)
@@ -825,6 +833,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -843,6 +852,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: warehouse
+                  filterExpr: w_warehouse_sk is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
                     predicate: w_warehouse_sk is not null (type: boolean)

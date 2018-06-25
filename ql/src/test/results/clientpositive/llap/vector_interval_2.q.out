@@ -936,6 +936,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_interval_2
+                  filterExpr: ((CAST( str1 AS INTERVAL YEAR TO MONTH) = CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <> CAST( str2 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <= CAST( str2 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) < CAST( str2 AS INTERVAL YEAR TO MONTH)) and (CAST( str2 AS INTERVAL YEAR TO MONTH) >= CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str2 AS INTERVAL YEAR TO MONTH) > CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) = INTERVAL'1-2') and (CAST( str1 AS INTERVAL YEAR TO MONTH) <> INTERVAL'1-3') and (CAST( str1 AS INTERVAL YEAR TO MONTH) <= INTERVAL'1-3') and (CAST( str1 AS INTERVAL YEAR TO MONTH) < INTERVAL'1-3') and (CAST( str2 AS INTERVAL YEAR TO MONTH) >= INTERVAL'1-2') and (CAST( str2 AS INTERVAL YEAR TO MONTH) > INTERVAL'1-2') and (INTERVAL'1-2' = CAST( str1 AS INTERVAL YEAR TO MONTH)) and (INTERVAL'1-2' <> CAST( str2 AS INTERVAL YEAR TO MONTH)) and (INTERVAL'1-2' <= CAST( str2 AS INTERVAL YEAR TO MONTH)) and (INTERVAL'1-2' < CAST( str2 AS INTERVAL YEAR TO MONTH)) and (INTERVAL'1-3' >= CAST( str1 AS INTERVAL YEAR TO MONTH)) and (INTERVAL'1-3' > CAST( str1 AS INTERVAL YEAR TO MONTH))) (type: boolean)
                   Statistics: Num rows: 2 Data size: 816 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1130,6 +1131,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_interval_2
+                  filterExpr: ((CAST( str3 AS INTERVAL DAY TO SECOND) = CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) <> CAST( str4 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) <= CAST( str4 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) < CAST( str4 AS INTERVAL DAY TO SECOND)) and (CAST( str4 AS INTERVAL DAY TO SECOND) >= CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str4 AS INTERVAL DAY TO SECOND) > CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) = INTERVAL'1 02:03:04.000000000') and (CAST( str3 AS INTERVAL DAY TO SECOND) <> INTERVAL'1 02:03:05.000000000') and (CAST( str3 AS INTERVAL DAY TO SECOND) <= INTERVAL'1 02:03:05.000000000') and (CAST( str3 AS INTERVAL DAY TO SECOND) < INTERVAL'1 02:03:05.000000000') and (CAST( str4 AS INTERVAL DAY TO SECOND) >= INTERVAL'1 02:03:04.000000000') and (CAST( str4 AS INTERVAL DAY TO SECOND) > INTERVAL'1 02:03:04.000000000') and (INTERVAL'1 02:03:04.000000000' = CAST( str3 AS INTERVAL DAY TO SECOND)) and (INTERVAL'1 02:03:04.000000000' <> CAST( str4 AS INTERVAL DAY TO SECOND)) and (INTERVAL'1 02:03:04.000000000' <= CAST( str4 AS INTERVAL DAY TO SECOND)) and (INTERVAL'1 02:03:04.000000000' < CAST( str4 AS INTERVAL DAY TO SECOND)) and (INTERVAL'1 02:03:05.000000000' >= CAST( str3 AS INTERVAL DAY TO SECOND)) and (INTERVAL'1 02:03:05.000000000' > CAST( str3 AS INTERVAL DAY TO SECOND))) (type: boolean)
                   Statistics: Num rows: 2 Data size: 816 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1314,6 +1316,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_interval_2
+                  filterExpr: ((DATE'2002-03-01' = (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (DATE'2002-03-01' <= (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (DATE'2002-03-01' >= (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) = DATE'2002-03-01') and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) <= DATE'2002-03-01') and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) >= DATE'2002-03-01') and (dt <> (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (DATE'2002-03-01' = (dt + INTERVAL'1-2')) and (DATE'2002-03-01' <= (dt + INTERVAL'1-2')) and (DATE'2002-03-01' >= (dt + INTERVAL'1-2')) and ((dt + INTERVAL'1-2') = DATE'2002-03-01') and ((dt + INTERVAL'1-2') <= DATE'2002-03-01') and ((dt + INTERVAL'1-2') >= DATE'2002-03-01') and (dt <> (dt + INTERVAL'1-2'))) (type: boolean)
                   Statistics: Num rows: 2 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1498,6 +1501,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_interval_2
+                  filterExpr: ((TIMESTAMP'2002-03-01 01:02:03.0' = (ts + INTERVAL'1-2')) and (TIMESTAMP'2002-03-01 01:02:03.0' <= (ts + INTERVAL'1-2')) and (TIMESTAMP'2002-03-01 01:02:03.0' >= (ts + INTERVAL'1-2')) and (TIMESTAMP'2002-04-01 01:02:03.0' <> (ts + INTERVAL'1-2')) and (TIMESTAMP'2002-02-01 01:02:03.0' < (ts + INTERVAL'1-2')) and (TIMESTAMP'2002-04-01 01:02:03.0' > (ts + INTERVAL'1-2')) and ((ts + INTERVAL'1-2') = TIMESTAMP'2002-03-01 01:02:03.0') and ((ts + INTERVAL'1-2') >= TIMESTAMP'2002-03-01 01:02:03.0') and ((ts + INTERVAL'1-2') <= TIMESTAMP'2002-03-01 01:02:03.0') and ((ts + INTERVAL'1-2') <> TIMESTAMP'2002-04-01 01:02:03.0') and ((ts + INTERVAL'1-2') > TIMESTAMP'2002-02-01 01:02:03.0') and ((ts + INTERVAL'1-2') < TIMESTAMP'2002-04-01 01:02:03.0') and (ts = (ts + INTERVAL'0-0')) and (ts <> (ts + INTERVAL'1-0')) and (ts <= (ts + INTERVAL'1-0')) and (ts < (ts + INTERVAL'1-0')) and (ts >= (ts - INTERVAL'1-0')) and (ts > (ts - INTERVAL'1-0'))) (type: boolean)
                   Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1692,6 +1696,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_interval_2
+                  filterExpr: ((TIMESTAMP'2001-01-01 01:02:03.0' = (dt + INTERVAL'0 01:02:03.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' <> (dt + INTERVAL'0 01:02:04.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' <= (dt + INTERVAL'0 01:02:03.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' < (dt + INTERVAL'0 01:02:04.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' >= (dt - INTERVAL'0 01:02:03.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' > (dt - INTERVAL'0 01:02:04.000000000')) and ((dt + INTERVAL'0 01:02:03.000000000') = TIMESTAMP'2001-01-01 01:02:03.0') and ((dt + INTERVAL'0 01:02:04.000000000') <> TIMESTAMP'2001-01-01 01:02:03.0') and ((dt + INTERVAL'0 01:02:03.000000000') >= TIMESTAMP'2001-01-01 01:02:03.0') and ((dt + INTERVAL'0 01:02:04.000000000') > TIMESTAMP'2001-01-01 01:02:03.0') and ((dt - INTERVAL'0 01:02:03.000000000') <= TIMESTAMP'2001-01-01 01:02:03.0') and ((dt - INTERVAL'0 01:02:04.000000000') < TIMESTAMP'2001-01-01 01:02:03.0') and (ts = (dt + INTERVAL'0 01:02:03.000000000')) and (ts <> (dt + INTERVAL'0 01:02:04.000000000')) and (ts <= (dt + INTERVAL'0 01:02:03.000000000')) and (ts < (dt + INTERVAL'0 01:02:04.000000000')) and (ts >= (dt - INTERVAL'0 01:02:03.000000000')) and (ts > (dt - INTERVAL'0 01:02:04.000000000'))) (type: boolean)
                   Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1886,6 +1891,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_interval_2
+                  filterExpr: ((TIMESTAMP'2001-01-01 01:02:03.0' = (ts + INTERVAL'0 00:00:00.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' <> (ts + INTERVAL'1 00:00:00.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' <= (ts + INTERVAL'1 00:00:00.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' < (ts + INTERVAL'1 00:00:00.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' >= (ts - INTERVAL'1 00:00:00.000000000')) and (TIMESTAMP'2001-01-01 01:02:03.0' > (ts - INTERVAL'1 00:00:00.000000000')) and ((ts + INTERVAL'0 00:00:00.000000000') = TIMESTAMP'2001-01-01 01:02:03.0') and ((ts + INTERVAL'1 00:00:00.000000000') <> TIMESTAMP'2001-01-01 01:02:03.0') and ((ts + INTERVAL'1 00:00:00.000000000') >= TIMESTAMP'2001-01-01 01:02:03.0') and ((ts + INTERVAL'1 00:00:00.000000000') > TIMESTAMP'2001-01-01 01:02:03.0') and ((ts - INTERVAL'1 00:00:00.000000000') <= TIMESTAMP'2001-01-01 01:02:03.0') and ((ts - INTERVAL'1 00:00:00.000000000') < TIMESTAMP'2001-01-01 01:02:03.0') and (ts = (ts + INTERVAL'0 00:00:00.000000000')) and (ts <> (ts + INTERVAL'1 00:00:00.000000000')) and (ts <= (ts + INTERVAL'1 00:00:00.000000000')) and (ts < (ts + INTERVAL'1 00:00:00.000000000')) and (ts >= (ts - INTERVAL'1 00:00:00.000000000')) and (ts > (ts - INTERVAL'1 00:00:00.000000000'))) (type: boolean)
                   Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

@@ -737,6 +737,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales_n3
+                  filterExpr: (ss_ticket_number = 1) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 126616 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

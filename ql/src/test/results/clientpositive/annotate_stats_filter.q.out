@@ -87,6 +87,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (state = 'OH') (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (state = 'OH') (type: boolean)
@@ -134,6 +135,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (state = 'OH') (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (state = 'OH') (type: boolean)
@@ -171,6 +173,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (state <> 'OH') (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (state <> 'OH') (type: boolean)
@@ -208,6 +211,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (state <> 'OH') (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (state <> 'OH') (type: boolean)
@@ -245,6 +249,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: zip is null (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: zip is null (type: boolean)
@@ -282,6 +287,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: zip is null (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: zip is null (type: boolean)
@@ -319,6 +325,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: zip is not null (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: zip is not null (type: boolean)
@@ -356,6 +363,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: zip is not null (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: zip is not null (type: boolean)
@@ -641,6 +649,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: ((state = 'OH') or (state = 'CA')) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((state = 'CA') or (state = 'OH')) (type: boolean)
@@ -752,6 +761,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (((year = 2001) and year is null) or (state = 'CA')) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((year = 2001) and year is null) or (state = 'CA')) (type: boolean)
@@ -789,6 +799,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (((year = 2001) or year is null) and (state = 'CA')) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((year = 2001) or year is null) and (state = 'CA')) (type: boolean)
@@ -826,6 +837,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid < 30) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid < 30) (type: boolean)
@@ -863,6 +875,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid > 30) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid > 30) (type: boolean)
@@ -900,6 +913,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid <= 30) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid <= 30) (type: boolean)
@@ -937,6 +951,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid >= 30) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid >= 30) (type: boolean)
@@ -974,6 +989,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid < 3) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid < 3) (type: boolean)
@@ -1011,6 +1027,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid > 3) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid > 3) (type: boolean)
@@ -1048,6 +1065,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid <= 3) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid <= 3) (type: boolean)
@@ -1085,6 +1103,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
+            filterExpr: (locid >= 3) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (locid >= 3) (type: boolean)

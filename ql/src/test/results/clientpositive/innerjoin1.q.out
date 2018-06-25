@@ -76,6 +76,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c1
+            filterExpr: COALESCE(a1,a2) is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: COALESCE(a1,a2) is not null (type: boolean)
@@ -92,6 +93,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: c2
+            filterExpr: COALESCE(b1,b2) is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: COALESCE(b1,b2) is not null (type: boolean)
@@ -155,6 +157,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: c1
+            filterExpr: COALESCE(a1,a2) is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: COALESCE(a1,a2) is not null (type: boolean)
@@ -171,6 +174,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: string), _col1 (type: string)
           TableScan
             alias: c2
+            filterExpr: COALESCE(b1,b2) is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: COALESCE(b1,b2) is not null (type: boolean)

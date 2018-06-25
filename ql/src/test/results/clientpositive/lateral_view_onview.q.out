@@ -672,6 +672,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: lv_table1_n0
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)
@@ -684,6 +685,7 @@ STAGE PLANS:
                 value expressions: c3 (type: int), c4 (type: char(1)), c5 (type: string), c6 (type: string), c7 (type: string), c8 (type: string), c9 (type: string), c10 (type: string), c11 (type: string), c12 (type: string), c13 (type: string)
           TableScan
             alias: lv_table2
+            filterExpr: c1 is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5500 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: c1 is not null (type: boolean)

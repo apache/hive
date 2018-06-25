@@ -160,6 +160,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -243,6 +244,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -375,6 +377,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -458,6 +461,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -590,6 +594,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: UDFToDouble(key) is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -668,6 +673,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (key + key) is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -794,6 +800,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -872,6 +879,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -998,6 +1006,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1076,6 +1085,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1202,6 +1212,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1280,6 +1291,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1406,6 +1418,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1484,6 +1497,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1610,6 +1624,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1688,6 +1703,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1814,6 +1830,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: r
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1892,6 +1909,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: l
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 42000 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

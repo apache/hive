@@ -66,6 +66,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesparquet
+            filterExpr: ((ctinyint <> 0Y) and ((UDFToDouble(ctimestamp1) <= 0.0D) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and ((cdouble > 988888.0D) or ((UDFToDouble(ctimestamp2) > -15.0D) and (cdouble <= 3569.0D)))) (type: boolean)
             Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -287,6 +288,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesparquet
+            filterExpr: ((ctinyint <> 0Y) and ((UDFToDouble(ctimestamp1) <= 0.0D) or (UDFToInteger(ctinyint) = cint) or (cstring2 like 'ss')) and ((cdouble > 988888.0D) or ((UDFToDouble(ctimestamp2) > 7.6850000000000005D) and (cdouble <= 3569.0D)))) (type: boolean)
             Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

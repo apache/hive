@@ -80,6 +80,7 @@ STAGE PLANS:
         $hdt$_1:acid2 
           TableScan
             alias: acid2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -98,6 +99,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 316 Data size: 1265 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

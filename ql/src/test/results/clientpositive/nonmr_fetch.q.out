@@ -54,6 +54,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), '2008-04-08' (type: string), '11' (type: string)
@@ -140,6 +141,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
           Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -290,6 +292,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string), '2008-04-08' (type: string), '11' (type: string)
@@ -376,6 +379,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
@@ -421,6 +425,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string)
@@ -465,6 +470,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
@@ -510,6 +516,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
           Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
@@ -803,6 +810,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: ((UDFToDouble(key) < 250.0D) and (UDFToDouble(key) > 200.0D)) (type: boolean)
@@ -860,6 +868,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
+          filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Lateral View Forward
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1166,6 +1175,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -1182,6 +1192,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: src2
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

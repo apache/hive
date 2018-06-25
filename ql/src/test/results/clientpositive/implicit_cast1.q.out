@@ -26,6 +26,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: implicit_test1
+            filterExpr: (a <> 0L) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (a <> 0L) (type: boolean)

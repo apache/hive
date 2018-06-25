@@ -128,6 +128,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: s_store_sk is not null (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: s_store_sk is not null (type: boolean)
@@ -158,6 +159,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_returns
+                  filterExpr: (sr_ticket_number is not null and sr_item_sk is not null and sr_customer_sk is not null and sr_returned_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 4462194832 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (sr_customer_sk is not null and sr_item_sk is not null and sr_returned_date_sk is not null and sr_ticket_number is not null) (type: boolean)
@@ -177,6 +179,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d2
+                  filterExpr: ((d_year = 2000) and (d_moy = 9) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_moy = 9) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
@@ -195,6 +198,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_ticket_number is not null and ss_item_sk is not null and ss_customer_sk is not null and ss_store_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_customer_sk is not null and ss_item_sk is not null and ss_sold_date_sk is not null and ss_store_sk is not null and ss_ticket_number is not null) (type: boolean)
@@ -214,6 +218,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
+                  filterExpr: d_date_sk is not null (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: d_date_sk is not null (type: boolean)

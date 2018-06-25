@@ -93,6 +93,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orderpayment
+            filterExpr: (date is not null and dealid is not null and cityid is not null and userid is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -114,6 +115,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: dim_pay_date
+            filterExpr: date is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -230,6 +232,7 @@ STAGE PLANS:
               auto parallelism: false
           TableScan
             alias: deal
+            filterExpr: dealid is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -369,6 +372,7 @@ STAGE PLANS:
               auto parallelism: false
           TableScan
             alias: order_city
+            filterExpr: cityid is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -508,6 +512,7 @@ STAGE PLANS:
               auto parallelism: false
           TableScan
             alias: user
+            filterExpr: userid is not null (type: boolean)
             Statistics: Num rows: 100 Data size: 288 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

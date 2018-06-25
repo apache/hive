@@ -264,6 +264,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_n2
+                  filterExpr: (ts) IN (TIMESTAMP'0001-01-01 00:00:00.0', TIMESTAMP'0002-02-02 00:00:00.0') (type: boolean)
                   Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

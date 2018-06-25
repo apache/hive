@@ -63,6 +63,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_decimal
+                  filterExpr: (UDFToDouble(id)) IN (1.0E8D, 2.0E8D) (type: boolean)
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

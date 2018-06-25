@@ -42,6 +42,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: foo_n5
+          filterExpr: (s <> 'bar') (type: boolean)
           Statistics: Num rows: 10 Data size: 90 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: i (type: int), s (type: string)

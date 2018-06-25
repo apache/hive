@@ -72,6 +72,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: ((val = 't1val01') and dimid is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((val = 't1val01') and dimid is not null) (type: boolean)
@@ -91,6 +92,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -171,6 +173,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: ((val = 't1val01') and id is not null and dimid is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
@@ -190,6 +193,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table2_n6
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -209,6 +213,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -307,6 +312,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((val = 't1val01') and dimid is not null and id is not null) (type: boolean)
@@ -326,6 +332,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -349,6 +356,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table2_n6
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 3 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -460,6 +468,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -532,6 +541,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: (dimid = 100) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (dimid = 100) (type: boolean)
@@ -551,6 +561,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -644,6 +655,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -716,6 +728,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: (dimid = 100) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (dimid = 100) (type: boolean)
@@ -735,6 +748,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)
@@ -809,6 +823,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table1_n10
+                  filterExpr: (dimid = 100) (type: boolean)
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (dimid = 100) (type: boolean)
@@ -828,6 +843,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table3_n0
+                  filterExpr: (id = 100) (type: boolean)
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (id = 100) (type: boolean)

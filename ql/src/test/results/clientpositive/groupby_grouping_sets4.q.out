@@ -40,6 +40,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n143
+            filterExpr: (UDFToDouble(a) < 3.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(a) < 3.0D) (type: boolean)
@@ -117,6 +118,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n143
+            filterExpr: (UDFToDouble(a) < 3.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(a) < 3.0D) (type: boolean)
@@ -187,6 +189,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n143
+            filterExpr: (UDFToDouble(a) < 3.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(a) < 3.0D) (type: boolean)
@@ -264,6 +267,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n143
+            filterExpr: (UDFToDouble(a) < 3.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(a) < 3.0D) (type: boolean)
@@ -365,6 +369,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n143
+            filterExpr: (UDFToDouble(a) < 3.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(a) < 3.0D) (type: boolean)
@@ -466,6 +471,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n143
+            filterExpr: (UDFToDouble(a) < 3.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(a) < 3.0D) (type: boolean)

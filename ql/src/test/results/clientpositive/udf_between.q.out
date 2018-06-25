@@ -24,6 +24,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          filterExpr: (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D (type: boolean)
@@ -79,6 +80,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
+          filterExpr: (not (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (not (UDFToDouble(key) + 100.0D) BETWEEN 100.0D AND 200.0D) (type: boolean)

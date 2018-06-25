@@ -61,6 +61,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_1_n1
+                  filterExpr: (struct(id,lineid)) IN (const struct('two','3'), const struct('three','1'), const struct('one','1'), const struct('five','2'), const struct('six','1'), const struct('eight','1'), const struct('seven','1'), const struct('nine','1'), const struct('ten','1')) (type: boolean)
                   Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -319,6 +320,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_2_n1
+                  filterExpr: (struct(id,lineid)) IN (const struct(2,3), const struct(3,1), const struct(1,1), const struct(5,2), const struct(6,1), const struct(8,1), const struct(7,1), const struct(9,1), const struct(10,1)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -577,6 +579,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_3
+                  filterExpr: (struct(id,lineid)) IN (const struct('two',3), const struct('three',1), const struct('one',1), const struct('five',2), const struct('six',1), const struct('eight',1), const struct('seven',1), const struct('nine',1), const struct('ten',1)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -838,6 +841,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_4
+                  filterExpr: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D), const struct(3L,'b',1.5D)) (type: boolean)
                   Statistics: Num rows: 3 Data size: 303 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

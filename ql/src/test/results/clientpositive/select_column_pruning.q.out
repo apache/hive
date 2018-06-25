@@ -40,6 +40,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: lv_table1
+            filterExpr: (c3 = 100) (type: boolean)
             Statistics: Num rows: 500 Data size: 26000 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (c3 = 100) (type: boolean)

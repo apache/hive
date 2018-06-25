@@ -44,6 +44,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-06-02 00:00:00.0' AND TIMESTAMP'2001-08-01 00:00:00.0' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-06-02 00:00:00.0' AND TIMESTAMP'2001-08-01 00:00:00.0' and d_date_sk is not null) (type: boolean)
@@ -72,6 +73,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: cs_item_sk is not null (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cs_item_sk is not null (type: boolean)
@@ -90,6 +92,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: ((i_manufact_id) IN (678, 964, 918, 849) and i_current_price BETWEEN 22 AND 52 and i_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((i_manufact_id) IN (678, 964, 918, 849) and i_current_price BETWEEN 22 AND 52 and i_item_sk is not null) (type: boolean)
@@ -109,6 +112,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inventory
+                  filterExpr: (inv_quantity_on_hand BETWEEN 100 AND 500 and inv_item_sk is not null and inv_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 37584000 Data size: 593821104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (inv_date_sk is not null and inv_item_sk is not null and inv_quantity_on_hand BETWEEN 100 AND 500) (type: boolean)
