@@ -3672,7 +3672,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_1	BYTES_READ > 10kb	KILL
+plan_1	trigger_1	BYTES_READ > '10kb'	KILL
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN ELAPSED_TIME > 300 DO KILL
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3696,8 +3696,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_1	BYTES_READ > 10kb	KILL
-plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
+plan_1	trigger_1	BYTES_READ > '10kb'	KILL
+plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > '1min' DO KILL
 PREHOOK: type: ALTER TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3711,8 +3711,8 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_1	BYTES_READ > 1min	KILL
-plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
+plan_1	trigger_1	BYTES_READ > '1min'	KILL
+plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: DROP TRIGGER plan_1.trigger_1
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3726,7 +3726,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
+plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > '100mb' DO MOVE TO null_pool
 PREHOOK: type: CREATE TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3764,12 +3764,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
-table	database	BYTES_WRITTEN > 1GB	MOVE TO default
-table	table	BYTES_WRITTEN > 100KB	MOVE TO table
-table	trigger	BYTES_WRITTEN > 100MB	MOVE TO default
+plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+table	database	BYTES_WRITTEN > "1GB"	MOVE TO default
+table	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > 1hour	KILL
+table	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: DROP TRIGGER `table`.`database`
 PREHOOK: type: DROP TRIGGER
 PREHOOK: Output: dummyHostnameForTest
@@ -3783,11 +3783,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
-table	table	BYTES_WRITTEN > 100KB	MOVE TO table
-table	trigger	BYTES_WRITTEN > 100MB	MOVE TO default
+plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+table	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > 1hour	KILL
+table	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3854,12 +3854,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
+plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
 plan_2	trigger_1	BYTES_READ > 0	MOVE TO null_pool
-table	table	BYTES_WRITTEN > 100KB	MOVE TO table
-table	trigger	BYTES_WRITTEN > 100MB	MOVE TO default
+table	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > 1hour	KILL
+table	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: CREATE POOL plan_1.default WITH
    ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
 PREHOOK: type: CREATE POOL
@@ -4239,18 +4239,18 @@ POSTHOOK: query: SHOW RESOURCE PLAN `table`
 POSTHOOK: type: SHOW RESOURCEPLAN
 table[status=DISABLED,parallelism=1,defaultPool=null]
  +  table[allocFraction=0.0,schedulingPolicy=fifo,parallelism=1]
-     |  trigger table: if (BYTES_WRITTEN > 100KB) { MOVE TO table }
+     |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO table }
      +  pool[allocFraction=0.9,schedulingPolicy=fair,parallelism=3]
          +  child2[allocFraction=0.7,schedulingPolicy=fair,parallelism=3]
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
-             |  trigger trigger2: if (ELAPSED_TIME > 1hour) { KILL }
+             |  trigger trigger2: if (ELAPSED_TIME > '1hour') { KILL }
          +  child1[allocFraction=0.3,schedulingPolicy=fair,parallelism=1]
-             |  trigger table: if (BYTES_WRITTEN > 100KB) { MOVE TO table }
+             |  trigger table: if (BYTES_WRITTEN > '100KB') { MOVE TO table }
              |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
  +  <unmanaged queries>
      |  trigger trigger1: if (ELAPSED_TIME > 10) { KILL }
  +  <unused triggers>
-     |  trigger trigger: if (BYTES_WRITTEN > 100MB) { MOVE TO default }
+     |  trigger trigger: if (BYTES_WRITTEN > '100MB') { MOVE TO default }
 PREHOOK: query: ALTER TRIGGER `table`.`trigger1` DROP FROM POOL `table`.pool.child2
 PREHOOK: type: ALTER POOL
 PREHOOK: Output: dummyHostnameForTest
@@ -4494,11 +4494,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
-table	table	BYTES_WRITTEN > 100KB	MOVE TO table
-table	trigger	BYTES_WRITTEN > 100MB	MOVE TO default
+plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+table	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > 1hour	KILL
+table	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools_to_triggers
@@ -4596,15 +4596,15 @@ POSTHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_triggers
 #### A masked pattern was here ####
-plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
-plan_4a	trigger_1	BYTES_READ > 10GB	KILL
-plan_4a	trigger_2	BYTES_READ > 11GB	KILL
-plan_4b	trigger_1	BYTES_READ > 10GB	KILL
-plan_4b	trigger_2	BYTES_READ > 11GB	KILL
-table	table	BYTES_WRITTEN > 100KB	MOVE TO table
-table	trigger	BYTES_WRITTEN > 100MB	MOVE TO default
+plan_1	trigger_2	ELAPSED_TIME > '30hour'	MOVE TO slow_pool
+plan_4a	trigger_1	BYTES_READ > '10GB'	KILL
+plan_4a	trigger_2	BYTES_READ > '11GB'	KILL
+plan_4b	trigger_1	BYTES_READ > '10GB'	KILL
+plan_4b	trigger_2	BYTES_READ > '11GB'	KILL
+table	table	BYTES_WRITTEN > '100KB'	MOVE TO table
+table	trigger	BYTES_WRITTEN > '100MB'	MOVE TO default
 table	trigger1	ELAPSED_TIME > 10	KILL
-table	trigger2	ELAPSED_TIME > 1hour	KILL
+table	trigger2	ELAPSED_TIME > '1hour'	KILL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_pools_to_triggers
@@ -4672,10 +4672,10 @@ plan_4a_old_0[status=DISABLED,parallelism=null,defaultPool=default]
  +  default[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
      |  mapped for default
  +  pool1[allocFraction=0.0,schedulingPolicy=fair,parallelism=2]
-     |  trigger trigger_2: if (BYTES_READ > 11GB) { KILL }
+     |  trigger trigger_2: if (BYTES_READ > '11GB') { KILL }
      |  mapped for users: user1
  +  <unused triggers>
-     |  trigger trigger_1: if (BYTES_READ > 10GB) { KILL }
+     |  trigger trigger_1: if (BYTES_READ > '10GB') { KILL }
 PREHOOK: query: REPLACE ACTIVE RESOURCE PLAN WITH plan_4a
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
