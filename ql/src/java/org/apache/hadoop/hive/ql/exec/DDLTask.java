@@ -4389,6 +4389,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (isFromMmTable && isRemoved) {
         throw new HiveException("Cannot convert an ACID table to non-ACID");
       }
+
+      // Check if external table property being removed
+      if (removedSet.contains("EXTERNAL") && tbl.getTableType() == TableType.EXTERNAL_TABLE) {
+        tbl.setTableType(TableType.MANAGED_TABLE);
+      }
     }
     Iterator<String> keyItr = alterTbl.getProps().keySet().iterator();
     while (keyItr.hasNext()) {
@@ -4494,6 +4499,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           throw new HiveException("Cannot convert an ACID table to non-ACID");
         }
       }
+
+      // Converting to/from external table
+      String externalProp = alterTbl.getProps().get("EXTERNAL");
+      if (externalProp != null) {
+        if (Boolean.parseBoolean(externalProp) && tbl.getTableType() == TableType.MANAGED_TABLE) {
+          tbl.setTableType(TableType.EXTERNAL_TABLE);
+        } else if (!Boolean.parseBoolean(externalProp) && tbl.getTableType() == TableType.EXTERNAL_TABLE) {
+          tbl.setTableType(TableType.MANAGED_TABLE);
+        }
+      }
+
       tbl.getTTable().getParameters().putAll(alterTbl.getProps());
     }
     return result;
