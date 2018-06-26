@@ -23,9 +23,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -256,12 +259,25 @@ public class FixedBucketPruningOptimizer extends Transform {
     private boolean addLiteral(List<Object> literals, PredicateLeaf leaf) {
       switch (leaf.getOperator()) {
       case EQUALS:
-        return literals.add(leaf.getLiteral());
+        return literals.add(
+            convertLiteral(leaf.getLiteral()));
       case IN:
-        return literals.addAll(leaf.getLiteralList());
+        return literals.addAll(
+            leaf.getLiteralList().stream().map(l -> convertLiteral(l)).collect(Collectors.toList()));
       default:
         return false;
       }
+    }
+
+    private Object convertLiteral(Object o) {
+      // This is a bit hackish to fix mismatch between SARG and Hive types
+      // for Timestamp and Date. TODO: Move those types to storage-api.
+      if (o instanceof java.sql.Date) {
+        return Date.valueOf(o.toString());
+      } else if (o instanceof java.sql.Timestamp) {
+        return Timestamp.valueOf(o.toString());
+      }
+      return o;
     }
   }
 
