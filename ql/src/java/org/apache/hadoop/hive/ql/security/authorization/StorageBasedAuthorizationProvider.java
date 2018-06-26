@@ -140,14 +140,23 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       throws HiveException, AuthorizationException {
     Path path = getDbLocation(db);
 
+    if (isDefaultDatabase(db)) {
+      // anyone can read the default database, otherwise we can have problems
+      // for external tables
+      PrivilegeExtractor privExtractor = new PrivilegeExtractor(readRequiredPriv,
+          writeRequiredPriv, Privilege.SELECT);
+      readRequiredPriv = privExtractor.getReadReqPriv();
+      writeRequiredPriv = privExtractor.getWriteReqPriv();
+    }
+
     // extract drop privileges
-    DropPrivilegeExtractor privExtractor = new DropPrivilegeExtractor(readRequiredPriv,
-        writeRequiredPriv);
+    PrivilegeExtractor privExtractor = new PrivilegeExtractor(readRequiredPriv,
+        writeRequiredPriv, Privilege.DROP);
     readRequiredPriv = privExtractor.getReadReqPriv();
     writeRequiredPriv = privExtractor.getWriteReqPriv();
 
     // authorize drops if there was a drop privilege requirement
-    if(privExtractor.hasDropPrivilege()) {
+    if(privExtractor.hasPrivilege()) {
       checkDeletePermission(path, getConf(), authenticator.getUserName());
     }
 
@@ -164,17 +173,19 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     }
 
     // extract any drop privileges out of required privileges
-    DropPrivilegeExtractor privExtractor = new DropPrivilegeExtractor(readRequiredPriv,
-        writeRequiredPriv);
+    PrivilegeExtractor privExtractor = new PrivilegeExtractor(readRequiredPriv,
+        writeRequiredPriv, Privilege.DROP);
     readRequiredPriv = privExtractor.getReadReqPriv();
     writeRequiredPriv = privExtractor.getWriteReqPriv();
 
     // if CREATE or DROP priv requirement is there, the owner should have WRITE permission on
     // the database directory
-    if (privExtractor.hasDropPrivilege || requireCreatePrivilege(readRequiredPriv)
+    if (privExtractor.hasPrivilege || requireCreatePrivilege(readRequiredPriv)
         || requireCreatePrivilege(writeRequiredPriv)) {
-      authorize(hive_db.getDatabase(table.getCatName(), table.getDbName()), new Privilege[] {},
-          new Privilege[] { Privilege.ALTER_DATA });
+      if (!table.getTableType().equals(TableType.EXTERNAL_TABLE)) {
+        authorize(hive_db.getDatabase(table.getCatName(), table.getDbName()),
+            new Privilege[] {}, new Privilege[] { Privilege.ALTER_DATA });
+      }
     }
 
     Path path = table.getDataLocation();
@@ -182,7 +193,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // table is not external (external table data is not dropped) or
     // "hive.metastore.authorization.storage.check.externaltable.drop"
     // set to true
-    if (privExtractor.hasDropPrivilege() && (table.getTableType() != TableType.EXTERNAL_TABLE ||
+    if (privExtractor.hasPrivilege() && (table.getTableType() != TableType.EXTERNAL_TABLE ||
         getConf().getBoolean(HiveConf.ConfVars.METASTORE_AUTHORIZATION_EXTERNALTABLE_DROP_CHECK.varname,
         HiveConf.ConfVars.METASTORE_AUTHORIZATION_EXTERNALTABLE_DROP_CHECK.defaultBoolVal))) {
       checkDeletePermission(path, getConf(), authenticator.getUserName());
@@ -225,13 +236,13 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       throws HiveException, AuthorizationException {
 
     // extract drop privileges
-    DropPrivilegeExtractor privExtractor = new DropPrivilegeExtractor(readRequiredPriv,
-        writeRequiredPriv);
+    PrivilegeExtractor privExtractor = new PrivilegeExtractor(readRequiredPriv,
+        writeRequiredPriv, Privilege.DROP);
     readRequiredPriv = privExtractor.getReadReqPriv();
     writeRequiredPriv = privExtractor.getWriteReqPriv();
 
     // authorize drops if there was a drop privilege requirement
-    if(privExtractor.hasDropPrivilege()) {
+    if(privExtractor.hasPrivilege()) {
       checkDeletePermission(part.getDataLocation(), getConf(), authenticator.getUserName());
     }
 
@@ -430,6 +441,10 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     }
   }
 
+  private boolean isDefaultDatabase(Database db) {
+    return db.getName().equals(Warehouse.DEFAULT_DATABASE_NAME);
+  }
+
   private HiveException hiveException(Exception e) {
     return new HiveException(e);
   }
@@ -449,6 +464,54 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // no-op - SBA does not attempt to authorize auth api call. Allow it
   }
 
+  public class PrivilegeExtractor {
+
+    private boolean hasPrivilege = false;
+    private final Privilege[] readReqPriv;
+    private final Privilege[] writeReqPriv;
+    private final Privilege type;
+
+    public PrivilegeExtractor(Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv,
+        Privilege type) {
+      this.type = type;
+      this.readReqPriv = extractPriv(readRequiredPriv);
+      this.writeReqPriv = extractPriv(writeRequiredPriv);
+    }
+
+    private Privilege[] extractPriv(Privilege[] requiredPrivs) {
+      if (requiredPrivs == null) {
+        return null;
+      }
+      List<Privilege> privList = new ArrayList<Privilege>();
+      for (Privilege priv : requiredPrivs) {
+        if (priv.equals(type)) {
+          hasPrivilege = true;
+        } else {
+          privList.add(priv);
+        }
+      }
+      return privList.toArray(new Privilege[0]);
+    }
+
+    public boolean hasPrivilege() {
+      return hasPrivilege;
+    }
+
+    public void setHasPrivilege(boolean hasPrivilege) {
+      this.hasPrivilege = hasPrivilege;
+    }
+
+    public Privilege[] getReadReqPriv() {
+      return readReqPriv;
+    }
+
+    public Privilege[] getWriteReqPriv() {
+      return writeReqPriv;
+    }
+
+  }
+
+  @Deprecated
   public class DropPrivilegeExtractor {
 
     private boolean hasDropPrivilege = false;
