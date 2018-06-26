@@ -164,8 +164,6 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       // instantiate the metastore server handler directly instead of connecting
       // through the network
       client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
-      // Initialize materializations invalidation cache (only for local metastore)
-      MaterializationsInvalidationCache.get().init(conf, (IHMSHandler) client);
       isConnected = true;
       snapshotActiveConf();
       return;
@@ -1442,10 +1440,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   /** {@inheritDoc} */
   @Override
-  public Map<String, Materialization> getMaterializationsInvalidationInfo(String dbName, List<String> viewNames)
+  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(
-        dbName, filterHook.filterTableNames(null, dbName, viewNames));
+    return client.get_materialization_invalidation_info(cm, validTxnList);
   }
 
   /** {@inheritDoc} */
