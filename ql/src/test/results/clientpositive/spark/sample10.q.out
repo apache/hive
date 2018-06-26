@@ -88,7 +88,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -139,7 +139,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -190,7 +190,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -241,7 +241,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -291,10 +291,10 @@ STAGE PLANS:
                     name: default.srcpartbucket
                   name: default.srcpartbucket
             Truncated Path -> Alias:
-              /srcpartbucket/ds=2008-04-08/hr=11/000001_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-08/hr=12/000001_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-09/hr=11/000001_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-09/hr=12/000001_0 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-08/hr=11 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-08/hr=12 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-09/hr=11 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-09/hr=12 [srcpartbucket]
         Reducer 2 
             Execution mode: vectorized
             Needs Tagging: false

@@ -84,13 +84,6 @@ public class VectorizedRowBatchCtx {
   private int partitionColumnCount;
   private int virtualColumnCount;
   private VirtualColumn[] neededVirtualColumns;
-  /**
-   * A record ID column is a virtual column, so it should be separated from normal data column
-   * processes. A recordIdColumnVector contains RecordIdentifier information in a
-   * StructColumnVector. It has three LongColumnVectors as its fields; original write IDs,
-   * bucket IDs, and row IDs.
-   */
-  private StructColumnVector recordIdColumnVector;
 
   private String[] scratchColumnTypeNames;
   private DataTypePhysicalVariation[] scratchDataTypePhysicalVariations;
@@ -215,14 +208,6 @@ public class VectorizedRowBatchCtx {
 
   public DataTypePhysicalVariation[] getScratchDataTypePhysicalVariations() {
     return scratchDataTypePhysicalVariations;
-  }
-
-  public StructColumnVector getRecordIdColumnVector() {
-    return this.recordIdColumnVector;
-  }
-
-  public void setRecordIdColumnVector(StructColumnVector recordIdColumnVector) {
-    this.recordIdColumnVector = recordIdColumnVector;
   }
 
   /**
