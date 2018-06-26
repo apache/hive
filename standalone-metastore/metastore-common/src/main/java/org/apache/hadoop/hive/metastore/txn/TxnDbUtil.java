@@ -94,9 +94,9 @@ public final class TxnDbUtil {
           "  CTC_DATABASE varchar(128) NOT NULL," +
           "  CTC_TABLE varchar(128)," +
           "  CTC_PARTITION varchar(767)," +
-          "  CTC_ID bigint GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) NOT NULL," +
           "  CTC_TIMESTAMP timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL," +
-          "  CTC_WRITEID bigint)");
+          "  CTC_WRITEID bigint," +
+          "  CTC_UPDATE_DELETE char(1) NOT NULL)");
       stmt.execute("CREATE TABLE NEXT_TXN_ID (" + "  NTXN_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
 
@@ -192,6 +192,14 @@ public final class TxnDbUtil {
           " RTM_SRC_TXN_ID bigint NOT NULL, " +
           " RTM_TARGET_TXN_ID bigint NOT NULL, " +
           " PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID))"
+      );
+
+      stmt.execute("CREATE TABLE MATERIALIZATION_REBUILD_LOCKS (" +
+          "  MRL_TXN_ID BIGINT NOT NULL, " +
+          "  MRL_DB_NAME VARCHAR(128) NOT NULL, " +
+          "  MRL_TBL_NAME VARCHAR(256) NOT NULL, " +
+          "  MRL_LAST_HEARTBEAT BIGINT NOT NULL, " +
+          "  PRIMARY KEY(MRL_TXN_ID))"
       );
 
       try {
@@ -336,6 +344,7 @@ public final class TxnDbUtil {
         success &= dropTable(stmt, "AUX_TABLE", retryCount);
         success &= dropTable(stmt, "WRITE_SET", retryCount);
         success &= dropTable(stmt, "REPL_TXN_MAP", retryCount);
+        success &= dropTable(stmt, "MATERIALIZATION_REBUILD_LOCKS", retryCount);
         /*
          * Don't drop NOTIFICATION_LOG, SEQUENCE_TABLE and NOTIFICATION_SEQUENCE as its used by other
          * table which are not txn related to generate primary key. So if these tables are dropped

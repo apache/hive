@@ -3009,8 +3009,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public Map<String, Materialization> get_materialization_invalidation_info(final String dbName, final List<String> tableNames) {
-      return MaterializationsInvalidationCache.get().getMaterializationInvalidationInfo(dbName, tableNames);
+    public Materialization get_materialization_invalidation_info(final CreationMetadata cm, final String validTxnList) throws MetaException {
+      return getTxnHandler().getMaterializationInvalidationInfo(cm, validTxnList);
     }
 
     @Override
@@ -8670,13 +8670,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public LockResponse get_lock_materialization_rebuild(String dbName, String tableName, long txnId)
         throws TException {
-      return MaterializationsRebuildLockHandler.get().lockResource(dbName, tableName, txnId);
+      return getTxnHandler().lockMaterializationRebuild(dbName, tableName, txnId);
     }
 
     @Override
     public boolean heartbeat_lock_materialization_rebuild(String dbName, String tableName, long txnId)
         throws TException {
-      return MaterializationsRebuildLockHandler.get().refreshLockResource(dbName, tableName, txnId);
+      return getTxnHandler().heartbeatLockMaterializationRebuild(dbName, tableName, txnId);
     }
 
     @Override
@@ -8992,8 +8992,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           false);
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
 
-      // Initialize materializations invalidation cache
-      MaterializationsInvalidationCache.get().init(conf, handler);
       TServerSocket serverSocket;
 
       if (useSasl) {

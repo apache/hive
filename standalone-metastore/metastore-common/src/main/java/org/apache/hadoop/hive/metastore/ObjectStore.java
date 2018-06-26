@@ -1335,13 +1335,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!commited) {
         rollbackTransaction();
-      } else {
-        if (MetaStoreUtils.isMaterializedViewTable(tbl)) {
-          // Add to the invalidation cache
-          MaterializationsInvalidationCache.get().createMaterializedView(
-              tbl.getDbName(), tbl.getTableName(), tbl.getCreationMetadata().getTablesUsed(),
-              tbl.getCreationMetadata().getValidTxnList());
-        }
       }
     }
   }
@@ -1439,10 +1432,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
-      } else {
-        if (materializedView) {
-          MaterializationsInvalidationCache.get().dropMaterializedView(dbName, tableName);
-        }
       }
     }
     return success;
@@ -2285,13 +2274,14 @@ public class ObjectStore implements RawStore, Configurable {
     if (m == null) {
       return null;
     }
+    assert !m.isSetMaterializationTime();
     Set<MTable> tablesUsed = new HashSet<>();
     for (String fullyQualifiedName : m.getTablesUsed()) {
       String[] names =  fullyQualifiedName.split("\\.");
       tablesUsed.add(getMTable(m.getCatName(), names[0], names[1], false).mtbl);
     }
     return new MCreationMetadata(m.getCatName(), m.getDbName(), m.getTblName(),
-        tablesUsed, m.getValidTxnList());
+        tablesUsed, m.getValidTxnList(), System.currentTimeMillis());
   }
 
   private CreationMetadata convertToCreationMetadata(
@@ -2307,6 +2297,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     CreationMetadata r = new CreationMetadata(s.getCatalogName(),
         s.getDbName(), s.getTblName(), tablesUsed);
+    r.setMaterializationTime(s.getMaterializationTime());
     if (s.getTxnList() != null) {
       r.setValidTxnList(s.getTxnList());
     }
@@ -4210,16 +4201,13 @@ public class ObjectStore implements RawStore, Configurable {
       MCreationMetadata newMcm = convertToMCreationMetadata(cm);
       MCreationMetadata mcm = getCreationMetadata(catName, dbname, tablename);
       mcm.setTables(newMcm.getTables());
+      mcm.setMaterializationTime(newMcm.getMaterializationTime());
       mcm.setTxnList(newMcm.getTxnList());
       // commit the changes
       success = commitTransaction();
     } finally {
       if (!success) {
         rollbackTransaction();
-      } else {
-        // Add to the invalidation cache if the creation signature has changed
-        MaterializationsInvalidationCache.get().alterMaterializedView(
-            dbname, tablename, cm.getTablesUsed(), cm.getValidTxnList());
       }
     }
   }
