@@ -124,6 +124,9 @@ public class TestJdbcGenericUDTFGetSplits {
     query = "select get_splits(" + "'select value from " + tableName + " order by under_col', 5)";
     runQuery(query, getConfigs(), 1);
 
+    query = "select get_splits(" + "'select value from " + tableName + " order by under_col limit 0', 5)";
+    runQuery(query, getConfigs(), 0);
+
     query = "select get_splits(" +
       "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 5)";
     runQuery(query, getConfigs(), 1);

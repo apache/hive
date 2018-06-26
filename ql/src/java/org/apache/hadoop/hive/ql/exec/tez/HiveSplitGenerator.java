@@ -210,26 +210,34 @@ public class HiveSplitGenerator extends InputInitializer {
         if (generateSingleSplit &&
           conf.get(HiveConf.ConfVars.HIVETEZINPUTFORMAT.varname).equals(HiveInputFormat.class.getName())) {
           MapWork mapWork = Utilities.getMapWork(jobConf);
-          splits = new InputSplit[1];
           List<Path> paths = Utilities.getInputPathsTez(jobConf, mapWork);
           FileSystem fs = paths.get(0).getFileSystem(jobConf);
           FileStatus[] fileStatuses = fs.listStatus(paths.get(0));
-          FileStatus fileStatus = fileStatuses[0];
-          Preconditions.checkState(paths.size() == 1 && fileStatuses.length == 1 &&
-              mapWork.getAliasToPartnInfo().size() == 1,
-            "Requested to generate single split. Paths and fileStatuses are expected to be 1. " +
-              "Got paths: " + paths.size() + " fileStatuses: " + fileStatuses.length);
-          BlockLocation[] locations = fs.getFileBlockLocations(fileStatus, 0, fileStatus.getLen());
-          Set<String> hostsSet = new HashSet<>();
-          for (BlockLocation location : locations) {
-            hostsSet.addAll(Lists.newArrayList(location.getHosts()));
+          if (fileStatuses.length == 0) {
+            // generate single split typically happens when reading data out of order by queries.
+            // if order by query returns no rows, no files will exists in input path
+            splits = new InputSplit[0];
+          } else {
+            // if files exists in input path then it has to be 1 as this code path gets triggered only
+            // of order by queries which is expected to write only one file (written by one reducer)
+            Preconditions.checkState(paths.size() == 1 && fileStatuses.length == 1 &&
+                mapWork.getAliasToPartnInfo().size() == 1,
+              "Requested to generate single split. Paths and fileStatuses are expected to be 1. " +
+                "Got paths: " + paths.size() + " fileStatuses: " + fileStatuses.length);
+            splits = new InputSplit[1];
+            FileStatus fileStatus = fileStatuses[0];
+            BlockLocation[] locations = fs.getFileBlockLocations(fileStatus, 0, fileStatus.getLen());
+            Set<String> hostsSet = new HashSet<>();
+            for (BlockLocation location : locations) {
+              hostsSet.addAll(Lists.newArrayList(location.getHosts()));
+            }
+            String[] hosts = hostsSet.toArray(new String[0]);
+            FileSplit fileSplit = new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), hosts);
+            String alias = mapWork.getAliases().get(0);
+            PartitionDesc partDesc = mapWork.getAliasToPartnInfo().get(alias);
+            String partIF = partDesc.getInputFileFormatClassName();
+            splits[0] = new HiveInputFormat.HiveInputSplit(fileSplit, partIF);
           }
-          String[] hosts = hostsSet.toArray(new String[0]);
-          FileSplit fileSplit = new FileSplit(fileStatus.getPath(), 0, fileStatus.getLen(), hosts);
-          String alias = mapWork.getAliases().get(0);
-          PartitionDesc partDesc = mapWork.getAliasToPartnInfo().get(alias);
-          String partIF = partDesc.getInputFileFormatClassName();
-          splits[0] = new HiveInputFormat.HiveInputSplit(fileSplit, partIF);
         } else {
           // Raw splits
           splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));

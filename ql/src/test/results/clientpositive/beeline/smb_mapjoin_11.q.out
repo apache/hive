@@ -1932,7 +1932,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: 000001_0
+            base file name: ds=1
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -1982,7 +1982,7 @@ STAGE PLANS:
               name: default.test_table1_n1
             name: default.test_table1_n1
       Truncated Path -> Alias:
-        /test_table1_n1/ds=1/000001_0 [test_table1_n1]
+        /test_table1_n1/ds=1 [test_table1_n1]
 
   Stage: Stage-0
     Fetch Operator
@@ -2043,7 +2043,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: 000001_0
+            base file name: ds=1
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -2092,7 +2092,7 @@ STAGE PLANS:
               name: default.test_table3_n1
             name: default.test_table3_n1
       Truncated Path -> Alias:
-        /test_table3_n1/ds=1/000001_0 [test_table3_n1]
+        /test_table3_n1/ds=1 [test_table3_n1]
 
   Stage: Stage-0
     Fetch Operator
