@@ -1677,12 +1677,21 @@ public class AcidUtils {
       }
       String fullTableName = getFullTableName(tbl.getDbName(), tbl.getTableName());
       if (txnId > 0 && isTransactionalTable(tbl)) {
-        validWriteIdList =
-            getTableValidWriteIdList(conf, fullTableName);
+        validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
 
-        if (validWriteIdList == null) {
+        // TODO: we shouldn't do this during normal Hive compilation, write IDs should be in conf.
+        //       Can this still happen for DDLTask-based queries?
+        if (validWriteIdList == null && !HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
+          LOG.warn("Obtaining write IDs from metastore for " + tbl.getTableName());
           validWriteIdList = getTableValidWriteIdListWithTxnList(
               conf, tbl.getDbName(), tbl.getTableName());
+        }
+        if (validWriteIdList == null) {
+          if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
+            throw new AssertionError("Cannot find valid write ID list for " + tbl.getTableName());
+          } else {
+            return null;
+          }
         }
       }
       return new TableSnapshot(txnId,
