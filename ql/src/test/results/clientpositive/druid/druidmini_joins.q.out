@@ -217,8 +217,8 @@ GROUP BY `tbl1`.`username`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table_with_nulls
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-alfred	10.300000190734863
-bob	3.140000104904175
-bonnie	0.0
-calvin	0.0
-charlie	25.600000381469727
+alfred	10.3
+bob	3.14
+bonnie	NULL
+calvin	NULL
+charlie	25.6
