@@ -109,6 +109,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: test_tab_n3
+          filterExpr: ((part = '1') and (key = '484')) (type: boolean)
           Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -192,6 +193,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: test_tab_n3
+          filterExpr: ((part = '1') and (key = '0')) (type: boolean)
           Statistics: Num rows: 500 Data size: 4812 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator

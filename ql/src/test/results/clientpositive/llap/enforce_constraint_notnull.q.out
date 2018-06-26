@@ -255,6 +255,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: enforce_constraint((key is not null and value is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: enforce_constraint((key is not null and value is not null)) (type: boolean)
@@ -866,6 +867,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: enforce_constraint((key is not null and value is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: enforce_constraint((key is not null and value is not null)) (type: boolean)
@@ -1475,6 +1477,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: enforce_constraint((key is not null and value is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: enforce_constraint((key is not null and value is not null)) (type: boolean)
@@ -3233,6 +3236,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n1
+                  filterExpr: (((de = 109.23) or (de = 119.23)) and enforce_constraint(vc is not null)) (type: boolean)
                   Statistics: Num rows: 281 Data size: 87904 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((de = 109.23) or (de = 119.23)) and enforce_constraint(vc is not null)) (type: boolean)
@@ -3326,6 +3330,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n1
+                  filterExpr: ((de = 3.14) and enforce_constraint((i is not null and vc is not null))) (type: boolean)
                   Statistics: Num rows: 320 Data size: 100040 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((de = 3.14) and enforce_constraint((i is not null and vc is not null))) (type: boolean)
@@ -5238,6 +5243,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -5254,6 +5260,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)

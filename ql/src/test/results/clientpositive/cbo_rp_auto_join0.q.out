@@ -37,6 +37,7 @@ STAGE PLANS:
         a:cbo_t1:cbo_t3 
           TableScan
             alias: cbo_t3
+            filterExpr: (key < 10) (type: boolean)
             Statistics: Num rows: 20 Data size: 3230 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key < 10) (type: boolean)
@@ -55,6 +56,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t3
+            filterExpr: (key < 10) (type: boolean)
             Statistics: Num rows: 20 Data size: 3230 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key < 10) (type: boolean)
@@ -150,6 +152,7 @@ STAGE PLANS:
         a:cbo_t1:cbo_t3 
           TableScan
             alias: cbo_t3
+            filterExpr: (key < 10) (type: boolean)
             Statistics: Num rows: 20 Data size: 3230 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key < 10) (type: boolean)
@@ -168,6 +171,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cbo_t3
+            filterExpr: (key < 10) (type: boolean)
             Statistics: Num rows: 20 Data size: 3230 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (key < 10) (type: boolean)

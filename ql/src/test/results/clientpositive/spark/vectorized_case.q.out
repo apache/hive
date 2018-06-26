@@ -51,6 +51,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((csmallint = 418S) or (csmallint = 12205S) or (csmallint = 10583S)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -199,6 +200,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((csmallint = 418S) or (csmallint = 12205S) or (csmallint = 10583S)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1237,7 +1239,7 @@ where (case when cint % 2 = 0 then cint else 0 end) = cint) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-4086
+0
 PREHOOK: query: select count(*)
 from (
 select

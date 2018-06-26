@@ -97,6 +97,7 @@ STAGE PLANS:
         $hdt$_0:$hdt$_0:y 
           TableScan
             alias: y
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -112,6 +113,7 @@ STAGE PLANS:
         $hdt$_1:z 
           TableScan
             alias: z
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -130,6 +132,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 130 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)

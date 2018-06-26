@@ -58,6 +58,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n7
+            filterExpr: (!@#$%^&*()_q = '1') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (!@#$%^&*()_q = '1') (type: boolean)
@@ -95,6 +96,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n7
+            filterExpr: (!@#$%^&*()_q = '1') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (!@#$%^&*()_q = '1') (type: boolean)
@@ -155,6 +157,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n7
+            filterExpr: (!@#$%^&*()_q = '1') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (!@#$%^&*()_q = '1') (type: boolean)
@@ -259,6 +262,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n7
+            filterExpr: (!@#$%^&*()_q = '1') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (!@#$%^&*()_q = '1') (type: boolean)

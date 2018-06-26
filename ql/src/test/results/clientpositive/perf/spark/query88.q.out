@@ -205,6 +205,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
@@ -224,6 +225,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: ((t_hour = 12) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t_hour = 12) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
@@ -243,6 +245,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
@@ -275,6 +278,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -328,6 +332,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -381,6 +386,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -434,6 +440,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -487,6 +494,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -540,6 +548,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -593,6 +602,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -791,6 +801,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: ((t_hour = 8) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t_hour = 8) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
@@ -810,6 +821,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
@@ -829,6 +841,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
@@ -855,6 +868,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_hdemo_sk is not null and ss_sold_time_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -962,6 +976,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: ((t_hour = 11) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t_hour = 11) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
@@ -981,6 +996,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
@@ -1000,6 +1016,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
@@ -1024,6 +1041,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: ((t_hour = 11) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t_hour = 11) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
@@ -1043,6 +1061,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
@@ -1062,6 +1081,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
@@ -1086,6 +1106,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: ((t_hour = 10) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t_hour = 10) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
@@ -1105,6 +1126,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
@@ -1124,6 +1146,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
@@ -1148,6 +1171,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: ((t_hour = 10) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t_hour = 10) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
@@ -1167,6 +1191,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
@@ -1186,6 +1211,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
@@ -1210,6 +1236,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: ((t_hour = 9) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t_hour = 9) and (t_minute >= 30) and t_time_sk is not null) (type: boolean)
@@ -1229,6 +1256,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
@@ -1248,6 +1276,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
@@ -1272,6 +1301,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
+                  filterExpr: ((t_hour = 9) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((t_hour = 9) and (t_minute < 30) and t_time_sk is not null) (type: boolean)
@@ -1291,6 +1321,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
+                  filterExpr: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((((hd_dep_count = 3) and (hd_vehicle_count <= 5)) or ((hd_dep_count = 0) and (hd_vehicle_count <= 2)) or ((hd_dep_count = 1) and (hd_vehicle_count <= 3))) and hd_demo_sk is not null) (type: boolean)
@@ -1310,6 +1341,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
+                  filterExpr: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_store_name = 'ese') and s_store_sk is not null) (type: boolean)

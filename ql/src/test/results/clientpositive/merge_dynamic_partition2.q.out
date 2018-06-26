@@ -86,6 +86,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart_merge_dp_n0
+            filterExpr: (ds = '2008-04-08') (type: boolean)
             Statistics: Num rows: 297 Data size: 174150 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), hr (type: string)

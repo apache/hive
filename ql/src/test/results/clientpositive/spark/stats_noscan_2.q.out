@@ -310,6 +310,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: anaylyze_external
+                  filterExpr: (insertdate = '2008-01-01') (type: boolean)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE

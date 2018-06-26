@@ -14,6 +14,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -30,6 +31,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -623,6 +625,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (4.0D BETWEEN UDFToDouble(key) AND UDFToDouble(value) and key is not null and value is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (4.0D BETWEEN UDFToDouble(key) AND UDFToDouble(value) and key is not null and value is not null) (type: boolean)
@@ -638,6 +641,7 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src1
+            filterExpr: (4.0D BETWEEN UDFToDouble(key) AND UDFToDouble(value) and key is not null and value is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (4.0D BETWEEN UDFToDouble(key) AND UDFToDouble(value) and key is not null and value is not null) (type: boolean)
@@ -1120,6 +1124,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: prid is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: prid is not null (type: boolean)
@@ -1136,6 +1141,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: varchar(96)), _col8 (type: timestamp), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: int), _col12 (type: bigint), _col13 (type: varchar(30)), _col14 (type: varchar(30)), _col15 (type: bigint), _col16 (type: bigint), _col17 (type: bigint), _col18 (type: decimal(38,20))
           TableScan
             alias: e
+            filterExpr: prid is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: prid is not null (type: boolean)
@@ -1151,6 +1157,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: d
+            filterExpr: prid is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: prid is not null (type: boolean)

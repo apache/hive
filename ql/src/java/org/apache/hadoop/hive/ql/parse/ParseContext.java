@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -128,7 +129,7 @@ public class ParseContext {
   private Set<FileSinkDesc> acidFileSinks = Collections.emptySet();
 
   private Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo =
-          new HashMap<ReduceSinkOperator, RuntimeValuesInfo>();
+          new LinkedHashMap<ReduceSinkOperator, RuntimeValuesInfo>();
   private Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo =
           new HashMap<>();
   private Map<ExprNodeDesc, GroupByOperator> colExprToGBMap =

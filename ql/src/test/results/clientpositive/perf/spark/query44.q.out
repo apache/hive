@@ -96,6 +96,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: i1
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -115,6 +116,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
@@ -140,6 +142,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss1
+                  filterExpr: (ss_store_sk = 410) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_store_sk = 410) (type: boolean)
@@ -165,6 +168,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: i2
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -184,6 +188,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ss_store_sk = 410) and ss_hdemo_sk is null) (type: boolean)

@@ -64,6 +64,7 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
+            filterExpr: (UDFToDouble(col11) = 111.0D) (type: boolean)
             Statistics: Num rows: 2 Data size: 126 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(col11) = 111.0D) (type: boolean)
@@ -82,6 +83,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (UDFToDouble(key) = 111.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) = 111.0D) (type: boolean)

@@ -51,6 +51,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: sample_partitioned
+            filterExpr: y is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: x (type: int), y (type: int)
@@ -64,6 +65,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: int)
           TableScan
             alias: sample
+            filterExpr: y is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: y is not null (type: boolean)

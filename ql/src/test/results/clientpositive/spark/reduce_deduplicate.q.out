@@ -275,6 +275,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: complex_tbl_2
+                  filterExpr: (ds = '2010-03-29') (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Filter Operator

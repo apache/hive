@@ -20,6 +20,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: f
+          filterExpr: (key) IN ('1', '2') (type: boolean)
           Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key) IN ('1', '2') (type: boolean)
@@ -52,6 +53,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: f
+          filterExpr: (key) IN ('1', '2') (type: boolean)
           Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key) IN ('1', '2') (type: boolean)
@@ -84,6 +86,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: f
+          filterExpr: (key) IN ('1', '2') (type: boolean)
           Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
             predicate: (key) IN ('1', '2') (type: boolean)

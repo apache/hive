@@ -121,6 +121,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
+          filterExpr: (year = '__HIVE_DEFAULT_PARTITION__') (type: boolean)
           Statistics: Num rows: 9 Data size: 5364 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '__HIVE_DEFAULT_PARTITION__' (type: string)
@@ -163,6 +164,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
+          filterExpr: (year = '2001') (type: boolean)
           Statistics: Num rows: 7 Data size: 2050 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '2001' (type: string)
@@ -196,6 +198,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
+          filterExpr: (year = '__HIVE_DEFAULT_PARTITION__') (type: boolean)
           Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), '__HIVE_DEFAULT_PARTITION__' (type: string)
@@ -238,6 +241,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
+          filterExpr: ((year = '2001') or (year = '__HIVE_DEFAULT_PARTITION__')) (type: boolean)
           Statistics: Num rows: 8 Data size: 3814 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)
@@ -381,6 +385,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
+          filterExpr: (year = '2001') (type: boolean)
           Statistics: Num rows: 7 Data size: 630 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: state (type: string), locid (type: int)
@@ -402,6 +407,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
+          filterExpr: (year <> '2001') (type: boolean)
           Statistics: Num rows: 1 Data size: 284 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int)
@@ -444,6 +450,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
+          filterExpr: ((locid > 0) and (year = '2001')) (type: boolean)
           Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (locid > 0) (type: boolean)
@@ -468,6 +475,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
+          filterExpr: ((locid > 0) and (year = '2001')) (type: boolean)
           Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (locid > 0) (type: boolean)
@@ -492,6 +500,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
+          filterExpr: ((locid > 0) and (year = '2001')) (type: boolean)
           Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (locid > 0) (type: boolean)

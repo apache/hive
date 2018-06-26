@@ -166,6 +166,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: int), _col2 (type: string)
           TableScan
             alias: test2_n0
+            filterExpr: key BETWEEN 100 AND 102 (type: boolean)
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key BETWEEN 100 AND 102 (type: boolean)
@@ -264,6 +265,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
           TableScan
             alias: test2_n0
+            filterExpr: key BETWEEN 100 AND 102 (type: boolean)
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key BETWEEN 100 AND 102 (type: boolean)

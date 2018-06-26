@@ -1149,6 +1149,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
+                  filterExpr: (hr = '11') (type: boolean)
                   Statistics: Num rows: 117 Data size: 121232 Basic stats: COMPLETE Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true

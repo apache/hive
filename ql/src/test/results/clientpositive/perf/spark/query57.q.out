@@ -108,6 +108,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: call_center
+                  filterExpr: (cc_call_center_sk is not null and cc_name is not null) (type: boolean)
                   Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cc_call_center_sk is not null and cc_name is not null) (type: boolean)
@@ -132,6 +133,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: call_center
+                  filterExpr: (cc_call_center_sk is not null and cc_name is not null) (type: boolean)
                   Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cc_call_center_sk is not null and cc_name is not null) (type: boolean)
@@ -156,6 +158,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: call_center
+                  filterExpr: (cc_call_center_sk is not null and cc_name is not null) (type: boolean)
                   Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cc_call_center_sk is not null and cc_name is not null) (type: boolean)
@@ -196,6 +199,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_call_center_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
@@ -215,6 +219,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (i_brand is not null and i_category is not null and i_item_sk is not null) (type: boolean)
@@ -234,6 +239,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_call_center_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
@@ -253,6 +259,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (((d_year = 2000) or ((d_year = 1999) and (d_moy = 12)) or ((d_year = 2001) and (d_moy = 1))) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((d_year = 2000) or ((d_year = 1999) and (d_moy = 12)) or ((d_year = 2001) and (d_moy = 1))) and d_date_sk is not null) (type: boolean)
@@ -272,6 +279,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (i_brand is not null and i_category is not null and i_item_sk is not null) (type: boolean)
@@ -291,6 +299,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_call_center_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_call_center_sk is not null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
@@ -310,6 +319,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (((d_year = 2000) or ((d_year = 1999) and (d_moy = 12)) or ((d_year = 2001) and (d_moy = 1))) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((d_year = 2000) or ((d_year = 1999) and (d_moy = 12)) or ((d_year = 2001) and (d_moy = 1))) and d_date_sk is not null) (type: boolean)
@@ -329,6 +339,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: (i_item_sk is not null and i_category is not null and i_brand is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (i_brand is not null and i_category is not null and i_item_sk is not null) (type: boolean)
@@ -348,6 +359,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (((d_year = 2000) or ((d_year = 1999) and (d_moy = 12)) or ((d_year = 2001) and (d_moy = 1))) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((d_year = 2000) or ((d_year = 1999) and (d_moy = 12)) or ((d_year = 2001) and (d_moy = 1))) and d_date_sk is not null) (type: boolean)

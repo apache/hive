@@ -73,6 +73,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: call_center
+                  filterExpr: ((cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County') and cc_call_center_sk is not null) (type: boolean)
                   Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County') and cc_call_center_sk is not null) (type: boolean)
@@ -97,6 +98,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-04-01 00:00:00.0' AND TIMESTAMP'2001-05-31 01:00:00.0' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-04-01 00:00:00.0' AND TIMESTAMP'2001-05-31 01:00:00.0' and d_date_sk is not null) (type: boolean)
@@ -129,6 +131,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cs1
+                  filterExpr: (cs_ship_date_sk is not null and cs_ship_addr_sk is not null and cs_call_center_sk is not null and cs_order_number is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_call_center_sk is not null and cs_order_number is not null and cs_ship_addr_sk is not null and cs_ship_date_sk is not null) (type: boolean)
@@ -160,6 +163,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cs2
+                  filterExpr: (cs_order_number is not null and cs_warehouse_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_order_number is not null and cs_warehouse_sk is not null) (type: boolean)
@@ -184,6 +188,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cr1
+                  filterExpr: cr_order_number is not null (type: boolean)
                   Statistics: Num rows: 28798881 Data size: 3057234680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cr_order_number is not null (type: boolean)
@@ -203,6 +208,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: ((ca_state = 'NY') and ca_address_sk is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((ca_state = 'NY') and ca_address_sk is not null) (type: boolean)

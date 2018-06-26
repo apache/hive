@@ -210,6 +210,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: parquet_map_type
+                  filterExpr: (stringmap['k1'] like 'v100%') (type: boolean)
                   Statistics: Num rows: 1023 Data size: 1992704 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

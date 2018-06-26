@@ -83,6 +83,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (ca_zip is not null and ca_state is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ca_state is not null and ca_zip is not null) (type: boolean)
@@ -98,6 +99,7 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
+            filterExpr: (ca_zip is not null and ca_state is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ca_state is not null and ca_zip is not null) (type: boolean)
@@ -175,6 +177,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (ca_zip is not null and ca_state is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ca_state is not null and ca_zip is not null) (type: boolean)
@@ -190,6 +193,7 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
           TableScan
             alias: b
+            filterExpr: (ca_zip is not null and ca_state is not null) (type: boolean)
             Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (ca_state is not null and ca_zip is not null) (type: boolean)

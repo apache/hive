@@ -46,6 +46,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
+            filterExpr: (employeesalary = 2000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: employeeid (type: int)
@@ -106,6 +107,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
+            filterExpr: (employeesalary = 2000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
             Statistics Aggregation Key Prefix: default.employee_part/
             GatherStats: true
@@ -295,6 +297,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
+            filterExpr: (employeesalary = 4000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: employeeid (type: int)
@@ -355,6 +358,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
+            filterExpr: (employeesalary = 4000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1050 Basic stats: COMPLETE Column stats: NONE
             Statistics Aggregation Key Prefix: default.employee_part/
             GatherStats: true
@@ -506,6 +510,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part
+            filterExpr: (employeesalary = 2000.0D) (type: boolean)
             Statistics: Num rows: 13 Data size: 92 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: employeeid (type: int), employeename (type: string)

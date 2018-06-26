@@ -57,6 +57,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: udf_tb1
+            filterExpr: ((year = 2001) and month is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((year = 2001) and month is not null) (type: boolean)
@@ -72,6 +73,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: b
+            filterExpr: month is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: month is not null (type: boolean)

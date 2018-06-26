@@ -26,15 +26,17 @@ public class MaskAndFilterInfo {
   String alias;
   ASTNode astNode;
   boolean isView;
+  boolean isNonNative;
 
   public MaskAndFilterInfo(List<String> colTypes, String additionalTabInfo, String alias,
-      ASTNode astNode, boolean isView) {
+      ASTNode astNode, boolean isView, boolean isNonNative) {
     super();
     this.colTypes = colTypes;
     this.additionalTabInfo = additionalTabInfo;
     this.alias = alias;
     this.astNode = astNode;
     this.isView = isView;
+    this.isNonNative = isNonNative;
   }
 
 }

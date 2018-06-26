@@ -65,6 +65,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n161
+                  filterExpr: (UDFToDouble(a) < 3.0D) (type: boolean)
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -309,6 +310,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n161
+                  filterExpr: (UDFToDouble(a) < 3.0D) (type: boolean)
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -584,6 +586,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n161
+                  filterExpr: (UDFToDouble(a) < 3.0D) (type: boolean)
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

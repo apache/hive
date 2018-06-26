@@ -178,6 +178,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: regular_table
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -224,6 +225,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: regular_table
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -372,6 +374,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: regular_table
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)
@@ -508,6 +511,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: regular_table
+                  filterExpr: col is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: col is not null (type: boolean)

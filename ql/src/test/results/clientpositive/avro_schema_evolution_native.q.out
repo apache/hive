@@ -250,6 +250,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: episodes_partitioned_n0
+          filterExpr: (doctor_pt > 6) (type: boolean)
           Statistics: Num rows: 3 Data size: 8950 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: title (type: string), air_date (type: string), doctor (type: int), value (type: int), doctor_pt (type: int)
@@ -339,6 +340,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: episodes_partitioned_n0
+            filterExpr: (doctor_pt > 6) (type: boolean)
             Statistics: Num rows: 3 Data size: 8950 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: title (type: string), air_date (type: string), doctor (type: int), value (type: int), doctor_pt (type: int)

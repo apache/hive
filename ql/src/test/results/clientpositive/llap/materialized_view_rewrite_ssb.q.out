@@ -688,6 +688,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((d_year = 1993) and (lo_quantity < 25.0D) and lo_discount BETWEEN 1.0D AND 3.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_year = 1993) and (lo_quantity < 25.0D) and lo_discount BETWEEN 1.0D AND 3.0D) (type: boolean)
@@ -767,6 +768,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((d_yearmonthnum = 199401) and lo_discount BETWEEN 4.0D AND 6.0D and lo_quantity BETWEEN 26.0D AND 35.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_yearmonthnum = 199401) and lo_discount BETWEEN 4.0D AND 6.0D and lo_quantity BETWEEN 26.0D AND 35.0D) (type: boolean)
@@ -848,6 +850,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((d_year = 1994) and (d_weeknuminyear = 6) and lo_discount BETWEEN 5.0D AND 7.0D and lo_quantity BETWEEN 26.0D AND 35.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_weeknuminyear = 6) and (d_year = 1994) and lo_discount BETWEEN 5.0D AND 7.0D and lo_quantity BETWEEN 26.0D AND 35.0D) (type: boolean)
@@ -938,6 +941,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((p_category = 'MFGR#12') and (s_region = 'AMERICA')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((p_category = 'MFGR#12') and (s_region = 'AMERICA')) (type: boolean)
@@ -1048,6 +1052,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((s_region = 'ASIA') and p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228') (type: boolean)
                   Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_region = 'ASIA') and p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228') (type: boolean)
@@ -1158,6 +1163,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((p_brand1 = 'MFGR#2239') and (s_region = 'EUROPE')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((p_brand1 = 'MFGR#2239') and (s_region = 'EUROPE')) (type: boolean)
@@ -1272,6 +1278,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((d_year >= 1992) and (c_region = 'ASIA') and (s_region = 'ASIA') and (d_year <= 1997)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 748 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((c_region = 'ASIA') and (d_year <= 1997) and (d_year >= 1992) and (s_region = 'ASIA')) (type: boolean)
@@ -1384,6 +1391,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((d_year >= 1992) and (c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES') and (d_year <= 1997)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 748 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((c_nation = 'UNITED STATES') and (d_year <= 1997) and (d_year >= 1992) and (s_nation = 'UNITED STATES')) (type: boolean)
@@ -1496,6 +1504,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((d_year >= 1992) and (d_year <= 1997) and ((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5'))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 380 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5')) and (d_year <= 1997) and (d_year >= 1992)) (type: boolean)
@@ -1604,6 +1613,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((d_yearmonth = 'Dec1997') and ((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5'))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5')) and (d_yearmonth = 'Dec1997')) (type: boolean)
@@ -1720,6 +1730,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2'))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 748 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2')) and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
@@ -1834,6 +1845,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and ((d_year = 1997) or (d_year = 1998)) and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2'))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((d_year = 1997) or (d_year = 1998)) and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2')) and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
@@ -1948,6 +1960,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv_n0
+                  filterExpr: ((c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES') and ((d_year = 1997) or (d_year = 1998))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((d_year = 1997) or (d_year = 1998)) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)

@@ -906,6 +906,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sp
+                  filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 99 Data size: 58912 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 99 Data size: 58912 Basic stats: COMPLETE Column stats: COMPLETE

@@ -69,6 +69,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: date_dim_n1
+            filterExpr: ((d_date > DATE'1900-01-02') and (d_date_sk = 2416945L)) (type: boolean)
             Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (d_date > DATE'1900-01-02') (type: boolean)

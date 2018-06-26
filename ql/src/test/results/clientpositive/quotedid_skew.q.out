@@ -52,6 +52,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: !@#$%^&*()_q is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (!@#$%^&*()_q is not null and (!@#$%^&*()_q = '2')) (type: boolean)
@@ -68,6 +69,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: b
+            filterExpr: !@#$%^&*()_q is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (!@#$%^&*()_q is not null and (!@#$%^&*()_q = '2')) (type: boolean)

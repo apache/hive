@@ -975,6 +975,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypes_orc
+            filterExpr: (not bo1) (type: boolean)
             Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (not bo1) (type: boolean)

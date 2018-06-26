@@ -40,6 +40,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_merge5_n3
+                  filterExpr: (userid <= 13L) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (userid <= 13L) (type: boolean)

@@ -47,6 +47,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: ((c1 < 120) and c3 is not null) (type: boolean)
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((c1 < 120) and c3 is not null) (type: boolean)
@@ -65,6 +66,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: bigint)
           TableScan
             alias: x1
+            filterExpr: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((c1 < 120) and (c2 > 100) and c3 is not null) (type: boolean)

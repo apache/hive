@@ -1,0 +1,31 @@
+PREHOOK: query: CREATE EXTERNAL TABLE strict_managed_tables6_tab1
+STORED AS AVRO
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@strict_managed_tables6_tab1
+POSTHOOK: query: CREATE EXTERNAL TABLE strict_managed_tables6_tab1
+STORED AS AVRO
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@strict_managed_tables6_tab1
+PREHOOK: query: describe strict_managed_tables6_tab1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@strict_managed_tables6_tab1
+POSTHOOK: query: describe strict_managed_tables6_tab1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@strict_managed_tables6_tab1
+col1                	string              	                    
+col2                	string              	                    
+col3                	double              	                    
+col4                	string              	                    
+col5                	string              	                    
+col6                	int                 	                    
+PREHOOK: query: CREATE TABLE strict_managed_tables6_tab2
+STORED AS AVRO
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@strict_managed_tables6_tab2
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Table default.strict_managed_tables6_tab2 failed strict managed table checks due to the following reason: Table is marked as a managed table but is not transactional.)

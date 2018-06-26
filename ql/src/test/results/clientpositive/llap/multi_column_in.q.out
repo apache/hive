@@ -117,6 +117,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emps_n1
+          filterExpr: (struct((empno + 1),deptno)) IN (const struct(1,2), const struct(3,2)) (type: boolean)
           Filter Operator
             predicate: (struct((empno + 1),deptno)) IN (const struct(1,2), const struct(3,2)) (type: boolean)
             Select Operator
@@ -140,6 +141,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emps_n1
+          filterExpr: (not (struct((empno + 1),deptno)) IN (const struct(1,2), const struct(3,2))) (type: boolean)
           Filter Operator
             predicate: (not (struct((empno + 1),deptno)) IN (const struct(1,2), const struct(3,2))) (type: boolean)
             Select Operator
@@ -207,6 +209,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: emps_n1
+          filterExpr: (struct(((empno * 2) | 1),deptno)) IN (struct((empno + 1),2), struct((empno + 2),2)) (type: boolean)
           Filter Operator
             predicate: (struct(((empno * 2) | 1),deptno)) IN (struct((empno + 1),2), struct((empno + 2),2)) (type: boolean)
             Select Operator

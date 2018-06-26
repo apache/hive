@@ -19,6 +19,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: m
+            filterExpr: ((value <> '') and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value <> '') and key is not null) (type: boolean)
@@ -35,6 +36,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: f
+            filterExpr: (((value = '2008-04-08') or (value = '2008-04-09')) and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((value = '2008-04-08') or (value = '2008-04-09')) and key is not null) (type: boolean)
@@ -80,6 +82,7 @@ STAGE PLANS:
               value expressions: _col2 (type: string)
           TableScan
             alias: g
+            filterExpr: (value <> '') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (value <> '') (type: boolean)
@@ -141,6 +144,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: m
+            filterExpr: ((value <> '') and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((value <> '') and key is not null) (type: boolean)
@@ -157,6 +161,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: f
+            filterExpr: (((value) IN ('2008-04-08', '2008-04-10') or (value = '2008-04-09')) and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((value) IN ('2008-04-08', '2008-04-10') or (value = '2008-04-09')) and key is not null) (type: boolean)
@@ -202,6 +207,7 @@ STAGE PLANS:
               value expressions: _col2 (type: string)
           TableScan
             alias: g
+            filterExpr: (value <> '') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (value <> '') (type: boolean)
@@ -273,6 +279,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2
+            filterExpr: (UDFToDouble(key) = 1.0D) (type: boolean)
             Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) = 1.0D) (type: boolean)
@@ -289,6 +296,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: float)
           TableScan
             alias: t3
+            filterExpr: ((c_int = 1) and (UDFToDouble(key) = 1.0D)) (type: boolean)
             Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((UDFToDouble(key) = 1.0D) and (c_int = 1)) (type: boolean)
@@ -331,6 +339,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
+            filterExpr: (UDFToDouble(key) = 1.0D) (type: boolean)
             Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) = 1.0D) (type: boolean)
@@ -393,6 +402,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: f
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -409,6 +419,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: m
+            filterExpr: ((value <> '') and ((value = '2008-04-10') or (value = '2008-04-08')) and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((value = '2008-04-10') or (value = '2008-04-08')) and (value <> '') and key is not null) (type: boolean)

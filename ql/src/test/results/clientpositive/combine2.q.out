@@ -77,6 +77,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: combine2_n0
+          filterExpr: value is not null (type: boolean)
           Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -161,6 +162,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
+            filterExpr: ds is not null (type: boolean)
             Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ds (type: string)

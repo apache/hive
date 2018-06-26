@@ -79,6 +79,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src5_n3
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -186,6 +187,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2_n6
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -222,6 +224,7 @@ STAGE PLANS:
                     MultiFileSpray: false
           TableScan
             alias: src3_n2
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -258,6 +261,7 @@ STAGE PLANS:
                     MultiFileSpray: false
           TableScan
             alias: src4_n0
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -582,6 +586,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -602,6 +607,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: b
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -761,6 +767,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2_n6
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -797,6 +804,7 @@ STAGE PLANS:
                     MultiFileSpray: false
           TableScan
             alias: src3_n2
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1063,6 +1071,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1083,6 +1092,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: b
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1312,6 +1322,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src2_n6
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1348,6 +1359,7 @@ STAGE PLANS:
                     MultiFileSpray: false
           TableScan
             alias: src3_n2
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator

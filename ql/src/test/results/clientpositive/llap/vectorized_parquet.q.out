@@ -70,6 +70,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alltypes_parquet
+          filterExpr: (cint = 528534767) (type: boolean)
           Filter Operator
             predicate: (cint = 528534767) (type: boolean)
             Select Operator

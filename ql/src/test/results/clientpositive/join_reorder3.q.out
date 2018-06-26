@@ -84,6 +84,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -96,6 +97,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -108,6 +110,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: c
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -120,6 +123,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: d
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -206,6 +210,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
+            filterExpr: (key is not null and val is not null and (key + 1) is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key + 1) is not null and key is not null and val is not null) (type: boolean)
@@ -218,6 +223,7 @@ STAGE PLANS:
                 value expressions: val (type: string)
           TableScan
             alias: b
+            filterExpr: (key is not null and (key + 1) is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((key + 1) is not null and key is not null) (type: boolean)
@@ -256,6 +262,7 @@ STAGE PLANS:
               value expressions: _col0 (type: string), _col5 (type: string), _col6 (type: string)
           TableScan
             alias: c
+            filterExpr: val is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: val is not null (type: boolean)
@@ -294,6 +301,7 @@ STAGE PLANS:
               value expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string), _col6 (type: string), _col10 (type: string), _col11 (type: string)
           TableScan
             alias: d
+            filterExpr: (key + 1) is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key + 1) is not null (type: boolean)
