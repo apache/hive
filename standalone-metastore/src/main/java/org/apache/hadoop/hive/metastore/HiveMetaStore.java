@@ -4877,7 +4877,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throws TException {
       alter_partitions_with_environment_context(
           req.getDbName(), req.getTableName(), req.getPartitions(), req.getEnvironmentContext(),
-          req.getTxnId(), req.getValidWriteIdList());
+          req.isSetTxnId() ? req.getTxnId() : -1,
+          req.isSetValidWriteIdList() ? req.getValidWriteIdList() : null);
       return new AlterPartitionsResponse();
     }
 

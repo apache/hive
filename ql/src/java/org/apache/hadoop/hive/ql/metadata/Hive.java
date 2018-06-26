@@ -24,8 +24,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 
+import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer.makeBinaryPredicate;
@@ -62,6 +62,7 @@ import javax.annotation.Nullable;
 import javax.jdo.JDODataStoreException;
 
 import com.google.common.collect.ImmutableList;
+
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
@@ -2512,7 +2513,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
             : getMSC().add_partitions(partsToAdd, addPartitionDesc.isIfNotExists(), true)) {
           out.add(new Partition(tbl, outPart));
         }
-        getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), partsToAlter, null);
+        getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),
+            partsToAlter, new EnvironmentContext());
 
         for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
         getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){
