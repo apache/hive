@@ -78,7 +78,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000000_0
+                  base file name: srcbucket
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -127,7 +127,7 @@ STAGE PLANS:
                     name: default.srcbucket
                   name: default.srcbucket
             Truncated Path -> Alias:
-              /srcbucket/000000_0 [s]
+              /srcbucket [s]
 
   Stage: Stage-0
     Move Operator
@@ -499,7 +499,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: srcbucket
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -548,7 +548,7 @@ STAGE PLANS:
                     name: default.srcbucket
                   name: default.srcbucket
             Truncated Path -> Alias:
-              /srcbucket/000001_0 [s]
+              /srcbucket [s]
         Reducer 2 
             Execution mode: vectorized
             Needs Tagging: false
@@ -913,7 +913,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000000_0
+                  base file name: srcbucket
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -962,7 +962,7 @@ STAGE PLANS:
                     name: default.srcbucket
                   name: default.srcbucket
             Truncated Path -> Alias:
-              /srcbucket/000000_0 [s]
+              /srcbucket [s]
         Reducer 2 
             Execution mode: vectorized
             Needs Tagging: false
@@ -2528,57 +2528,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000000_0
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                    bucket_count 4
-                    bucket_field_name key
-                    bucketing_version 2
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 
-                    columns.types int:string
-#### A masked pattern was here ####
-                    name default.srcbucket2
-                    numFiles 4
-                    numRows 500
-                    rawDataSize 5312
-                    serialization.ddl struct srcbucket2 { i32 key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 5812
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-                      bucket_count 4
-                      bucket_field_name key
-                      bucketing_version 2
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 
-                      columns.types int:string
-#### A masked pattern was here ####
-                      name default.srcbucket2
-                      numFiles 4
-                      numRows 500
-                      rawDataSize 5312
-                      serialization.ddl struct srcbucket2 { i32 key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 5812
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.srcbucket2
-                  name: default.srcbucket2
-#### A masked pattern was here ####
-                Partition
-                  base file name: 000002_0
+                  base file name: srcbucket2
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -2627,8 +2577,7 @@ STAGE PLANS:
                     name: default.srcbucket2
                   name: default.srcbucket2
             Truncated Path -> Alias:
-              /srcbucket2/000000_0 [s]
-              /srcbucket2/000002_0 [s]
+              /srcbucket2 [s]
         Reducer 2 
             Execution mode: vectorized
             Needs Tagging: false
@@ -2964,7 +2913,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000001_0
+                  base file name: srcbucket2
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -3013,7 +2962,7 @@ STAGE PLANS:
                     name: default.srcbucket2
                   name: default.srcbucket2
             Truncated Path -> Alias:
-              /srcbucket2/000001_0 [s]
+              /srcbucket2 [s]
         Reducer 2 
             Execution mode: vectorized
             Needs Tagging: false
@@ -3235,6 +3184,61 @@ STAGE PLANS:
                         tag: -1
                         auto parallelism: false
             Execution mode: vectorized
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: empty_bucket
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+                    bucket_count 2
+                    bucket_field_name key
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.comments 
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.empty_bucket
+                    numFiles 0
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct empty_bucket { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 0
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+                      bucket_count 2
+                      bucket_field_name key
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.empty_bucket
+                      numFiles 0
+                      numRows 0
+                      rawDataSize 0
+                      serialization.ddl struct empty_bucket { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 0
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.empty_bucket
+                  name: default.empty_bucket
+            Truncated Path -> Alias:
+              /empty_bucket [s]
         Reducer 2 
             Execution mode: vectorized
             Needs Tagging: false
