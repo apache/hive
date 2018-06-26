@@ -66,6 +66,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -85,6 +86,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -104,6 +106,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: d_date_sk is not null (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: d_date_sk is not null (type: boolean)
@@ -123,6 +126,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: (cs_warehouse_sk is null and cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_item_sk is not null and cs_sold_date_sk is not null and cs_warehouse_sk is null) (type: boolean)
@@ -142,6 +146,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: i_item_sk is not null (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: i_item_sk is not null (type: boolean)
@@ -161,6 +166,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: d_date_sk is not null (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: d_date_sk is not null (type: boolean)
@@ -180,6 +186,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_addr_sk is null and ss_item_sk is not null and ss_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_addr_sk is null and ss_item_sk is not null and ss_sold_date_sk is not null) (type: boolean)
@@ -199,6 +206,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: d_date_sk is not null (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: d_date_sk is not null (type: boolean)
@@ -218,6 +226,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_web_page_sk is null and ws_item_sk is not null and ws_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_item_sk is not null and ws_sold_date_sk is not null and ws_web_page_sk is null) (type: boolean)

@@ -49,6 +49,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n22
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -64,6 +65,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2_n14
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -148,6 +150,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n22
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2/2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -163,6 +166,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2/2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2_n14
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 5/5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -255,6 +259,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n22
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -270,6 +275,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 3 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2_n14
+            filterExpr: id is not null (type: boolean)
             Statistics: Num rows: 5 Data size: 5 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)

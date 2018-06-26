@@ -153,6 +153,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_new_n0
+                  filterExpr: (ds = '2011-10-13') (type: boolean)
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -195,6 +196,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_old
+                  filterExpr: keymap is not null (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 181 Basic stats: COMPLETE Column stats: COMPLETE
@@ -277,6 +279,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_mapping
+                  filterExpr: keymap is not null (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 179 Basic stats: COMPLETE Column stats: COMPLETE
@@ -468,6 +471,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_new_n0
+                  filterExpr: (ds = '2011-10-15') (type: boolean)
                   Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -561,6 +565,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_old
+                  filterExpr: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
@@ -588,6 +593,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_mapping
+                  filterExpr: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL

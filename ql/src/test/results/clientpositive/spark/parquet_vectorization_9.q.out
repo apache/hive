@@ -57,6 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesparquet
+                  filterExpr: ((cstring2 like '%b%') and ((cdouble >= -1.389D) or (cstring1 < 'a'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 147456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

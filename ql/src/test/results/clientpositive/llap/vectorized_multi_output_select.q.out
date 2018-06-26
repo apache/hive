@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
 select * from (
   select count(*) as h8_30_to_9
@@ -42,6 +42,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -92,6 +93,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
+                  filterExpr: ((value = 'val_278') and key is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((value = 'val_278') and key is not null) (type: boolean)
@@ -111,6 +113,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
+                  filterExpr: ((value = 'val_255') and key is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((value = 'val_255') and key is not null) (type: boolean)
@@ -175,7 +178,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from (
   select count(*) as h8_30_to_9
   from src

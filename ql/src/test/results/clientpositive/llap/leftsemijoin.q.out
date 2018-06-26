@@ -108,7 +108,7 @@ POSTHOOK: query: drop table things_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@things_n1
 POSTHOOK: Output: default@things_n1
-Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
@@ -130,6 +130,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -150,6 +151,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p1
+                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -226,7 +228,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part

@@ -153,6 +153,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: daysales
+          filterExpr: NVL((customer = 1),false) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -269,6 +270,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: daysales
+          filterExpr: NVL(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -385,6 +387,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: daysales
+          filterExpr: NVL(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

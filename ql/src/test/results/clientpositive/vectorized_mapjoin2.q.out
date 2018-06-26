@@ -58,6 +58,7 @@ STAGE PLANS:
         $hdt$_0:x 
           TableScan
             alias: x
+            filterExpr: a is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
@@ -76,6 +77,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: y
+            filterExpr: b is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

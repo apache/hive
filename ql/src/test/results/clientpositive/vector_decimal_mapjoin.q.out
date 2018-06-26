@@ -100,6 +100,7 @@ STAGE PLANS:
         $hdt$_1:t2_n29 
           TableScan
             alias: t2_n29
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: dec is not null (type: boolean)
@@ -118,6 +119,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n48
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -341,6 +343,7 @@ STAGE PLANS:
         $hdt$_1:t2_n29 
           TableScan
             alias: t2_n29
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: dec is not null (type: boolean)
@@ -359,6 +362,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n48
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 234976 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -658,6 +662,7 @@ STAGE PLANS:
         $hdt$_1:t2_small 
           TableScan
             alias: t2_small
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: dec is not null (type: boolean)
@@ -676,6 +681,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_small
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 11234 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -794,6 +800,7 @@ STAGE PLANS:
         $hdt$_1:t2_small 
           TableScan
             alias: t2_small
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: dec is not null (type: boolean)
@@ -812,6 +819,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_small
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 11234 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -930,6 +938,7 @@ STAGE PLANS:
         $hdt$_1:t2_small 
           TableScan
             alias: t2_small
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: dec is not null (type: boolean)
@@ -948,6 +957,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_small
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 11234 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -1067,6 +1077,7 @@ STAGE PLANS:
         $hdt$_1:t2_small 
           TableScan
             alias: t2_small
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 7044 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: dec is not null (type: boolean)
@@ -1085,6 +1096,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_small
+            filterExpr: dec is not null (type: boolean)
             Statistics: Num rows: 1049 Data size: 11234 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

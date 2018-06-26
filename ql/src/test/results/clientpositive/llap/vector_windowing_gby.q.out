@@ -33,6 +33,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ws
+                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1767 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -85,6 +86,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: wr
+                  filterExpr: cstring1 is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 899146 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

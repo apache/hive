@@ -170,6 +170,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: stats_only_external_tab1_ext
+                  filterExpr: ((key >= 0) and value is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key >= 0) and value is not null) (type: boolean)

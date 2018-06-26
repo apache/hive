@@ -1446,6 +1446,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n9
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)
@@ -1544,6 +1545,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: masking_test_n9
+            filterExpr: (key > 0) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key > 0) (type: boolean)

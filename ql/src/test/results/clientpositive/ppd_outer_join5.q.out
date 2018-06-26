@@ -47,6 +47,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n98
+            filterExpr: (id = 20) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -61,6 +62,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
           TableScan
             alias: t2_n61
+            filterExpr: (id = 20) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -102,6 +104,7 @@ STAGE PLANS:
               value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: string)
           TableScan
             alias: t3_n23
+            filterExpr: (id = 20) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -158,6 +161,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n98
+            filterExpr: (id = 20) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -172,6 +176,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
             alias: t3_n23
+            filterExpr: (id = 20) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -210,6 +215,7 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: int), _col4 (type: string), _col5 (type: string)
           TableScan
             alias: t2_n61
+            filterExpr: (id = 20) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -266,6 +272,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n98
+            filterExpr: (id = 20) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -280,6 +287,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
             alias: t3_n23
+            filterExpr: (id = 20) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -318,6 +326,7 @@ STAGE PLANS:
               value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: int), _col4 (type: string), _col5 (type: string)
           TableScan
             alias: t2_n61
+            filterExpr: (id = 20) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)

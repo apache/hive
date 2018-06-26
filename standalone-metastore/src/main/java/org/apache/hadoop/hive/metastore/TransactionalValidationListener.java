@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.HiveStrictManagedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,12 +79,14 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
   private void handle(PreAlterTableEvent context) throws MetaException {
     if (supportedCatalogs.contains(getTableCatalog(context.getNewTable()))) {
       handleAlterTableTransactionalProp(context);
+      HiveStrictManagedUtils.validateStrictManagedTableWithThrow(getConf(), context.getNewTable());
     }
   }
 
   private void handle(PreCreateTableEvent context) throws MetaException {
     if (supportedCatalogs.contains(getTableCatalog(context.getTable()))) {
       handleCreateTableTransactionalProp(context);
+      HiveStrictManagedUtils.validateStrictManagedTableWithThrow(getConf(), context.getTable());
     }
   }
 
@@ -329,7 +332,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         }
       }
 
-      if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+      if (MetaStoreUtils.isExternalTable(newTable)) {
         throw new MetaException(Warehouse.getQualifiedName(newTable) +
             " cannot be declared transactional because it's an external table");
       }

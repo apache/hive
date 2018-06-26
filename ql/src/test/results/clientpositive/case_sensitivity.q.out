@@ -30,6 +30,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src_thrift
+            filterExpr: (lint[0] > 0) (type: boolean)
             Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (lint[0] > 0) (type: boolean)

@@ -249,6 +249,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: store_sales_n2
+            filterExpr: (ss_store_sk is not null and ss_sold_date_sk is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -265,6 +266,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int)
           TableScan
             alias: date_dim_n0
+            filterExpr: d_date_sk is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: d_date_sk is not null (type: boolean)
@@ -312,6 +314,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
             alias: store_n2
+            filterExpr: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)

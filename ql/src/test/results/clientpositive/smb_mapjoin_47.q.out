@@ -108,6 +108,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test1_n8
+            filterExpr: (key BETWEEN 100 AND 102 and value is not null) (type: boolean)
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key BETWEEN 100 AND 102 and value is not null) (type: boolean)
@@ -181,6 +182,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test1_n8
+            filterExpr: value is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: value is not null (type: boolean)
@@ -264,6 +266,7 @@ STAGE PLANS:
         $hdt$_1:test2_n5 
           TableScan
             alias: test2_n5
+            filterExpr: key BETWEEN 100 AND 102 (type: boolean)
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key BETWEEN 100 AND 102 (type: boolean)
@@ -282,6 +285,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: test1_n8
+            filterExpr: key BETWEEN 100 AND 102 (type: boolean)
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key BETWEEN 100 AND 102 (type: boolean)

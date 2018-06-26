@@ -76,6 +76,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: string)
           TableScan
             alias: s2
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
@@ -103,6 +104,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: string)
           TableScan
             alias: s4
+            filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) < 10.0D) (type: boolean)

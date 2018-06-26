@@ -455,6 +455,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: insert_into2
+                  filterExpr: (ds = '2') (type: boolean)
                   Statistics: Num rows: 50 Data size: 530 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     Statistics: Num rows: 50 Data size: 530 Basic stats: COMPLETE Column stats: NONE

@@ -225,6 +225,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1_n1
+                  filterExpr: (UDFToDouble(key) = 7.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 7.0D) (type: boolean)
@@ -359,6 +360,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1_n1
+                  filterExpr: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) + UDFToDouble(key)) >= 7.0D) (type: boolean)

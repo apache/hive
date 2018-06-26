@@ -58,6 +58,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: x
+            filterExpr: (ds = '2009-04-05') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ds = '2009-04-05') (type: boolean)
@@ -77,6 +78,7 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: y
+            filterExpr: (ds = '2009-04-09') (type: boolean)
             Statistics: Num rows: 120 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)

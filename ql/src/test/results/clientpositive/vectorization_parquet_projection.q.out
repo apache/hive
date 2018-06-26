@@ -466,6 +466,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquet_nullsplit
+            filterExpr: (len = '1') (type: boolean)
             Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
@@ -541,6 +542,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquet_nullsplit
+            filterExpr: (len = '99') (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (len = '99') (type: boolean)

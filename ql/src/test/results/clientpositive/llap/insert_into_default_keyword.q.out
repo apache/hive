@@ -1704,6 +1704,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: insert_into1_n0
+                  filterExpr: (value = 1) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (value = 1) (type: boolean)
@@ -1811,6 +1812,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: insert_into1_n0
+                  filterExpr: (value = 1) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (value = 1) (type: boolean)
@@ -2368,6 +2370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t
+                  filterExpr: enforce_constraint(key is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: enforce_constraint(key is not null) (type: boolean)
@@ -2383,6 +2386,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
+                  filterExpr: enforce_constraint(key is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: enforce_constraint(key is not null) (type: boolean)

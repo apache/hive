@@ -58,6 +58,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_test_n1
+                  filterExpr: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 <> 0) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 2708832 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -231,6 +232,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_test_small_n0
+                  filterExpr: ((cdecimal1 > 0) and (cdecimal1 < 12345.5678) and (cdecimal2 <> 0) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2708600 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

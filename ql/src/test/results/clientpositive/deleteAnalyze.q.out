@@ -168,6 +168,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: s
+            filterExpr: item is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: item is not null (type: boolean)
@@ -184,6 +185,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int)
           TableScan
             alias: d
+            filterExpr: ((id = 2) and item is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((id = 2) and item is not null) (type: boolean)

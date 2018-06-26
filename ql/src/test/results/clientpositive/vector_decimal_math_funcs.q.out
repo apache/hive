@@ -112,6 +112,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_test_n0
+            filterExpr: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
             Statistics: Num rows: 12289 Data size: 2201752 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -354,6 +355,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_test_small
+            filterExpr: (((cbigint % 500) = 0) and (sin(cdecimal1) >= -1.0D)) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2201192 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

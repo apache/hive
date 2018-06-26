@@ -53,6 +53,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: testvec
+            filterExpr: (id = 5) (type: boolean)
             Statistics: Num rows: 7 Data size: 714 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true

@@ -56,6 +56,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n42
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
@@ -74,6 +75,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n26
+                  filterExpr: id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)

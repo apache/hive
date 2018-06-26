@@ -92,6 +92,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cbigint = 762L) or ((UDFToFloat(csmallint) < cfloat) and (UDFToDouble(ctimestamp2) > -5.0D) and (cdouble <> UDFToDouble(cint))) or (cstring1 = 'a') or ((CAST( cbigint AS decimal(22,3)) <= -1.389) and (cstring2 <> 'a') and (CAST( cint AS decimal(13,3)) <> 79.553) and (cboolean2 <> cboolean1))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -299,6 +300,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cbigint = 762L) or ((UDFToFloat(csmallint) < cfloat) and (UDFToDouble(ctimestamp2) > -5.0D) and (cdouble <> UDFToDouble(cint))) or (cstring1 = 'a') or ((CAST( cbigint AS decimal(22,3)) <= -1.389) and (cstring2 <> 'a') and (CAST( cint AS decimal(13,3)) <> 79.553) and (cboolean2 <> cboolean1))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2601650 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

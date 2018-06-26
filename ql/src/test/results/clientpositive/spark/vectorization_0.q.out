@@ -1590,6 +1590,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cstring2 like '%b%') or (CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or ((UDFToShort(ctinyint) >= csmallint) and (cboolean2 = 1) and (UDFToInteger(ctinyint) = 3569))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1785,6 +1786,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cstring1 like 'a%') or (cstring1 like 'b%') or (cstring1 like 'c%') or ((length(cstring1) < 50) and (cstring1 like '%n') and (length(cstring1) > 0))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -30595,6 +30597,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((cint = 49) and (cfloat = 3.5)) or ((cint = 47) and (cfloat = 2.09)) or ((cint = 45) and (cfloat = 3.02))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -30711,6 +30714,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (struct(cint,cfloat)) IN (const struct(49,3.5), const struct(47,2.09), const struct(45,3.02)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -30826,6 +30830,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (((cint = 49) or (cfloat = 3.5)) and ((cint = 47) or (cfloat = 2.09)) and ((cint = 45) or (cfloat = 3.02))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -30943,6 +30948,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: (cstring1) IN ('biology', 'history', 'topology') (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

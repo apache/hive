@@ -354,6 +354,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: key BETWEEN '103' AND '105' (type: boolean)
                   Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key BETWEEN '103' AND '105' (type: boolean)
@@ -1570,6 +1571,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key) IN ('103', '104', '105') (type: boolean)
                   Statistics: Num rows: 10 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key) IN ('103', '104', '105') (type: boolean)

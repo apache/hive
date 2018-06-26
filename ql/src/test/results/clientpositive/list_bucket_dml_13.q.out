@@ -350,6 +350,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: list_bucketing_mul_col
+          filterExpr: ((col2 = '466') and (col4 = 'val_466')) (type: boolean)
           Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator

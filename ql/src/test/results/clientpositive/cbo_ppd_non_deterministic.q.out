@@ -114,6 +114,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: testa
+            filterExpr: ((part1 = 'CA') and (part2 = 'ABC')) (type: boolean)
             Statistics: Num rows: 2 Data size: 4580 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: rand() (type: double)
@@ -163,6 +164,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: testa
+            filterExpr: ((part1 = 'CA') and (part2 = 'ABC')) (type: boolean)
             Statistics: Num rows: 2 Data size: 4580 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: rand() (type: double)

@@ -44,6 +44,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
+            filterExpr: ((cbigint % 250) = 0) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((cbigint % 250) = 0) (type: boolean)
@@ -177,6 +178,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
+            filterExpr: ((cbigint % 250) = 0) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((cbigint % 250) = 0) (type: boolean)

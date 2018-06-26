@@ -20,6 +20,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v1
+                  filterExpr: (ctinyint is not null and csmallint is not null) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (csmallint is not null and ctinyint is not null) (type: boolean)
@@ -48,6 +49,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v3
+                  filterExpr: csmallint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: csmallint is not null (type: boolean)
@@ -83,6 +85,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v2
+                  filterExpr: ctinyint is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ctinyint is not null (type: boolean)

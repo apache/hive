@@ -194,6 +194,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: test_n5
+          filterExpr: (y <> null) (type: boolean)
           Filter Operator
             predicate: (y <> null) (type: boolean)
             Select Operator
@@ -226,6 +227,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: test_n5
+          filterExpr: (y = null) (type: boolean)
           Filter Operator
             predicate: (y = null) (type: boolean)
             Select Operator
@@ -265,6 +267,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: part
+          filterExpr: (p_size <> 2) (type: boolean)
           Filter Operator
             predicate: (p_size <> 2) (type: boolean)
             Select Operator
@@ -316,6 +319,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: part
+          filterExpr: (p_size = 2) (type: boolean)
           Filter Operator
             predicate: (p_size = 2) (type: boolean)
             Select Operator

@@ -366,6 +366,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.source_table_001_mv
+          filterExpr: (my_date = DATE'2010-01-10') (type: boolean)
           Filter Operator
             predicate: (my_date = DATE'2010-01-10') (type: boolean)
             Select Operator
@@ -399,6 +400,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.source_table_001_mv
+          filterExpr: (my_date = DATE'2010-01-10') (type: boolean)
           Filter Operator
             predicate: (my_date = DATE'2010-01-10') (type: boolean)
             Select Operator
@@ -434,6 +436,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.source_table_001_mv
+                  filterExpr: (my_date = DATE'2010-01-10') (type: boolean)
                   Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (my_date = DATE'2010-01-10') (type: boolean)
@@ -505,6 +508,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.source_table_001_mv
+                  filterExpr: (my_date = DATE'2010-01-10') (type: boolean)
                   Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (my_date = DATE'2010-01-10') (type: boolean)
@@ -582,6 +586,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.source_table_001_mv
+                  filterExpr: (my_date = DATE'2010-01-10') (type: boolean)
                   Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (my_date = DATE'2010-01-10') (type: boolean)

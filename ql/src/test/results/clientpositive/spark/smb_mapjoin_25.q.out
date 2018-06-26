@@ -72,6 +72,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -86,6 +87,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -100,6 +102,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -114,6 +117,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -199,6 +203,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -221,6 +226,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -247,6 +253,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)
@@ -269,6 +276,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d
+                  filterExpr: (key = 5) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 5) (type: boolean)

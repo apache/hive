@@ -350,6 +350,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: list_bucketing_mul_col_n0
+          filterExpr: ((col2 = '466') and (col4 = 'val_466')) (type: boolean)
           Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -443,6 +444,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: list_bucketing_mul_col_n0
+          filterExpr: ((col2 = '382') and (col4 = 'val_382')) (type: boolean)
           Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator

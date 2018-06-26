@@ -82,6 +82,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part_n0
+            filterExpr: (employeesalary = 4000.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: employeeid (type: int), employeename (type: string), country (type: string)
@@ -213,6 +214,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: employee_part_n0
+            filterExpr: (employeesalary = 2000.0D) (type: boolean)
             Statistics: Num rows: 3 Data size: 1690 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: employeeid (type: int), country (type: string)

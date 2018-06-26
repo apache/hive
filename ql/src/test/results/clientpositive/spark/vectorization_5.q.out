@@ -57,6 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((cboolean2 is not null and (cstring1 like '%b%')) or ((UDFToDouble(ctinyint) = cdouble) and ctimestamp2 is not null and (cstring2 like 'a'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

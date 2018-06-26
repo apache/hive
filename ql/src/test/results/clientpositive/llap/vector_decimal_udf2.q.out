@@ -83,6 +83,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf2_n0
+                  filterExpr: (key = 10) (type: boolean)
                   Statistics: Num rows: 39 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -192,6 +193,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf2_n0
+                  filterExpr: (key = 10) (type: boolean)
                   Statistics: Num rows: 39 Data size: 4188 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -307,6 +309,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf2_txt
+                  filterExpr: (key = 10) (type: boolean)
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -416,6 +419,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf2_txt
+                  filterExpr: (key = 10) (type: boolean)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

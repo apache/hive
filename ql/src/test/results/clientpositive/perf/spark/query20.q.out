@@ -68,6 +68,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-01-12 00:00:00.0' AND TIMESTAMP'2001-02-11 00:00:00.0' and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'2001-01-12 00:00:00.0' AND TIMESTAMP'2001-02-11 00:00:00.0' and d_date_sk is not null) (type: boolean)
@@ -97,6 +98,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
+                  filterExpr: (cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 287989836 Data size: 38999608952 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cs_item_sk is not null and cs_sold_date_sk is not null) (type: boolean)
@@ -128,6 +130,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: item
+                  filterExpr: ((i_category) IN ('Jewelry', 'Sports', 'Books') and i_item_sk is not null) (type: boolean)
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((i_category) IN ('Jewelry', 'Sports', 'Books') and i_item_sk is not null) (type: boolean)

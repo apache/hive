@@ -1494,6 +1494,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
+                  filterExpr: (value > 'val') (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (value > 'val') (type: boolean)
@@ -1928,6 +1929,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n0
+                  filterExpr: (((de = 103) or (de = 119)) and enforce_constraint((893.14 >= CAST( i AS decimal(5,2))) is not false)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((de = 103) or (de = 119)) and enforce_constraint((893.14 >= CAST( i AS decimal(5,2))) is not false)) (type: boolean)
@@ -2016,6 +2018,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n0
+                  filterExpr: (de = 893.14) (type: boolean)
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (de = 893.14) (type: boolean)

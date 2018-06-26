@@ -75,6 +75,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hive_bar
+            filterExpr: (foo_id is not null and bar_id is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 230 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (bar_id is not null and foo_id is not null) (type: boolean)
@@ -91,6 +92,7 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col2 (type: string)
           TableScan
             alias: hive_foo
+            filterExpr: foo_id is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 150 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: foo_id is not null (type: boolean)
@@ -133,6 +135,7 @@ STAGE PLANS:
               value expressions: _col2 (type: string), _col4 (type: string)
           TableScan
             alias: hive_count
+            filterExpr: bar_id is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 50 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: bar_id is not null (type: boolean)

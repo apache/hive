@@ -4256,6 +4256,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n80
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -4279,6 +4280,7 @@ STAGE PLANS:
                   auto parallelism: false
           TableScan
             alias: t1_n80
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -4599,6 +4601,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n80
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -4710,6 +4713,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n80
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -7263,6 +7267,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t2_n49
+            filterExpr: (UDFToDouble(key) = 8.0D) (type: boolean)
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) = 8.0D) (type: boolean)

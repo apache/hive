@@ -167,6 +167,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: contact_event_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 3212 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -251,6 +252,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: cnctevn_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4944 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1156,6 +1158,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
+                  filterExpr: contact_event_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 3212 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1240,6 +1243,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: cnctevn_id is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4944 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

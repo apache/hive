@@ -173,6 +173,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -253,6 +254,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -350,6 +352,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -428,6 +431,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -574,6 +578,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -654,6 +659,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -751,6 +757,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -829,6 +836,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1362,6 +1370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1475,6 +1484,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1655,6 +1665,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -1774,6 +1785,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -2163,6 +2175,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)
@@ -2276,6 +2289,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_orc
+                  filterExpr: (t is null or (t = 27Y)) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 25160 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((t = 27Y) or t is null) (type: boolean)

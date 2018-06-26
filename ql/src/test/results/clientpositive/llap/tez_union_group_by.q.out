@@ -160,6 +160,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x_n3
+                  filterExpr: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
@@ -186,6 +187,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v_n15
+                  filterExpr: t is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: t is not null (type: boolean)
@@ -201,6 +203,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y_n1
+                  filterExpr: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
@@ -227,6 +230,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: z_n0
+                  filterExpr: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
@@ -253,6 +257,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x_n3
+                  filterExpr: (t is not null and (date >= '2014-03-04') and (date < '2014-09-03') and (u <> 0L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((date < '2014-09-03') and (date >= '2014-03-04') and (u <> 0L) and t is not null) (type: boolean)

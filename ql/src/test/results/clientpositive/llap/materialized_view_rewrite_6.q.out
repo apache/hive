@@ -236,6 +236,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
+                  filterExpr: (deptno > 10) (type: boolean)
                   Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 10) (type: boolean)
@@ -354,6 +355,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
+                  filterExpr: (deptno > 15) (type: boolean)
                   Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 15) (type: boolean)
@@ -480,6 +482,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -499,6 +502,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dependents
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -630,6 +634,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -649,6 +654,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: locations
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -668,6 +674,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dependents
+                  filterExpr: name is not null (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -819,6 +826,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1
+                  filterExpr: (UDFToString(name1) = 'Bill') (type: boolean)
                   Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToString(name1) = 'Bill') (type: boolean)

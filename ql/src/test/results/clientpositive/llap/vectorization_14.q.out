@@ -85,6 +85,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
+                  filterExpr: ((UDFToLong(ctinyint) <= cbigint) and ((UDFToDouble(cint) <= cdouble) or (ctimestamp2 < ctimestamp1)) and (cdouble < UDFToDouble(ctinyint)) and ((cbigint > -257L) or (cfloat < UDFToFloat(cint)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2139070 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

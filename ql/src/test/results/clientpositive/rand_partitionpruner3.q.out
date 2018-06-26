@@ -149,6 +149,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: a
+          filterExpr: ((UDFToDouble(key) <= 50.0D) and (UDFToDouble(key) >= 10.0D)) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator

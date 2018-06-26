@@ -134,6 +134,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
@@ -153,6 +154,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_qoy = 1) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_qoy = 1) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
@@ -171,6 +173,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
@@ -190,6 +193,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)
@@ -209,6 +213,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
@@ -227,6 +232,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
@@ -246,6 +252,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
@@ -265,6 +272,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_qoy = 1) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_qoy = 1) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
@@ -283,6 +291,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
@@ -302,6 +311,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
@@ -321,6 +331,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
@@ -339,6 +350,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
@@ -358,6 +370,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
+                  filterExpr: (ws_sold_date_sk is not null and ws_bill_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 144002668 Data size: 19580198212 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ws_bill_addr_sk is not null and ws_sold_date_sk is not null) (type: boolean)
@@ -377,6 +390,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_qoy = 3) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
@@ -395,6 +409,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
@@ -414,6 +429,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
+                  filterExpr: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((d_qoy = 2) and (d_year = 2000) and d_date_sk is not null) (type: boolean)
@@ -432,6 +448,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_address
+                  filterExpr: (ca_address_sk is not null and ca_county is not null) (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 40595195284 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ca_address_sk is not null and ca_county is not null) (type: boolean)
@@ -451,6 +468,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales
+                  filterExpr: (ss_sold_date_sk is not null and ss_addr_sk is not null) (type: boolean)
                   Statistics: Num rows: 575995635 Data size: 50814502088 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (ss_addr_sk is not null and ss_sold_date_sk is not null) (type: boolean)

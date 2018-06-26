@@ -82,6 +82,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: ((country = 'US') and (year = 2015) and (month = 2) and (day = 1)) (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: order_amount (type: float)
@@ -131,6 +132,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: (UDFToDouble((((year * 10000) + (month * 100)) + day)) = 2015010.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: (UDFToDouble((((year * 10000) + (month * 100)) + day)) = 2015010.0D) (type: boolean)
@@ -183,6 +185,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: (201511.0D = 201511.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: order_amount (type: float)
@@ -232,6 +235,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ss
+            filterExpr: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)
@@ -284,6 +288,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: ss
+          filterExpr: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)
           Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)

@@ -420,6 +420,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_n8
+                  filterExpr: (t < 5Y) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

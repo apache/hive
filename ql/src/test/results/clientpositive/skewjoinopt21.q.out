@@ -62,6 +62,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1_n63
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)
@@ -78,6 +79,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
           TableScan
             alias: t2_n38
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((key = '2') or (key = '3')) and key is not null) (type: boolean)

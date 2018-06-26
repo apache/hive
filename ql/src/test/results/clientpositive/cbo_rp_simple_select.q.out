@@ -755,6 +755,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
+          filterExpr: (c_int = c_int) (type: boolean)
           Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (c_int = c_int) (type: boolean)
@@ -781,6 +782,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
+          filterExpr: (c_int = (2 * c_int)) (type: boolean)
           Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (c_int = (2 * c_int)) (type: boolean)
@@ -807,6 +809,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
+          filterExpr: (c_int = c_int) (type: boolean)
           Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (c_int = c_int) (type: boolean)
@@ -833,6 +836,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
+          filterExpr: (c_int = null) (type: boolean)
           Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (c_int = null) (type: boolean)
@@ -859,6 +863,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
+          filterExpr: (c_int) IN (c_int, (2 * c_int)) (type: boolean)
           Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (c_int) IN (c_int, (2 * c_int)) (type: boolean)
@@ -885,6 +890,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
+          filterExpr: (c_int) IN (c_int, 0) (type: boolean)
           Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
             predicate: (c_int) IN (c_int, 0) (type: boolean)

@@ -31,6 +31,7 @@ STAGE PLANS:
         $hdt$_0:z 
           TableScan
             alias: z
+            filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -46,6 +47,7 @@ STAGE PLANS:
         $hdt$_1:$hdt$_2:x 
           TableScan
             alias: x
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -64,6 +66,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: y
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -275,6 +278,7 @@ STAGE PLANS:
         $hdt$_0:z 
           TableScan
             alias: z
+            filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D) and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -290,6 +294,7 @@ STAGE PLANS:
         $hdt$_1:$hdt$_2:x 
           TableScan
             alias: x
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -308,6 +313,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: y
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)

@@ -207,6 +207,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: parquet_struct_type
+            filterExpr: (st1.f1 > 500) (type: boolean)
             Pruned Column Paths: st1.f1
             Statistics: Num rows: 1023 Data size: 3069 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:

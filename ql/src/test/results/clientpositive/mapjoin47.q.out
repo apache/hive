@@ -30,6 +30,7 @@ STAGE PLANS:
         $hdt$_0:src1 
           TableScan
             alias: src1
+            filterExpr: (UDFToDouble(value) BETWEEN 100.0D AND 102.0D and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(value) BETWEEN 100.0D AND 102.0D and key is not null) (type: boolean)
@@ -48,6 +49,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: (UDFToDouble(value) BETWEEN 100.0D AND 102.0D and key is not null) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(value) BETWEEN 100.0D AND 102.0D and key is not null) (type: boolean)
@@ -132,6 +134,7 @@ STAGE PLANS:
         $hdt$_0:src1 
           TableScan
             alias: src1
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -150,6 +153,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -245,6 +249,7 @@ STAGE PLANS:
         $hdt$_0:src1 
           TableScan
             alias: src1
+            filterExpr: UDFToDouble(value) BETWEEN 100.0D AND 102.0D (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(value) BETWEEN 100.0D AND 102.0D (type: boolean)
@@ -263,6 +268,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
+            filterExpr: UDFToDouble(value) BETWEEN 100.0D AND 102.0D (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: UDFToDouble(value) BETWEEN 100.0D AND 102.0D (type: boolean)

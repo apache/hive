@@ -80,6 +80,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: union_all_bug_test_1
+            filterExpr: (if(true, f1, f2) = 1) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (if(true, f1, f2) = 1) (type: boolean)
@@ -357,6 +358,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: union_all_bug_test_1
+            filterExpr: (f1 = 1) (type: boolean)
             Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (f1 = 1) (type: boolean)
@@ -378,6 +380,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
             alias: union_all_bug_test_2
+            filterExpr: (f1 = 1) (type: boolean)
             Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (f1 = 1) (type: boolean)
