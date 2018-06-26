@@ -67,7 +67,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table_bucketed
 POSTHOOK: Input: default@test_table_bucketed@part=1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0
+177
 PREHOOK: query: SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 2 OUT OF 3) WHERE part = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table_bucketed

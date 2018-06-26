@@ -379,7 +379,18 @@ public class Partition implements Serializable {
     if (srcs == null) {
       return null;
     }
-    return srcs[bucketNum].getPath();
+
+    // Compute bucketid from srcs and return the 1st match.
+    for (FileStatus src : srcs) {
+      String bucketName = src.getPath().getName();
+      String bucketIdStr = Utilities.getBucketFileNameFromPathSubString(bucketName);
+      int bucketId = Utilities.getBucketIdFromFile(bucketIdStr);
+      if (bucketId == bucketNum) {
+        // match, return
+        return src.getPath();
+      }
+    }
+    return null;
   }
 
   @SuppressWarnings("nls")
