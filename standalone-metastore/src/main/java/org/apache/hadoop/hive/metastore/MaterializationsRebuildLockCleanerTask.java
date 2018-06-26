@@ -18,7 +18,10 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +35,7 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
   private static final Logger LOG = LoggerFactory.getLogger(MaterializationsRebuildLockCleanerTask.class);
 
   private Configuration conf;
+  private TxnStore txnHandler;
 
   @Override
   public long runFrequency(TimeUnit unit) {
@@ -41,6 +45,7 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
   @Override
   public void setConf(Configuration configuration) {
     conf = configuration;
+    txnHandler = TxnUtils.getTxnStore(conf);
   }
 
   @Override
@@ -50,11 +55,26 @@ public class MaterializationsRebuildLockCleanerTask implements MetastoreTaskThre
 
   @Override
   public void run() {
-    long removedCnt = MaterializationsRebuildLockHandler.get().cleanupResourceLocks(
-        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS));
-    if (removedCnt > 0) {
-      if (LOG.isDebugEnabled()) {
-        LOG.info("Number of materialization locks deleted: " + removedCnt);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Cleaning up materialization rebuild locks");
+    }
+
+    TxnStore.MutexAPI.LockHandle handle = null;
+    try {
+      handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.MaterializationRebuild.name());
+      ValidTxnList validTxnList = TxnUtils.createValidReadTxnList(txnHandler.getOpenTxns(), 0);
+      long removedCnt = txnHandler.cleanupMaterializationRebuildLocks(validTxnList,
+          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS));
+      if (removedCnt > 0) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Number of materialization locks deleted: " + removedCnt);
+        }
+      }
+    } catch(Throwable t) {
+      LOG.error("Serious error in {}", Thread.currentThread().getName(), ": {}" + t.getMessage(), t);
+    } finally {
+      if(handle != null) {
+        handle.releaseLocks();
       }
     }
   }

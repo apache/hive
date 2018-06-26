@@ -773,7 +773,7 @@ public interface IMetaStoreClient {
   /**
    * Returns the invalidation information for the materialized views given as input.
    */
-  Map<String, Materialization> getMaterializationsInvalidationInfo(String dbName, List<String> viewNames)
+  Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
       throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
   /**

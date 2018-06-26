@@ -726,13 +726,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_objects_by_name_req failed: unknown result')
     end
 
-    def get_materialization_invalidation_info(dbname, tbl_names)
-      send_get_materialization_invalidation_info(dbname, tbl_names)
+    def get_materialization_invalidation_info(creation_metadata, validTxnList)
+      send_get_materialization_invalidation_info(creation_metadata, validTxnList)
       return recv_get_materialization_invalidation_info()
     end
 
-    def send_get_materialization_invalidation_info(dbname, tbl_names)
-      send_message('get_materialization_invalidation_info', Get_materialization_invalidation_info_args, :dbname => dbname, :tbl_names => tbl_names)
+    def send_get_materialization_invalidation_info(creation_metadata, validTxnList)
+      send_message('get_materialization_invalidation_info', Get_materialization_invalidation_info_args, :creation_metadata => creation_metadata, :validTxnList => validTxnList)
     end
 
     def recv_get_materialization_invalidation_info()
@@ -4028,7 +4028,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_materialization_invalidation_info_args)
       result = Get_materialization_invalidation_info_result.new()
       begin
-        result.success = @handler.get_materialization_invalidation_info(args.dbname, args.tbl_names)
+        result.success = @handler.get_materialization_invalidation_info(args.creation_metadata, args.validTxnList)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::InvalidOperationException => o2
@@ -7632,12 +7632,12 @@ module ThriftHiveMetastore
 
   class Get_materialization_invalidation_info_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    DBNAME = 1
-    TBL_NAMES = 2
+    CREATION_METADATA = 1
+    VALIDTXNLIST = 2
 
     FIELDS = {
-      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
-      TBL_NAMES => {:type => ::Thrift::Types::LIST, :name => 'tbl_names', :element => {:type => ::Thrift::Types::STRING}}
+      CREATION_METADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creation_metadata', :class => ::CreationMetadata},
+      VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList'}
     }
 
     def struct_fields; FIELDS; end
@@ -7656,7 +7656,7 @@ module ThriftHiveMetastore
     O3 = 3
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Materialization}},
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Materialization},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::UnknownDBException}
