@@ -1154,6 +1154,8 @@ public class TypeCheckProcFactory {
               children.set(constIdx, new ExprNodeConstantDesc(new Byte(constVal.toString())));
             } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
               children.set(constIdx, new ExprNodeConstantDesc(new Short(constVal.toString())));
+            } else if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
+              children.set(constIdx, NumExprProcessor.createDecimal(constVal.toString(),false));
             }
           } catch (NumberFormatException nfe) {
             LOG.trace("Failed to narrow type of constant", nfe);
