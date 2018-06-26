@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.*;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -40,7 +42,7 @@ public interface TxnStore extends Configurable {
 
   enum MUTEX_KEY {
     Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
-    WriteSetCleaner, CompactionScheduler, WriteIdAllocator
+    WriteSetCleaner, CompactionScheduler, WriteIdAllocator, MaterializationRebuild
   }
   // Compactor states (Should really be enum)
   String INITIATED_RESPONSE = "initiated";
@@ -124,21 +126,33 @@ public interface TxnStore extends Configurable {
   void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException;
 
   /**
-   * Get the first transaction corresponding to given database and table after transactions
-   * referenced in the transaction snapshot.
-   * @return
+   * Get invalidation info for the materialization. Currently, the materialization information
+   * only contains information about whether there was update/delete operations on the source
+   * tables used by the materialization since it was created.
+   * @param cm creation metadata for the materialization
+   * @param validTxnList valid transaction list for snapshot taken for current query
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
-      String inputDbName, String inputTableName, ValidWriteIdList txnList)
+  Materialization getMaterializationInvalidationInfo(
+      final CreationMetadata cm, final String validTxnList)
           throws MetaException;
-  /**
-   * Gets the list of valid write ids for the given table wrt to current txn
-   * @param rqst info on transaction and list of table names associated with given transaction
-   * @throws NoSuchTxnException
-   * @throws MetaException
-   */
+
+  LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId)
+      throws MetaException;
+
+  boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId)
+      throws MetaException;
+
+  long cleanupMaterializationRebuildLocks(ValidTxnList validTxnList, long timeout)
+      throws MetaException;
+
+    /**
+     * Gets the list of valid write ids for the given table wrt to current txn
+     * @param rqst info on transaction and list of table names associated with given transaction
+     * @throws NoSuchTxnException
+     * @throws MetaException
+     */
   @RetrySemantics.ReadOnly
   GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst)
           throws NoSuchTxnException,  MetaException;

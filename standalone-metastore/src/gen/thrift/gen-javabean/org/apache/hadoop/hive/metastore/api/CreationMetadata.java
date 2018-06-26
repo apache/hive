@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tblName", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField TABLES_USED_FIELD_DESC = new org.apache.thrift.protocol.TField("tablesUsed", org.apache.thrift.protocol.TType.SET, (short)4);
   private static final org.apache.thrift.protocol.TField VALID_TXN_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validTxnList", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField MATERIALIZATION_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("materializationTime", org.apache.thrift.protocol.TType.I64, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
   private String tblName; // required
   private Set<String> tablesUsed; // required
   private String validTxnList; // optional
+  private long materializationTime; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +64,8 @@ import org.slf4j.LoggerFactory;
     DB_NAME((short)2, "dbName"),
     TBL_NAME((short)3, "tblName"),
     TABLES_USED((short)4, "tablesUsed"),
-    VALID_TXN_LIST((short)5, "validTxnList");
+    VALID_TXN_LIST((short)5, "validTxnList"),
+    MATERIALIZATION_TIME((short)6, "materializationTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +90,8 @@ import org.slf4j.LoggerFactory;
           return TABLES_USED;
         case 5: // VALID_TXN_LIST
           return VALID_TXN_LIST;
+        case 6: // MATERIALIZATION_TIME
+          return MATERIALIZATION_TIME;
         default:
           return null;
       }
@@ -127,7 +132,9 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST};
+  private static final int __MATERIALIZATIONTIME_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.MATERIALIZATION_TIME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -142,6 +149,8 @@ import org.slf4j.LoggerFactory;
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.VALID_TXN_LIST, new org.apache.thrift.meta_data.FieldMetaData("validTxnList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.MATERIALIZATION_TIME, new org.apache.thrift.meta_data.FieldMetaData("materializationTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CreationMetadata.class, metaDataMap);
   }
@@ -166,6 +175,7 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public CreationMetadata(CreationMetadata other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetCatName()) {
       this.catName = other.catName;
     }
@@ -182,6 +192,7 @@ import org.slf4j.LoggerFactory;
     if (other.isSetValidTxnList()) {
       this.validTxnList = other.validTxnList;
     }
+    this.materializationTime = other.materializationTime;
   }
 
   public CreationMetadata deepCopy() {
@@ -195,6 +206,8 @@ import org.slf4j.LoggerFactory;
     this.tblName = null;
     this.tablesUsed = null;
     this.validTxnList = null;
+    setMaterializationTimeIsSet(false);
+    this.materializationTime = 0;
   }
 
   public String getCatName() {
@@ -327,6 +340,28 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public long getMaterializationTime() {
+    return this.materializationTime;
+  }
+
+  public void setMaterializationTime(long materializationTime) {
+    this.materializationTime = materializationTime;
+    setMaterializationTimeIsSet(true);
+  }
+
+  public void unsetMaterializationTime() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MATERIALIZATIONTIME_ISSET_ID);
+  }
+
+  /** Returns true if field materializationTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetMaterializationTime() {
+    return EncodingUtils.testBit(__isset_bitfield, __MATERIALIZATIONTIME_ISSET_ID);
+  }
+
+  public void setMaterializationTimeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MATERIALIZATIONTIME_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case CAT_NAME:
@@ -369,6 +404,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case MATERIALIZATION_TIME:
+      if (value == null) {
+        unsetMaterializationTime();
+      } else {
+        setMaterializationTime((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -388,6 +431,9 @@ import org.slf4j.LoggerFactory;
 
     case VALID_TXN_LIST:
       return getValidTxnList();
+
+    case MATERIALIZATION_TIME:
+      return getMaterializationTime();
 
     }
     throw new IllegalStateException();
@@ -410,6 +456,8 @@ import org.slf4j.LoggerFactory;
       return isSetTablesUsed();
     case VALID_TXN_LIST:
       return isSetValidTxnList();
+    case MATERIALIZATION_TIME:
+      return isSetMaterializationTime();
     }
     throw new IllegalStateException();
   }
@@ -472,6 +520,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_materializationTime = true && this.isSetMaterializationTime();
+    boolean that_present_materializationTime = true && that.isSetMaterializationTime();
+    if (this_present_materializationTime || that_present_materializationTime) {
+      if (!(this_present_materializationTime && that_present_materializationTime))
+        return false;
+      if (this.materializationTime != that.materializationTime)
+        return false;
+    }
+
     return true;
   }
 
@@ -503,6 +560,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_validTxnList);
     if (present_validTxnList)
       list.add(validTxnList);
+
+    boolean present_materializationTime = true && (isSetMaterializationTime());
+    list.add(present_materializationTime);
+    if (present_materializationTime)
+      list.add(materializationTime);
 
     return list.hashCode();
   }
@@ -561,6 +623,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetValidTxnList()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.validTxnList, other.validTxnList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetMaterializationTime()).compareTo(other.isSetMaterializationTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMaterializationTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.materializationTime, other.materializationTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -626,6 +698,12 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
+    if (isSetMaterializationTime()) {
+      if (!first) sb.append(", ");
+      sb.append("materializationTime:");
+      sb.append(this.materializationTime);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -661,6 +739,8 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -735,6 +815,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // MATERIALIZATION_TIME
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.materializationTime = iprot.readI64();
+              struct.setMaterializationTimeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -782,6 +870,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetMaterializationTime()) {
+        oprot.writeFieldBegin(MATERIALIZATION_TIME_FIELD_DESC);
+        oprot.writeI64(struct.materializationTime);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -813,9 +906,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetValidTxnList()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetMaterializationTime()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetValidTxnList()) {
         oprot.writeString(struct.validTxnList);
+      }
+      if (struct.isSetMaterializationTime()) {
+        oprot.writeI64(struct.materializationTime);
       }
     }
 
@@ -839,10 +938,14 @@ import org.slf4j.LoggerFactory;
         }
       }
       struct.setTablesUsedIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.validTxnList = iprot.readString();
         struct.setValidTxnListIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.materializationTime = iprot.readI64();
+        struct.setMaterializationTimeIsSet(true);
       }
     }
   }
