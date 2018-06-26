@@ -55,7 +55,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: emps_mv_rewrite_empty
+          alias: default.emps_mv_rewrite_empty_mv1
           filterExpr: (empid < 120) (type: boolean)
           Filter Operator
             predicate: (empid < 120) (type: boolean)
@@ -67,10 +67,12 @@ STAGE PLANS:
 PREHOOK: query: select * from emps_mv_rewrite_empty where empid < 120
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emps_mv_rewrite_empty
+PREHOOK: Input: default@emps_mv_rewrite_empty_mv1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from emps_mv_rewrite_empty where empid < 120
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps_mv_rewrite_empty
+POSTHOOK: Input: default@emps_mv_rewrite_empty_mv1
 #### A masked pattern was here ####
 PREHOOK: query: drop materialized view emps_mv_rewrite_empty_mv1
 PREHOOK: type: DROP_MATERIALIZED_VIEW

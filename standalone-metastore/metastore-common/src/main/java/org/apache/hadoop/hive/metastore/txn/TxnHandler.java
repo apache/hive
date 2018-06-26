@@ -26,10 +26,10 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
@@ -59,11 +58,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.MaterializationsInvalidationCache;
-import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockHandler;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
@@ -869,10 +867,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.Idempotent("No-op if already committed")
   public void commitTxn(CommitTxnRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException {
-    MaterializationsRebuildLockHandler materializationsRebuildLockHandler =
-        MaterializationsRebuildLockHandler.get();
-    List<TransactionRegistryInfo> txnComponents = new ArrayList<>();
-    boolean isUpdateDelete = false;
+    char isUpdateDelete = 'N';
     long txnid = rqst.getTxnid();
     long sourceTxnId = -1;
 
@@ -936,7 +931,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   "tc_operation_type " + conflictSQLSuffix));
         }
         if (rs != null && rs.next()) {
-          isUpdateDelete = true;
+          isUpdateDelete = 'Y';
           close(rs);
           //if here it means currently committing txn performed update/delete and we should check WW conflict
           /**
@@ -1033,8 +1028,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           // Move the record from txn_components into completed_txn_components so that the compactor
           // knows where to look to compact.
           s = "insert into COMPLETED_TXN_COMPONENTS (ctc_txnid, ctc_database, " +
-                  "ctc_table, ctc_partition, ctc_writeid) select tc_txnid, tc_database, tc_table, " +
-                  "tc_partition, tc_writeid from TXN_COMPONENTS where tc_txnid = " + txnid;
+                  "ctc_table, ctc_partition, ctc_writeid, ctc_update_delete) select tc_txnid, tc_database, tc_table, " +
+                  "tc_partition, tc_writeid, '" + isUpdateDelete + "' from TXN_COMPONENTS where tc_txnid = " + txnid;
           LOG.debug("Going to execute insert <" + s + ">");
 
           if ((stmt.executeUpdate(s)) < 1) {
@@ -1050,10 +1045,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               rows.add(txnid + "," + quoteString(writeEventInfo.getDatabase()) + "," +
                       quoteString(writeEventInfo.getTable()) + "," +
                       quoteString(writeEventInfo.getPartition()) + "," +
-                      writeEventInfo.getWriteId());
+                      writeEventInfo.getWriteId() + "," +
+                      "'" + isUpdateDelete + "'");
             }
             List<String> queries = sqlGenerator.createInsertValuesStmt("COMPLETED_TXN_COMPONENTS " +
-                    "(ctc_txnid," + " ctc_database, ctc_table, ctc_partition, ctc_writeid)", rows);
+                    "(ctc_txnid," + " ctc_database, ctc_table, ctc_partition, ctc_writeid, ctc_update_delete)", rows);
             for (String q : queries) {
               LOG.debug("Going to execute insert  <" + q + "> ");
               stmt.execute(q);
@@ -1064,18 +1060,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   " and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
           LOG.info("Repl going to execute  <" + s + ">");
           stmt.executeUpdate(s);
-        }
-
-        // Obtain information that we need to update registry
-        s = "select ctc_database, ctc_table, ctc_writeid, ctc_timestamp from COMPLETED_TXN_COMPONENTS" +
-                " where ctc_txnid = " + txnid;
-
-        LOG.debug("Going to extract table modification information for invalidation cache <" + s + ">");
-        rs = stmt.executeQuery(s);
-        while (rs.next()) {
-          // We only enter in this loop if the transaction actually affected any table
-          txnComponents.add(new TransactionRegistryInfo(rs.getString(1), rs.getString(2),
-              rs.getLong(3), rs.getTimestamp(4, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime()));
         }
 
         // cleanup all txn related metadata
@@ -1092,29 +1076,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to execute update <" + s + ">");
         stmt.executeUpdate(s);
         LOG.info("Removed committed transaction: (" + txnid + ") from MIN_HISTORY_LEVEL");
+
+        s = "delete from MATERIALIZATION_REBUILD_LOCKS where mrl_txn_id = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        stmt.executeUpdate(s);
+
         if (transactionalListeners != null) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, null), dbConn, sqlGenerator);
         }
 
-        MaterializationsInvalidationCache materializationsInvalidationCache =
-            MaterializationsInvalidationCache.get();
-        for (TransactionRegistryInfo info : txnComponents) {
-          if (materializationsInvalidationCache.containsMaterialization(info.dbName, info.tblName) &&
-              !materializationsRebuildLockHandler.readyToCommitResource(info.dbName, info.tblName, txnid)) {
-            throw new MetaException(
-                "Another process is rebuilding the materialized view " + info.fullyQualifiedName);
-          }
-        }
         LOG.debug("Going to commit");
         close(rs);
         dbConn.commit();
-
-        // Update registry with modifications
-        for (TransactionRegistryInfo info : txnComponents) {
-          materializationsInvalidationCache.notifyTableModification(
-              info.dbName, info.tblName, info.writeId, info.timestamp, isUpdateDelete);
-        }
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -1125,9 +1099,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         close(commitIdRs);
         close(lockHandle, stmt, dbConn);
         unlockInternal();
-        for (TransactionRegistryInfo info : txnComponents) {
-          materializationsRebuildLockHandler.unlockResource(info.dbName, info.tblName, txnid);
-        }
       }
     } catch (RetryException e) {
       commitTxn(rqst);
@@ -1694,16 +1665,30 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Gets the information of the first transaction for the given table
-   * after the transaction with the input id was committed (if any). 
+   * Get invalidation info for the materialization. Currently, the materialization information
+   * only contains information about whether there was update/delete operations on the source
+   * tables used by the materialization since it was created.
    */
   @Override
   @RetrySemantics.ReadOnly
-  public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
-      String inputDbName, String inputTableName, ValidWriteIdList txnList)
-          throws MetaException {
-    final List<Long> openTxns = Arrays.asList(ArrayUtils.toObject(txnList.getInvalidWriteIds()));
+  public Materialization getMaterializationInvalidationInfo(
+      CreationMetadata creationMetadata, String validTxnListStr) throws MetaException {
+    if (creationMetadata.getTablesUsed().isEmpty()) {
+      // Bail out
+      LOG.warn("Materialization creation metadata does not contain any table");
+      return null;
+    }
 
+    // Parse validTxnList
+    final ValidReadTxnList validTxnList =
+        new ValidReadTxnList(validTxnListStr);
+
+    // Parse validReaderWriteIdList from creation metadata
+    final ValidTxnWriteIdList validReaderWriteIdList =
+        new ValidTxnWriteIdList(creationMetadata.getValidTxnList());
+
+    // We are composing a query that returns a single row if an update happened after
+    // the materialization was created. Otherwise, query returns 0 rows.
     Connection dbConn = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -1711,32 +1696,207 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       stmt = dbConn.createStatement();
       stmt.setMaxRows(1);
-      String s = "select ctc_timestamp, ctc_writeid, ctc_database, ctc_table "
-          + "from COMPLETED_TXN_COMPONENTS "
-          + "where ctc_database=" + quoteString(inputDbName) + " and ctc_table=" + quoteString(inputTableName)
-          + " and ctc_writeid > " + txnList.getHighWatermark()
-          + (txnList.getInvalidWriteIds().length == 0 ?
-              " " : " or ctc_writeid IN(" + StringUtils.join(",", openTxns) + ") ")
-          + "order by ctc_timestamp asc";
+      StringBuilder query = new StringBuilder();
+      // compose a query that select transactions containing an update...
+      query.append("select ctc_update_delete from COMPLETED_TXN_COMPONENTS where ctc_update_delete='Y' AND (");
+      int i = 0;
+      for (String fullyQualifiedName : creationMetadata.getTablesUsed()) {
+        // ...for each of the tables that are part of the materialized view,
+        // where the transaction had to be committed after the materialization was created...
+        if (i != 0) {
+          query.append("OR");
+        }
+        String[] names = TxnUtils.getDbTableName(fullyQualifiedName);
+        query.append(" (ctc_database=" + quoteString(names[0]) + " AND ctc_table=" + quoteString(names[1]));
+        ValidWriteIdList tblValidWriteIdList =
+            validReaderWriteIdList.getTableValidWriteIdList(fullyQualifiedName);
+        if (tblValidWriteIdList == null) {
+          LOG.warn("ValidWriteIdList for table {} not present in creation metadata, this should not happen");
+          return null;
+        }
+        query.append(" AND (ctc_writeid > " + tblValidWriteIdList.getHighWatermark());
+        query.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
+            " OR ctc_writeid IN(" + StringUtils.join(",",
+                Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ");
+        query.append(") ");
+        i++;
+      }
+      // ... and where the transaction has already been committed as per snapshot taken
+      // when we are running current query
+      query.append(") AND ctc_txnid <= " + validTxnList.getHighWatermark());
+      query.append(validTxnList.getInvalidTransactions().length == 0 ? " " :
+          " AND ctc_txnid NOT IN(" + StringUtils.join(",",
+              Arrays.asList(ArrayUtils.toObject(validTxnList.getInvalidTransactions()))) + ") ");
+
+      // Execute query
+      String s = query.toString();
       if (LOG.isDebugEnabled()) {
         LOG.debug("Going to execute query <" + s + ">");
       }
       rs = stmt.executeQuery(s);
 
-      if(!rs.next()) {
-        return new BasicTxnInfo(true);
-      }
-      final BasicTxnInfo txnInfo = new BasicTxnInfo(false);
-      txnInfo.setTime(rs.getTimestamp(1, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
-      txnInfo.setTxnid(rs.getLong(2));
-      txnInfo.setDbname(rs.getString(3));
-      txnInfo.setTablename(rs.getString(4));
-      return txnInfo;
+      return new Materialization(rs.next());
     } catch (SQLException ex) {
-      LOG.warn("getLastCompletedTransactionForTable failed due to " + getMessage(ex), ex);
-      throw new MetaException("Unable to retrieve commits information due to " + StringUtils.stringifyException(ex));
+      LOG.warn("getMaterializationInvalidationInfo failed due to " + getMessage(ex), ex);
+      throw new MetaException("Unable to retrieve materialization invalidation information due to " +
+          StringUtils.stringifyException(ex));
     } finally {
       close(rs, stmt, dbConn);
+    }
+  }
+
+  @Override
+  public LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId)
+      throws MetaException {
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Acquiring lock for materialization rebuild with txnId={} for {}", txnId, Warehouse.getQualifiedName(dbName,tableName));
+    }
+
+    TxnStore.MutexAPI.LockHandle handle = null;
+    Connection dbConn = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      lockInternal();
+      /**
+       * MUTEX_KEY.MaterializationRebuild lock ensures that there is only 1 entry in
+       * Initiated/Working state for any resource. This ensures we do not run concurrent
+       * rebuild operations on any materialization.
+       */
+      handle = getMutexAPI().acquireLock(MUTEX_KEY.MaterializationRebuild.name());
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      stmt = dbConn.createStatement();
+
+      String selectQ = "select mrl_txn_id from MATERIALIZATION_REBUILD_LOCKS where" +
+          " mrl_db_name =" + quoteString(dbName) +
+          " AND mrl_tbl_name=" + quoteString(tableName);
+      LOG.debug("Going to execute query <" + selectQ + ">");
+      rs = stmt.executeQuery(selectQ);
+      if(rs.next()) {
+        LOG.info("Ignoring request to rebuild " + dbName + "/" + tableName +
+            " since it is already being rebuilt");
+        return new LockResponse(txnId, LockState.NOT_ACQUIRED);
+      }
+      String insertQ = "insert into MATERIALIZATION_REBUILD_LOCKS " +
+          "(mrl_txn_id, mrl_db_name, mrl_tbl_name, mrl_last_heartbeat) values (" + txnId +
+          ", '" + dbName + "', '" + tableName + "', " + Instant.now().toEpochMilli() + ")";
+      LOG.debug("Going to execute update <" + insertQ + ">");
+      stmt.executeUpdate(insertQ);
+      LOG.debug("Going to commit");
+      dbConn.commit();
+      return new LockResponse(txnId, LockState.ACQUIRED);
+    } catch (SQLException ex) {
+      LOG.warn("lockMaterializationRebuild failed due to " + getMessage(ex), ex);
+      throw new MetaException("Unable to retrieve materialization invalidation information due to " +
+          StringUtils.stringifyException(ex));
+    } finally {
+      close(rs, stmt, dbConn);
+      if(handle != null) {
+        handle.releaseLocks();
+      }
+      unlockInternal();
+    }
+  }
+
+  @Override
+  public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId)
+      throws MetaException {
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      ResultSet rs = null;
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        String s = "update MATERIALIZATION_REBUILD_LOCKS" +
+            " set mrl_last_heartbeat = " + Instant.now().toEpochMilli() +
+            " where mrl_txn_id = " + txnId +
+            " AND mrl_db_name =" + quoteString(dbName) +
+            " AND mrl_tbl_name=" + quoteString(tableName);
+        LOG.debug("Going to execute update <" + s + ">");
+        int rc = stmt.executeUpdate(s);
+        if (rc < 1) {
+          LOG.debug("Going to rollback");
+          dbConn.rollback();
+          LOG.info("No lock found for rebuild of " + Warehouse.getQualifiedName(dbName, tableName) +
+              " when trying to heartbeat");
+          // It could not be renewed, return that information
+          return false;
+        }
+        LOG.debug("Going to commit");
+        dbConn.commit();
+        // It could be renewed, return that information
+        return true;
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e,
+            "heartbeatLockMaterializationRebuild(" + Warehouse.getQualifiedName(dbName, tableName) + ", " + txnId + ")");
+        throw new MetaException("Unable to heartbeat rebuild lock due to " +
+            StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      return heartbeatLockMaterializationRebuild(dbName, tableName ,txnId);
+    }
+  }
+
+  @Override
+  public long cleanupMaterializationRebuildLocks(ValidTxnList validTxnList, long timeout) throws MetaException {
+    try {
+      // Aux values
+      long cnt = 0L;
+      List<Long> txnIds = new ArrayList<>();
+      long timeoutTime = Instant.now().toEpochMilli() - timeout;
+
+      Connection dbConn = null;
+      Statement stmt = null;
+      ResultSet rs = null;
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        String selectQ = "select mrl_txn_id, mrl_last_heartbeat from MATERIALIZATION_REBUILD_LOCKS";
+        LOG.debug("Going to execute query <" + selectQ + ">");
+        rs = stmt.executeQuery(selectQ);
+        while(rs.next()) {
+          long lastHeartbeat = rs.getLong(2);
+          if (lastHeartbeat < timeoutTime) {
+            // The heartbeat has timeout, double check whether we can remove it
+            long txnId = rs.getLong(1);
+            if (validTxnList.isTxnValid(txnId) || validTxnList.isTxnAborted(txnId)) {
+              // Txn was committed (but notification was not received) or it was aborted.
+              // Either case, we can clean it up
+              txnIds.add(txnId);
+            }
+          }
+        }
+        if (!txnIds.isEmpty()) {
+          String deleteQ = "delete from MATERIALIZATION_REBUILD_LOCKS where" +
+              " mrl_txn_id IN(" + StringUtils.join(",", txnIds) + ") ";
+          LOG.debug("Going to execute update <" + deleteQ + ">");
+          cnt = stmt.executeUpdate(deleteQ);
+        }
+        LOG.debug("Going to commit");
+        dbConn.commit();
+        return cnt;
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "cleanupMaterializationRebuildLocks");
+        throw new MetaException("Unable to clean rebuild locks due to " +
+            StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      return cleanupMaterializationRebuildLocks(validTxnList, timeout);
     }
   }
 
@@ -2009,6 +2169,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static String normalizeCase(String s) {
     return s == null ? null : s.toLowerCase();
   }
+
   private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId)
     throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException {
     try {
@@ -4886,21 +5047,5 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       throw new UnsupportedOperationException();
     }
   };
-
-  private class TransactionRegistryInfo {
-    final String dbName;
-    final String tblName;
-    final String fullyQualifiedName;
-    final long writeId;
-    final long timestamp;
-
-    public TransactionRegistryInfo (String dbName, String tblName, long writeId, long timestamp) {
-      this.dbName = dbName;
-      this.tblName = tblName;
-      this.fullyQualifiedName = Warehouse.getQualifiedName(dbName, tblName);
-      this.writeId = writeId;
-      this.timestamp = timestamp;
-    }
-  }
 
 }

@@ -22,8 +22,8 @@ import java.util.Set;
 /**
  * Represents the creation metadata of a materialization.
  * It includes the database and table name for the materialization,
- * the set of tables that it uses, and the valid transaction list
- * when it was created.
+ * the set of tables that it uses, the valid transaction list
+ * when it was created, and the creation/rebuild time.
  */
 public class MCreationMetadata {
 
@@ -32,17 +32,19 @@ public class MCreationMetadata {
   private String tblName;
   private Set<MTable> tables;
   private String txnList;
+  private long materializationTime;
 
   public MCreationMetadata() {
   }
 
   public MCreationMetadata(String catName, String dbName, String tblName,
-      Set<MTable> tables, String txnList) {
+      Set<MTable> tables, String txnList, long materializationTime) {
     this.catalogName = catName;
     this.dbName = dbName;
     this.tblName = tblName;
     this.tables = tables;
     this.txnList = txnList;
+    this.materializationTime = materializationTime;
   }
 
   public Set<MTable> getTables() {
@@ -83,5 +85,13 @@ public class MCreationMetadata {
 
   public void setTblName(String tblName) {
     this.tblName = tblName;
+  }
+
+  public long getMaterializationTime() {
+    return materializationTime;
+  }
+
+  public void setMaterializationTime(long materializationTime) {
+    this.materializationTime = materializationTime;
   }
 }

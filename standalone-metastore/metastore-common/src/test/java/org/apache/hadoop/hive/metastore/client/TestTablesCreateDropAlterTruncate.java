@@ -1211,6 +1211,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     // Update the metadata for the materialized view
     CreationMetadata cm = client.getTable(catName, dbName, tableNames[3]).getCreationMetadata();
     cm.addToTablesUsed(dbName + "." + tableNames[1]);
+    cm.unsetMaterializationTime();
     client.updateCreationMetadata(catName, dbName, tableNames[3], cm);
 
     List<String> partNames = new ArrayList<>();
