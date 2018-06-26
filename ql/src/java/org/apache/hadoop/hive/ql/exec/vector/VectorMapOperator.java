@@ -803,10 +803,9 @@ public class VectorMapOperator extends AbstractMapOperator {
       VectorizedRowBatch batch = (VectorizedRowBatch) value;
       numRows += batch.size;
       if (hasRowIdentifier) {
-        if (batchContext.getRecordIdColumnVector() == null) {
+        final int idx = batchContext.findVirtualColumnNum(VirtualColumn.ROWID);
+        if (idx < 0) {
           setRowIdentiferToNull(batch);
-        } else {
-          batch.cols[rowIdentifierColumnNum] = batchContext.getRecordIdColumnVector();
         }
       }
     }
