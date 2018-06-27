@@ -215,7 +215,52 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket
 POSTHOOK: Input: default@harbucket@ds=1
 #### A masked pattern was here ####
+51
+51
+54
+69
+96
+133
+162
+163
+165
+165
+237
+237
+238
+238
+256
+256
 260
+289
+311
+311
+311
+332
+344
+344
+362
+369
+369
+369
+393
+397
+397
+407
+411
+432
+435
+453
+454
+454
+454
+466
+466
+466
+484
+498
+498
+498
 PREHOOK: query: ALTER TABLE tstsrcpart_n2 ARCHIVE PARTITION (ds='2008-04-08', hr='12')
 PREHOOK: type: ALTERTABLE_ARCHIVE
 PREHOOK: Input: default@tstsrcpart_n2
@@ -234,7 +279,52 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket
 POSTHOOK: Input: default@harbucket@ds=1
 #### A masked pattern was here ####
+51
+51
+54
+69
+96
+133
+162
+163
+165
+165
+237
+237
+238
+238
+256
+256
 260
+289
+311
+311
+311
+332
+344
+344
+362
+369
+369
+369
+393
+397
+397
+407
+411
+432
+435
+453
+454
+454
+454
+466
+466
+466
+484
+498
+498
+498
 PREHOOK: query: ALTER TABLE tstsrcpart_n2 UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
 PREHOOK: type: ALTERTABLE_UNARCHIVE
 PREHOOK: Input: default@tstsrcpart_n2
@@ -253,7 +343,52 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket
 POSTHOOK: Input: default@harbucket@ds=1
 #### A masked pattern was here ####
+51
+51
+54
+69
+96
+133
+162
+163
+165
+165
+237
+237
+238
+238
+256
+256
 260
+289
+311
+311
+311
+332
+344
+344
+362
+369
+369
+369
+393
+397
+397
+407
+411
+432
+435
+453
+454
+454
+454
+466
+466
+466
+484
+498
+498
+498
 PREHOOK: query: CREATE TABLE old_name(key INT)
 PARTITIONED by (ds STRING)
 PREHOOK: type: CREATETABLE
