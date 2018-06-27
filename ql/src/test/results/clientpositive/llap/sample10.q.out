@@ -89,7 +89,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000002_0
+                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -140,7 +140,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000002_0
+                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -191,7 +191,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000002_0
+                  base file name: hr=11
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -242,7 +242,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000002_0
+                  base file name: hr=12
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -292,10 +292,10 @@ STAGE PLANS:
                     name: default.srcpartbucket
                   name: default.srcpartbucket
             Truncated Path -> Alias:
-              /srcpartbucket/ds=2008-04-08/hr=11/000002_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-08/hr=12/000002_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-09/hr=11/000002_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-09/hr=12/000002_0 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-08/hr=11 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-08/hr=12 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-09/hr=11 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-09/hr=12 [srcpartbucket]
         Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
@@ -367,6 +367,8 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+2008-04-08	14
+2008-04-09	14
 PREHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 2 on key) where ds is not null group by ds ORDER BY ds ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket
@@ -383,6 +385,8 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+2008-04-08	4
+2008-04-09	4
 PREHOOK: query: select * from srcpartbucket where ds is not null ORDER BY key ASC, value ASC, ds ASC, hr ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket

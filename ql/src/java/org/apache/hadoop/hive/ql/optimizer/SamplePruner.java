@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.metastore.TableType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -192,8 +193,8 @@ public class SamplePruner extends Transform {
 
     // check if input pruning is possible
     // TODO: this code is buggy - it relies on having one file per bucket; no MM support (by design).
-    boolean isMmTable = AcidUtils.isInsertOnlyTable(part.getTable().getParameters());
-    if (sampleDescr.getInputPruning() && !isMmTable) {
+    boolean isManagedTable = part.getTable().getTableType() == TableType.MANAGED_TABLE;
+    if (sampleDescr.getInputPruning() && !isManagedTable) {
       LOG.trace("numerator = " + num);
       LOG.trace("denominator = " + den);
       LOG.trace("bucket count = " + bucketCount);
@@ -220,7 +221,7 @@ public class SamplePruner extends Transform {
       }
     } else {
       // need to do full scan
-      fullScanMsg = isMmTable ? "MM table" : "Tablesample not on clustered columns";
+      fullScanMsg = isManagedTable ? "Managed table" : "Tablesample not on clustered columns";
     }
     LOG.warn(fullScanMsg + ", using full table scan");
     Path[] ret = part.getPath();
