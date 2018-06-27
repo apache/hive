@@ -58,6 +58,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_part
+            filterExpr: (p > 100) (type: boolean)
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (p > 100) (type: boolean)
@@ -108,6 +109,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_part
+            filterExpr: (p > 100) (type: boolean)
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: (p > 100) (type: boolean)
@@ -245,7 +247,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	6                   
 	rawDataSize         	0                   
-	totalSize           	2337                
+	totalSize           	2335                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -336,7 +338,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	3126                
+	totalSize           	3124                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -476,7 +478,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	758                 
+	totalSize           	756                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -591,19 +593,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_part
-            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+            filterExpr: (p > 100) (type: boolean)
+            Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
             Select Operator
               expressions: key (type: int)
               outputColumnNames: key
-              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
               Group By Operator
                 aggregations: max(key)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
                   value expressions: _col0 (type: int)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -611,10 +614,10 @@ STAGE PLANS:
           aggregations: max(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -663,7 +666,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	758                 
+	totalSize           	756                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -700,7 +703,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	2238                
+	totalSize           	2235                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -803,7 +806,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	758                 
+	totalSize           	756                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -840,7 +843,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	2238                
+	totalSize           	2235                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -947,7 +950,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1                   
 	rawDataSize         	0                   
-	totalSize           	1366                
+	totalSize           	1453                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -984,7 +987,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	1                   
 	rawDataSize         	0                   
-	totalSize           	2837                
+	totalSize           	2929                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1181,19 +1184,20 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_part
-            Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            filterExpr: (p > 100) (type: boolean)
+            Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: PARTIAL
             Select Operator
               expressions: key (type: int)
               outputColumnNames: key
-              Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: PARTIAL
               Group By Operator
                 aggregations: max(key)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
                   value expressions: _col0 (type: int)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -1201,10 +1205,10 @@ STAGE PLANS:
           aggregations: max(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

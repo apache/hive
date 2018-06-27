@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -768,7 +769,7 @@ public class Hive {
     try {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
-        tableSnapshot = AcidUtils.getTableSnapshot(conf, newParts.get(0).getTable());
+        tableSnapshot = AcidUtils.getTableSnapshot(conf, newParts.get(0).getTable(), true);
       }
       // Remove the DDL time so that it gets refreshed
       for (Partition tmpPart: newParts) {
@@ -2448,12 +2449,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    *           if table doesn't exist or partition already exists
    */
+  @VisibleForTesting
   public Partition createPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
     try {
       org.apache.hadoop.hive.metastore.api.Partition part =
           Partition.createMetaPartitionObject(tbl, partSpec, null);
       AcidUtils.TableSnapshot tableSnapshot =
-          AcidUtils.getTableSnapshot(conf, tbl);
+          AcidUtils.getTableSnapshot(conf, tbl, false);
       part.setTxnId(tableSnapshot != null ? tableSnapshot.getTxnId() : 0);
       part.setValidWriteIdList(tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       return new Partition(tbl, getMSC().add_partition(part));

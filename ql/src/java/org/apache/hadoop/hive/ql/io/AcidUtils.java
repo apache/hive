@@ -1652,6 +1652,11 @@ public class AcidUtils {
     }
   }
 
+  // TODO# remove
+  public static TableSnapshot getTableSnapshot(
+      Configuration conf, Table tbl) throws LockException {
+    return getTableSnapshot(conf, tbl, false);
+  }
   /**
    * Create a TableShopshot with the given "conf"
    * for the table of the given "tbl".
@@ -1662,8 +1667,7 @@ public class AcidUtils {
    * @throws LockException
    */
   public static TableSnapshot getTableSnapshot(
-      Configuration conf,
-      Table tbl) throws LockException {
+      Configuration conf, Table tbl, boolean isInTxnScope) throws LockException {
     if (!isTransactionalTable(tbl)) {
       return null;
     } else {
@@ -1679,9 +1683,9 @@ public class AcidUtils {
       if (txnId > 0 && isTransactionalTable(tbl)) {
         validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
 
-        // TODO: we shouldn't do this during normal Hive compilation, write IDs should be in conf.
-        //       Can this still happen for DDLTask-based queries?
-        if (validWriteIdList == null && !HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
+        // TODO: remove in_test filters?
+        if (validWriteIdList == null && !isInTxnScope
+            && !HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
           LOG.warn("Obtaining write IDs from metastore for " + tbl.getTableName());
           validWriteIdList = getTableValidWriteIdListWithTxnList(
               conf, tbl.getDbName(), tbl.getTableName());
