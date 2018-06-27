@@ -72,6 +72,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: stats_part
+            filterExpr: (p > 100) (type: boolean)
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
               predicate: (p > 100) (type: boolean)
@@ -209,7 +210,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	6                   
 	rawDataSize         	0                   
-	totalSize           	2241                
+	totalSize           	2244                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -272,7 +273,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	2994                
+	totalSize           	2998                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -415,7 +416,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	2994                
+	totalSize           	2998                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -498,7 +499,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	8                   
 	rawDataSize         	0                   
-	totalSize           	2994                
+	totalSize           	2998                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

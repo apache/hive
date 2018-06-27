@@ -117,6 +117,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: mysource
+            filterExpr: (p = 100) (type: boolean)
             Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (p = 100) (type: boolean)
@@ -212,7 +213,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	720                 
+	totalSize           	719                 
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
