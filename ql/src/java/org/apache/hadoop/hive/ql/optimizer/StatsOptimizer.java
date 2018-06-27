@@ -919,7 +919,7 @@ public class StatsOptimizer extends Transform {
         partNames.add(part.getName());
       }
       AcidUtils.TableSnapshot tableSnapshot =
-          AcidUtils.getTableSnapshot(hive.getConf(), tbl, true);
+          AcidUtils.getTableSnapshot(hive.getConf(), tbl);
 
       Map<String, List<ColumnStatisticsObj>> result = hive.getMSC().getPartitionColumnStatistics(
           tbl.getDbName(), tbl.getTableName(), partNames, Lists.newArrayList(colName),
