@@ -483,8 +483,8 @@ public class VectorizedOrcAcidRowBatchReader
       }
     }
     if (rowIdProjected) {
-      // TODO: could we just do: int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWID); value.cols[ix] = recordIdColumnVector;
-      rbCtx.setRecordIdColumnVector(recordIdColumnVector);
+      int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWID);
+      value.cols[ix] = recordIdColumnVector;
     }
     progress = baseReader.getProgress();
     return true;
