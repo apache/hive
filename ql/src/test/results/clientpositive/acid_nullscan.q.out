@@ -42,12 +42,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid_vectorized_n1
-            Statistics: Num rows: 90 Data size: 25960 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 11 Data size: 25960 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: false (type: boolean)
-              Statistics: Num rows: 1 Data size: 288 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: sum(a)
                 mode: hash
@@ -69,6 +69,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
               bucket_count 2
               bucket_field_name a
               bucketing_version 2
@@ -79,6 +80,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.acid_vectorized_n1
               numFiles 3
+              numRows 11
+              rawDataSize 0
               serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
@@ -91,6 +94,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                 bucket_count 2
                 bucket_field_name a
                 bucketing_version 2
@@ -101,6 +105,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.acid_vectorized_n1
                 numFiles 3
+                numRows 11
+                rawDataSize 0
                 serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
