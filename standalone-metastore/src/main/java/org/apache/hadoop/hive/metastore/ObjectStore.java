@@ -2381,6 +2381,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean commited = false;
 
     try {
+      openTransaction();
       String catName = part.isSetCatName() ? part.getCatName() : getDefaultCatalog(conf);
       MTable table = this.getMTable(catName, part.getDbName(), part.getTableName());
       List<MTablePrivilege> tabGrants = null;
@@ -2390,7 +2391,6 @@ public class ObjectStore implements RawStore, Configurable {
         tabColumnGrants = this.listTableAllColumnGrants(
             catName, part.getDbName(), part.getTableName());
       }
-      openTransaction();
       MPartition mpart = convertToMPart(part, table, true);
       pm.makePersistent(mpart);
 
@@ -4202,7 +4202,7 @@ public class ObjectStore implements RawStore, Configurable {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
-    MTable table = this.getMTable(catName, dbname, name);
+    MTable table = this.getMTable(newPart.getCatName(), newPart.getDbName(), newPart.getTableName());
     MPartition oldp = getMPartition(catName, dbname, name, part_vals);
     MPartition newp = convertToMPart(newPart, table, false);
     MColumnDescriptor oldCD = null;
