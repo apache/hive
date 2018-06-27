@@ -818,17 +818,17 @@
             <goals>
               <goal>exec</goal>
             </goals>
+            <configuration>
+              <executable>java</executable>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath/>
+                <argument>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</argument>
+                <argument>${project.build.directory}/generated-sources/conf/metastore-site.xml.template</argument>
+              </arguments>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <executable>java</executable>
-          <arguments>
-            <argument>-classpath</argument>
-            <classpath/>
-            <argument>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</argument>
-            <argument>${project.build.directory}/generated-sources/conf/metastore-site.xml.template</argument>
-          </arguments>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.datanucleus</groupId>
