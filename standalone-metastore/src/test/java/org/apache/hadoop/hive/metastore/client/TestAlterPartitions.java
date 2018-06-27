@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
+import java.net.ProtocolException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.transport.TTransportException;
 
 import com.google.common.collect.Lists;
@@ -692,11 +694,16 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partitions(DB_NAME, "", Lists.newArrayList(part));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionsNullTblName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions(DB_NAME, null, Lists.newArrayList(part));
+    try {
+      client.alter_partitions(DB_NAME, null, Lists.newArrayList(part));
+      Assert.fail("didn't throw");
+    } catch (TProtocolException | MetaException e) {
+      // By design
+    }
   }
 
   @Test(expected = NullPointerException.class)
@@ -720,7 +727,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
       client.alter_partitions(DB_NAME, TABLE_NAME, null);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TProtocolException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }
@@ -786,7 +793,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     assertPartitionsHaveCorrectValues(newParts, testValues);
 
     client.alter_partitions(DB_NAME, TABLE_NAME, newParts, new EnvironmentContext());
-    client.alter_partitions(DB_NAME, TABLE_NAME, newParts, null);
+    client.alter_partitions(DB_NAME, TABLE_NAME, newParts);
 
     for (int i = 0; i < testValues.size(); ++i) {
       assertPartitionChanged(oldParts.get(i), testValues.get(i), PARTCOL_SCHEMA);
@@ -860,11 +867,16 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partitions(DB_NAME, "", Lists.newArrayList(part), new EnvironmentContext());
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionsWithEnvironmentCtxNullTblName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions(DB_NAME, null, Lists.newArrayList(part), new EnvironmentContext());
+    try {
+      client.alter_partitions(DB_NAME, null, Lists.newArrayList(part), new EnvironmentContext());
+      Assert.fail("didn't throw");
+    } catch (MetaException | TProtocolException ex) {
+      // By design.
+    }
   }
 
   @Test(expected = NullPointerException.class)
@@ -890,7 +902,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
       client.alter_partitions(DB_NAME, TABLE_NAME, null, new EnvironmentContext());
       fail("Should have thrown exception");
-    } catch (NullPointerException | TTransportException e) {
+    } catch (NullPointerException | TTransportException | TProtocolException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
     }
   }

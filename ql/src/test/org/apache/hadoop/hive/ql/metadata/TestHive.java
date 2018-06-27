@@ -324,6 +324,13 @@ public class TestHive extends TestCase {
       tbl.setCreateTime(ft.getTTable().getCreateTime());
       tbl.getParameters().put(hive_metastoreConstants.DDL_TIME,
           ft.getParameters().get(hive_metastoreConstants.DDL_TIME));
+      // Txn stuff set by metastore
+      if (tbl.getTTable().isSetTxnId()) {
+        ft.getTTable().setTxnId(tbl.getTTable().getTxnId());
+      }
+      if (tbl.getTTable().isSetValidWriteIdList()) {
+        ft.getTTable().setValidWriteIdList(tbl.getTTable().getValidWriteIdList());
+      }
       assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
           + "; " + tbl.getTTable() + ")", ft.getTTable().equals(tbl.getTTable()));
       assertEquals("SerializationLib is not set correctly", tbl

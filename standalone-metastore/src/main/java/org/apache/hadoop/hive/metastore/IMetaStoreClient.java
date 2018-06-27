@@ -2155,7 +2155,7 @@ public interface IMetaStoreClient {
   default void alter_partitions(String catName, String dbName, String tblName,
                                 List<Partition> newParts)
       throws InvalidOperationException, MetaException, TException {
-    alter_partitions(catName, dbName, tblName, newParts, null,-1, null);
+    alter_partitions(catName, dbName, tblName, newParts, new EnvironmentContext(), -1, null);
   }
 
   /**

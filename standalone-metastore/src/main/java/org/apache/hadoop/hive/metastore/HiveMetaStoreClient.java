@@ -1886,7 +1886,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts)
       throws TException {
     alter_partitions(
-        getDefaultCatalog(conf), dbName, tblName, newParts, null, -1, null);
+        getDefaultCatalog(conf), dbName, tblName, newParts, new EnvironmentContext(), -1, null);
   }
 
   @Override
