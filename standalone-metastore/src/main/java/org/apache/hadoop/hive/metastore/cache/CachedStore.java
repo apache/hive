@@ -1172,9 +1172,9 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
                               List<List<String>> partValsList, List<Partition> newParts,
-                              long txnId, String writeIdList)
+                              long txnId, String writeIdList, long writeId)
       throws InvalidObjectException, MetaException {
-    rawStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, txnId, writeIdList);
+    rawStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, txnId, writeIdList, writeId);
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);

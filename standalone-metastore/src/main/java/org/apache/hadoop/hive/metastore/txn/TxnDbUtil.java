@@ -204,7 +204,7 @@ public final class TxnDbUtil {
             " \"SD_ID\" BIGINT, \"TBL_NAME\" VARCHAR(256), \"TBL_TYPE\" VARCHAR(128), " +
             " \"VIEW_EXPANDED_TEXT\" LONG VARCHAR, \"VIEW_ORIGINAL_TEXT\" LONG VARCHAR, " +
             " \"IS_REWRITE_ENABLED\" CHAR(1) NOT NULL DEFAULT \'N\', \"TXN_ID\" BIGINT DEFAULT 0, " +
-            " \"WRITEID_LIST\" CLOB, " +
+            " \"WRITE_ID\" BIGINT DEFAULT 0, \"WRITEID_LIST\" CLOB, " +
             " PRIMARY KEY (TBL_ID))"
         );
       } catch (SQLException e) {
@@ -220,7 +220,7 @@ public final class TxnDbUtil {
             " \"PART_ID\" BIGINT NOT NULL, \"CREATE_TIME\" INTEGER NOT NULL, " +
             " \"LAST_ACCESS_TIME\" INTEGER NOT NULL, \"PART_NAME\" VARCHAR(767), " +
             " \"SD_ID\" BIGINT, \"TBL_ID\" BIGINT, \"TXN_ID\" BIGINT DEFAULT 0, " +
-            " \"WRITEID_LIST\" CLOB, " +
+            " \"WRITE_ID\" BIGINT DEFAULT 0, \"WRITEID_LIST\" CLOB, " +
             " PRIMARY KEY (PART_ID))"
         );
       } catch (SQLException e) {

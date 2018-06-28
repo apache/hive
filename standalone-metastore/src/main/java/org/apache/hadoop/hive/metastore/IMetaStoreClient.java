@@ -2133,7 +2133,7 @@ public interface IMetaStoreClient {
 
   void alter_partitions(String dbName, String tblName, List<Partition> newParts,
                         EnvironmentContext environmentContext,
-                        long txnId, String writeIdList)
+                        long txnId, String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException;
 
   /**
@@ -2155,7 +2155,7 @@ public interface IMetaStoreClient {
   default void alter_partitions(String catName, String dbName, String tblName,
                                 List<Partition> newParts)
       throws InvalidOperationException, MetaException, TException {
-    alter_partitions(catName, dbName, tblName, newParts, new EnvironmentContext(), -1, null);
+    alter_partitions(catName, dbName, tblName, newParts, new EnvironmentContext(), -1, null, -1);
   }
 
   /**
@@ -2177,7 +2177,7 @@ public interface IMetaStoreClient {
    */
   void alter_partitions(String catName, String dbName, String tblName, List<Partition> newParts,
                         EnvironmentContext environmentContext,
-                        long txnId, String writeIdList)
+                        long txnId, String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException;
 
   /**

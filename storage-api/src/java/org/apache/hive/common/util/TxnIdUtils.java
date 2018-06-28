@@ -19,6 +19,8 @@ package org.apache.hive.common.util;
 
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 
+import java.util.*;
+
 public class TxnIdUtils {
 
   /**
@@ -45,15 +47,30 @@ public class TxnIdUtils {
    * on the table.
    */
   public static boolean areTheseConcurrentWrites(
-          ValidWriteIdList older, ValidWriteIdList newer, long statsWriteId) {
+          ValidWriteIdList older, long olderWriteId,
+          ValidWriteIdList newer, long newerWriteId) {
     if (!older.getTableName().equalsIgnoreCase(newer.getTableName())) {
       return false;
     }
 
     assert(older.getHighWatermark() <= newer.getHighWatermark());
 
-    // TODO: Just return false for now.
-    return false;
+    // Return false when a write id is not positive.
+    if (olderWriteId <= 0 || newerWriteId <= 0) {
+      return false;
+    }
+
+    // If olderWriteId is for aborted write, return false.
+    if (newer.isWriteIdAborted(olderWriteId)) {
+      return false;
+    }
+
+    // TODO: does this need to account for watermark?
+    // If either writeId is contained in the other's writeIdList,
+    // it is a concurrent INSERTs case.
+    int index2Older = Arrays.binarySearch(older.getInvalidWriteIds(), olderWriteId);
+    int index2Newer = Arrays.binarySearch(newer.getInvalidWriteIds(), newerWriteId);
+    return index2Older >= 0 || index2Newer >= 0;
   }
 
   /**

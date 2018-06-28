@@ -363,10 +363,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
       List<List<String>> partValsList, List<Partition> newParts,
-      long txnId, String writeIdList)
+      long txnId, String writeIdList, long writeId)
       throws InvalidObjectException, MetaException {
     objectStore.alterPartitions(
-        catName, dbName, tblName, partValsList, newParts, txnId, writeIdList);
+        catName, dbName, tblName, partValsList, newParts, txnId, writeIdList, writeId);
   }
 
   @Override

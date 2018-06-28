@@ -364,7 +364,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void alterPartitions(String catName, String db_name, String tbl_name,
                               List<List<String>> part_vals_list, List<Partition> new_parts,
-                              long txnId, String writeIdList)
+                              long txnId, String writeIdList, long writeId)
       throws InvalidObjectException, MetaException {
 
   }

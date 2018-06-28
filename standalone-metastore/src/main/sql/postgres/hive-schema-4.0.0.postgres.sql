@@ -396,6 +396,7 @@ CREATE TABLE "TBLS" (
     "VIEW_ORIGINAL_TEXT" text,
     "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false,
     "TXN_ID" bigint,
+    "WRITE_ID" bigint,
     "WRITEID_LIST" text
 );
 

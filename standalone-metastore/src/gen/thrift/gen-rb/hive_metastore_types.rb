@@ -1071,8 +1071,9 @@ class Table
   CATNAME = 17
   OWNERTYPE = 18
   TXNID = 19
-  VALIDWRITEIDLIST = 20
-  ISSTATSCOMPLIANT = 21
+  WRITEID = 20
+  VALIDWRITEIDLIST = 21
+  ISSTATSCOMPLIANT = 22
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -1094,6 +1095,7 @@ class Table
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :default =>     1, :optional => true, :enum_class => ::PrincipalType},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
   }
@@ -1124,8 +1126,9 @@ class Partition
   PRIVILEGES = 8
   CATNAME = 9
   TXNID = 10
-  VALIDWRITEIDLIST = 11
-  ISSTATSCOMPLIANT = 12
+  WRITEID = 11
+  VALIDWRITEIDLIST = 12
+  ISSTATSCOMPLIANT = 13
 
   FIELDS = {
     VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRING}},
@@ -1138,6 +1141,7 @@ class Partition
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
   }
@@ -1222,8 +1226,9 @@ class PartitionSpec
   PARTITIONLIST = 5
   CATNAME = 6
   TXNID = 7
-  VALIDWRITEIDLIST = 8
-  ISSTATSCOMPLIANT = 9
+  WRITEID = 8
+  VALIDWRITEIDLIST = 9
+  ISSTATSCOMPLIANT = 10
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -1233,6 +1238,7 @@ class PartitionSpec
     PARTITIONLIST => {:type => ::Thrift::Types::STRUCT, :name => 'partitionList', :class => ::PartitionListComposingSpec, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
   }
@@ -1637,12 +1643,14 @@ class SetPartitionsStatsRequest
   COLSTATS = 1
   NEEDMERGE = 2
   TXNID = 3
-  VALIDWRITEIDLIST = 4
+  WRITEID = 4
+  VALIDWRITEIDLIST = 5
 
   FIELDS = {
     COLSTATS => {:type => ::Thrift::Types::LIST, :name => 'colStats', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatistics}},
     NEEDMERGE => {:type => ::Thrift::Types::BOOL, :name => 'needMerge', :optional => true},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
 
@@ -5019,7 +5027,8 @@ class AlterPartitionsRequest
   PARTITIONS = 3
   ENVIRONMENTCONTEXT = 4
   TXNID = 5
-  VALIDWRITEIDLIST = 6
+  WRITEID = 6
+  VALIDWRITEIDLIST = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -5027,6 +5036,7 @@ class AlterPartitionsRequest
     PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
     ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
 

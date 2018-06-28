@@ -297,7 +297,7 @@ public class HiveAlterHandler implements AlterHandler {
                 partValues.add(part.getValues());
               }
               msdb.alterPartitions(
-                  catName, newDbName, newTblName, partValues, partBatch, -1, null);
+                  catName, newDbName, newTblName, partValues, partBatch, -1, null, -1);
             }
           }
 
@@ -659,7 +659,7 @@ public class HiveAlterHandler implements AlterHandler {
     EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     return alterPartitions(msdb, wh, DEFAULT_CATALOG_NAME, dbname, name, new_parts,
-        environmentContext, -1, null, null);
+        environmentContext, -1, null, -1, null);
   }
 
   @Override
@@ -667,7 +667,8 @@ public class HiveAlterHandler implements AlterHandler {
                                          final String dbname, final String name,
                                          final List<Partition> new_parts,
                                          EnvironmentContext environmentContext,
-                                         long txnId, String writeIdList, IHMSHandler handler)
+                                         long txnId, String writeIdList, long writeId,
+                                         IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<>();
     List<List<String>> partValsList = new ArrayList<>();
@@ -715,7 +716,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
       }
 
-      msdb.alterPartitions(catName, dbname, name, partValsList, new_parts, txnId, writeIdList);
+      msdb.alterPartitions(catName, dbname, name, partValsList, new_parts, txnId, writeIdList, writeId);
       Iterator<Partition> oldPartsIt = oldParts.iterator();
       for (Partition newPart : new_parts) {
         Partition oldPart;

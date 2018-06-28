@@ -438,8 +438,9 @@ struct Table {
   17: optional string catName,          // Name of the catalog the table is in
   18: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
   19: optional i64 txnId=-1,
-  20: optional string validWriteIdList,
-  21: optional IsolationLevelCompliance isStatsCompliant
+  20: optional i64 writeId=-1,
+  21: optional string validWriteIdList,
+  22: optional IsolationLevelCompliance isStatsCompliant
 }
 
 struct Partition {
@@ -453,8 +454,9 @@ struct Partition {
   8: optional PrincipalPrivilegeSet privileges,
   9: optional string catName,
   10: optional i64 txnId=-1,
-  11: optional string validWriteIdList,
-  12: optional IsolationLevelCompliance isStatsCompliant
+  11: optional i64 writeId=-1,
+  12: optional string validWriteIdList,
+  13: optional IsolationLevelCompliance isStatsCompliant
 }
 
 struct PartitionWithoutSD {
@@ -483,8 +485,9 @@ struct PartitionSpec {
   5: optional PartitionListComposingSpec partitionList,
   6: optional string catName,
   7: optional i64 txnId=-1,
-  8: optional string validWriteIdList,
-  9: optional IsolationLevelCompliance isStatsCompliant
+  8: optional i64 writeId=-1,
+  9: optional string validWriteIdList,
+  10: optional IsolationLevelCompliance isStatsCompliant
 }
 
 // column statistics
@@ -596,7 +599,8 @@ struct SetPartitionsStatsRequest {
 1: required list<ColumnStatistics> colStats,
 2: optional bool needMerge, //stats need to be merged with the existing stats
 3: optional i64 txnId=-1,   // transaction id of the query that sends this structure
-4: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+4: optional i64 writeId=-1,         // writeId for the current query that updates the stats
+5: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
 }
 
 // schema of the table/query results etc.
@@ -1584,7 +1588,8 @@ struct AlterPartitionsRequest {
   3: required list<Partition> partitions,
   4: required EnvironmentContext environmentContext,
   5: optional i64 txnId=-1,
-  6: optional string validWriteIdList
+  6: optional i64 writeId=-1,
+  7: optional string validWriteIdList
 }
 
 struct AlterPartitionsResponse {

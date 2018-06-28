@@ -31,6 +31,7 @@ public class MPartition {
   private MStorageDescriptor sd;
   private Map<String, String> parameters;
   private long txnId;
+  private long writeId;
   private String writeIdList;
   
   public MPartition() {}
@@ -159,6 +160,14 @@ public class MPartition {
 
   public void setTxnId(long txnId) {
     this.txnId = txnId;
+  }
+
+  public long getWriteId() {
+    return writeId;
+  }
+
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
   }
 
   public String getWriteIdList() {

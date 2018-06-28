@@ -1625,13 +1625,15 @@ public class AcidUtils {
 
   public static class TableSnapshot {
     private long txnId;
+    private long writeId;
     private String validWriteIdList;
 
     public TableSnapshot() {
     }
 
-    public TableSnapshot(long txnId, String validWriteIdList) {
+    public TableSnapshot(long txnId, long writeId, String validWriteIdList) {
       this.txnId = txnId;
+      this.writeId = writeId;
       this.validWriteIdList = validWriteIdList;
     }
 
@@ -1647,6 +1649,14 @@ public class AcidUtils {
       this.txnId = txnId;
     }
 
+    public long getWriteId() {
+      return writeId;
+    }
+
+    public void setWriteId(long writeId) {
+      this.writeId = writeId;
+    }
+
     public void setValidWriteIdList(String validWriteIdList) {
       this.validWriteIdList = validWriteIdList;
     }
@@ -1657,21 +1667,20 @@ public class AcidUtils {
     }
   }
 
-  /**
-   * Create a TableShopshot with the given "conf"
-   * for the table of the given "tbl".
-   *
-   * @param conf
-   * @param tbl
-   * @return TableSnapshot on success, null on failure
-   * @throws LockException
-   */
   public static TableSnapshot getTableSnapshot(
-      Configuration conf, Table tbl) throws LockException {
+          Configuration conf,
+          Table tbl) throws LockException {
+    return getTableSnapshot(conf, tbl, false);
+  }
+
+
+  public static TableSnapshot getTableSnapshot(
+      Configuration conf, Table tbl, boolean isStatsUpdater) throws LockException {
     if (!isTransactionalTable(tbl)) {
       return null;
     } else {
-      long txnId = 0;
+      long txnId = -1;
+      long writeId = -1;
       ValidWriteIdList validWriteIdList = null;
 
       HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
@@ -1682,6 +1691,13 @@ public class AcidUtils {
       String fullTableName = getFullTableName(tbl.getDbName(), tbl.getTableName());
       if (txnId > 0 && isTransactionalTable(tbl)) {
         validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
+        if (isStatsUpdater) {
+          // TODO# it should be invalid to update stats without write ID...
+          //       Why would there be a stats updater that doesn't have a write ID?
+          writeId = SessionState.get().getTxnMgr() != null ?
+                  SessionState.get().getTxnMgr().getAllocatedTableWriteId(
+                    tbl.getDbName(), tbl.getTableName()) : -1;
+        }
 
 
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)
@@ -1696,7 +1712,7 @@ public class AcidUtils {
           throw new AssertionError("Cannot find valid write ID list for " + tbl.getTableName());
         }
       }
-      return new TableSnapshot(txnId,
+      return new TableSnapshot(txnId, writeId,
           validWriteIdList != null ? validWriteIdList.toString() : null);
     }
   }

@@ -39,6 +39,7 @@ public class MTable {
   private boolean rewriteEnabled;
   private String tableType;
   private long txnId;
+  private long writeId;
   private String writeIdList;
 
   public MTable() {}
@@ -280,6 +281,14 @@ public class MTable {
 
   public void setTxnId(long txnId) {
     this.txnId = txnId;
+  }
+
+  public long getWriteId() {
+    return writeId;
+  }
+
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
   }
 
   public String getWriteIdList() {
