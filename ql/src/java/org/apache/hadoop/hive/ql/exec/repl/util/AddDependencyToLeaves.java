@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.repl.bootstrap;
+package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
@@ -28,7 +28,7 @@ import java.util.List;
 public class AddDependencyToLeaves implements DAGTraversal.Function {
   private List<Task<? extends Serializable>> postDependencyCollectionTasks;
 
-  AddDependencyToLeaves(List<Task<? extends Serializable>> postDependencyCollectionTasks) {
+  public AddDependencyToLeaves(List<Task<? extends Serializable>> postDependencyCollectionTasks) {
     this.postDependencyCollectionTasks = postDependencyCollectionTasks;
   }
 

@@ -345,7 +345,7 @@ public class TestReplicationScenariosAcidTables {
 
     WarehouseInstance.Tuple incrementalDump =
             primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
-    replicaNonAcid.loadFailure(replicatedDbName, incrementalDump.dumpLocation)
+    replicaNonAcid.runFailure("REPL LOAD " + replicatedDbName + " FROM '" + incrementalDump.dumpLocation + "'")
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
   }
@@ -395,10 +395,8 @@ public class TestReplicationScenariosAcidTables {
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)
             .verifyResult("null")
-            .run("show tables")
-            .verifyResults(new String[] { "t1" })
-            .run("select id from t1")
-            .verifyResults(Arrays.asList("1"));
+            .run("show tables like t2")
+            .verifyResults(new String[] { });
 
     // Retry with different dump should fail.
     replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
@@ -412,10 +410,6 @@ public class TestReplicationScenariosAcidTables {
         if (!args.dbName.equalsIgnoreCase(replicatedDbName)) {
           LOG.warn("Verifier - DB: " + String.valueOf(args.dbName));
           return false;
-        }
-        if (args.tblName != null) {
-          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
-          return args.tblName.equals("t2");
         }
         return true;
       }
