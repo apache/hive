@@ -281,75 +281,21 @@ public class TestJdbcWithMiniHS2 {
   }
 
   @Test
-  public void testParallelCompilation3() throws Exception {
-    Statement stmt = conTestDb.createStatement();
-    stmt.execute("set hive.driver.parallel.compilation=true");
-    stmt.execute("set hive.server2.async.exec.async.compile=true");
-    stmt.close();
-    Connection conn = getConnection(testDbName);
-    stmt = conn.createStatement();
-    stmt.execute("set hive.driver.parallel.compilation=true");
-    stmt.execute("set hive.server2.async.exec.async.compile=true");
-    stmt.close();
-    int poolSize = 100;
-    SynchronousQueue<Runnable> executorQueue1 = new SynchronousQueue<Runnable>();
-    ExecutorService workers1 =
-        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue1);
-    SynchronousQueue<Runnable> executorQueue2 = new SynchronousQueue<Runnable>();
-    ExecutorService workers2 =
-        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue2);
-    List<Future<Boolean>> list1 = startTasks(workers1, conTestDb, tableName, 10);
-    List<Future<Boolean>> list2 = startTasks(workers2, conn, tableName, 10);
-    finishTasks(list1, workers1);
-    finishTasks(list2, workers2);
-    conn.close();
-  }
-
-  @Test
-  public void testParallelCompilation4() throws Exception {
-    Statement stmt = conTestDb.createStatement();
-    stmt.execute("set hive.driver.parallel.compilation=true");
-    stmt.execute("set hive.server2.async.exec.async.compile=false");
-    stmt.close();
-    Connection conn = getConnection(testDbName);
-    stmt = conn.createStatement();
-    stmt.execute("set hive.driver.parallel.compilation=true");
-    stmt.execute("set hive.server2.async.exec.async.compile=false");
-    stmt.close();
-    int poolSize = 100;
-    SynchronousQueue<Runnable> executorQueue1 = new SynchronousQueue<Runnable>();
-    ExecutorService workers1 =
-        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue1);
-    SynchronousQueue<Runnable> executorQueue2 = new SynchronousQueue<Runnable>();
-    ExecutorService workers2 =
-        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue2);
-    List<Future<Boolean>> list1 = startTasks(workers1, conTestDb, tableName, 10);
-    List<Future<Boolean>> list2 = startTasks(workers2, conn, tableName, 10);
-    finishTasks(list1, workers1);
-    finishTasks(list2, workers2);
-    conn.close();
-  }
-
-  @Test
   public void testConcurrentStatements() throws Exception {
     startConcurrencyTest(conTestDb, tableName, 50);
   }
 
   private static void startConcurrencyTest(Connection conn, String tableName, int numTasks) {
     // Start concurrent testing
-    int poolSize = 100;
+    int POOL_SIZE = 100;
+    int TASK_COUNT = numTasks;
+
     SynchronousQueue<Runnable> executorQueue = new SynchronousQueue<Runnable>();
     ExecutorService workers =
-        new ThreadPoolExecutor(1, poolSize, 20, TimeUnit.SECONDS, executorQueue);
-    List<Future<Boolean>> list = startTasks(workers, conn, tableName, numTasks);
-    finishTasks(list, workers);
-  }
-
-  private static List<Future<Boolean>> startTasks(ExecutorService workers, Connection conn,
-      String tableName, int numTasks) {
+        new ThreadPoolExecutor(1, POOL_SIZE, 20, TimeUnit.SECONDS, executorQueue);
     List<Future<Boolean>> list = new ArrayList<Future<Boolean>>();
     int i = 0;
-    while (i < numTasks) {
+    while (i < TASK_COUNT) {
       try {
         Future<Boolean> future = workers.submit(new JDBCTask(conn, i, tableName));
         list.add(future);
@@ -362,10 +308,7 @@ public class TestJdbcWithMiniHS2 {
         }
       }
     }
-    return list;
-  }
 
-  private static void finishTasks(List<Future<Boolean>> list, ExecutorService workers) {
     for (Future<Boolean> future : list) {
       try {
         Boolean result = future.get(30, TimeUnit.SECONDS);
