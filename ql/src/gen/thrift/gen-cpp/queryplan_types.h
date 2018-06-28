@@ -97,7 +97,8 @@ struct StageType {
     REPL_DUMP = 12,
     REPL_BOOTSTRAP_LOAD = 13,
     REPL_STATE_LOG = 14,
-    REPL_TXN = 15
+    REPL_TXN = 15,
+    REPL_INCREMENTAL_LOAD = 16
   };
 };
 
