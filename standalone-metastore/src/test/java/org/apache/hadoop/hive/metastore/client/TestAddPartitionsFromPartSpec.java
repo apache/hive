@@ -155,6 +155,32 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   }
 
   @Test
+  public void testAddPartitionSpecWithSharedSDUpperCaseDBAndTableName() throws Exception {
+
+    Table table = createTable();
+    PartitionWithoutSD partition = buildPartitionWithoutSD(Lists.newArrayList("2013"), 1);
+    List<PartitionWithoutSD> partitions = Lists.newArrayList(partition);
+
+    String location = table.getSd().getLocation() + "/sharedSDTest/";
+    PartitionSpec partitionSpec = new PartitionSpec();
+    partitionSpec.setDbName(DB_NAME.toUpperCase());
+    partitionSpec.setTableName(TABLE_NAME.toUpperCase());
+    PartitionSpecWithSharedSD partitionList = new PartitionSpecWithSharedSD();
+    partitionList.setPartitions(partitions);
+    partitionList.setSd(buildSD(location));
+    partitionSpec.setSharedSDPartitionSpec(partitionList);
+    PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(partitionSpec);
+    client.add_partitions_pspec(partitionSpecProxy);
+
+    Partition part = client.getPartition(DB_NAME, TABLE_NAME, "year=2013");
+    Assert.assertNotNull(part);
+    Assert.assertEquals(DB_NAME, part.getDbName());
+    Assert.assertEquals(TABLE_NAME, part.getTableName());
+    Assert.assertEquals(metaStore.getWarehouseRoot() + "/" + TABLE_NAME +
+        "/sharedSDTest/partwithoutsd1", part.getSd().getLocation());
+  }
+
+  @Test
   public void testAddPartitionSpecsMultipleValues() throws Exception {
 
     Table table = createTable(DB_NAME, TABLE_NAME, getYearAndMonthPartCols(),
