@@ -243,6 +243,33 @@ public class TestAddPartitions extends MetaStoreClientTest {
     Assert.assertTrue(metaStore.isPathExists(new Path(part.getSd().getLocation())));
   }
 
+  @Test
+  public void testAddPartitionUpperCaseDBAndTableName() throws Exception {
+
+    // Create table 'test_partition_db.test_add_part_table'
+    String tableName = "test_add_part_table";
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + tableName.toUpperCase();
+    createTable(DB_NAME, tableName, getYearPartCol(), tableLocation);
+
+    // Create partition with table name 'TEST_ADD_PART_TABLE' and db name 'TEST_PARTITION_DB'
+    Partition partition = buildPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(),
+        "2013", tableLocation + "/year=2013");
+    client.add_partition(partition);
+
+    // Validate the partition attributes
+    // The db and table name should be all lower case: 'test_partition_db' and
+    // 'test_add_part_table'
+    // The location should be saved case-sensitive, it should be
+    // warehouse dir + "TEST_ADD_PART_TABLE/year=2017"
+    Partition part = client.getPartition(DB_NAME, tableName, "year=2013");
+    Assert.assertNotNull(part);
+    Assert.assertEquals(tableName, part.getTableName());
+    Assert.assertEquals(DB_NAME, part.getDbName());
+    Assert.assertEquals(tableLocation + "/year=2013", part.getSd().getLocation());
+    Partition part1 = client.getPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(), "year=2013");
+    Assert.assertEquals(part, part1);
+  }
+
   @Test(expected = InvalidObjectException.class)
   public void testAddPartitionNonExistingDb() throws Exception {
 
@@ -689,6 +716,65 @@ public class TestAddPartitions extends MetaStoreClientTest {
     cols.add(new FieldSchema("test_value", "string", "test col value"));
     Assert.assertEquals(cols, part.getSd().getCols());
     verifyPartitionAttributesDefaultValues(part, table.getSd().getLocation());
+  }
+
+  @Test
+  public void testAddPartitionsUpperCaseDBAndTableName() throws Exception {
+
+    // Create table 'test_partition_db.test_add_part_table'
+    String tableName = "test_add_part_table";
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + tableName.toUpperCase();
+    createTable(DB_NAME, tableName, getYearPartCol(), tableLocation);
+
+    // Create partitions with table name 'TEST_ADD_PART_TABLE' and db name 'TEST_PARTITION_DB'
+    Partition partition1 = buildPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(), "2017",
+        tableLocation + "/year=2017");
+    Partition partition2 = buildPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(), "2018",
+        tableLocation + "/year=2018");
+    client.add_partitions(Lists.newArrayList(partition1, partition2));
+
+    // Validate the partitions attributes
+    // The db and table name should be all lower case: 'test_partition_db' and
+    // 'test_add_part_table'
+    // The location should be saved case-sensitive, it should be
+    // warehouse dir + "TEST_ADD_PART_TABLE/year=2017" and
+    // warehouse dir + "TEST_ADD_PART_TABLE/year=2018"
+    Partition part = client.getPartition(DB_NAME, tableName, "year=2017");
+    Assert.assertNotNull(part);
+    Assert.assertEquals(tableName, part.getTableName());
+    Assert.assertEquals(DB_NAME, part.getDbName());
+    Assert.assertEquals(tableLocation + "/year=2017", part.getSd().getLocation());
+    part = client.getPartition(DB_NAME, tableName, "year=2018");
+    Assert.assertNotNull(part);
+    Assert.assertEquals(tableName, part.getTableName());
+    Assert.assertEquals(DB_NAME, part.getDbName());
+    Assert.assertEquals(tableLocation + "/year=2018", part.getSd().getLocation());
+  }
+
+  @Test
+  public void testAddPartitionsUpperCaseDBAndTableNameInOnePart() throws Exception {
+
+    // Create table 'test_partition_db.test_add_part_table'
+    String tableName = "test_add_part_table";
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + tableName.toUpperCase();
+    createTable(DB_NAME, tableName, getYearPartCol(), tableLocation);
+
+    // Create two partitions with table name 'test_add_part_table' and db name 'test_partition_db'
+    // Create one partition with table name 'TEST_ADD_PART_TABLE' and db name 'TEST_PARTITION_DB'
+    Partition partition1 = buildPartition(DB_NAME, tableName, "2017", tableLocation + "/year=2017");
+    Partition partition2 = buildPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(), "2018",
+        tableLocation + "/year=2018");
+    Partition partition3 = buildPartition(DB_NAME, tableName, "2019", tableLocation + "/year=2019");
+    try {
+      client.add_partitions(Lists.newArrayList(partition1, partition2, partition3));
+      Assert.fail("MetaException should have been thrown.");
+    } catch (MetaException e) {
+      // Expected exception
+    }
+
+    List<String> partitionNames = client.listPartitionNames(DB_NAME, tableName, MAX);
+    Assert.assertNotNull(partitionNames);
+    Assert.assertTrue(partitionNames.isEmpty());
   }
 
   @Test(expected = MetaException.class)

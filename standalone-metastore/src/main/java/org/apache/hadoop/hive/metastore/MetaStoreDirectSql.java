@@ -1284,11 +1284,16 @@ class MetaStoreDirectSql {
       if (colType == FilterType.Date && valType == FilterType.String) {
         // Filter.g cannot parse a quoted date; try to parse date here too.
         try {
-          nodeValue = new java.sql.Date(
-              org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.PARTITION_DATE_FORMAT.get().parse((String)nodeValue).getTime());
+          nodeValue = MetaStoreUtils.PARTITION_DATE_FORMAT.get().parse((String)nodeValue);
           valType = FilterType.Date;
         } catch (ParseException pe) { // do nothing, handled below - types will mismatch
         }
+      }
+
+      // We format it so we are sure we are getting the right value
+      if (valType == FilterType.Date) {
+        // Format
+        nodeValue = MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(nodeValue);
       }
 
       if (colType != valType) {

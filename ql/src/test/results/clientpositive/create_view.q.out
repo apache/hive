@@ -1570,6 +1570,50 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@table1_n4
 key                 	int                 	                    
 value               	string              	                    
+PREHOOK: query: create view view17 as select 1 as v
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view17
+POSTHOOK: query: create view view17 as select 1 as v
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view17
+POSTHOOK: Lineage: view17.v SIMPLE []
+PREHOOK: query: select * from view17
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@view17
+#### A masked pattern was here ####
+POSTHOOK: query: select * from view17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@view17
+#### A masked pattern was here ####
+1
+PREHOOK: query: create view view18 as select v+1 from (select 1 as v) t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view18
+POSTHOOK: query: create view view18 as select v+1 from (select 1 as v) t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view18
+POSTHOOK: Lineage: view18._c0 SIMPLE []
+PREHOOK: query: select * from view18
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@view18
+#### A masked pattern was here ####
+POSTHOOK: query: select * from view18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@view18
+#### A masked pattern was here ####
+2
 PREHOOK: query: DROP VIEW view1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view1
@@ -1698,6 +1742,22 @@ POSTHOOK: query: DROP VIEW view16
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@view16
 POSTHOOK: Output: default@view16
+PREHOOK: query: DROP VIEW view17
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view17
+PREHOOK: Output: default@view17
+POSTHOOK: query: DROP VIEW view17
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view17
+POSTHOOK: Output: default@view17
+PREHOOK: query: DROP VIEW view18
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view18
+PREHOOK: Output: default@view18
+POSTHOOK: query: DROP VIEW view18
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view18
+POSTHOOK: Output: default@view18
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: test_translate

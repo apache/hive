@@ -96,6 +96,7 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.StringJoiner;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -114,6 +115,7 @@ public class MetaStoreUtils {
     protected DateFormat initialValue() {
       DateFormat val = new SimpleDateFormat("yyyy-MM-dd");
       val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+      val.setTimeZone(TimeZone.getTimeZone("UTC"));
       return val;
     }
   };

@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -30,33 +29,17 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
-import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadWork;
+import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
-import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
-import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
-import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
-import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
-import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import java.io.FileNotFoundException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -265,45 +248,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private boolean isEventNotReplayed(Map<String, String> params, FileStatus dir, DumpType dumpType) {
-    if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-      String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
-      if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
-        LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
-                + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private boolean shouldReplayEvent(FileStatus dir, DumpType dumpType) throws SemanticException {
-    // if database itself is null then we can not filter out anything.
-    if (dbNameOrPattern == null || dbNameOrPattern.isEmpty()) {
-      return true;
-    } else if ((tblNameOrPattern == null) || (tblNameOrPattern.isEmpty())) {
-      Database database;
-      try {
-        database = Hive.get().getDatabase(dbNameOrPattern);
-        return isEventNotReplayed(database.getParameters(), dir, dumpType);
-      } catch (HiveException e) {
-        //may be the db is getting created in this load
-        LOG.debug("failed to get the database " + dbNameOrPattern);
-        return true;
-      }
-    } else {
-      Table tbl;
-      try {
-        tbl = Hive.get().getTable(dbNameOrPattern, tblNameOrPattern);
-        return isEventNotReplayed(tbl.getParameters(), dir, dumpType);
-      } catch (HiveException e) {
-        // may be the table is getting created in this load
-        LOG.debug("failed to get the table " + dbNameOrPattern + "." + tblNameOrPattern);
-        return true;
-      }
-    }
-  }
-
   /*
    * Example dump dirs we need to be able to handle :
    *
@@ -395,7 +339,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if ((!evDump) && (tblNameOrPattern != null) && !(tblNameOrPattern.isEmpty())) {
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-                tblNameOrPattern, queryState.getLineageState());
+                tblNameOrPattern, queryState.getLineageState(), false);
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         return;
       }
@@ -406,234 +350,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         return;
       }
 
-      FileStatus[] dirsInLoadPath = fs.listStatus(loadPath, EximUtil.getDirectoryFilter(fs));
-
-      if ((dirsInLoadPath == null) || (dirsInLoadPath.length == 0)) {
-        throw new IllegalArgumentException("No data to load in path " + loadPath.toUri().toString());
-      }
-
-      if (!evDump){
-        // not an event dump, not a table dump - thus, a db dump
-        if ((dbNameOrPattern != null) && (dirsInLoadPath.length > 1)) {
-          LOG.debug("Found multiple dirs when we expected 1:");
-          for (FileStatus d : dirsInLoadPath) {
-            LOG.debug("> " + d.getPath().toUri().toString());
-          }
-          throw new IllegalArgumentException(
-              "Multiple dirs in "
-                  + loadPath.toUri().toString()
-                  + " does not correspond to REPL LOAD expecting to load to a singular destination point.");
-        }
-
-        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-                queryState.getLineageState());
-        rootTasks.add(TaskFactory.get(replLoadWork, conf));
-        //
-        //        for (FileStatus dir : dirsInLoadPath) {
-        //          analyzeDatabaseLoad(dbNameOrPattern, fs, dir);
-        //        }
-      } else {
-        // Event dump, each sub-dir is an individual event dump.
-        // We need to guarantee that the directory listing we got is in order of evid.
-        Arrays.sort(dirsInLoadPath, new EventDumpDirComparator());
-
-        Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
-        Task<? extends Serializable> taskChainTail = evTaskRoot;
-
-        ReplLogger replLogger = new IncrementalLoadLogger(dbNameOrPattern,
-                loadPath.toString(), dirsInLoadPath.length);
-
-        for (FileStatus dir : dirsInLoadPath){
-          String locn = dir.getPath().toUri().toString();
-          DumpMetaData eventDmd = new DumpMetaData(new Path(locn), conf);
-
-          if (!shouldReplayEvent(dir, eventDmd.getDumpType())) {
-            continue;
-          }
-
-          LOG.debug("Loading event from {} to {}.{}", dir.getPath().toUri(), dbNameOrPattern, tblNameOrPattern);
-
-          // event loads will behave similar to table loads, with one crucial difference
-          // precursor order is strict, and each event must be processed after the previous one.
-          // The way we handle this strict order is as follows:
-          // First, we start with a taskChainTail which is a dummy noop task (a DependecyCollectionTask)
-          // at the head of our event chain. For each event we process, we tell analyzeTableLoad to
-          // create tasks that use the taskChainTail as a dependency. Then, we collect all those tasks
-          // and introduce a new barrier task(also a DependencyCollectionTask) which depends on all
-          // these tasks. Then, this barrier task becomes our new taskChainTail. Thus, we get a set of
-          // tasks as follows:
-          //
-          //                 --->ev1.task1--                          --->ev2.task1--
-          //                /               \                        /               \
-          //  evTaskRoot-->*---->ev1.task2---*--> ev1.barrierTask-->*---->ev2.task2---*->evTaskChainTail
-          //                \               /
-          //                 --->ev1.task3--
-          //
-          // Once this entire chain is generated, we add evTaskRoot to rootTasks, so as to execute the
-          // entire chain
-
-          MessageHandler.Context context = new MessageHandler.Context(dbNameOrPattern,
-                                                          tblNameOrPattern, locn, taskChainTail,
-                                                          eventDmd, conf, db, ctx, LOG);
-          List<Task<? extends Serializable>> evTasks = analyzeEventLoad(context);
-
-          if ((evTasks != null) && (!evTasks.isEmpty())){
-            ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger,
-                                                          dir.getPath().getName(),
-                                                          eventDmd.getDumpType().toString());
-            Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork);
-            for (Task<? extends Serializable> t : evTasks){
-              t.addDependentTask(barrierTask);
-              LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
-                  t.getClass(), t.getId(), barrierTask.getClass(), barrierTask.getId());
-            }
-            LOG.debug("Updated taskChainTail from {}:{} to {}:{}",
-                taskChainTail.getClass(), taskChainTail.getId(), barrierTask.getClass(), barrierTask.getId());
-            taskChainTail = barrierTask;
-          }
-        }
-
-        // If any event is there and db name is known, then dump the start and end logs
-        if (!evTaskRoot.equals(taskChainTail)) {
-          Map<String, String> dbProps = new HashMap<>();
-          dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(dmd.getEventTo()));
-          ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);
-          Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
-          taskChainTail.addDependentTask(barrierTask);
-          LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
-                  taskChainTail.getClass(), taskChainTail.getId(),
-                  barrierTask.getClass(), barrierTask.getId());
-
-          replLogger.startLog();
-        }
-        rootTasks.add(evTaskRoot);
-      }
-
+      ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
+              tblNameOrPattern, queryState.getLineageState(), evDump);
+      rootTasks.add(TaskFactory.get(replLoadWork, conf));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e.getMessage(), e);
     }
-  }
-
-  private List<Task<? extends Serializable>> analyzeEventLoad(
-          MessageHandler.Context context)
-      throws SemanticException {
-    MessageHandler messageHandler = context.dmd.getDumpType().handler();
-    List<Task<? extends Serializable>> tasks = messageHandler.handle(context);
-
-    if (context.precursor != null) {
-      for (Task<? extends Serializable> t : tasks) {
-        context.precursor.addDependentTask(t);
-        LOG.debug("Added {}:{} as a precursor of {}:{}",
-                context.precursor.getClass(), context.precursor.getId(), t.getClass(), t.getId());
-      }
-    }
-
-    inputs.addAll(messageHandler.readEntities());
-    outputs.addAll(messageHandler.writeEntities());
-    return addUpdateReplStateTasks(StringUtils.isEmpty(context.tableName),
-                            messageHandler.getUpdatedMetadata(), tasks);
-  }
-
-  private Task<? extends Serializable> tableUpdateReplStateTask(
-                                                        String dbName,
-                                                        String tableName,
-                                                        Map<String, String> partSpec,
-                                                        String replState,
-                                                        Task<? extends Serializable> preCursor) throws SemanticException {
-    HashMap<String, String> mapProp = new HashMap<>();
-    mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
-
-    AlterTableDesc alterTblDesc =  new AlterTableDesc(
-            AlterTableDesc.AlterTableTypes.ADDPROPS, new ReplicationSpec(replState, replState));
-    alterTblDesc.setProps(mapProp);
-    alterTblDesc.setOldName(StatsUtils.getFullyQualifiedTableName(dbName, tableName));
-    alterTblDesc.setPartSpec((HashMap<String, String>)partSpec);
-
-    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(
-        new DDLWork(inputs, outputs, alterTblDesc), conf);
-
-    // Link the update repl state task with dependency collection task
-    if (preCursor != null) {
-      preCursor.addDependentTask(updateReplIdTask);
-      LOG.debug("Added {}:{} as a precursor of {}:{}",
-              preCursor.getClass(), preCursor.getId(),
-              updateReplIdTask.getClass(), updateReplIdTask.getId());
-    }
-    return updateReplIdTask;
-  }
-
-  private Task<? extends Serializable> dbUpdateReplStateTask(
-                                                        String dbName,
-                                                        String replState,
-                                                        Task<? extends Serializable> preCursor) {
-    HashMap<String, String> mapProp = new HashMap<>();
-    mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
-
-    AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(
-                            dbName, mapProp, new ReplicationSpec(replState, replState));
-    Task<? extends Serializable> updateReplIdTask = TaskFactory.get(
-        new DDLWork(inputs, outputs, alterDbDesc), conf);
-
-    // Link the update repl state task with dependency collection task
-    if (preCursor != null) {
-      preCursor.addDependentTask(updateReplIdTask);
-      LOG.debug("Added {}:{} as a precursor of {}:{}",
-              preCursor.getClass(), preCursor.getId(),
-              updateReplIdTask.getClass(), updateReplIdTask.getId());
-    }
-    return updateReplIdTask;
-  }
-
-  private List<Task<? extends Serializable>> addUpdateReplStateTasks(
-          boolean isDatabaseLoad,
-          UpdatedMetaDataTracker updatedMetadata,
-          List<Task<? extends Serializable>> importTasks) throws SemanticException {
-    String replState = updatedMetadata.getReplicationState();
-    String dbName = updatedMetadata.getDatabase();
-    String tableName = updatedMetadata.getTable();
-
-    // If no import tasks generated by the event or no table updated for table level load, then no
-    // need to update the repl state to any object.
-    if (importTasks.isEmpty() || (!isDatabaseLoad && (tableName == null))) {
-      LOG.debug("No objects need update of repl state: Either 0 import tasks or table level load");
-      return importTasks;
-    }
-
-    // Create a barrier task for dependency collection of import tasks
-    Task<? extends Serializable> barrierTask = TaskFactory.get(new DependencyCollectionWork());
-
-    // Link import tasks to the barrier task which will in-turn linked with repl state update tasks
-    for (Task<? extends Serializable> t : importTasks){
-      t.addDependentTask(barrierTask);
-      LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
-              t.getClass(), t.getId(), barrierTask.getClass(), barrierTask.getId());
-    }
-
-    List<Task<? extends Serializable>> tasks = new ArrayList<>();
-    Task<? extends Serializable> updateReplIdTask;
-
-    // If any partition is updated, then update repl state in partition object
-    for (final Map<String, String> partSpec : updatedMetadata.getPartitions()) {
-      updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, partSpec, replState, barrierTask);
-      tasks.add(updateReplIdTask);
-    }
-
-    if (tableName != null) {
-      // If any table/partition is updated, then update repl state in table object
-      updateReplIdTask = tableUpdateReplStateTask(dbName, tableName, null, replState, barrierTask);
-      tasks.add(updateReplIdTask);
-    }
-
-    // For table level load, need not update replication state for the database
-    if (isDatabaseLoad) {
-      // If any table/partition is updated, then update repl state in db object
-      updateReplIdTask = dbUpdateReplStateTask(dbName, replState, barrierTask);
-      tasks.add(updateReplIdTask);
-    }
-
-    // At least one task would have been added to update the repl state
-    return tasks;
   }
 
   // REPL STATUS

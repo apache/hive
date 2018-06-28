@@ -272,10 +272,10 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alltypesorc
 col_name            	ctimestamp1         	 	 	 	 	 	 	 	 	 	 
 data_type           	timestamp           	 	 	 	 	 	 	 	 	 	 
-min                 	-30                 	 	 	 	 	 	 	 	 	 	 
-max                 	31                  	 	 	 	 	 	 	 	 	 	 
+min                 	-28830              	 	 	 	 	 	 	 	 	 	 
+max                 	-28769              	 	 	 	 	 	 	 	 	 	 
 num_nulls           	3115                	 	 	 	 	 	 	 	 	 	 
-distinct_count      	36                  	 	 	 	 	 	 	 	 	 	 
+distinct_count      	35                  	 	 	 	 	 	 	 	 	 	 
 avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
 num_trues           	                    	 	 	 	 	 	 	 	 	 	 

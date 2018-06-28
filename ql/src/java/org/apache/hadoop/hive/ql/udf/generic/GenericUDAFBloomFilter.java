@@ -20,19 +20,19 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedUDAFs;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.*;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.Statistics;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -46,7 +46,6 @@ import org.apache.hive.common.util.BloomKFilter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -197,14 +196,14 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
           bf.addBytes(scratchBuffer, startIdx, scratchBuffer.length - startIdx);
           break;
         case DATE:
-          DateWritable vDate = ((DateObjectInspector)inputOI).
+          DateWritableV2 vDate = ((DateObjectInspector)inputOI).
                   getPrimitiveWritableObject(parameters[0]);
           bf.addLong(vDate.getDays());
           break;
         case TIMESTAMP:
           Timestamp vTimeStamp = ((TimestampObjectInspector)inputOI).
                   getPrimitiveJavaObject(parameters[0]);
-          bf.addLong(vTimeStamp.getTime());
+          bf.addLong(vTimeStamp.toEpochMilli());
           break;
         case CHAR:
           Text vChar = ((HiveCharObjectInspector)inputOI).

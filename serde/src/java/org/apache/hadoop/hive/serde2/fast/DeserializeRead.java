@@ -22,11 +22,11 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -75,12 +75,12 @@ public abstract class DeserializeRead {
       switch (((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) {
       case DATE:
         if (currentDateWritable == null) {
-          currentDateWritable = new DateWritable();
+          currentDateWritable = new DateWritableV2();
         }
         break;
       case TIMESTAMP:
         if (currentTimestampWritable == null) {
-          currentTimestampWritable = new TimestampWritable();
+          currentTimestampWritable = new TimestampWritableV2();
         }
         break;
       case INTERVAL_YEAR_MONTH:
@@ -343,12 +343,12 @@ public abstract class DeserializeRead {
   /*
    * DATE.
    */
-  public DateWritable currentDateWritable;
+  public DateWritableV2 currentDateWritable;
 
   /*
    * TIMESTAMP.
    */
-  public TimestampWritable currentTimestampWritable;
+  public TimestampWritableV2 currentTimestampWritable;
 
   /*
    * INTERVAL_YEAR_MONTH.

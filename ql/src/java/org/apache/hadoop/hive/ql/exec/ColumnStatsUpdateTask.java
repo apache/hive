@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -322,7 +323,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
   private Date readDateValue(String dateStr) {
     // try either yyyy-mm-dd, or integer representing days since epoch
     try {
-      DateWritable writableVal = new DateWritable(java.sql.Date.valueOf(dateStr));
+      DateWritableV2 writableVal = new DateWritableV2(org.apache.hadoop.hive.common.type.Date.valueOf(dateStr));
       return new Date(writableVal.getDays());
     } catch (IllegalArgumentException err) {
       // Fallback to integer parsing

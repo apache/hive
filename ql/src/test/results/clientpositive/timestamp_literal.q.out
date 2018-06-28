@@ -17,7 +17,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: TIMESTAMP'2011-01-01 01:01:01.0' (type: timestamp)
+            expressions: TIMESTAMP'2011-01-01 01:01:01' (type: timestamp)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

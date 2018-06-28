@@ -379,7 +379,7 @@ POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
--197609091139
+258089178813
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 PREHOOK: type: QUERY
@@ -837,7 +837,7 @@ POSTHOOK: query: select sum(hash(*)) from (select * from orc_llap where cint > 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
--395218182278
+516178357626
 PREHOOK: query: explain
 select sum(hash(*)) from (select cstring2 from orc_llap where cint > 5 and cint < 10) t
 PREHOOK: type: QUERY

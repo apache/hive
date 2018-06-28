@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
@@ -75,7 +75,6 @@ public class TestPrimitiveObjectInspectorUtils extends TestCase {
 
   @Test
   public void testgetTimestampWithMillisecondsInt() {
-    DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     DateFormat gmtDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     gmtDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -85,69 +84,68 @@ public class TestPrimitiveObjectInspectorUtils extends TestCase {
 
     PrimitiveObjectInspector booleanOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.BOOLEAN);
-    assertEquals("1970-01-01 00:00:00.001", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(true, booleanOI)));
-    assertEquals("1970-01-01 00:00:00.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(false, booleanOI)));
+    assertEquals("1970-01-01 00:00:00.001", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(true, booleanOI).toSqlTimestamp()));
+    assertEquals("1970-01-01 00:00:00.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(false, booleanOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector byteOI = PrimitiveObjectInspectorFactory
       .getPrimitiveJavaObjectInspector(PrimitiveCategory.BYTE);
-    assertEquals("1970-01-01 00:00:00.001", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((byte)1, byteOI)));
-    assertEquals("1969-12-31 23:59:59.999", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((byte)-1, byteOI)));
+    assertEquals("1970-01-01 00:00:00.001", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((byte)1, byteOI).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.999", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((byte)-1, byteOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector shortOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.SHORT);
-    assertEquals("1970-01-01 00:00:00.001", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((short)1, shortOI)));
-    assertEquals("1969-12-31 23:59:59.999", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((short)-1, shortOI)));
+    assertEquals("1970-01-01 00:00:00.001", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((short)1, shortOI).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.999", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((short)-1, shortOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector intOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.INT);
-    assertEquals("1970-01-17 11:22:01.282", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((int)1423321282, intOI)));
-    assertEquals("1969-12-31 23:59:59.999", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((int)-1, intOI)));
+    assertEquals("1970-01-17 11:22:01.282", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((int)1423321282, intOI).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.999", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((int)-1, intOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector longOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG);
-    assertEquals("1970-01-17 11:22:01.282", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(1423321282L, longOI)));
-    assertEquals("1969-12-31 23:59:59.999", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(-1L, longOI)));
+    assertEquals("1970-01-17 11:22:01.282", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(1423321282L, longOI).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.999", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(-1L, longOI).toSqlTimestamp()));
 
       // Float loses some precisions
     PrimitiveObjectInspector floatOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.FLOAT);
-    assertEquals("2015-02-07 15:02:24.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(1423321282.123f, floatOI)));
-    assertEquals("1969-12-31 23:59:58.876", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(-1.123f, floatOI)));
+    assertEquals("2015-02-07 15:02:24.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(1423321282.123f, floatOI).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:58.876", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(-1.123f, floatOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector doubleOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.DOUBLE);
-    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((double)1423321282.123, doubleOI)));
-    assertEquals("1969-12-31 23:59:58.877", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((double)-1.123, doubleOI)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((double)1423321282.123, doubleOI).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:58.877", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((double)-1.123, doubleOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector decimalOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.DECIMAL);
-    assertEquals("2015-02-07 15:01:22.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(HiveDecimal.create(1423321282L), decimalOI)));
-    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(HiveDecimal.create(-1), decimalOI)));
+    assertEquals("2015-02-07 15:01:22.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(HiveDecimal.create(1423321282L), decimalOI).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(HiveDecimal.create(-1), decimalOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector stringOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.STRING);
-    assertEquals("2015-02-07 15:01:22.123", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp("2015-02-07 15:01:22.123", stringOI)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp("2015-02-07 15:01:22.123", stringOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector charOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.CHAR);
-    assertEquals("2015-02-07 15:01:22.123", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new HiveChar("2015-02-07 15:01:22.123", 30), charOI)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new HiveChar("2015-02-07 15:01:22.123", 30), charOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector varcharOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.VARCHAR);
-    assertEquals("2015-02-07 15:01:22.123", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new HiveVarchar("2015-02-07 15:01:22.123",30), varcharOI)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new HiveVarchar("2015-02-07 15:01:22.123",30), varcharOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector dateOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.DATE);
-    assertEquals("2015-02-07 00:00:00.000", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new Date(1423321282123L), dateOI)));
+    assertEquals("2015-02-07 00:00:00.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(Date.ofEpochMilli(1423321282123L), dateOI).toSqlTimestamp()));
 
     PrimitiveObjectInspector timestampOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.TIMESTAMP);
-    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new Timestamp(1423321282123L), timestampOI)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(Timestamp.ofEpochMilli(1423321282123L), timestampOI).toSqlTimestamp()));
   }
 
   @Test
   public void testgetTimestampWithSecondsInt() {
-    DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     DateFormat gmtDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     gmtDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -157,70 +155,72 @@ public class TestPrimitiveObjectInspectorUtils extends TestCase {
 
     PrimitiveObjectInspector booleanOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.BOOLEAN);
-    assertEquals("1970-01-01 00:00:01.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(true, booleanOI, true)));
-    assertEquals("1970-01-01 00:00:00.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(false, booleanOI, true)));
+    assertEquals("1970-01-01 00:00:01.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(true, booleanOI, true).toSqlTimestamp()));
+    assertEquals("1970-01-01 00:00:00.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(false, booleanOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector byteOI = PrimitiveObjectInspectorFactory
       .getPrimitiveJavaObjectInspector(PrimitiveCategory.BYTE);
-    assertEquals("1970-01-01 00:00:01.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((byte)1, byteOI, true)));
-    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((byte)-1, byteOI, true)));
+    assertEquals("1970-01-01 00:00:01.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((byte)1, byteOI, true).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((byte)-1, byteOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector shortOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.SHORT);
-    assertEquals("1970-01-01 00:00:01.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((short)1, shortOI, true)));
-    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((short)-1, shortOI, true)));
+    assertEquals("1970-01-01 00:00:01.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((short)1, shortOI, true).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((short)-1, shortOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector intOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.INT);
-    assertEquals("2015-02-07 15:01:22.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((int)1423321282, intOI, true)));
-    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((int)-1, intOI, true)));
+    assertEquals("2015-02-07 15:01:22.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((int)1423321282, intOI, true).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((int)-1, intOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector longOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.LONG);
-    assertEquals("2015-02-07 15:01:22.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(1423321282L, longOI, true)));
-    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(-1L, longOI, true)));
+    assertEquals("2015-02-07 15:01:22.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(1423321282L, longOI, true).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(-1L, longOI, true).toSqlTimestamp()));
 
       // Float loses some precisions
     PrimitiveObjectInspector floatOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.FLOAT);
-    assertEquals("2015-02-07 15:02:24.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(1423321282.123f, floatOI, true)));
-    assertEquals("1969-12-31 23:59:58.876", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(-1.123f, floatOI, true)));
+    assertEquals("2015-02-07 15:02:24.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(1423321282.123f, floatOI, true).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:58.876", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(-1.123f, floatOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector doubleOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.DOUBLE);
-    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((double)1423321282.123, doubleOI, true)));
-    assertEquals("1969-12-31 23:59:58.877", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((double)-1.123, doubleOI, true)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((double)1423321282.123, doubleOI, true).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:58.877", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp((double)-1.123, doubleOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector decimalOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.DECIMAL);
-    assertEquals("2015-02-07 15:01:22.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(HiveDecimal.create(1423321282L), decimalOI, true)));
-    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(HiveDecimal.create(-1), decimalOI, true)));
+    assertEquals("2015-02-07 15:01:22.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(HiveDecimal.create(1423321282L), decimalOI, true).toSqlTimestamp()));
+    assertEquals("1969-12-31 23:59:59.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(HiveDecimal.create(-1), decimalOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector stringOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.STRING);
-    assertEquals("2015-02-07 15:01:22.123", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp("2015-02-07 15:01:22.123", stringOI, true)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp("2015-02-07 15:01:22.123", stringOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector charOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.CHAR);
-    assertEquals("2015-02-07 15:01:22.123", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new HiveChar("2015-02-07 15:01:22.123", 30), charOI, true)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new HiveChar("2015-02-07 15:01:22.123", 30), charOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector varcharOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.VARCHAR);
-    assertEquals("2015-02-07 15:01:22.123", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new HiveVarchar("2015-02-07 15:01:22.123",30), varcharOI, true)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new HiveVarchar("2015-02-07 15:01:22.123",30), varcharOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector dateOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.DATE);
-    assertEquals("2015-02-07 00:00:00.000", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new Date(1423321282123L), dateOI, true)));
+    assertEquals("2015-02-07 00:00:00.000", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(Date.ofEpochMilli(1423321282123L), dateOI, true).toSqlTimestamp()));
 
     PrimitiveObjectInspector timestampOI = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.TIMESTAMP);
-    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new Timestamp(1423321282123L), timestampOI, true)));
+    assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(Timestamp.ofEpochMilli(1423321282123L), timestampOI, true).toSqlTimestamp()));
   }
 
   @Test
   public void testGetTimestampFromString() {
-    DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-    assertEquals("2015-02-07 00:00:00.000", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestampFromString("2015-02-07")));
+    DateFormat udfDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    udfDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+    assertEquals("2015-02-07 00:00:00.000", udfDateFormat.format(
+        PrimitiveObjectInspectorUtils.getTimestampFromString("2015-02-07").toSqlTimestamp()));
   }
 
   @Test

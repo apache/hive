@@ -21,8 +21,10 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -44,14 +46,15 @@ import org.apache.hadoop.io.Text;
 @Description(name = "date_format", value = "_FUNC_(date/timestamp/string, fmt) - converts a date/timestamp/string "
     + "to a value of string in the format specified by the date format fmt.",
     extended = "Supported formats are SimpleDateFormat formats - "
-    + "https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html. "
-    + "Second argument fmt should be constant.\n"
-    + "Example: > SELECT _FUNC_('2015-04-08', 'y');\n '2015'")
+        + "https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html. "
+        + "Second argument fmt should be constant.\n"
+        + "Example: > SELECT _FUNC_('2015-04-08', 'y');\n '2015'")
 public class GenericUDFDateFormat extends GenericUDF {
   private transient Converter[] tsConverters = new Converter[2];
   private transient PrimitiveCategory[] tsInputTypes = new PrimitiveCategory[2];
   private transient Converter[] dtConverters = new Converter[2];
   private transient PrimitiveCategory[] dtInputTypes = new PrimitiveCategory[2];
+  private final java.util.Date date = new java.util.Date();
   private final Text output = new Text();
   private transient SimpleDateFormat formatter;
 
@@ -77,6 +80,7 @@ public class GenericUDFDateFormat extends GenericUDF {
       if (fmtStr != null) {
         try {
           formatter = new SimpleDateFormat(fmtStr);
+          formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         } catch (IllegalArgumentException e) {
           // ignore
         }
@@ -97,14 +101,16 @@ public class GenericUDFDateFormat extends GenericUDF {
     }
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
-    Date date = getTimestampValue(arguments, 0, tsConverters);
-    if (date == null) {
-      date = getDateValue(arguments, 0, dtInputTypes, dtConverters);
-      if (date == null) {
+    Timestamp ts = getTimestampValue(arguments, 0, tsConverters);
+    if (ts == null) {
+      Date d = getDateValue(arguments, 0, dtInputTypes, dtConverters);
+      if (d == null) {
         return null;
       }
+      ts = Timestamp.ofEpochMilli(d.toEpochMilli());
     }
 
+    date.setTime(ts.toEpochMilli());
     String res = formatter.format(date);
     if (res == null) {
       return null;

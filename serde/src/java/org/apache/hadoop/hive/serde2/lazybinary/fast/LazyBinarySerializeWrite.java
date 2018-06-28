@@ -19,14 +19,14 @@
 package org.apache.hadoop.hive.serde2.lazybinary.fast;
 
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +35,12 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
@@ -64,7 +64,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   private boolean skipLengthPrefix = false;
 
   // For thread safety, we allocate private writable objects for our use only.
-  private TimestampWritable timestampWritable;
+  private TimestampWritableV2 timestampWritable;
   private HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable;
   private HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable;
   private HiveIntervalDayTime hiveIntervalDayTime;
@@ -308,7 +308,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   @Override
   public void writeDate(Date date) throws IOException {
     beginElement();
-    writeVInt(DateWritable.dateToDays(date));
+    writeVInt(DateWritableV2.dateToDays(date));
     finishElement();
   }
 
@@ -327,7 +327,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   public void writeTimestamp(Timestamp v) throws IOException {
     beginElement();
     if (timestampWritable == null) {
-      timestampWritable = new TimestampWritable();
+      timestampWritable = new TimestampWritableV2();
     }
     timestampWritable.set(v);
     timestampWritable.writeToByteStream(output);

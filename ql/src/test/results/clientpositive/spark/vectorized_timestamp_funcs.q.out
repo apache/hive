@@ -262,13 +262,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: to_unix_timestamp(ctimestamp1) (type: bigint), year(ctimestamp1) (type: int), month(ctimestamp1) (type: int), day(ctimestamp1) (type: int), dayofmonth(ctimestamp1) (type: int), weekofyear(ctimestamp1) (type: int), hour(ctimestamp1) (type: int), minute(ctimestamp1) (type: int), second(ctimestamp1) (type: int), cboolean1 (type: boolean), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), if(cboolean1, ctimestamp1, TIMESTAMP'1319-02-02 16:31:57.778') (type: timestamp), if(cboolean1, TIMESTAMP'2000-12-18 08:42:30.0005', ctimestamp1) (type: timestamp), if(cboolean1, ctimestamp1, ctimestamp2) (type: timestamp), if(cboolean1, ctimestamp1, null) (type: timestamp), if(cboolean1, null, ctimestamp2) (type: timestamp)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+                    expressions: to_unix_timestamp(ctimestamp1) (type: bigint), year(ctimestamp1) (type: int), month(ctimestamp1) (type: int), day(ctimestamp1) (type: int), weekofyear(ctimestamp1) (type: int), hour(ctimestamp1) (type: int), minute(ctimestamp1) (type: int), second(ctimestamp1) (type: int), cboolean1 (type: boolean), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), if(cboolean1, ctimestamp1, TIMESTAMP'1319-02-02 16:31:57.778') (type: timestamp), if(cboolean1, TIMESTAMP'2000-12-18 08:42:30.0005', ctimestamp1) (type: timestamp), if(cboolean1, ctimestamp1, ctimestamp2) (type: timestamp), if(cboolean1, ctimestamp1, null) (type: timestamp), if(cboolean1, null, ctimestamp2) (type: timestamp)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 1, 3, 14, 15, 16, 17, 18]
-                        selectExpressions: VectorUDFUnixTimeStampTimestamp(col 1:timestamp) -> 5:bigint, VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 6:int, VectorUDFMonthTimestamp(col 1:timestamp, field MONTH) -> 7:int, VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 8:int, VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 9:int, VectorUDFWeekOfYearTimestamp(col 1:timestamp, field WEEK_OF_YEAR) -> 10:int, VectorUDFHourTimestamp(col 1:timestamp, field HOUR_OF_DAY) -> 11:int, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 12:int, VectorUDFSecondTimestamp(col 1:timestamp, field SECOND) -> 13:int, IfExprTimestampColumnScalar(col 0:boolean, col 1:timestamp, val 1319-02-02 16:31:57.778) -> 14:timestamp, IfExprTimestampScalarColumn(col 0:boolean, val 2000-12-18 08:42:30.0005, col 1:timestamp) -> 15:timestamp, IfExprTimestampColumnColumn(col 0:boolean, col 1:timestampcol 3:timestamp) -> 16:timestamp, IfExprColumnNull(col 0:boolean, col 1:timestamp, null)(children: col 0:boolean, col 1:timestamp) -> 17:timestamp, IfExprNullColumn(col 0:boolean, null, col 3)(children: col 0:boolean, col 3:timestamp) -> 18:timestamp
+                        projectedOutputColumnNums: [5, 6, 7, 8, 9, 10, 11, 12, 0, 1, 3, 13, 14, 15, 16, 17]
+                        selectExpressions: VectorUDFUnixTimeStampTimestamp(col 1:timestamp) -> 5:bigint, VectorUDFYearTimestamp(col 1:timestamp, field YEAR) -> 6:int, VectorUDFMonthTimestamp(col 1:timestamp, field MONTH) -> 7:int, VectorUDFDayOfMonthTimestamp(col 1:timestamp, field DAY_OF_MONTH) -> 8:int, VectorUDFWeekOfYearTimestamp(col 1:timestamp, field WEEK_OF_YEAR) -> 9:int, VectorUDFHourTimestamp(col 1:timestamp, field HOUR_OF_DAY) -> 10:int, VectorUDFMinuteTimestamp(col 1:timestamp, field MINUTE) -> 11:int, VectorUDFSecondTimestamp(col 1:timestamp, field SECOND) -> 12:int, IfExprTimestampColumnScalar(col 0:boolean, col 1:timestamp, val 1319-01-25 08:31:57.778) -> 13:timestamp, IfExprTimestampScalarColumn(col 0:boolean, val 2000-12-18 00:42:30.0005, col 1:timestamp) -> 14:timestamp, IfExprTimestampColumnColumn(col 0:boolean, col 1:timestampcol 3:timestamp) -> 15:timestamp, IfExprColumnNull(col 0:boolean, col 1:timestamp, null)(children: col 0:boolean, col 1:timestamp) -> 16:timestamp, IfExprNullColumn(col 0:boolean, null, col 3)(children: col 0:boolean, col 3:timestamp) -> 17:timestamp
                     Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
@@ -278,7 +278,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: boolean), _col10 (type: timestamp), _col11 (type: timestamp), _col12 (type: timestamp), _col13 (type: timestamp), _col14 (type: timestamp), _col15 (type: timestamp), _col16 (type: timestamp)
+                      value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int), _col9 (type: boolean), _col10 (type: timestamp), _col11 (type: timestamp), _col12 (type: timestamp), _col13 (type: timestamp), _col14 (type: timestamp), _col15 (type: timestamp), _col16 (type: timestamp)
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -299,12 +299,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int), VALUE._col8 (type: boolean), VALUE._col9 (type: timestamp), VALUE._col10 (type: timestamp), VALUE._col11 (type: timestamp), VALUE._col12 (type: timestamp), VALUE._col13 (type: timestamp), VALUE._col14 (type: timestamp), VALUE._col15 (type: timestamp)
+                expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: boolean), VALUE._col8 (type: timestamp), VALUE._col9 (type: timestamp), VALUE._col10 (type: timestamp), VALUE._col11 (type: timestamp), VALUE._col12 (type: timestamp), VALUE._col13 (type: timestamp), VALUE._col14 (type: timestamp)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
                 Statistics: Num rows: 52 Data size: 3219 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
@@ -369,14 +369,14 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
--45479000681	528	10	27	27	43	8	15	18	true	0528-10-27 08:15:18.941718273	NULL	0528-10-27 08:15:18.941718273	2000-12-18 08:42:30.0005	0528-10-27 08:15:18.941718273	0528-10-27 08:15:18.941718273	NULL
-1632478712	2021	9	24	24	38	3	18	32	NULL	2021-09-24 03:18:32.4	1974-10-04 17:21:03.989	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	1974-10-04 17:21:03.989	NULL	1974-10-04 17:21:03.989
-1632478712	2021	9	24	24	38	3	18	32	false	2021-09-24 03:18:32.4	1999-10-03 16:59:10.396903939	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	1999-10-03 16:59:10.396903939	NULL	1999-10-03 16:59:10.396903939
-1632478712	2021	9	24	24	38	3	18	32	false	2021-09-24 03:18:32.4	2010-04-08 02:43:35.861742727	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	2010-04-08 02:43:35.861742727	NULL	2010-04-08 02:43:35.861742727
-1632478712	2021	9	24	24	38	3	18	32	false	2021-09-24 03:18:32.4	NULL	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	NULL	NULL	NULL
-163809612024	7160	12	2	2	48	6	0	24	NULL	7160-12-02 06:00:24.81200852	1966-08-16 13:36:50.183	1319-02-02 16:31:57.778	7160-12-02 06:00:24.81200852	1966-08-16 13:36:50.183	NULL	1966-08-16 13:36:50.183
-163809612024	7160	12	2	2	48	6	0	24	NULL	7160-12-02 06:00:24.81200852	NULL	1319-02-02 16:31:57.778	7160-12-02 06:00:24.81200852	NULL	NULL	NULL
-490725011	1985	7	20	20	29	9	30	11	true	1985-07-20 09:30:11	1319-02-02 16:31:57.778	1985-07-20 09:30:11	2000-12-18 08:42:30.0005	1985-07-20 09:30:11	1985-07-20 09:30:11	NULL
+-45479202281	528	10	25	25	43	8	15	18	true	0528-10-27 08:15:18.941718273	NULL	0528-10-27 08:15:18.941718273	2000-12-18 08:42:30.0005	0528-10-27 08:15:18.941718273	0528-10-27 08:15:18.941718273	NULL
+1632453512	2021	9	24	24	38	3	18	32	NULL	2021-09-24 03:18:32.4	1974-10-04 17:21:03.989	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	1974-10-04 17:21:03.989	NULL	1974-10-04 17:21:03.989
+1632453512	2021	9	24	24	38	3	18	32	false	2021-09-24 03:18:32.4	1999-10-03 16:59:10.396903939	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	1999-10-03 16:59:10.396903939	NULL	1999-10-03 16:59:10.396903939
+1632453512	2021	9	24	24	38	3	18	32	false	2021-09-24 03:18:32.4	2010-04-08 02:43:35.861742727	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	2010-04-08 02:43:35.861742727	NULL	2010-04-08 02:43:35.861742727
+1632453512	2021	9	24	24	38	3	18	32	false	2021-09-24 03:18:32.4	NULL	1319-02-02 16:31:57.778	2021-09-24 03:18:32.4	NULL	NULL	NULL
+163809583224	7160	12	2	2	48	6	0	24	NULL	7160-12-02 06:00:24.81200852	1966-08-16 13:36:50.183	1319-02-02 16:31:57.778	7160-12-02 06:00:24.81200852	1966-08-16 13:36:50.183	NULL	1966-08-16 13:36:50.183
+163809583224	7160	12	2	2	48	6	0	24	NULL	7160-12-02 06:00:24.81200852	NULL	1319-02-02 16:31:57.778	7160-12-02 06:00:24.81200852	NULL	NULL	NULL
+490699811	1985	7	20	20	29	9	30	11	true	1985-07-20 09:30:11	1319-02-02 16:31:57.778	1985-07-20 09:30:11	2000-12-18 08:42:30.0005	1985-07-20 09:30:11	1985-07-20 09:30:11	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1319-02-02 16:31:57.778	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 15:59:47.183	1319-02-02 16:31:57.778	NULL	1969-12-31 15:59:47.183	NULL	1969-12-31 15:59:47.183
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	false	NULL	1969-12-31 15:59:52.843	1319-02-02 16:31:57.778	NULL	1969-12-31 15:59:52.843	NULL	1969-12-31 15:59:52.843
@@ -470,7 +470,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: to_unix_timestamp(stimestamp1) (type: bigint), year(CAST( stimestamp1 AS DATE)) (type: int), month(CAST( stimestamp1 AS DATE)) (type: int), day(CAST( stimestamp1 AS DATE)) (type: int), dayofmonth(stimestamp1) (type: int), weekofyear(CAST( stimestamp1 AS DATE)) (type: int), hour(CAST( stimestamp1 AS TIMESTAMP)) (type: int), minute(CAST( stimestamp1 AS TIMESTAMP)) (type: int), second(CAST( stimestamp1 AS TIMESTAMP)) (type: int)
+                    expressions: to_unix_timestamp(stimestamp1) (type: bigint), year(CAST( stimestamp1 AS DATE)) (type: int), month(CAST( stimestamp1 AS DATE)) (type: int), day(CAST( stimestamp1 AS DATE)) (type: int), day(stimestamp1) (type: int), weekofyear(CAST( stimestamp1 AS DATE)) (type: int), hour(CAST( stimestamp1 AS TIMESTAMP)) (type: int), minute(CAST( stimestamp1 AS TIMESTAMP)) (type: int), second(CAST( stimestamp1 AS TIMESTAMP)) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -561,14 +561,14 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
--2736243926	1883	4	17	17	16	4	14	34
--62018170411	4	9	22	22	39	18	26	29
-1365579826	2013	4	10	10	15	0	43	46
-206731024925	8521	1	16	16	3	20	42	5
-271201265	1978	8	5	5	31	14	41	5
-501208674	1985	11	18	18	47	16	37	54
-501208674	1985	11	18	18	47	16	37	54
-94573848655	4966	12	4	4	49	9	30	55
+-2736272726	1883	4	17	17	16	4	14	34
+-62018199211	4	9	24	22	39	18	26	29
+1365554626	2013	4	10	10	15	0	43	46
+206730996125	8521	1	16	16	3	20	42	5
+271176065	1978	8	5	5	31	14	41	5
+501179874	1985	11	18	18	47	16	37	54
+501179874	1985	11	18	18	47	16	37	54
+94573819855	4966	12	4	4	49	9	30	55
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
@@ -662,7 +662,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: (to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1)) (type: boolean), (year(ctimestamp1) = year(CAST( stimestamp1 AS DATE))) (type: boolean), (month(ctimestamp1) = month(CAST( stimestamp1 AS DATE))) (type: boolean), (day(ctimestamp1) = day(CAST( stimestamp1 AS DATE))) (type: boolean), (dayofmonth(ctimestamp1) = dayofmonth(stimestamp1)) (type: boolean), (weekofyear(ctimestamp1) = weekofyear(CAST( stimestamp1 AS DATE))) (type: boolean), (hour(ctimestamp1) = hour(CAST( stimestamp1 AS TIMESTAMP))) (type: boolean), (minute(ctimestamp1) = minute(CAST( stimestamp1 AS TIMESTAMP))) (type: boolean), (second(ctimestamp1) = second(CAST( stimestamp1 AS TIMESTAMP))) (type: boolean)
+                    expressions: (to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1)) (type: boolean), (year(ctimestamp1) = year(CAST( stimestamp1 AS DATE))) (type: boolean), (month(ctimestamp1) = month(CAST( stimestamp1 AS DATE))) (type: boolean), (day(ctimestamp1) = day(CAST( stimestamp1 AS DATE))) (type: boolean), (day(ctimestamp1) = day(stimestamp1)) (type: boolean), (weekofyear(ctimestamp1) = weekofyear(CAST( stimestamp1 AS DATE))) (type: boolean), (hour(ctimestamp1) = hour(CAST( stimestamp1 AS TIMESTAMP))) (type: boolean), (minute(ctimestamp1) = minute(CAST( stimestamp1 AS TIMESTAMP))) (type: boolean), (second(ctimestamp1) = second(CAST( stimestamp1 AS TIMESTAMP))) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -854,7 +854,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: to_unix_timestamp(stimestamp1) (type: bigint), year(CAST( stimestamp1 AS DATE)) (type: int), month(CAST( stimestamp1 AS DATE)) (type: int), day(CAST( stimestamp1 AS DATE)) (type: int), dayofmonth(stimestamp1) (type: int), weekofyear(CAST( stimestamp1 AS DATE)) (type: int), hour(CAST( stimestamp1 AS TIMESTAMP)) (type: int), minute(CAST( stimestamp1 AS TIMESTAMP)) (type: int), second(CAST( stimestamp1 AS TIMESTAMP)) (type: int)
+                    expressions: to_unix_timestamp(stimestamp1) (type: bigint), year(CAST( stimestamp1 AS DATE)) (type: int), month(CAST( stimestamp1 AS DATE)) (type: int), day(CAST( stimestamp1 AS DATE)) (type: int), day(stimestamp1) (type: int), weekofyear(CAST( stimestamp1 AS DATE)) (type: int), hour(CAST( stimestamp1 AS TIMESTAMP)) (type: int), minute(CAST( stimestamp1 AS TIMESTAMP)) (type: int), second(CAST( stimestamp1 AS TIMESTAMP)) (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -945,7 +945,7 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_wrong
 #### A masked pattern was here ####
-NULL	2	11	30	NULL	48	NULL	NULL	NULL
+NULL	2	12	2	NULL	49	4	40	39
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
@@ -1206,7 +1206,7 @@ FROM alltypesorc_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-2.89160863229166E11
+2.89160478029166E11
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(avg(ctimestamp1), 0),
   variance(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
@@ -1363,4 +1363,4 @@ FROM alltypesorc_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-3.6145107904E10	false	false	false	7.5245155692476E10	7.5245155692476E10	7.5245155692476E10	8.0440455033059E10
+3.6145059754E10	false	false	false	7.5245178084814E10	7.5245178084814E10	7.5245178084814E10	8.0440478971476E10

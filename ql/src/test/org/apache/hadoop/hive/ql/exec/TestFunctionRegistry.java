@@ -28,21 +28,19 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
-import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.udf.UDFAscii;
 import org.apache.hadoop.hive.ql.udf.UDFLn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -62,10 +60,10 @@ public class TestFunctionRegistry extends TestCase {
     public void one(IntWritable x, HiveDecimalWritable y) {}
     public void one(IntWritable x, DoubleWritable y) {}
     public void one(IntWritable x, IntWritable y) {}
-    public void mismatch(DateWritable x, HiveDecimalWritable y) {}
-    public void mismatch(TimestampWritable x, HiveDecimalWritable y) {}
+    public void mismatch(DateWritableV2 x, HiveDecimalWritable y) {}
+    public void mismatch(TimestampWritableV2 x, HiveDecimalWritable y) {}
     public void mismatch(BytesWritable x, DoubleWritable y) {}
-    public void typeaffinity1(DateWritable x) {}
+    public void typeaffinity1(DateWritableV2 x) {}
     public void typeaffinity1(DoubleWritable x) {};
     public void typeaffinity1(Text x) {}
     public void typeaffinity2(IntWritable x) {}
@@ -158,8 +156,8 @@ public class TestFunctionRegistry extends TestCase {
     typeAffinity("typeaffinity1", TypeInfoFactory.floatTypeInfo, 1, DoubleWritable.class);
 
     // Prefer date type arguments over other method signatures
-    typeAffinity("typeaffinity1", TypeInfoFactory.dateTypeInfo, 1, DateWritable.class);
-    typeAffinity("typeaffinity1", TypeInfoFactory.timestampTypeInfo, 1, DateWritable.class);
+    typeAffinity("typeaffinity1", TypeInfoFactory.dateTypeInfo, 1, DateWritableV2.class);
+    typeAffinity("typeaffinity1", TypeInfoFactory.timestampTypeInfo, 1, DateWritableV2.class);
 
     // String type affinity
     typeAffinity("typeaffinity1", TypeInfoFactory.stringTypeInfo, 1, Text.class);

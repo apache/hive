@@ -16,11 +16,10 @@
 
 package org.apache.hive.benchmark.vectorization;
 
-import java.sql.Timestamp;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -28,11 +27,13 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
 
 public class ColumnVectorGenUtil {
 
@@ -144,7 +145,7 @@ public class ColumnVectorGenUtil {
     final boolean repeating, final int size, final Random rand) {
     Timestamp[] timestamps = new Timestamp[size];
     for (int i = 0; i < size; i++) {
-      timestamps[i] = new Timestamp(rand.nextInt());
+      timestamps[i] = Timestamp.ofEpochMilli(rand.nextInt());
     }
     return generateTimestampColumnVector(nulls, repeating, size, rand, timestamps);
   }
@@ -169,10 +170,10 @@ public class ColumnVectorGenUtil {
         tcv.isNull[i] = false;
         if (!repeating) {
           Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(rand);
-          tcv.set(i, randomTimestamp);
+          tcv.set(i, randomTimestamp.toSqlTimestamp());
           timestampValues[i] = randomTimestamp;
         } else {
-          tcv.set(i, repeatingTimestamp);
+          tcv.set(i, repeatingTimestamp.toSqlTimestamp());
           timestampValues[i] = repeatingTimestamp;
         }
       }

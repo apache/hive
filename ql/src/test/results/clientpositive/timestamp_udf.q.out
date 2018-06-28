@@ -54,7 +54,7 @@ POSTHOOK: query: select unix_timestamp(t), year(t), month(t), day(t), dayofmonth
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf_n0
 #### A masked pattern was here ####
-1304690889	2011	5	6	6	18	7	8	9	2011-05-06
+1304665689	2011	5	6	6	18	7	8	9	2011-05-06
 PREHOOK: query: select date_add(t, 5), date_sub(t, 10)
   from timestamp_udf_n0
 PREHOOK: type: QUERY
@@ -155,7 +155,7 @@ POSTHOOK: query: select unix_timestamp(t), year(t), month(t), day(t), dayofmonth
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf_string
 #### A masked pattern was here ####
-1304690889	2011	5	6	6	18	7	8	9	2011-05-06
+1304665689	2011	5	6	6	18	7	8	9	2011-05-06
 PREHOOK: query: select date_add(t, 5), date_sub(t, 10)  from timestamp_udf_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf_string

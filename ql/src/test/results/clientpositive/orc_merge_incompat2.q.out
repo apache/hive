@@ -37,14 +37,14 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_merge5
-            Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: userid (type: bigint), string1 (type: string), subtype (type: double), decimal1 (type: decimal(38,0)), ts (type: timestamp), subtype (type: double)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-              Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -53,18 +53,18 @@ STAGE PLANS:
               Select Operator
                 expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(38,0)), _col4 (type: timestamp), _col5 (type: double)
                 outputColumnNames: userid, string1, subtype, decimal1, ts, st
-                Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: compute_stats(userid, 'hll'), compute_stats(string1, 'hll'), compute_stats(subtype, 'hll'), compute_stats(decimal1, 'hll'), compute_stats(ts, 'hll')
                   keys: st (type: double)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: double)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: double)
-                    Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,min:decimal(38,0),max:decimal(38,0),countnulls:bigint,bitvector:binary>), _col5 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
@@ -72,14 +72,14 @@ STAGE PLANS:
           keys: KEY._col0 (type: double)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-          Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,min:decimal(38,0),max:decimal(38,0),countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col5 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-            Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 22980 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
