@@ -1538,7 +1538,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // If the table is not external and it might not be in a subdirectory of the database
               // add it's locations to the list of paths to delete
               Path tablePath = null;
-              if (table.getSd().getLocation() != null && !isExternal(table)) {
+              boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, deleteData);
+              if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
                 tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
                 if (!wh.isWritable(tablePath.getParent())) {
                   throw new MetaException("Database metadata not deleted since table: " +
@@ -1554,7 +1555,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // For each partition in each table, drop the partitions and get a list of
               // partitions' locations which might need to be deleted
               partitionPaths = dropPartitionsAndGetLocations(ms, catName, name, table.getTableName(),
-                  tablePath, deleteData && !isExternal(table));
+                  tablePath, tableDataShouldBeDeleted);
 
               // Drop the table but not its data
               drop_table(MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
@@ -2433,7 +2434,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws NoSuchObjectException, MetaException, IOException, InvalidObjectException,
         InvalidInputException {
       boolean success = false;
-      boolean isExternal = false;
+      boolean tableDataShouldBeDeleted = false;
       Path tblPath = null;
       List<Path> partPaths = null;
       Table tbl = null;
@@ -2456,7 +2457,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
-        isExternal = isExternal(tbl);
+        tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
         if (tbl.getSd().getLocation() != null) {
           tblPath = new Path(tbl.getSd().getLocation());
           if (!wh.isWritable(tblPath.getParent())) {
@@ -2469,7 +2470,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         // Drop the partitions and get a list of locations which need to be deleted
         partPaths = dropPartitionsAndGetLocations(ms, catName, dbname, name, tblPath,
-            deleteData && !isExternal);
+            tableDataShouldBeDeleted);
 
         // Drop any constraints on the table
         ms.dropConstraint(catName, dbname, name, null, true);
@@ -2491,7 +2492,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (deleteData && !isExternal) {
+        } else if (tableDataShouldBeDeleted) {
           // Data needs deletion. Check if trash may be skipped.
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge, db);
@@ -2509,6 +2510,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return success;
+    }
+
+    private boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
+      if (deleteData && isExternal(tbl)) {
+        // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
+        return isExternalTablePurge(tbl);
+      }
+      return deleteData;
     }
 
     /**
@@ -2818,6 +2827,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      */
     private boolean isExternal(Table table) {
       return MetaStoreUtils.isExternalTable(table);
+    }
+
+    private boolean isExternalTablePurge(Table table) {
+      return MetaStoreUtils.isPropertyTrue(table.getParameters(), MetaStoreUtils.EXTERNAL_TABLE_PURGE);
     }
 
     @Override
@@ -4093,7 +4106,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean isArchived = false;
       Path archiveParentDir = null;
       boolean mustPurge = false;
-      boolean isExternalTbl = false;
+      boolean tableDataShouldBeDeleted = false;
       boolean isSourceOfReplication = false;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
 
@@ -4111,7 +4124,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.openTransaction();
         part = ms.getPartition(catName, db_name, tbl_name, part_vals);
         tbl = get_table_core(catName, db_name, tbl_name, -1, null);
-        isExternalTbl = isExternal(tbl);
+        tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
         firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
         mustPurge = isMustPurge(envContext, tbl);
 
@@ -4149,7 +4162,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && ((partPath != null) || (archiveParentDir != null))) {
-          if (!isExternalTbl) {
+          if (tableDataShouldBeDeleted) {
             if (mustPurge) {
               LOG.info("dropPartition() will purge " + partPath + " directly, skipping trash.");
             }
@@ -4342,7 +4355,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (deleteData && !isExternal(tbl)) {
+        } else if (checkTableDataShouldBeDeleted(tbl, deleteData)) {
           LOG.info( mustPurge?
                       "dropPartition() will purge partition-directories directly, skipping trash."
                     :  "dropPartition() will move partition-directories to trash-directory.");
