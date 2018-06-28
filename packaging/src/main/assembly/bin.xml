@@ -206,7 +206,7 @@
         <include>**/*.py</include>
         <include>**/*.xml</include>
       </includes>
-      <outputDirectory>scripts/llap/slider</outputDirectory>
+      <outputDirectory>scripts/llap/yarn</outputDirectory>
     </fileSet>
 
     <fileSet>
