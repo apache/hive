@@ -147,6 +147,32 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   }
 
   @Test
+  public void testAddPartitionSpecWithSharedSDUpperCaseDBAndTableName() throws Exception {
+
+    Table table = createTable();
+    PartitionWithoutSD partition = buildPartitionWithoutSD(Lists.newArrayList("2013"), 1);
+    List<PartitionWithoutSD> partitions = Lists.newArrayList(partition);
+
+    String location = table.getSd().getLocation() + "/sharedSDTest/";
+    PartitionSpec partitionSpec = new PartitionSpec();
+    partitionSpec.setDbName(DB_NAME.toUpperCase());
+    partitionSpec.setTableName(TABLE_NAME.toUpperCase());
+    PartitionSpecWithSharedSD partitionList = new PartitionSpecWithSharedSD();
+    partitionList.setPartitions(partitions);
+    partitionList.setSd(buildSD(location));
+    partitionSpec.setSharedSDPartitionSpec(partitionList);
+    PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(partitionSpec);
+    client.add_partitions_pspec(partitionSpecProxy);
+
+    Partition part = client.getPartition(DB_NAME, TABLE_NAME, "year=2013");
+    Assert.assertNotNull(part);
+    Assert.assertEquals(DB_NAME, part.getDbName());
+    Assert.assertEquals(TABLE_NAME, part.getTableName());
+    Assert.assertEquals(metaStore.getWarehouseRoot() + "/" + TABLE_NAME +
+        "/sharedSDTest/partwithoutsd1", part.getSd().getLocation());
+  }
+
+  @Test
   public void testAddPartitionSpecsMultipleValues() throws Exception {
 
     Table table = createTable(DB_NAME, TABLE_NAME, getYearAndMonthPartCols(),
@@ -168,6 +194,76 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     verifyPartition(table, "year=2003/month=april", Lists.newArrayList("2003", "april"), 2);
     verifyPartitionSharedSD(table, "year=2004/month=june", Lists.newArrayList("2004", "june"), 3);
     verifyPartitionSharedSD(table, "year=2005/month=may", Lists.newArrayList("2005", "may"), 4);
+  }
+
+  @Test
+  public void testAddPartitionSpecUpperCaseDBAndTableName() throws Exception {
+
+    // Create table 'test_partition_db.test_add_part_table'
+    String tableName = "test_add_part_table";
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + tableName.toUpperCase();
+    createTable(DB_NAME, tableName, getYearPartCol(), tableLocation);
+
+    // Create partitions with table name 'TEST_ADD_PART_TABLE' and db name 'TEST_PARTITION_DB'
+    Partition partition1 = buildPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(), "2013",
+        tableLocation + "/year=2013");
+    Partition partition2 = buildPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(), "2014",
+        tableLocation + "/year=2014");
+    List<Partition> partitions = Lists.newArrayList(partition1, partition2);
+
+    String rootPath = tableLocation + "/addpartspectest/";
+    PartitionSpecProxy partitionSpec =
+        buildPartitionSpec(DB_NAME.toUpperCase(), tableName.toUpperCase(), rootPath, partitions);
+    client.add_partitions_pspec(partitionSpec);
+
+    // Validate the partition attributes
+    // The db and table name should be all lower case: 'test_partition_db' and
+    // 'test_add_part_table'
+    // The location should be saved case-sensitive, it should be
+    // warehouse dir + "TEST_ADD_PART_TABLE/year=2017"
+    Partition part = client.getPartition(DB_NAME, tableName, "year=2013");
+    Assert.assertNotNull(part);
+    Assert.assertEquals(tableName, part.getTableName());
+    Assert.assertEquals(DB_NAME, part.getDbName());
+    Assert.assertEquals(tableLocation + "/year=2013", part.getSd().getLocation());
+    Partition part1 = client.getPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(), "year=2013");
+    Assert.assertEquals(part, part1);
+    part = client.getPartition(DB_NAME, tableName, "year=2014");
+    Assert.assertNotNull(part);
+    Assert.assertEquals(tableName, part.getTableName());
+    Assert.assertEquals(DB_NAME, part.getDbName());
+    Assert.assertEquals(tableLocation + "/year=2014", part.getSd().getLocation());
+    part1 = client.getPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(), "year=2014");
+    Assert.assertEquals(part, part1);
+  }
+
+  @Test
+  public void testAddPartitionSpecUpperCaseDBAndTableNameInOnePart() throws Exception {
+
+    String tableName = "test_add_part_table";
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + tableName.toUpperCase();
+    createTable(DB_NAME, tableName, getYearPartCol(), tableLocation);
+
+    Partition partition1 = buildPartition(DB_NAME, tableName, "2013",
+        tableLocation + "/year=2013");
+    Partition partition2 = buildPartition(DB_NAME.toUpperCase(), tableName.toUpperCase(), "2014",
+        tableLocation + "/year=2014");
+    List<Partition> partitions = Lists.newArrayList(partition1, partition2);
+
+    String rootPath = tableLocation + "/addpartspectest/";
+    PartitionSpecProxy partitionSpec = buildPartitionSpec(DB_NAME, tableName, rootPath, partitions);
+    client.add_partitions_pspec(partitionSpec);
+
+    Partition part = client.getPartition(DB_NAME, tableName, "year=2013");
+    Assert.assertNotNull(part);
+    Assert.assertEquals(tableName, part.getTableName());
+    Assert.assertEquals(DB_NAME, part.getDbName());
+    Assert.assertEquals(tableLocation + "/year=2013", part.getSd().getLocation());
+    part = client.getPartition(DB_NAME, tableName, "year=2014");
+    Assert.assertNotNull(part);
+    Assert.assertEquals(tableName, part.getTableName());
+    Assert.assertEquals(DB_NAME, part.getDbName());
+    Assert.assertEquals(tableLocation + "/year=2014", part.getSd().getLocation());
   }
 
   // TODO add tests for partitions in other catalogs
