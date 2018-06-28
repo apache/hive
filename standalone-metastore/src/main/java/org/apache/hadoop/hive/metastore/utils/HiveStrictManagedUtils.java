@@ -16,37 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.util;
+package org.apache.hadoop.hive.metastore.utils;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
-import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
-import org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 
 public class HiveStrictManagedUtils {
 
-  private final static Set<String> EXEMPT_INPUTFORMATS =
-      new HashSet<String>(Arrays.asList(NullRowsInputFormat.class.getName(),
-          OneNullRowInputFormat.class.getName(), ZeroRowsInputFormat.class.getName()));
-
-
-  public static void validateStrictManagedTable(Configuration conf, Table table)
-      throws HiveException {
-    String reason = validateStrictManagedTable(conf, table.getTTable());
+  public static void validateStrictManagedTableWithThrow(Configuration conf, Table table)
+      throws MetaException {
+    String reason = validateStrictManagedTable(conf, table);
     if (reason != null) {
-      throw new HiveException(reason);
+      throw new MetaException(reason);
     }
   }
 
@@ -57,8 +45,8 @@ public class HiveStrictManagedUtils {
    * @return  Null if the table is valid, otherwise a string message indicating why the table is invalid.
    */
   public static String validateStrictManagedTable(Configuration conf,
-      org.apache.hadoop.hive.metastore.api.Table table) {
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES)) {
+      Table table) {
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STRICT_MANAGED_TABLES)) {
       if (table.isTemporary()) {
         // temp tables exempted from checks.
         return null;
@@ -66,14 +54,8 @@ public class HiveStrictManagedUtils {
 
       TableType tableType = TableType.valueOf(table.getTableType());
       if (tableType == TableType.MANAGED_TABLE) {
-        if (!AcidUtils.isTransactionalTable(table)) {
-          String inputFormat = null;
-          if (table.getSd() != null) {
-            inputFormat = table.getSd().getInputFormat();
-          }
-          if (!EXEMPT_INPUTFORMATS.contains(inputFormat)) {
-            return createValidationError(table, "Table is marked as a managed table but is not transactional.");
-          }
+        if (!MetaStoreUtils.isTransactionalTable(table.getParameters())) {
+          return createValidationError(table, "Table is marked as a managed table but is not transactional.");
         }
         if (MetaStoreUtils.isNonNativeTable(table)) {
           return createValidationError(table, "Table is marked as a managed table but is non-native.");
@@ -88,9 +70,12 @@ public class HiveStrictManagedUtils {
     return null;
   }
 
-  public static boolean isAvroTableWithExternalSchema(org.apache.hadoop.hive.metastore.api.Table table) {
-    if (table.getSd().getSerdeInfo().getSerializationLib().equals(AvroSerDe.class.getName())) {
-      String schemaUrl = table.getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName());
+  private static final String AVRO_SERDE_CLASSNAME = "org.apache.hadoop.hive.serde2.avro.AvroSerDe";
+  private static final String AVRO_SCHEMA_URL_PROPERTY = "avro.schema.url";
+
+  public static boolean isAvroTableWithExternalSchema(Table table) {
+    if (table.getSd().getSerdeInfo().getSerializationLib().equals(AVRO_SERDE_CLASSNAME)) {
+      String schemaUrl = table.getParameters().get(AVRO_SCHEMA_URL_PROPERTY);
       if (schemaUrl != null && !schemaUrl.isEmpty()) {
         return true;
       }
@@ -98,11 +83,11 @@ public class HiveStrictManagedUtils {
     return false;
   }
 
-  public static boolean isListBucketedTable(org.apache.hadoop.hive.metastore.api.Table table) {
+  public static boolean isListBucketedTable(Table table) {
     return table.getSd().isStoredAsSubDirectories();
   }
 
-  private static String createValidationError(org.apache.hadoop.hive.metastore.api.Table table, String message) {
+  private static String createValidationError(Table table, String message) {
     StringBuilder sb = new StringBuilder();
     sb.append("Table ");
     sb.append(table.getDbName());
