@@ -30,6 +30,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -94,9 +95,9 @@ public class TestRuntimeStats extends MetaStoreClientTest {
     objStore.setConf(metaStore.getConf());
     objStore.deleteRuntimeStats(0);
     objStore.addRuntimeStat(createStat(1));
-    Thread.sleep(2000);
+    TimeUnit.SECONDS.sleep(6);
     objStore.addRuntimeStat(createStat(2));
-    int deleted = objStore.deleteRuntimeStats(1);
+    int deleted = objStore.deleteRuntimeStats(5);
     assertEquals(1, deleted);
 
     List<RuntimeStat> all = getRuntimeStats();
