@@ -146,6 +146,8 @@ public class MetaStoreUtils {
    */
   public static final String DB_EMPTY_MARKER = "!";
 
+  public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
+
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
   // NOTE:
@@ -566,7 +568,11 @@ public class MetaStoreUtils {
   }
 
   public static boolean isExternal(Map<String, String> tableParams){
-    return "TRUE".equalsIgnoreCase(tableParams.get("EXTERNAL"));
+    return isPropertyTrue(tableParams, "EXTERNAL");
+  }
+
+  public static boolean isPropertyTrue(Map<String, String> tableParams, String prop) {
+    return "TRUE".equalsIgnoreCase(tableParams.get(prop));
   }
 
   // check if stats need to be (re)calculated

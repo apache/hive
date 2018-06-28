@@ -2834,6 +2834,12 @@ public class HiveConf extends Configuration {
         "Whether strict managed tables mode is enabled. With this mode enabled, " +
         "only transactional tables (both full and insert-only) are allowed to be created as managed tables"),
 
+    HIVE_EXTERNALTABLE_PURGE_DEFAULT("hive.external.table.purge.default", false,
+        "Set to true to set external.table.purge=true on newly created external tables," +
+        " which will specify that the table data should be deleted when the table is dropped." +
+        " Set to false maintain existing behavior that external tables do not delete data" +
+        " when the table is dropped."),
+
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
