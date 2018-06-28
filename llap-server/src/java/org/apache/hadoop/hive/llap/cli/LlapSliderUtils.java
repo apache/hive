@@ -18,60 +18,53 @@
 
 package org.apache.hadoop.hive.llap.cli;
 
-import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.AppStatusBuilder;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.hadoop.yarn.service.api.records.Service;
+import org.apache.hadoop.yarn.service.client.ServiceClient;
+import org.apache.hadoop.yarn.service.utils.CoreFileSystem;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
-import org.apache.slider.api.types.ApplicationDiagnostics;
-import org.apache.slider.client.SliderClient;
-import org.apache.slider.common.params.ActionCreateArgs;
-import org.apache.slider.common.params.ActionDestroyArgs;
-import org.apache.slider.common.params.ActionFreezeArgs;
-import org.apache.slider.common.params.ActionInstallPackageArgs;
-import org.apache.slider.common.tools.SliderUtils;
-import org.apache.slider.core.exceptions.UnknownApplicationInstanceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LlapSliderUtils {
-  private static final String SLIDER_GZ = "slider-agent.tar.gz";
-  private static final Logger LOG = LoggerFactory.getLogger(LlapSliderUtils.class);
+  private static final Logger LOG = LoggerFactory
+      .getLogger(LlapSliderUtils.class);
+  private static final String LLAP_PACKAGE_DIR = ".yarn/package/LLAP/";
 
-  public static SliderClient createSliderClient(
+  public static ServiceClient createServiceClient(
       Configuration conf) throws Exception {
-    SliderClient sliderClient = new SliderClient() {
-      @Override
-      public void serviceInit(Configuration conf) throws Exception {
-        super.serviceInit(conf);
-        initHadoopBinding();
-      }
-    };
-    Configuration sliderClientConf = new Configuration(conf);
-    sliderClientConf = sliderClient.bindArgs(sliderClientConf,
-      new String[]{"help"});
-    sliderClient.init(sliderClientConf);
-    sliderClient.start();
-    return sliderClient;
+    ServiceClient serviceClient = new ServiceClient();
+    serviceClient.init(conf);
+    serviceClient.start();
+    return serviceClient;
   }
 
-  public static ApplicationReport getAppReport(String appName, SliderClient sliderClient,
+  public static ApplicationReport getAppReport(String appName, ServiceClient serviceClient,
                                                long timeoutMs) throws
       LlapStatusServiceDriver.LlapStatusCliException {
-    Clock clock = new SystemClock();
+    Clock clock = SystemClock.getInstance();
     long startTime = clock.getTime();
     long timeoutTime = timeoutMs < 0 ? Long.MAX_VALUE : (startTime + timeoutMs);
     ApplicationReport appReport = null;
+    ApplicationId appId;
+    try {
+      appId = serviceClient.getAppId(appName);
+    } catch (YarnException | IOException e) {
+      return null;
+    }
 
     while (appReport == null) {
       try {
-        appReport = sliderClient.getYarnAppListClient().findInstance(appName);
+        appReport = serviceClient.getYarnClient().getApplicationReport(appId);
         if (timeoutMs == 0) {
           // break immediately if timeout is 0
           break;
@@ -94,150 +87,78 @@ public class LlapSliderUtils {
     return appReport;
   }
 
-  public static ApplicationDiagnostics getApplicationDiagnosticsFromYarnDiagnostics(
-      ApplicationReport appReport, AppStatusBuilder appStatusBuilder, Logger LOG) {
-    if (appReport == null) {
-      return null;
-    }
-    String diagnostics = appReport.getDiagnostics();
-    if (diagnostics == null || diagnostics.isEmpty()) {
-      return null;
-    }
+  public static Service getService(Configuration conf, String name) {
+    LOG.info("Get service details for " + name);
+    ServiceClient sc;
     try {
-      return ApplicationDiagnostics.fromJson(diagnostics);
-    } catch (IOException e) {
-      LOG.warn("Failed to parse application diagnostics from Yarn Diagnostics - {}", diagnostics);
-      // Set the raw YARN diagnostics here - the caller won't know if they even exist.
-      appStatusBuilder.setDiagnostics(diagnostics);
-      return null;
+      sc = createServiceClient(conf);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+    Service service = null;
+    try {
+      service = sc.getStatus(name);
+    } catch (YarnException | IOException e) {
+      // Probably the app does not exist
+      LOG.info(e.getLocalizedMessage());
+      throw new RuntimeException(e);
+    } finally {
+      try {
+        sc.close();
+      } catch (IOException e) {
+        LOG.info("Failed to close service client", e);
+      }
+    }
+    return service;
   }
 
   public static void startCluster(Configuration conf, String name,
       String packageName, Path packageDir, String queue) {
     LOG.info("Starting cluster with " + name + ", "
       + packageName + ", " + queue + ", " + packageDir);
-    SliderClient sc;
+    ServiceClient sc;
     try {
-      sc = createSliderClient(conf);
+      sc = createServiceClient(conf);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
     try {
-      LOG.info("Executing the freeze command");
-      ActionFreezeArgs freezeArgs = new ActionFreezeArgs();
-      freezeArgs.force = true;
-      freezeArgs.setWaittime(3600); // Wait forever (or at least for an hour).
       try {
-        sc.actionFreeze(name, freezeArgs);
-      } catch (UnknownApplicationInstanceException ex) {
-        LOG.info("There was no old application instance to freeze");
+        LOG.info("Executing the stop command");
+        sc.actionStop(name, true);
+      } catch (Exception ex) {
+        // Ignore exceptions from stop
+        LOG.info(ex.getLocalizedMessage());
       }
-      LOG.info("Executing the destroy command");
-      ActionDestroyArgs destroyArg = new ActionDestroyArgs();
-      destroyArg.force = true;
       try {
-        sc.actionDestroy(name, destroyArg);
-      } catch (UnknownApplicationInstanceException ex) {
-        LOG.info("There was no old application instance to destroy");
+        LOG.info("Executing the destroy command");
+        sc.actionDestroy(name);
+      } catch (Exception ex) {
+        // Ignore exceptions from destroy
+        LOG.info(ex.getLocalizedMessage());
       }
-      LOG.info("Executing the install command");
-      ActionInstallPackageArgs installArgs = new ActionInstallPackageArgs();
-      installArgs.name = "LLAP";
-      installArgs.packageURI = new Path(packageDir, packageName).toString();
-      installArgs.replacePkg = true;
-      sc.actionInstallPkg(installArgs);
-      LOG.info("Executing the create command");
-      ActionCreateArgs createArgs = new ActionCreateArgs();
-      createArgs.resources = new File(new Path(packageDir, "resources.json").toString());
-      createArgs.template = new File(new Path(packageDir, "appConfig.json").toString());
-      createArgs.setWaittime(3600);
-      if (queue != null) {
-        createArgs.queue = queue;
-      }
-      // See the comments in the method. SliderClient doesn't work in normal circumstances.
-      File bogusSliderFile = startSetSliderLibDir();
+      LOG.info("Uploading the app tarball");
+      CoreFileSystem fs = new CoreFileSystem(conf);
+      fs.copyLocalFileToHdfs(new File(packageDir.toString(), packageName),
+          new Path(LLAP_PACKAGE_DIR), new FsPermission("755"));
+
+      LOG.info("Executing the launch command");
+      File yarnfile = new File(new Path(packageDir, "Yarnfile").toString());
+      Long lifetime = null; // unlimited lifetime
       try {
-        sc.actionCreate(name, createArgs);
+        sc.actionLaunch(yarnfile.getAbsolutePath(), name, lifetime, queue);
       } finally {
-        endSetSliderLibDir(bogusSliderFile);
       }
-      LOG.debug("Started the cluster via slider API");
+      LOG.debug("Started the cluster via service API");
     } catch (YarnException | IOException e) {
       throw new RuntimeException(e);
     } finally {
       try {
         sc.close();
       } catch (IOException e) {
-        LOG.info("Failed to close slider client", e);
+        LOG.info("Failed to close service client", e);
       }
     }
   }
 
-  public static File startSetSliderLibDir() throws IOException {
-    // TODO: this is currently required for the use of slider create API. Need SLIDER-1192.
-    File sliderJarDir = SliderUtils.findContainingJar(SliderClient.class).getParentFile();
-    File gz = new File(sliderJarDir, SLIDER_GZ);
-    if (gz.exists()) {
-      String path = sliderJarDir.getAbsolutePath();
-      LOG.info("Setting slider.libdir based on jar file location: " + path);
-      System.setProperty("slider.libdir", path);
-      return null;
-    }
-
-    // There's no gz file next to slider jars. Due to the horror that is SliderClient, we'd have
-    // to find it and copy it there. Let's try to find it. Also set slider.libdir.
-    String path = System.getProperty("slider.libdir");
-    gz = null;
-    if (path != null && !path.isEmpty()) {
-      LOG.info("slider.libdir was already set: " + path);
-      gz = new File(path, SLIDER_GZ);
-      if (!gz.exists()) {
-        gz = null;
-      }
-    }
-    if (gz == null) {
-      path = System.getenv("SLIDER_HOME");
-      if (path != null && !path.isEmpty()) {
-        gz = new File(new File(path, "lib"), SLIDER_GZ);
-        if (gz.exists()) {
-          path = gz.getParentFile().getAbsolutePath();
-          LOG.info("Setting slider.libdir based on SLIDER_HOME: " + path);
-          System.setProperty("slider.libdir", path);
-        } else {
-          gz = null;
-        }
-      }
-    }
-    if (gz == null) {
-      // This is a terrible hack trying to find slider on a typical installation. Sigh...
-      File rootDir = SliderUtils.findContainingJar(HiveConf.class)
-          .getParentFile().getParentFile().getParentFile();
-      File sliderJarDir2 = new File(new File(rootDir, "slider"), "lib");
-      if (sliderJarDir2.exists()) {
-        gz = new File(sliderJarDir2, SLIDER_GZ);
-        if (gz.exists()) {
-          path = sliderJarDir2.getAbsolutePath();
-          LOG.info("Setting slider.libdir based on guesswork: " + path);
-          System.setProperty("slider.libdir", path);
-        } else {
-          gz = null;
-        }
-      }
-    }
-    if (gz == null) {
-      throw new IOException("Cannot find " + SLIDER_GZ + ". Please ensure SLIDER_HOME is set.");
-    }
-    File newGz = new File(sliderJarDir, SLIDER_GZ);
-    LOG.info("Copying " + gz + " to " + newGz);
-    Files.copy(gz, newGz);
-    newGz.deleteOnExit();
-    return newGz;
-  }
-
-  public static void endSetSliderLibDir(File newGz) throws IOException {
-    if (newGz == null || !newGz.exists()) return;
-    LOG.info("Deleting " + newGz);
-    newGz.delete();
-  }
 }

@@ -74,7 +74,6 @@ pentaho-aggdesigner-algorithm
 plexus-utils
 regexp
 server-metrics
-slider-core
 snappy*
 stax-api
 super-csv
