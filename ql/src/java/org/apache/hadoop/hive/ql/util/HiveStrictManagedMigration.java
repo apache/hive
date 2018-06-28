@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.util;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -47,9 +48,8 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.HiveParser.switchDatabaseStatement_return;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -251,7 +251,7 @@ public class HiveStrictManagedMigration {
   }
 
   private RunOptions runOptions;
-  private Configuration conf;
+  private HiveConf conf;
   private HiveMetaStoreClient hms;
   private boolean failedValidationChecks;
   private Warehouse wh;
@@ -361,8 +361,10 @@ public class HiveStrictManagedMigration {
         checkAndSetFileOwnerPermissions(fs, newDefaultDbLocation,
             ownerName, groupName, dirPerms, null, runOptions.dryRun, false);
 
-        String command = String.format("ALTER DATABASE %s SET LOCATION '%s'", dbName, newDefaultDbLocation);
-        runHiveCommand(command);
+        // The table processing needs the db location at the old location, so clone the DB object
+        // when updating the location.
+        Database modifiedDb = dbObj.deepCopy();
+        getHiveUpdater().updateDbLocation(modifiedDb, newDefaultDbLocation);
       }
     }
 
@@ -490,9 +492,7 @@ public class HiveStrictManagedMigration {
       }
     }
     if (!runOptions.dryRun) {
-      String command = String.format("ALTER TABLE %s SET LOCATION '%s'",
-          getQualifiedName(tableObj), newTablePath);
-      runHiveCommand(command);
+      getHiveUpdater().updateTableLocation(tableObj, newTablePath);
     }
     if (isPartitionedTable(tableObj)) {
       List<String> partNames = hms.listPartitionNames(dbName, tableName, Short.MAX_VALUE);
@@ -507,9 +507,7 @@ public class HiveStrictManagedMigration {
           // just update the partition location in the metastore.
           if (!runOptions.dryRun) {
             Path newPartPath = wh.getPartitionPath(newTablePath, partSpec);
-            String command = String.format("ALTER TABLE PARTITION (%s) SET LOCATION '%s'",
-                partName, newPartPath.toString());
-            runHiveCommand(command);
+            getHiveUpdater().updatePartitionLocation(dbName, tableObj, partName, partObj, newPartPath);
           }
         }
       }
@@ -568,6 +566,20 @@ public class HiveStrictManagedMigration {
     return result;
   }
 
+  private static final Map<String, String> convertToExternalTableProps = new HashMap<>();
+  private static final Map<String, String> convertToAcidTableProps = new HashMap<>();
+  private static final Map<String, String> convertToMMTableProps = new HashMap<>();
+
+  static {
+    convertToExternalTableProps.put("EXTERNAL", "TRUE");
+    convertToExternalTableProps.put("external.table.purge", "true");
+
+    convertToAcidTableProps.put("transactional", "true");
+
+    convertToMMTableProps.put("transactional", "true");
+    convertToMMTableProps.put("transactional_properties", "insert_only");
+  }
+
   boolean migrateToExternalTable(Table tableObj, TableType tableType) throws HiveException {
     String msg;
     switch (tableType) {
@@ -580,10 +592,7 @@ public class HiveStrictManagedMigration {
       }
       LOG.info("Converting {} to external table ...", getQualifiedName(tableObj));
       if (!runOptions.dryRun) {
-        String command = String.format(
-            "ALTER TABLE %s SET TBLPROPERTIES ('EXTERNAL'='TRUE', 'external.table.purge'='true')",
-            getQualifiedName(tableObj));
-        runHiveCommand(command);
+        getHiveUpdater().updateTableProperties(tableObj, convertToExternalTableProps);
       }
       return true;
     case EXTERNAL_TABLE:
@@ -603,15 +612,25 @@ public class HiveStrictManagedMigration {
   boolean canTableBeFullAcid(Table tableObj) throws MetaException {
     // Table must be acid-compatible table format, and no sorting columns.
     return TransactionalValidationListener.conformToAcid(tableObj) &&
-        (tableObj.getSd().getSortColsSize() > 0);
+        (tableObj.getSd().getSortColsSize() <= 0);
+  }
+
+  Map<String, String> getTablePropsForConversionToTransactional(Map<String, String> props,
+      boolean convertFromExternal) {
+    if (convertFromExternal) {
+      // Copy the properties to a new map so we can add EXTERNAL=FALSE
+      props = new HashMap<String, String>(props);
+      props.put("EXTERNAL", "FALSE");
+    }
+    return props;
   }
 
   boolean migrateToManagedTable(Table tableObj, TableType tableType) throws HiveException, IOException, MetaException, TException {
 
-    String externalFalse = "";
+    boolean convertFromExternal = false;
     switch (tableType) {
     case EXTERNAL_TABLE:
-      externalFalse = "'EXTERNAL'='FALSE', ";
+      convertFromExternal = true;
       // fall through
     case MANAGED_TABLE:
       if (MetaStoreUtils.isNonNativeTable(tableObj)) {
@@ -650,19 +669,17 @@ public class HiveStrictManagedMigration {
         renameFilesToConformToAcid(tableObj);
 
         if (!runOptions.dryRun) {
-          String command = String.format(
-              "ALTER TABLE %s SET TBLPROPERTIES ('transactional'='true')",
-              getQualifiedName(tableObj));
-          runHiveCommand(command);
+          Map<String, String> props = getTablePropsForConversionToTransactional(
+              convertToAcidTableProps, convertFromExternal);
+          getHiveUpdater().updateTableProperties(tableObj, props);
         }
         return true;
       } else {
         LOG.info("Converting {} to insert-only transactional table", getQualifiedName(tableObj));
         if (!runOptions.dryRun) {
-          String command = String.format(
-              "ALTER TABLE %s SET TBLPROPERTIES (%s'transactional'='true', 'transactional_properties'='insert_only')",
-              getQualifiedName(tableObj), externalFalse);
-          runHiveCommand(command);
+          Map<String, String> props = getTablePropsForConversionToTransactional(
+              convertToMMTableProps, convertFromExternal);
+          getHiveUpdater().updateTableProperties(tableObj, props);
         }
         return true;
       }
@@ -732,49 +749,101 @@ public class HiveStrictManagedMigration {
     return shouldBeExternal;
   }
 
-  void runHiveCommand(String command) throws HiveException {
-    LOG.info("Running command: {}", command);
-
-    if (driver == null) {
-      driver = new MyDriver(conf);
-    }
-  
-    CommandProcessorResponse cpr = driver.driver.run(command);
-    if (cpr.getResponseCode() != 0) {
-      String msg = "Query returned non-zero code: " + cpr.getResponseCode()
-          + ", cause: " + cpr.getErrorMessage();
-      throw new HiveException(msg);
-    }
-  }
-
   void cleanup() {
-    if (driver != null) {
-      runAndLogErrors(() -> driver.close());
-      driver = null;
+    if (hiveUpdater != null) {
+      runAndLogErrors(() -> hiveUpdater.close());
+      hiveUpdater = null;
     }
   }
 
-  static class MyDriver {
-    IDriver driver;
+  HiveUpdater getHiveUpdater() throws HiveException {
+    if (hiveUpdater == null) {
+      hiveUpdater = new HiveUpdater();
+    }
+    return hiveUpdater;
+  }
 
-    MyDriver(Configuration conf) {
-      HiveConf hiveConf = new HiveConf(conf, this.getClass());
-      // TODO: Clean up SessionState/Driver/TezSession on exit
-      SessionState.start(hiveConf);
-      driver = DriverFactory.newDriver(hiveConf);
+  class HiveUpdater {
+    Hive hive;
+
+    HiveUpdater() throws HiveException {
+      hive = Hive.get(conf);
+      Hive.set(hive);
     }
 
     void close() {
-      if (driver != null) {
-        runAndLogErrors(() -> driver.close());
-        runAndLogErrors(() -> driver.destroy());
-        driver = null;
-        runAndLogErrors(() -> SessionState.get().close());
+      if (hive != null) {
+        runAndLogErrors(() -> Hive.closeCurrent());
+        hive = null;
       }
+    }
+
+    void updateDbLocation(Database db, Path newLocation) throws HiveException {
+      String msg = String.format("ALTER DATABASE %s SET LOCATION '%s'", db.getName(), newLocation);
+      LOG.info(msg);
+
+      db.setLocationUri(newLocation.toString());
+      hive.alterDatabase(db.getName(), db);
+    }
+
+    void updateTableLocation(Table table, Path newLocation) throws HiveException {
+      String msg = String.format("ALTER TABLE %s SET LOCATION '%s'",
+          getQualifiedName(table), newLocation);
+      LOG.info(msg);
+
+      org.apache.hadoop.hive.ql.metadata.Table modifiedTable =
+          new org.apache.hadoop.hive.ql.metadata.Table(table);
+      modifiedTable.setDataLocation(newLocation);
+      hive.alterTable(table.getDbName(), table.getTableName(), modifiedTable, false, null);
+    }
+
+    void updatePartitionLocation(String dbName, Table table, String partName, Partition part, Path newLocation)
+        throws HiveException, TException {
+      String msg = String.format("ALTER TABLE %s PARTITION (%s) SET LOCATION '%s'",
+          getQualifiedName(table), partName, newLocation.toString());
+      LOG.info(msg);
+
+      org.apache.hadoop.hive.ql.metadata.Partition modifiedPart =
+          new org.apache.hadoop.hive.ql.metadata.Partition(
+              new org.apache.hadoop.hive.ql.metadata.Table(table),
+              part);
+      modifiedPart.setLocation(newLocation.toString());
+      hive.alterPartition(dbName, table.getTableName(), modifiedPart, null);
+    }
+
+    void updateTableProperties(Table table, Map<String, String> props) throws HiveException {
+      StringBuilder sb = new StringBuilder();
+      org.apache.hadoop.hive.ql.metadata.Table modifiedTable =
+          new org.apache.hadoop.hive.ql.metadata.Table(table);
+      if (props.size() == 0) {
+        return;
+      }
+      boolean first = true;
+      for (String key : props.keySet()) {
+        String value = props.get(key);
+        modifiedTable.getParameters().put(key, value);
+
+        // Build properties list for logging
+        if (first) {
+          first = false;
+        } else {
+          sb.append(", ");
+        }
+        sb.append("'");
+        sb.append(key);
+        sb.append("'='");
+        sb.append(value);
+        sb.append("'");
+      }
+      String msg = String.format("ALTER TABLE %s SET TBLPROPERTIES (%s)",
+          getQualifiedName(table), sb.toString());
+      LOG.info(msg);
+
+      hive.alterTable(table.getDbName(), table.getTableName(), modifiedTable, false, null);
     }
   }
 
-  MyDriver driver;
+  HiveUpdater hiveUpdater;
 
   interface ThrowableRunnable {
     void run() throws Exception;
