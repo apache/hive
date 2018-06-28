@@ -769,7 +769,7 @@ public class Hive {
     try {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
-        tableSnapshot = AcidUtils.getTableSnapshot(conf, newParts.get(0).getTable(), true);
+        tableSnapshot = AcidUtils.getTableSnapshot(conf, newParts.get(0).getTable());
       }
       // Remove the DDL time so that it gets refreshed
       for (Partition tmpPart: newParts) {
@@ -2454,8 +2454,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       org.apache.hadoop.hive.metastore.api.Partition part =
           Partition.createMetaPartitionObject(tbl, partSpec, null);
-      AcidUtils.TableSnapshot tableSnapshot =
-          AcidUtils.getTableSnapshot(conf, tbl, false);
+      AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
       part.setTxnId(tableSnapshot != null ? tableSnapshot.getTxnId() : 0);
       part.setValidWriteIdList(tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       return new Partition(tbl, getMSC().add_partition(part));

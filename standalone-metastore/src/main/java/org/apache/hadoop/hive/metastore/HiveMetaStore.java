@@ -5697,7 +5697,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       try {
         List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
-            catName, dbName, tblName, lowerCasePartNames, lowerCaseColNames);
+            catName, dbName, tblName, lowerCasePartNames, lowerCaseColNames,
+            request.isSetTxnId() ? request.getTxnId() : -1,
+            request.isSetValidWriteIdList() ? request.getValidWriteIdList() : null);
         Map<String, List<ColumnStatisticsObj>> map = new HashMap<>();
         for (ColumnStatistics stat : stats) {
           map.put(stat.getStatsDesc().getPartName(), stat.getStatsObj());
