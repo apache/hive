@@ -8631,6 +8631,8 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException {
+    // TODO: this will get stats without verifying ACID. Not clear when this can be valid...
+    //       We need to check that this is not called on a txn table.
     return getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, true, true);
   }
@@ -8641,6 +8643,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames, List<String> colNames,
       long txnId, String writeIdList)
       throws MetaException, NoSuchObjectException {
+
     // If any of the current partition stats in the metastore doesn't comply with
     // the isolation level of the query, return null.
     if (writeIdList != null) {
@@ -12281,6 +12284,9 @@ public class ObjectStore implements RawStore, Configurable {
       long queryTxnId, String queryValidWriteIdList,
       long statsWriteId, boolean checkConcurrentWrites)
       throws MetaException {
+    // Note: can be changed to debug/info to verify the calls.
+    LOG.trace("Called with stats {}, {}; query {}, {}; checkConcurrentWrites {}",
+        statsTxnId, statsWriteIdList, queryTxnId, queryValidWriteIdList, checkConcurrentWrites);
     // if statsWriteIdList is null,
     // return true since the stats does not seem to be transactional.
     if (statsWriteIdList == null) {

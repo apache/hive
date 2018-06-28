@@ -1650,13 +1650,13 @@ public class AcidUtils {
     public void setValidWriteIdList(String validWriteIdList) {
       this.validWriteIdList = validWriteIdList;
     }
+
+    @Override
+    public String toString() {
+      return "[txnId=" + txnId + ", validWriteIdList=" + validWriteIdList + "]";
+    }
   }
 
-  // TODO# remove
-  public static TableSnapshot getTableSnapshot(
-      Configuration conf, Table tbl) throws LockException {
-    return getTableSnapshot(conf, tbl, false);
-  }
   /**
    * Create a TableShopshot with the given "conf"
    * for the table of the given "tbl".
@@ -1667,7 +1667,7 @@ public class AcidUtils {
    * @throws LockException
    */
   public static TableSnapshot getTableSnapshot(
-      Configuration conf, Table tbl, boolean isInTxnScope) throws LockException {
+      Configuration conf, Table tbl) throws LockException {
     if (!isTransactionalTable(tbl)) {
       return null;
     } else {
@@ -1683,19 +1683,17 @@ public class AcidUtils {
       if (txnId > 0 && isTransactionalTable(tbl)) {
         validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
 
-        // TODO: remove in_test filters?
-        if (validWriteIdList == null && !isInTxnScope
-            && !HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
-          LOG.warn("Obtaining write IDs from metastore for " + tbl.getTableName());
+
+        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)
+            && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
+          return null;
+        }
+        if (validWriteIdList == null) {
           validWriteIdList = getTableValidWriteIdListWithTxnList(
               conf, tbl.getDbName(), tbl.getTableName());
         }
         if (validWriteIdList == null) {
-          if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
-            throw new AssertionError("Cannot find valid write ID list for " + tbl.getTableName());
-          } else {
-            return null;
-          }
+          throw new AssertionError("Cannot find valid write ID list for " + tbl.getTableName());
         }
       }
       return new TableSnapshot(txnId,
