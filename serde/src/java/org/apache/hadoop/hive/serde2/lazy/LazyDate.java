@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.sql.Date;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDateObjectInspector;
 import org.apache.hadoop.io.Text;
 
@@ -36,17 +36,17 @@ import org.apache.hadoop.io.Text;
  *    YYYY-MM-DD
  *
  */
-public class LazyDate extends LazyPrimitive<LazyDateObjectInspector, DateWritable> {
+public class LazyDate extends LazyPrimitive<LazyDateObjectInspector, DateWritableV2> {
   private static final Logger LOG = LoggerFactory.getLogger(LazyDate.class);
 
   public LazyDate(LazyDateObjectInspector oi) {
     super(oi);
-    data = new DateWritable();
+    data = new DateWritableV2();
   }
 
   public LazyDate(LazyDate copy) {
     super(copy);
-    data = new DateWritable(copy.data);
+    data = new DateWritableV2(copy.data);
   }
 
   /**
@@ -81,7 +81,7 @@ public class LazyDate extends LazyPrimitive<LazyDateObjectInspector, DateWritabl
    *          The Date to write
    * @throws IOException
    */
-  public static void writeUTF8(OutputStream out, DateWritable d)
+  public static void writeUTF8(OutputStream out, DateWritableV2 d)
       throws IOException {
     ByteBuffer b = Text.encode(d.toString());
     out.write(b.array(), 0, b.limit());

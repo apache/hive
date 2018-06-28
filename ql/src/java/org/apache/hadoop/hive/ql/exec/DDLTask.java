@@ -2786,7 +2786,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else {
       databases = db.getAllDatabases();
     }
-    LOG.info("results : {}", databases.size());
+    LOG.info("Found {} database(s) matching the SHOW DATABASES statement.", databases.size());
 
     // write the results in the file
     DataOutputStream outStream = getOutputStream(showDatabasesDesc.getResFile());
@@ -2826,7 +2826,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     LOG.debug("pattern: {}", pattern);
     tablesOrViews = db.getTablesByType(dbName, pattern, type);
-    LOG.debug("results : {}", tablesOrViews.size());
+    LOG.debug("Found {} tables/view(s) matching the SHOW TABLES/VIEWS statement.", tablesOrViews.size());
 
     // write the results in the file
     DataOutputStream outStream = null;
@@ -2942,7 +2942,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
          console.printInfo("SHOW FUNCTIONS is deprecated, please use SHOW FUNCTIONS LIKE instead.");
          funcs = FunctionRegistry.getFunctionNames(showFuncs.getPattern());
       }
-      LOG.info("results : {}", funcs.size());
+      LOG.info("Found {} function(s) matching the SHOW FUNCTIONS statement.", funcs.size());
     } else {
       funcs = FunctionRegistry.getFunctionNames();
     }
@@ -3527,7 +3527,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Table tbl = db.getTable(showTblStatus.getDbName(), tblName);
         tbls.add(tbl);
       }
-      LOG.info("results : {}", tblStr.size());
+      LOG.info("Found {} table(s) matching the SHOW TABLE EXTENDED statement.", tblStr.size());
     }
 
     // write the results in the file

@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -41,7 +41,7 @@ public interface VectorExpressionWriter {
   Object writeValue(byte[] value, int start, int length) throws HiveException;
   Object writeValue(HiveDecimalWritable value) throws HiveException;
   Object writeValue(HiveDecimal value) throws HiveException;
-  Object writeValue(TimestampWritable value) throws HiveException;
+  Object writeValue(TimestampWritableV2 value) throws HiveException;
   Object writeValue(Timestamp value) throws HiveException;
   Object writeValue(HiveIntervalDayTimeWritable value) throws HiveException;
   Object writeValue(HiveIntervalDayTime value) throws HiveException;

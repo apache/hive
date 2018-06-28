@@ -17,15 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
@@ -38,7 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @NDV(maxNdv = 1)
 public class GenericUDFCurrentDate extends GenericUDF {
 
-  protected DateWritable currentDate;
+  protected DateWritableV2 currentDate;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
@@ -52,7 +51,7 @@ public class GenericUDFCurrentDate extends GenericUDF {
     if (currentDate == null) {
       Date dateVal =
           Date.valueOf(SessionState.get().getQueryCurrentTimestamp().toString().substring(0, 10));
-      currentDate = new DateWritable(dateVal);
+      currentDate = new DateWritableV2(dateVal);
     }
 
     return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
@@ -63,11 +62,11 @@ public class GenericUDFCurrentDate extends GenericUDF {
     return currentDate;
   }
 
-  public DateWritable getCurrentDate() {
+  public DateWritableV2 getCurrentDate() {
     return currentDate;
   }
 
-  public void setCurrentDate(DateWritable currentDate) {
+  public void setCurrentDate(DateWritableV2 currentDate) {
     this.currentDate = currentDate;
   }
 
@@ -83,7 +82,7 @@ public class GenericUDFCurrentDate extends GenericUDF {
     // Need to preserve currentDate
     GenericUDFCurrentDate other = (GenericUDFCurrentDate) newInstance;
     if (this.currentDate != null) {
-      other.currentDate = new DateWritable(this.currentDate);
+      other.currentDate = new DateWritableV2(this.currentDate);
     }
   }
 }

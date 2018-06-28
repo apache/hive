@@ -17,9 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -30,9 +29,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateAddColScal
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateAddScalarCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -65,12 +64,12 @@ import org.apache.hive.common.util.DateParser;
 @VectorizedExpressions({VectorUDFDateAddColScalar.class, VectorUDFDateAddScalarCol.class, VectorUDFDateAddColCol.class})
 public class GenericUDFDateAdd extends GenericUDF {
   private transient final DateParser dateParser = new DateParser();
-  private transient final Date dateVal = new Date(0);
+  private transient final Date dateVal = new Date();
   private transient Converter dateConverter;
   private transient Converter daysConverter;
   private transient PrimitiveCategory inputType1;
   private transient PrimitiveCategory inputType2;
-  private final DateWritable output = new DateWritable();
+  private final DateWritableV2 output = new DateWritableV2();
   protected int signModifier = 1;  // 1 for addition, -1 for subtraction
 
   @Override
@@ -163,7 +162,7 @@ public class GenericUDFDateAdd extends GenericUDF {
       return null;
     }
 
-    // Convert the first param into a DateWritable value
+    // Convert the first param into a DateWritableV2 value
     switch (inputType1) {
     case STRING:
       String dateString = dateConverter.convert(arguments[0].get()).toString();
@@ -174,12 +173,12 @@ public class GenericUDFDateAdd extends GenericUDF {
       }
       break;
     case TIMESTAMP:
-      Timestamp ts = ((TimestampWritable) dateConverter.convert(arguments[0].get()))
+      Timestamp ts = ((TimestampWritableV2) dateConverter.convert(arguments[0].get()))
         .getTimestamp();
-      output.set(DateWritable.millisToDays(ts.getTime()));
+      output.set(DateWritableV2.millisToDays(ts.toEpochMilli()));
       break;
     case DATE:
-      DateWritable dw = (DateWritable) dateConverter.convert(arguments[0].get());
+      DateWritableV2 dw = (DateWritableV2) dateConverter.convert(arguments[0].get());
       output.set(dw.getDays());
       break;
     default:

@@ -36,7 +36,7 @@ SELECT key,
        reflect2(ts, "getHours"),
        reflect2(ts, "getMinutes"),
        reflect2(ts, "getSeconds"),
-       reflect2(ts, "getTime")
+       reflect2(ts, "toEpochMilli")
 FROM (select cast(key as int) key, value, cast('2013-02-15 19:41:20' as timestamp) ts from src) a LIMIT 5;
 
 
@@ -70,5 +70,5 @@ SELECT key,
        reflect2(ts, "getHours"),
        reflect2(ts, "getMinutes"),
        reflect2(ts, "getSeconds"),
-       reflect2(ts, "getTime")
+       reflect2(ts, "toEpochMilli")
 FROM (select cast(key as int) key, value, cast('2013-02-15 19:41:20' as timestamp) ts from src) a LIMIT 5;

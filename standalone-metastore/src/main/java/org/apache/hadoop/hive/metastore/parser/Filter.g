@@ -38,6 +38,7 @@ package org.apache.hadoop.hive.metastore.parser;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 }
@@ -52,6 +53,7 @@ import java.util.regex.Pattern;
     protected SimpleDateFormat initialValue() {
       SimpleDateFormat val = new SimpleDateFormat("yyyy-MM-dd");
       val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+      val.setTimeZone(TimeZone.getTimeZone("UTC"));
       return val;
     };
   };

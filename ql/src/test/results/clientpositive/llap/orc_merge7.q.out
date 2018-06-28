@@ -203,7 +203,7 @@ POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
 #### A masked pattern was here ####
-Found 2 items
+Found 1 items
 #### A masked pattern was here ####
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
@@ -572,7 +572,7 @@ POSTHOOK: Output: default@orc_merge5a_n0
 POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
 #### A masked pattern was here ####
-Found 2 items
+Found 1 items
 #### A masked pattern was here ####
 PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS

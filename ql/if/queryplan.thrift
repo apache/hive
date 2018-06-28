@@ -103,7 +103,8 @@ enum StageType {
   REPL_DUMP,
   REPL_BOOTSTRAP_LOAD,
   REPL_STATE_LOG,
-  REPL_TXN
+  REPL_TXN,
+  REPL_INCREMENTAL_LOAD
 }
 
 struct Stage {

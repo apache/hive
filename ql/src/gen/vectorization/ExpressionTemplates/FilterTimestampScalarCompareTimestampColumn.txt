@@ -144,7 +144,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + value.toString() + ", " + getColumnParamString(1, colNum);
+    return "val " + TimestampUtils.timestampScalarTypeToString(value) + ", " + getColumnParamString(1, colNum);
   }
 
   @Override

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.stats;
 
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -128,6 +129,11 @@ public abstract class Partish {
     public String getSimpleName() {
       return String.format("Table %s.%s", table.getDbName(), table.getTableName());
     }
+
+    @Override
+    public Path getPath() {
+      return table.getPath();
+    }
   }
 
   static class PPart extends Partish {
@@ -185,6 +191,13 @@ public abstract class Partish {
       return String.format("Partition %s.%s %s", table.getDbName(), table.getTableName(), partition.getSpec());
     }
 
+    @Override
+    public Path getPath() {
+      return partition.getPartitionPath();
+    }
+
   }
+
+  public abstract Path getPath();
 
 }

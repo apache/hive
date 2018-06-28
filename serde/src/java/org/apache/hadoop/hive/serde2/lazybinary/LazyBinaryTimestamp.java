@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
 
@@ -29,17 +29,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestamp
  *
  */
 public class LazyBinaryTimestamp extends
-    LazyBinaryPrimitive<WritableTimestampObjectInspector, TimestampWritable> {
+    LazyBinaryPrimitive<WritableTimestampObjectInspector, TimestampWritableV2> {
   static final Logger LOG = LoggerFactory.getLogger(LazyBinaryTimestamp.class);
 
   LazyBinaryTimestamp(WritableTimestampObjectInspector oi) {
     super(oi);
-    data = new TimestampWritable();
+    data = new TimestampWritableV2();
   }
 
   LazyBinaryTimestamp(LazyBinaryTimestamp copy) {
     super(copy);
-    data = new TimestampWritable(copy.data);
+    data = new TimestampWritableV2(copy.data);
   }
 
   /**

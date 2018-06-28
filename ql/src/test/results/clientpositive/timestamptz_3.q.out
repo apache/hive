@@ -36,7 +36,7 @@ POSTHOOK: query: select cast(to_epoch_milli(t) as timestamp) from tstz1_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz1_n1
 #### A masked pattern was here ####
-2016-01-03 12:26:34
+2016-01-03 20:26:34
 PREHOOK: query: select cast(t as timestamp) from tstz1_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz1_n1
@@ -54,4 +54,4 @@ POSTHOOK: query: select cast(to_epoch_milli(t) as timestamp) from tstz1_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz1_n1
 #### A masked pattern was here ####
-2016-01-03 12:26:34
+2016-01-03 20:26:34

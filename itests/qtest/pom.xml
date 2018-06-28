@@ -450,7 +450,6 @@
             <configuration>
               <target>
                 <property name="test.classpath" refid="maven.test.classpath"/>
-                <echo message="${test.classpath}"/>
                 <taskdef resource="net/sf/antcontrib/antcontrib.properties"
                   classpathref="maven.plugin.classpath" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/" />

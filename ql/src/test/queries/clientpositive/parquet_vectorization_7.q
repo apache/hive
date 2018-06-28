@@ -24,11 +24,11 @@ SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0)
+        AND (((ctimestamp1 <= -28800)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > -15)
+              OR ((ctimestamp2 > -28815)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25;
@@ -50,11 +50,11 @@ SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0)
+        AND (((ctimestamp1 <= -28800)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > -15)
+              OR ((ctimestamp2 > -28815)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25;
@@ -79,11 +79,11 @@ SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0.0)
+        AND (((ctimestamp1 <= -28800.0)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > 7.6850000000000005)
+              OR ((ctimestamp2 > -28792.3149999999999995)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25;
@@ -105,11 +105,11 @@ SELECT cboolean1,
        ((-(ctinyint)) % ctinyint) as c9
 FROM   alltypesparquet
 WHERE  ((ctinyint != 0)
-        AND (((ctimestamp1 <= 0.0)
+        AND (((ctimestamp1 <= -28800.0)
           OR ((ctinyint = cint)
                OR (cstring2 LIKE 'ss')))
           AND ((988888 < cdouble)
-              OR ((ctimestamp2 > 7.6850000000000005)
+              OR ((ctimestamp2 > -28792.3149999999999995)
                   AND (3569 >= cdouble)))))
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25;

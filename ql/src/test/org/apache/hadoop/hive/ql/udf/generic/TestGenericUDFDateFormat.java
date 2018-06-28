@@ -17,21 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
-import org.junit.Assume;
 
 public class TestGenericUDFDateFormat extends TestCase {
 
@@ -67,24 +65,18 @@ public class TestGenericUDFDateFormat extends TestCase {
   }
 
   public void testWrongDateStr() throws HiveException {
-    boolean caught = false;
-    try {
-      GenericUDFDateFormat udf = new GenericUDFDateFormat();
-      ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-      Text fmtText = new Text("EEEE");
-      ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
-              .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
-      ObjectInspector[] arguments = { valueOI0, valueOI1 };
+    GenericUDFDateFormat udf = new GenericUDFDateFormat();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    Text fmtText = new Text("EEEE");
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
+    ObjectInspector[] arguments = {valueOI0, valueOI1};
 
-      udf.initialize(arguments);
-      runAndVerifyStr("2016-02-30 10:30:45", fmtText, "Tuesday", udf);
-      runAndVerifyStr("2014-01-32", fmtText, "Saturday", udf);
-      runAndVerifyStr("01/14/2014", fmtText, null, udf);
-      runAndVerifyStr(null, fmtText, null, udf);
-    } catch (HiveException e) {
-      caught = true;
-    }
-    assertTrue(caught);
+    udf.initialize(arguments);
+    runAndVerifyStr("2016-02-30 10:30:45", fmtText, "Tuesday", udf);
+    runAndVerifyStr("2014-01-32", fmtText, "Saturday", udf);
+    runAndVerifyStr("01/14/2014", fmtText, null, udf);
+    runAndVerifyStr(null, fmtText, null, udf);
   }
 
   public void testDateFormatDate() throws HiveException {
@@ -165,7 +157,7 @@ public class TestGenericUDFDateFormat extends TestCase {
 
   private void runAndVerifyDate(String str, Text fmtText, String expResult, GenericUDF udf)
       throws HiveException {
-    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new DateWritable(
+    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new DateWritableV2(
         Date.valueOf(str)) : null);
     DeferredObject valueObj1 = new DeferredJavaObject(fmtText);
     DeferredObject[] args = { valueObj0, valueObj1 };
@@ -175,7 +167,7 @@ public class TestGenericUDFDateFormat extends TestCase {
 
   private void runAndVerifyTs(String str, Text fmtText, String expResult, GenericUDF udf)
       throws HiveException {
-    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new TimestampWritable(
+    DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new TimestampWritableV2(
         Timestamp.valueOf(str)) : null);
     DeferredObject valueObj1 = new DeferredJavaObject(fmtText);
     DeferredObject[] args = { valueObj0, valueObj1 };

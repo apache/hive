@@ -17,24 +17,18 @@
  */
 package org.apache.hive.common.util;
 
-import java.sql.Date;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
+import org.apache.hadoop.hive.common.type.Date;
 
 /**
  * Date parser class for Hive.
  */
 public class DateParser {
-  private final SimpleDateFormat formatter;
-  private final ParsePosition pos;
+
   public DateParser() {
-    formatter = new SimpleDateFormat("yyyy-MM-dd");
-    // TODO: ideally, we should set formatter.setLenient(false);
-    pos = new ParsePosition(0);
-  }
+ }
 
   public Date parseDate(String strValue) {
-    Date result = new Date(0);
+    Date result = new Date();
     if (parseDate(strValue, result)) {
       return result;
     }
@@ -42,12 +36,16 @@ public class DateParser {
   }
 
   public boolean parseDate(String strValue, Date result) {
-    pos.setIndex(0);
-    java.util.Date parsedVal = formatter.parse(strValue, pos);
+    Date parsedVal;
+    try {
+      parsedVal = Date.valueOf(strValue);
+    } catch (IllegalArgumentException e) {
+      parsedVal = null;
+    }
     if (parsedVal == null) {
       return false;
     }
-    result.setTime(parsedVal.getTime());
+    result.setTimeInMillis(parsedVal.toEpochMilli());
     return true;
   }
 }

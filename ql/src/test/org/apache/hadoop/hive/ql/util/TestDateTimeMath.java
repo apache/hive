@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.util;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.junit.*;
@@ -92,9 +92,9 @@ public class TestDateTimeMath {
     try {
       TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
       checkTimestampIntervalYearMonthArithmetic("2001-01-01 01:02:03", plus, "0-6",
-          "2001-07-01 02:02:03");
+          "2001-07-01 01:02:03");
         checkTimestampIntervalYearMonthArithmetic("2001-07-01 01:02:03", plus, "0-6",
-          "2002-01-01 00:02:03");
+          "2002-01-01 01:02:03");
 
       TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
       checkTimestampIntervalYearMonthArithmetic("2001-01-01 01:02:03", plus, "0-6",
@@ -215,15 +215,15 @@ public class TestDateTimeMath {
       checkTsIntervalDayTimeArithmetic("2015-03-08 01:59:58", plus, "0 0:0:01",
           "2015-03-08 01:59:59");
       checkTsIntervalDayTimeArithmetic("2015-03-08 01:59:59", plus, "0 0:0:01",
-          "2015-03-08 03:00:00");
+          "2015-03-08 02:00:00");
       checkTsIntervalDayTimeArithmetic("2015-03-08 03:00:00", minus, "0 0:0:01",
-          "2015-03-08 01:59:59");
+          "2015-03-08 02:59:59");
       checkTsIntervalDayTimeArithmetic("2015-03-08 01:59:59.995", plus, "0 0:0:0.005",
-          "2015-03-08 03:00:00");
+          "2015-03-08 02:00:00");
       checkTsIntervalDayTimeArithmetic("2015-03-08 01:59:59.995", plus, "0 0:0:0.0051",
-          "2015-03-08 03:00:00.0001");
+          "2015-03-08 02:00:00.0001");
       checkTsIntervalDayTimeArithmetic("2015-03-08 03:00:00", minus, "0 0:0:0.005",
-          "2015-03-08 01:59:59.995");
+          "2015-03-08 02:59:59.995");
       checkTsIntervalDayTimeArithmetic("2015-11-01 01:59:58", plus, "0 0:0:01",
           "2015-11-01 01:59:59");
       checkTsIntervalDayTimeArithmetic("2015-11-01 01:59:59", plus, "0 0:0:01",
@@ -286,10 +286,10 @@ public class TestDateTimeMath {
     TimeZone originalTz = TimeZone.getDefault();
     try {
       TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
-      checkTsArithmetic("1999-12-15 00:00:00", "1999-09-15 00:00:00", "91 1:0:0");
-      checkTsArithmetic("1999-09-15 00:00:00", "1999-12-15 00:00:00", "-91 1:0:0");
-      checkTsArithmetic("1999-12-15 00:00:00", "1995-09-15 00:00:00", "1552 1:0:0");
-      checkTsArithmetic("1995-09-15 00:00:00", "1999-12-15 00:00:00", "-1552 1:0:0");
+      checkTsArithmetic("1999-12-15 00:00:00", "1999-09-15 00:00:00", "91 0:0:0");
+      checkTsArithmetic("1999-09-15 00:00:00", "1999-12-15 00:00:00", "-91 0:0:0");
+      checkTsArithmetic("1999-12-15 00:00:00", "1995-09-15 00:00:00", "1552 0:0:0");
+      checkTsArithmetic("1995-09-15 00:00:00", "1999-12-15 00:00:00", "-1552 0:0:0");
 
       TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
       checkTsArithmetic("1999-12-15 00:00:00", "1999-09-15 00:00:00", "91 0:0:0");

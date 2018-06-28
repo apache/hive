@@ -17,11 +17,10 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import java.sql.Date;
-
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
 /**
@@ -31,7 +30,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 @InterfaceStability.Stable
 public interface DateObjectInspector extends PrimitiveObjectInspector {
 
-  DateWritable getPrimitiveWritableObject(Object o);
+  DateWritableV2 getPrimitiveWritableObject(Object o);
 
   Date getPrimitiveJavaObject(Object o);
 }
