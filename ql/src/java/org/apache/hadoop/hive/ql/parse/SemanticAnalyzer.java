@@ -13433,6 +13433,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Set<String> tableAliases = qb.getTabAliases();
       for (String alias : tableAliases) {
         try {
+          if (DUMMY_TABLE.equals(alias)) {
+            continue;
+          }
           Table table = this.getTableObjectByName(qb.getTabNameForAlias(alias));
           if (table.isTemporary()) {
             throw new SemanticException("View definition references temporary table " + alias);
