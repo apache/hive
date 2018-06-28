@@ -1641,7 +1641,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts,
                                EnvironmentContext environmentContext,
-                               long txnId, String writeIdList)
+                               long txnId, String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException {
     AlterPartitionsRequest req = new AlterPartitionsRequest();
     req.setDbName(dbName);
@@ -3303,7 +3303,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public void alter_partitions(String catName, String dbName, String tblName,
                                List<Partition> newParts,
                                EnvironmentContext environmentContext,
-                               long txnId, String writeIdList) throws
+                               long txnId, String writeIdList, long writeId) throws
       InvalidOperationException, MetaException, TException {
     throw new UnsupportedOperationException();
   }

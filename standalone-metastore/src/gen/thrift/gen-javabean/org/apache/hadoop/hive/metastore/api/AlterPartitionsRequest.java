@@ -43,7 +43,8 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField PARTITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("partitions", org.apache.thrift.protocol.TType.LIST, (short)3);
   private static final org.apache.thrift.protocol.TField ENVIRONMENT_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("environmentContext", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnId", org.apache.thrift.protocol.TType.I64, (short)5);
-  private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)6);
+  private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -56,6 +57,7 @@ import org.slf4j.LoggerFactory;
   private List<Partition> partitions; // required
   private EnvironmentContext environmentContext; // required
   private long txnId; // optional
+  private long writeId; // optional
   private String validWriteIdList; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -65,7 +67,8 @@ import org.slf4j.LoggerFactory;
     PARTITIONS((short)3, "partitions"),
     ENVIRONMENT_CONTEXT((short)4, "environmentContext"),
     TXN_ID((short)5, "txnId"),
-    VALID_WRITE_ID_LIST((short)6, "validWriteIdList");
+    WRITE_ID((short)6, "writeId"),
+    VALID_WRITE_ID_LIST((short)7, "validWriteIdList");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -90,7 +93,9 @@ import org.slf4j.LoggerFactory;
           return ENVIRONMENT_CONTEXT;
         case 5: // TXN_ID
           return TXN_ID;
-        case 6: // VALID_WRITE_ID_LIST
+        case 6: // WRITE_ID
+          return WRITE_ID;
+        case 7: // VALID_WRITE_ID_LIST
           return VALID_WRITE_ID_LIST;
         default:
           return null;
@@ -133,8 +138,9 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
+  private static final int __WRITEID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TXN_ID,_Fields.VALID_WRITE_ID_LIST};
+  private static final _Fields optionals[] = {_Fields.TXN_ID,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -149,6 +155,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EnvironmentContext.class)));
     tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("writeId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -157,6 +165,8 @@ import org.slf4j.LoggerFactory;
 
   public AlterPartitionsRequest() {
     this.txnId = -1L;
+
+    this.writeId = -1L;
 
   }
 
@@ -195,6 +205,7 @@ import org.slf4j.LoggerFactory;
       this.environmentContext = new EnvironmentContext(other.environmentContext);
     }
     this.txnId = other.txnId;
+    this.writeId = other.writeId;
     if (other.isSetValidWriteIdList()) {
       this.validWriteIdList = other.validWriteIdList;
     }
@@ -211,6 +222,8 @@ import org.slf4j.LoggerFactory;
     this.partitions = null;
     this.environmentContext = null;
     this.txnId = -1L;
+
+    this.writeId = -1L;
 
     this.validWriteIdList = null;
   }
@@ -344,6 +357,28 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
   }
 
+  public long getWriteId() {
+    return this.writeId;
+  }
+
+  public void setWriteId(long writeId) {
+    this.writeId = writeId;
+    setWriteIdIsSet(true);
+  }
+
+  public void unsetWriteId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __WRITEID_ISSET_ID);
+  }
+
+  /** Returns true if field writeId is set (has been assigned a value) and false otherwise */
+  public boolean isSetWriteId() {
+    return EncodingUtils.testBit(__isset_bitfield, __WRITEID_ISSET_ID);
+  }
+
+  public void setWriteIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __WRITEID_ISSET_ID, value);
+  }
+
   public String getValidWriteIdList() {
     return this.validWriteIdList;
   }
@@ -409,6 +444,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case WRITE_ID:
+      if (value == null) {
+        unsetWriteId();
+      } else {
+        setWriteId((Long)value);
+      }
+      break;
+
     case VALID_WRITE_ID_LIST:
       if (value == null) {
         unsetValidWriteIdList();
@@ -437,6 +480,9 @@ import org.slf4j.LoggerFactory;
     case TXN_ID:
       return getTxnId();
 
+    case WRITE_ID:
+      return getWriteId();
+
     case VALID_WRITE_ID_LIST:
       return getValidWriteIdList();
 
@@ -461,6 +507,8 @@ import org.slf4j.LoggerFactory;
       return isSetEnvironmentContext();
     case TXN_ID:
       return isSetTxnId();
+    case WRITE_ID:
+      return isSetWriteId();
     case VALID_WRITE_ID_LIST:
       return isSetValidWriteIdList();
     }
@@ -525,6 +573,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_writeId = true && this.isSetWriteId();
+    boolean that_present_writeId = true && that.isSetWriteId();
+    if (this_present_writeId || that_present_writeId) {
+      if (!(this_present_writeId && that_present_writeId))
+        return false;
+      if (this.writeId != that.writeId)
+        return false;
+    }
+
     boolean this_present_validWriteIdList = true && this.isSetValidWriteIdList();
     boolean that_present_validWriteIdList = true && that.isSetValidWriteIdList();
     if (this_present_validWriteIdList || that_present_validWriteIdList) {
@@ -565,6 +622,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_txnId);
     if (present_txnId)
       list.add(txnId);
+
+    boolean present_writeId = true && (isSetWriteId());
+    list.add(present_writeId);
+    if (present_writeId)
+      list.add(writeId);
 
     boolean present_validWriteIdList = true && (isSetValidWriteIdList());
     list.add(present_validWriteIdList);
@@ -628,6 +690,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetTxnId()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnId, other.txnId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetWriteId()).compareTo(other.isSetWriteId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWriteId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.writeId, other.writeId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -697,6 +769,12 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("txnId:");
       sb.append(this.txnId);
+      first = false;
+    }
+    if (isSetWriteId()) {
+      if (!first) sb.append(", ");
+      sb.append("writeId:");
+      sb.append(this.writeId);
       first = false;
     }
     if (isSetValidWriteIdList()) {
@@ -825,7 +903,15 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // VALID_WRITE_ID_LIST
+          case 6: // WRITE_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.writeId = iprot.readI64();
+              struct.setWriteIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // VALID_WRITE_ID_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.validWriteIdList = iprot.readString();
               struct.setValidWriteIdListIsSet(true);
@@ -878,6 +964,11 @@ import org.slf4j.LoggerFactory;
         oprot.writeI64(struct.txnId);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetWriteId()) {
+        oprot.writeFieldBegin(WRITE_ID_FIELD_DESC);
+        oprot.writeI64(struct.writeId);
+        oprot.writeFieldEnd();
+      }
       if (struct.validWriteIdList != null) {
         if (struct.isSetValidWriteIdList()) {
           oprot.writeFieldBegin(VALID_WRITE_ID_LIST_FIELD_DESC);
@@ -916,12 +1007,18 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetTxnId()) {
         optionals.set(0);
       }
-      if (struct.isSetValidWriteIdList()) {
+      if (struct.isSetWriteId()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetValidWriteIdList()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetTxnId()) {
         oprot.writeI64(struct.txnId);
+      }
+      if (struct.isSetWriteId()) {
+        oprot.writeI64(struct.writeId);
       }
       if (struct.isSetValidWriteIdList()) {
         oprot.writeString(struct.validWriteIdList);
@@ -950,12 +1047,16 @@ import org.slf4j.LoggerFactory;
       struct.environmentContext = new EnvironmentContext();
       struct.environmentContext.read(iprot);
       struct.setEnvironmentContextIsSet(true);
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.txnId = iprot.readI64();
         struct.setTxnIdIsSet(true);
       }
       if (incoming.get(1)) {
+        struct.writeId = iprot.readI64();
+        struct.setWriteIdIsSet(true);
+      }
+      if (incoming.get(2)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
       }

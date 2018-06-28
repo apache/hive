@@ -1886,25 +1886,25 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts)
       throws TException {
     alter_partitions(
-        getDefaultCatalog(conf), dbName, tblName, newParts, new EnvironmentContext(), -1, null);
+        getDefaultCatalog(conf), dbName, tblName, newParts, new EnvironmentContext(), -1, null, -1);
   }
 
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts,
                                EnvironmentContext environmentContext) throws TException {
     alter_partitions(
-        getDefaultCatalog(conf), dbName, tblName, newParts, environmentContext, -1, null);
+        getDefaultCatalog(conf), dbName, tblName, newParts, environmentContext, -1, null, -1);
   }
 
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts,
                                EnvironmentContext environmentContext,
-                               long txnId, String writeIdList)
+                               long txnId, String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException {
     //client.alter_partition_with_environment_context(getDefaultCatalog(conf),
       //  dbName, tblName, newParts, environmentContext);
     alter_partitions(getDefaultCatalog(conf),
-        dbName, tblName, newParts, environmentContext, txnId, writeIdList);
+        dbName, tblName, newParts, environmentContext, txnId, writeIdList, writeId);
 
   }
 
@@ -1912,7 +1912,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void alter_partitions(String catName, String dbName, String tblName,
                                List<Partition> newParts,
                                EnvironmentContext environmentContext,
-                               long txnId, String writeIdList) throws TException {
+                               long txnId, String writeIdList, long writeId) throws TException {
     AlterPartitionsRequest req = new AlterPartitionsRequest();
     req.setDbName(prependCatalogToDbName(catName, dbName, conf));
     req.setTableName(tblName);
@@ -1920,6 +1920,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setEnvironmentContext(environmentContext);
     req.setTxnId(txnId);
     req.setValidWriteIdList(writeIdList);
+    req.setWriteId(writeId);
     client.alter_partitions_with_environment_context(req);
   }
 

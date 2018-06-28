@@ -213,6 +213,9 @@
       <field name="txnId">
         <column name="TXN_ID"/>
       </field>
+      <field name="writeId">
+        <column name="WRITE_ID"/>
+      </field>
       <field name="writeIdList">
         <column name="WRITEID_LIST" jdbc-type="CLOB" allows-null="true"/>
       </field>
@@ -497,6 +500,9 @@
       </field>
       <field name="txnId">
         <column name="TXN_ID"/>
+      </field>
+      <field name="writeId">
+        <column name="WRITE_ID"/>
       </field>
       <field name="writeIdList">
         <column name="WRITEID_LIST" jdbc-type="CLOB" allows-null="true"/>

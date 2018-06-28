@@ -3115,7 +3115,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), txnId(true), validWriteIdList(false), isStatsCompliant(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), txnId(true), writeId(true), validWriteIdList(false), isStatsCompliant(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -3135,6 +3135,7 @@ typedef struct _Table__isset {
   bool catName :1;
   bool ownerType :1;
   bool txnId :1;
+  bool writeId :1;
   bool validWriteIdList :1;
   bool isStatsCompliant :1;
 } _Table__isset;
@@ -3144,7 +3145,7 @@ class Table {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), txnId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName(), ownerType((PrincipalType::type)1), txnId(-1LL), writeId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
     ownerType = (PrincipalType::type)1;
 
   }
@@ -3169,6 +3170,7 @@ class Table {
   std::string catName;
   PrincipalType::type ownerType;
   int64_t txnId;
+  int64_t writeId;
   std::string validWriteIdList;
   IsolationLevelCompliance::type isStatsCompliant;
 
@@ -3211,6 +3213,8 @@ class Table {
   void __set_ownerType(const PrincipalType::type val);
 
   void __set_txnId(const int64_t val);
+
+  void __set_writeId(const int64_t val);
 
   void __set_validWriteIdList(const std::string& val);
 
@@ -3270,6 +3274,10 @@ class Table {
       return false;
     else if (__isset.txnId && !(txnId == rhs.txnId))
       return false;
+    if (__isset.writeId != rhs.__isset.writeId)
+      return false;
+    else if (__isset.writeId && !(writeId == rhs.writeId))
+      return false;
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
@@ -3301,7 +3309,7 @@ inline std::ostream& operator<<(std::ostream& out, const Table& obj)
 }
 
 typedef struct _Partition__isset {
-  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), txnId(true), validWriteIdList(false), isStatsCompliant(false) {}
+  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), txnId(true), writeId(true), validWriteIdList(false), isStatsCompliant(false) {}
   bool values :1;
   bool dbName :1;
   bool tableName :1;
@@ -3312,6 +3320,7 @@ typedef struct _Partition__isset {
   bool privileges :1;
   bool catName :1;
   bool txnId :1;
+  bool writeId :1;
   bool validWriteIdList :1;
   bool isStatsCompliant :1;
 } _Partition__isset;
@@ -3321,7 +3330,7 @@ class Partition {
 
   Partition(const Partition&);
   Partition& operator=(const Partition&);
-  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName(), txnId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
+  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName(), txnId(-1LL), writeId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~Partition() throw();
@@ -3335,6 +3344,7 @@ class Partition {
   PrincipalPrivilegeSet privileges;
   std::string catName;
   int64_t txnId;
+  int64_t writeId;
   std::string validWriteIdList;
   IsolationLevelCompliance::type isStatsCompliant;
 
@@ -3359,6 +3369,8 @@ class Partition {
   void __set_catName(const std::string& val);
 
   void __set_txnId(const int64_t val);
+
+  void __set_writeId(const int64_t val);
 
   void __set_validWriteIdList(const std::string& val);
 
@@ -3391,6 +3403,10 @@ class Partition {
     if (__isset.txnId != rhs.__isset.txnId)
       return false;
     else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.writeId != rhs.__isset.writeId)
+      return false;
+    else if (__isset.writeId && !(writeId == rhs.writeId))
       return false;
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
@@ -3599,7 +3615,7 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionListComposingS
 }
 
 typedef struct _PartitionSpec__isset {
-  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false), catName(false), txnId(true), validWriteIdList(false), isStatsCompliant(false) {}
+  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false), catName(false), txnId(true), writeId(true), validWriteIdList(false), isStatsCompliant(false) {}
   bool dbName :1;
   bool tableName :1;
   bool rootPath :1;
@@ -3607,6 +3623,7 @@ typedef struct _PartitionSpec__isset {
   bool partitionList :1;
   bool catName :1;
   bool txnId :1;
+  bool writeId :1;
   bool validWriteIdList :1;
   bool isStatsCompliant :1;
 } _PartitionSpec__isset;
@@ -3616,7 +3633,7 @@ class PartitionSpec {
 
   PartitionSpec(const PartitionSpec&);
   PartitionSpec& operator=(const PartitionSpec&);
-  PartitionSpec() : dbName(), tableName(), rootPath(), catName(), txnId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
+  PartitionSpec() : dbName(), tableName(), rootPath(), catName(), txnId(-1LL), writeId(-1LL), validWriteIdList(), isStatsCompliant((IsolationLevelCompliance::type)0) {
   }
 
   virtual ~PartitionSpec() throw();
@@ -3627,6 +3644,7 @@ class PartitionSpec {
   PartitionListComposingSpec partitionList;
   std::string catName;
   int64_t txnId;
+  int64_t writeId;
   std::string validWriteIdList;
   IsolationLevelCompliance::type isStatsCompliant;
 
@@ -3645,6 +3663,8 @@ class PartitionSpec {
   void __set_catName(const std::string& val);
 
   void __set_txnId(const int64_t val);
+
+  void __set_writeId(const int64_t val);
 
   void __set_validWriteIdList(const std::string& val);
 
@@ -3673,6 +3693,10 @@ class PartitionSpec {
     if (__isset.txnId != rhs.__isset.txnId)
       return false;
     else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.writeId != rhs.__isset.writeId)
+      return false;
+    else if (__isset.writeId && !(writeId == rhs.writeId))
       return false;
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
@@ -4623,9 +4647,10 @@ inline std::ostream& operator<<(std::ostream& out, const AggrStats& obj)
 }
 
 typedef struct _SetPartitionsStatsRequest__isset {
-  _SetPartitionsStatsRequest__isset() : needMerge(false), txnId(true), validWriteIdList(false) {}
+  _SetPartitionsStatsRequest__isset() : needMerge(false), txnId(true), writeId(true), validWriteIdList(false) {}
   bool needMerge :1;
   bool txnId :1;
+  bool writeId :1;
   bool validWriteIdList :1;
 } _SetPartitionsStatsRequest__isset;
 
@@ -4634,13 +4659,14 @@ class SetPartitionsStatsRequest {
 
   SetPartitionsStatsRequest(const SetPartitionsStatsRequest&);
   SetPartitionsStatsRequest& operator=(const SetPartitionsStatsRequest&);
-  SetPartitionsStatsRequest() : needMerge(0), txnId(-1LL), validWriteIdList() {
+  SetPartitionsStatsRequest() : needMerge(0), txnId(-1LL), writeId(-1LL), validWriteIdList() {
   }
 
   virtual ~SetPartitionsStatsRequest() throw();
   std::vector<ColumnStatistics>  colStats;
   bool needMerge;
   int64_t txnId;
+  int64_t writeId;
   std::string validWriteIdList;
 
   _SetPartitionsStatsRequest__isset __isset;
@@ -4650,6 +4676,8 @@ class SetPartitionsStatsRequest {
   void __set_needMerge(const bool val);
 
   void __set_txnId(const int64_t val);
+
+  void __set_writeId(const int64_t val);
 
   void __set_validWriteIdList(const std::string& val);
 
@@ -4664,6 +4692,10 @@ class SetPartitionsStatsRequest {
     if (__isset.txnId != rhs.__isset.txnId)
       return false;
     else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.writeId != rhs.__isset.writeId)
+      return false;
+    else if (__isset.writeId && !(writeId == rhs.writeId))
       return false;
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
@@ -13442,8 +13474,9 @@ inline std::ostream& operator<<(std::ostream& out, const GetRuntimeStatsRequest&
 }
 
 typedef struct _AlterPartitionsRequest__isset {
-  _AlterPartitionsRequest__isset() : txnId(true), validWriteIdList(false) {}
+  _AlterPartitionsRequest__isset() : txnId(true), writeId(true), validWriteIdList(false) {}
   bool txnId :1;
+  bool writeId :1;
   bool validWriteIdList :1;
 } _AlterPartitionsRequest__isset;
 
@@ -13452,7 +13485,7 @@ class AlterPartitionsRequest {
 
   AlterPartitionsRequest(const AlterPartitionsRequest&);
   AlterPartitionsRequest& operator=(const AlterPartitionsRequest&);
-  AlterPartitionsRequest() : dbName(), tableName(), txnId(-1LL), validWriteIdList() {
+  AlterPartitionsRequest() : dbName(), tableName(), txnId(-1LL), writeId(-1LL), validWriteIdList() {
   }
 
   virtual ~AlterPartitionsRequest() throw();
@@ -13461,6 +13494,7 @@ class AlterPartitionsRequest {
   std::vector<Partition>  partitions;
   EnvironmentContext environmentContext;
   int64_t txnId;
+  int64_t writeId;
   std::string validWriteIdList;
 
   _AlterPartitionsRequest__isset __isset;
@@ -13474,6 +13508,8 @@ class AlterPartitionsRequest {
   void __set_environmentContext(const EnvironmentContext& val);
 
   void __set_txnId(const int64_t val);
+
+  void __set_writeId(const int64_t val);
 
   void __set_validWriteIdList(const std::string& val);
 
@@ -13490,6 +13526,10 @@ class AlterPartitionsRequest {
     if (__isset.txnId != rhs.__isset.txnId)
       return false;
     else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.writeId != rhs.__isset.writeId)
+      return false;
+    else if (__isset.writeId && !(writeId == rhs.writeId))
       return false;
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;

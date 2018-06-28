@@ -4881,7 +4881,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final List<Partition> new_parts)
         throws TException {
       alter_partitions_with_environment_context(
-          db_name, tbl_name, new_parts, null, -1, null);
+          db_name, tbl_name, new_parts, null, -1, null, -1);
     }
 
     @Override
@@ -4891,13 +4891,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       alter_partitions_with_environment_context(
           req.getDbName(), req.getTableName(), req.getPartitions(), req.getEnvironmentContext(),
           req.isSetTxnId() ? req.getTxnId() : -1,
-          req.isSetValidWriteIdList() ? req.getValidWriteIdList() : null);
+          req.isSetValidWriteIdList() ? req.getValidWriteIdList() : null,
+          req.isSetWriteId() ? req.getWriteId() : -1);
       return new AlterPartitionsResponse();
     }
 
     private void alter_partitions_with_environment_context(final String db_name, final String tbl_name,
         final List<Partition> new_parts, EnvironmentContext environmentContext,
-        long txnId, String writeIdList)
+        long txnId, String writeIdList, long writeId)
         throws TException {
 
       String[] parsedDbName = parseDbName(db_name, conf);
@@ -4921,7 +4922,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           firePreEvent(new PreAlterPartitionEvent(parsedDbName[DB_NAME], tbl_name, null, tmpPart, this));
         }
         oldParts = alterHandler.alterPartitions(getMS(), wh, parsedDbName[CAT_NAME],
-            parsedDbName[DB_NAME], tbl_name, new_parts, environmentContext, txnId, writeIdList, this);
+            parsedDbName[DB_NAME], tbl_name, new_parts, environmentContext, txnId, writeIdList, writeId, this);
         Iterator<Partition> olditr = oldParts.iterator();
         // Only fetch the table if we have a listener that needs it.
         Table table = null;

@@ -6452,6 +6452,11 @@ void Table::__set_txnId(const int64_t val) {
 __isset.txnId = true;
 }
 
+void Table::__set_writeId(const int64_t val) {
+  this->writeId = val;
+__isset.writeId = true;
+}
+
 void Table::__set_validWriteIdList(const std::string& val) {
   this->validWriteIdList = val;
 __isset.validWriteIdList = true;
@@ -6665,6 +6670,14 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
         }
         break;
       case 20:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->writeId);
+          this->__isset.writeId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 21:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->validWriteIdList);
           this->__isset.validWriteIdList = true;
@@ -6672,7 +6685,7 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 21:
+      case 22:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast249;
           xfer += iprot->readI32(ecast249);
@@ -6799,13 +6812,18 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeI64(this->txnId);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.writeId) {
+    xfer += oprot->writeFieldBegin("writeId", ::apache::thrift::protocol::T_I64, 20);
+    xfer += oprot->writeI64(this->writeId);
+    xfer += oprot->writeFieldEnd();
+  }
   if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 20);
+    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 21);
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.isStatsCompliant) {
-    xfer += oprot->writeFieldBegin("isStatsCompliant", ::apache::thrift::protocol::T_I32, 21);
+    xfer += oprot->writeFieldBegin("isStatsCompliant", ::apache::thrift::protocol::T_I32, 22);
     xfer += oprot->writeI32((int32_t)this->isStatsCompliant);
     xfer += oprot->writeFieldEnd();
   }
@@ -6835,6 +6853,7 @@ void swap(Table &a, Table &b) {
   swap(a.catName, b.catName);
   swap(a.ownerType, b.ownerType);
   swap(a.txnId, b.txnId);
+  swap(a.writeId, b.writeId);
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.isStatsCompliant, b.isStatsCompliant);
   swap(a.__isset, b.__isset);
@@ -6860,6 +6879,7 @@ Table::Table(const Table& other252) {
   catName = other252.catName;
   ownerType = other252.ownerType;
   txnId = other252.txnId;
+  writeId = other252.writeId;
   validWriteIdList = other252.validWriteIdList;
   isStatsCompliant = other252.isStatsCompliant;
   __isset = other252.__isset;
@@ -6884,6 +6904,7 @@ Table& Table::operator=(const Table& other253) {
   catName = other253.catName;
   ownerType = other253.ownerType;
   txnId = other253.txnId;
+  writeId = other253.writeId;
   validWriteIdList = other253.validWriteIdList;
   isStatsCompliant = other253.isStatsCompliant;
   __isset = other253.__isset;
@@ -6911,6 +6932,7 @@ void Table::printTo(std::ostream& out) const {
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ", " << "ownerType="; (__isset.ownerType ? (out << to_string(ownerType)) : (out << "<null>"));
   out << ", " << "txnId="; (__isset.txnId ? (out << to_string(txnId)) : (out << "<null>"));
+  out << ", " << "writeId="; (__isset.writeId ? (out << to_string(writeId)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "isStatsCompliant="; (__isset.isStatsCompliant ? (out << to_string(isStatsCompliant)) : (out << "<null>"));
   out << ")";
@@ -6962,6 +6984,11 @@ __isset.catName = true;
 void Partition::__set_txnId(const int64_t val) {
   this->txnId = val;
 __isset.txnId = true;
+}
+
+void Partition::__set_writeId(const int64_t val) {
+  this->writeId = val;
+__isset.writeId = true;
 }
 
 void Partition::__set_validWriteIdList(const std::string& val) {
@@ -7103,6 +7130,14 @@ uint32_t Partition::read(::apache::thrift::protocol::TProtocol* iprot) {
         }
         break;
       case 11:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->writeId);
+          this->__isset.writeId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 12:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->validWriteIdList);
           this->__isset.validWriteIdList = true;
@@ -7110,7 +7145,7 @@ uint32_t Partition::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 12:
+      case 13:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast266;
           xfer += iprot->readI32(ecast266);
@@ -7197,13 +7232,18 @@ uint32_t Partition::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeI64(this->txnId);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.writeId) {
+    xfer += oprot->writeFieldBegin("writeId", ::apache::thrift::protocol::T_I64, 11);
+    xfer += oprot->writeI64(this->writeId);
+    xfer += oprot->writeFieldEnd();
+  }
   if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 11);
+    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 12);
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.isStatsCompliant) {
-    xfer += oprot->writeFieldBegin("isStatsCompliant", ::apache::thrift::protocol::T_I32, 12);
+    xfer += oprot->writeFieldBegin("isStatsCompliant", ::apache::thrift::protocol::T_I32, 13);
     xfer += oprot->writeI32((int32_t)this->isStatsCompliant);
     xfer += oprot->writeFieldEnd();
   }
@@ -7224,6 +7264,7 @@ void swap(Partition &a, Partition &b) {
   swap(a.privileges, b.privileges);
   swap(a.catName, b.catName);
   swap(a.txnId, b.txnId);
+  swap(a.writeId, b.writeId);
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.isStatsCompliant, b.isStatsCompliant);
   swap(a.__isset, b.__isset);
@@ -7240,6 +7281,7 @@ Partition::Partition(const Partition& other269) {
   privileges = other269.privileges;
   catName = other269.catName;
   txnId = other269.txnId;
+  writeId = other269.writeId;
   validWriteIdList = other269.validWriteIdList;
   isStatsCompliant = other269.isStatsCompliant;
   __isset = other269.__isset;
@@ -7255,6 +7297,7 @@ Partition& Partition::operator=(const Partition& other270) {
   privileges = other270.privileges;
   catName = other270.catName;
   txnId = other270.txnId;
+  writeId = other270.writeId;
   validWriteIdList = other270.validWriteIdList;
   isStatsCompliant = other270.isStatsCompliant;
   __isset = other270.__isset;
@@ -7273,6 +7316,7 @@ void Partition::printTo(std::ostream& out) const {
   out << ", " << "privileges="; (__isset.privileges ? (out << to_string(privileges)) : (out << "<null>"));
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ", " << "txnId="; (__isset.txnId ? (out << to_string(txnId)) : (out << "<null>"));
+  out << ", " << "writeId="; (__isset.writeId ? (out << to_string(writeId)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "isStatsCompliant="; (__isset.isStatsCompliant ? (out << to_string(isStatsCompliant)) : (out << "<null>"));
   out << ")";
@@ -7779,6 +7823,11 @@ void PartitionSpec::__set_txnId(const int64_t val) {
 __isset.txnId = true;
 }
 
+void PartitionSpec::__set_writeId(const int64_t val) {
+  this->writeId = val;
+__isset.writeId = true;
+}
+
 void PartitionSpec::__set_validWriteIdList(const std::string& val) {
   this->validWriteIdList = val;
 __isset.validWriteIdList = true;
@@ -7867,6 +7916,14 @@ uint32_t PartitionSpec::read(::apache::thrift::protocol::TProtocol* iprot) {
         }
         break;
       case 8:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->writeId);
+          this->__isset.writeId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->validWriteIdList);
           this->__isset.validWriteIdList = true;
@@ -7874,7 +7931,7 @@ uint32_t PartitionSpec::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 9:
+      case 10:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast303;
           xfer += iprot->readI32(ecast303);
@@ -7933,13 +7990,18 @@ uint32_t PartitionSpec::write(::apache::thrift::protocol::TProtocol* oprot) cons
     xfer += oprot->writeI64(this->txnId);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.writeId) {
+    xfer += oprot->writeFieldBegin("writeId", ::apache::thrift::protocol::T_I64, 8);
+    xfer += oprot->writeI64(this->writeId);
+    xfer += oprot->writeFieldEnd();
+  }
   if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 9);
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.isStatsCompliant) {
-    xfer += oprot->writeFieldBegin("isStatsCompliant", ::apache::thrift::protocol::T_I32, 9);
+    xfer += oprot->writeFieldBegin("isStatsCompliant", ::apache::thrift::protocol::T_I32, 10);
     xfer += oprot->writeI32((int32_t)this->isStatsCompliant);
     xfer += oprot->writeFieldEnd();
   }
@@ -7957,6 +8019,7 @@ void swap(PartitionSpec &a, PartitionSpec &b) {
   swap(a.partitionList, b.partitionList);
   swap(a.catName, b.catName);
   swap(a.txnId, b.txnId);
+  swap(a.writeId, b.writeId);
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.isStatsCompliant, b.isStatsCompliant);
   swap(a.__isset, b.__isset);
@@ -7970,6 +8033,7 @@ PartitionSpec::PartitionSpec(const PartitionSpec& other304) {
   partitionList = other304.partitionList;
   catName = other304.catName;
   txnId = other304.txnId;
+  writeId = other304.writeId;
   validWriteIdList = other304.validWriteIdList;
   isStatsCompliant = other304.isStatsCompliant;
   __isset = other304.__isset;
@@ -7982,6 +8046,7 @@ PartitionSpec& PartitionSpec::operator=(const PartitionSpec& other305) {
   partitionList = other305.partitionList;
   catName = other305.catName;
   txnId = other305.txnId;
+  writeId = other305.writeId;
   validWriteIdList = other305.validWriteIdList;
   isStatsCompliant = other305.isStatsCompliant;
   __isset = other305.__isset;
@@ -7997,6 +8062,7 @@ void PartitionSpec::printTo(std::ostream& out) const {
   out << ", " << "partitionList="; (__isset.partitionList ? (out << to_string(partitionList)) : (out << "<null>"));
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ", " << "txnId="; (__isset.txnId ? (out << to_string(txnId)) : (out << "<null>"));
+  out << ", " << "writeId="; (__isset.writeId ? (out << to_string(writeId)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "isStatsCompliant="; (__isset.isStatsCompliant ? (out << to_string(isStatsCompliant)) : (out << "<null>"));
   out << ")";
@@ -10317,6 +10383,11 @@ void SetPartitionsStatsRequest::__set_txnId(const int64_t val) {
 __isset.txnId = true;
 }
 
+void SetPartitionsStatsRequest::__set_writeId(const int64_t val) {
+  this->writeId = val;
+__isset.writeId = true;
+}
+
 void SetPartitionsStatsRequest::__set_validWriteIdList(const std::string& val) {
   this->validWriteIdList = val;
 __isset.validWriteIdList = true;
@@ -10381,6 +10452,14 @@ uint32_t SetPartitionsStatsRequest::read(::apache::thrift::protocol::TProtocol* 
         }
         break;
       case 4:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->writeId);
+          this->__isset.writeId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->validWriteIdList);
           this->__isset.validWriteIdList = true;
@@ -10429,8 +10508,13 @@ uint32_t SetPartitionsStatsRequest::write(::apache::thrift::protocol::TProtocol*
     xfer += oprot->writeI64(this->txnId);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.writeId) {
+    xfer += oprot->writeFieldBegin("writeId", ::apache::thrift::protocol::T_I64, 4);
+    xfer += oprot->writeI64(this->writeId);
+    xfer += oprot->writeFieldEnd();
+  }
   if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 5);
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
@@ -10444,6 +10528,7 @@ void swap(SetPartitionsStatsRequest &a, SetPartitionsStatsRequest &b) {
   swap(a.colStats, b.colStats);
   swap(a.needMerge, b.needMerge);
   swap(a.txnId, b.txnId);
+  swap(a.writeId, b.writeId);
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.__isset, b.__isset);
 }
@@ -10452,6 +10537,7 @@ SetPartitionsStatsRequest::SetPartitionsStatsRequest(const SetPartitionsStatsReq
   colStats = other354.colStats;
   needMerge = other354.needMerge;
   txnId = other354.txnId;
+  writeId = other354.writeId;
   validWriteIdList = other354.validWriteIdList;
   __isset = other354.__isset;
 }
@@ -10459,6 +10545,7 @@ SetPartitionsStatsRequest& SetPartitionsStatsRequest::operator=(const SetPartiti
   colStats = other355.colStats;
   needMerge = other355.needMerge;
   txnId = other355.txnId;
+  writeId = other355.writeId;
   validWriteIdList = other355.validWriteIdList;
   __isset = other355.__isset;
   return *this;
@@ -10469,6 +10556,7 @@ void SetPartitionsStatsRequest::printTo(std::ostream& out) const {
   out << "colStats=" << to_string(colStats);
   out << ", " << "needMerge="; (__isset.needMerge ? (out << to_string(needMerge)) : (out << "<null>"));
   out << ", " << "txnId="; (__isset.txnId ? (out << to_string(txnId)) : (out << "<null>"));
+  out << ", " << "writeId="; (__isset.writeId ? (out << to_string(writeId)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ")";
 }
@@ -31831,6 +31919,11 @@ void AlterPartitionsRequest::__set_txnId(const int64_t val) {
 __isset.txnId = true;
 }
 
+void AlterPartitionsRequest::__set_writeId(const int64_t val) {
+  this->writeId = val;
+__isset.writeId = true;
+}
+
 void AlterPartitionsRequest::__set_validWriteIdList(const std::string& val) {
   this->validWriteIdList = val;
 __isset.validWriteIdList = true;
@@ -31914,6 +32007,14 @@ uint32_t AlterPartitionsRequest::read(::apache::thrift::protocol::TProtocol* ipr
         }
         break;
       case 6:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->writeId);
+          this->__isset.writeId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 7:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->validWriteIdList);
           this->__isset.validWriteIdList = true;
@@ -31975,8 +32076,13 @@ uint32_t AlterPartitionsRequest::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeI64(this->txnId);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.writeId) {
+    xfer += oprot->writeFieldBegin("writeId", ::apache::thrift::protocol::T_I64, 6);
+    xfer += oprot->writeI64(this->writeId);
+    xfer += oprot->writeFieldEnd();
+  }
   if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 7);
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
@@ -31992,6 +32098,7 @@ void swap(AlterPartitionsRequest &a, AlterPartitionsRequest &b) {
   swap(a.partitions, b.partitions);
   swap(a.environmentContext, b.environmentContext);
   swap(a.txnId, b.txnId);
+  swap(a.writeId, b.writeId);
   swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.__isset, b.__isset);
 }
@@ -32002,6 +32109,7 @@ AlterPartitionsRequest::AlterPartitionsRequest(const AlterPartitionsRequest& oth
   partitions = other1187.partitions;
   environmentContext = other1187.environmentContext;
   txnId = other1187.txnId;
+  writeId = other1187.writeId;
   validWriteIdList = other1187.validWriteIdList;
   __isset = other1187.__isset;
 }
@@ -32011,6 +32119,7 @@ AlterPartitionsRequest& AlterPartitionsRequest::operator=(const AlterPartitionsR
   partitions = other1188.partitions;
   environmentContext = other1188.environmentContext;
   txnId = other1188.txnId;
+  writeId = other1188.writeId;
   validWriteIdList = other1188.validWriteIdList;
   __isset = other1188.__isset;
   return *this;
@@ -32023,6 +32132,7 @@ void AlterPartitionsRequest::printTo(std::ostream& out) const {
   out << ", " << "partitions=" << to_string(partitions);
   out << ", " << "environmentContext=" << to_string(environmentContext);
   out << ", " << "txnId="; (__isset.txnId ? (out << to_string(txnId)) : (out << "<null>"));
+  out << ", " << "writeId="; (__isset.writeId ? (out << to_string(writeId)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ")";
 }

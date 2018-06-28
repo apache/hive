@@ -1989,6 +1989,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (TxnUtils.isTransactionalTable(tbl)) {
       mtable.setTxnId(tbl.getTxnId());
       mtable.setWriteIdList(tbl.getValidWriteIdList());
+      mtable.setWriteId(tbl.getWriteId());
     }
     return mtable;
   }
@@ -2601,6 +2602,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (TxnUtils.isTransactionalTable(mt.getParameters())) {
       mpart.setTxnId(part.getTxnId());
       mpart.setWriteIdList(part.getValidWriteIdList());
+      mpart.setWriteId(part.getWriteId());
     }
     return mpart;
   }
@@ -4141,12 +4143,13 @@ public class ObjectStore implements RawStore, Configurable {
           TxnUtils.isTransactionalTable(newTable)) {
         // Check concurrent INSERT case and set false to the flag.
         if (!isCurrentStatsValidForTheQuery(oldt, newt.getTxnId(), newt.getWriteIdList(),
-                -1, true)) {
+                newt.getWriteId(), true)) {
           StatsSetupConst.setBasicStatsState(oldt.getParameters(), StatsSetupConst.FALSE);
           LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table " +
                   dbname + "." + name + ". will be made persistent.");
         }
         oldt.setTxnId(newTable.getTxnId());
+        oldt.setWriteId(newTable.getWriteId());
         oldt.setWriteIdList(newTable.getValidWriteIdList());
       }
 
@@ -4231,13 +4234,14 @@ public class ObjectStore implements RawStore, Configurable {
         TxnUtils.isTransactionalTable(table.getParameters())) {
       // Check concurrent INSERT case and set false to the flag.
       if (!isCurrentStatsValidForTheQuery(oldp, newp.getTxnId(), newp.getWriteIdList(),
-              -1, true)) {
+              newp.getWriteId(), true)) {
         StatsSetupConst.setBasicStatsState(oldp.getParameters(), StatsSetupConst.FALSE);
         LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition " +
                 dbname + "." + name + "." + oldp.getPartitionName() + " will be made persistent.");
       }
       oldp.setTxnId(newPart.getTxnId());
       oldp.setWriteIdList(newPart.getValidWriteIdList());
+      oldp.setWriteId(newPart.getWriteId());
     }
     return oldCD;
   }
@@ -4271,7 +4275,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void alterPartitions(String catName, String dbname, String name,
                               List<List<String>> part_vals, List<Partition> newParts,
-                              long txnId, String writeIdList)
+                              long txnId, String writeIdList, long writeId)
       throws InvalidObjectException, MetaException {
     boolean success = false;
     Exception e = null;
@@ -4284,6 +4288,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (txnId > 0) {
           tmpPart.setTxnId(txnId);
           tmpPart.setValidWriteIdList(writeIdList);
+          tmpPart.setWriteId(writeId);
         }
         MColumnDescriptor oldCd = alterPartitionNoTxn(catName, dbname, name, tmpPartVals, tmpPart);
         if (oldCd != null) {
@@ -12245,16 +12250,18 @@ public class ObjectStore implements RawStore, Configurable {
    * ~ COLUMN_STATE_ACCURATE(CSA) state is true
    * ~ Isolation-level (snapshot) compliant with the query
    * @param tbl                    MTable of the stats entity
-   * @param txnId                  transaction id of the query
+   * @param queryTxnId             transaction id of the query
    * @param queryValidWriteIdList  valid writeId list of the query
+   * @param queryWriteId           writeId of the query
    * @Precondition   "tbl" should be retrieved from the TBLS table.
    */
   private boolean isCurrentStatsValidForTheQuery(
-      MTable tbl, long txnId, String queryValidWriteIdList,
-      long statsWriteId, boolean checkConcurrentWrites)
+      MTable tbl, long queryTxnId, String queryValidWriteIdList,
+      long queryWriteId, boolean checkConcurrentWrites)
       throws MetaException {
-    return isCurrentStatsValidForTheQuery(tbl.getTxnId(), tbl.getParameters(), tbl.getWriteIdList(),
-        txnId, queryValidWriteIdList, statsWriteId, checkConcurrentWrites);
+    return isCurrentStatsValidForTheQuery(tbl.getParameters(), tbl.getTxnId(),
+        tbl.getWriteIdList(),tbl.getWriteId(),
+        queryTxnId, queryValidWriteIdList, queryWriteId, checkConcurrentWrites);
   }
 
   /**
@@ -12272,18 +12279,34 @@ public class ObjectStore implements RawStore, Configurable {
    * @Precondition   "part" should be retrieved from the PARTITIONS table.
    */
   private boolean isCurrentStatsValidForTheQuery(
-      MPartition part, long txnId, String queryValidWriteIdList,
-      long statsWriteId, boolean checkConcurrentWrites)
+      MPartition part, long queryTxnId, String queryValidWriteIdList,
+      long queryWriteId, boolean checkConcurrentWrites)
       throws MetaException {
-    return isCurrentStatsValidForTheQuery(part.getTxnId(), part.getParameters(), part.getWriteIdList(),
-        txnId, queryValidWriteIdList, statsWriteId, checkConcurrentWrites);
+    return isCurrentStatsValidForTheQuery(part.getParameters(), part.getTxnId(),
+        part.getWriteIdList(), part.getWriteId(),
+        queryTxnId, queryValidWriteIdList, queryWriteId, checkConcurrentWrites);
   }
 
   private boolean isCurrentStatsValidForTheQuery(
-      long statsTxnId, Map<String, String> statsParams, String statsWriteIdList,
+      Map<String, String> statsParams, long statsTxnId,
+      String statsWriteIdList, long statsWriteId,
       long queryTxnId, String queryValidWriteIdList,
-      long statsWriteId, boolean checkConcurrentWrites)
+      long queryWriteId, boolean checkConcurrentWrites)
       throws MetaException {
+    // If checkConcurrentWrites is true and
+    // statsWriteId or queryWriteId is -1 or 0,
+    // return true since -1 or 0 is not a valid writeId.
+    if (checkConcurrentWrites) {
+      if (queryWriteId < 1) {
+        LOG.error("Cannot check for concurrent inserts without a valid query write ID");
+        return false;
+      }
+      if (statsWriteId < 1) {
+        return true; // TODO: this is questionable, too
+      }
+    }
+
+
     // Note: can be changed to debug/info to verify the calls.
     LOG.trace("Called with stats {}, {}; query {}, {}; checkConcurrentWrites {}",
         statsTxnId, statsWriteIdList, queryTxnId, queryValidWriteIdList, checkConcurrentWrites);
@@ -12325,6 +12348,6 @@ public class ObjectStore implements RawStore, Configurable {
     ValidWriteIdList list4TheQuery = new ValidReaderWriteIdList(queryValidWriteIdList);
 
     return !checkConcurrentWrites ? TxnIdUtils.checkEquivalentWriteIds(list4Stats, list4TheQuery) :
-            !TxnIdUtils.areTheseConcurrentWrites(list4Stats, list4TheQuery, statsWriteId);
+            !TxnIdUtils.areTheseConcurrentWrites(list4Stats, statsWriteId, list4TheQuery, queryWriteId);
   }
 }

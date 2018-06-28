@@ -843,7 +843,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
     client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext(),
-        -1, null);
+        -1, null, -1);
   }
 
   @Test(expected = InvalidOperationException.class)

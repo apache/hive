@@ -641,7 +641,7 @@ public class Hive {
 
       // Take a table snapshot and set it to newTbl.
       if (transactional) {
-        setTableSnapshotForTransactionalTable(conf, newTbl);
+        setTableSnapshotForTransactionalTable(conf, newTbl, true);
       }
 
       getMSC().alter_table_with_environmentContext(dbName, tblName, newTbl.getTTable(), environmentContext);
@@ -724,7 +724,7 @@ public class Hive {
         newPart.setLocation(location);
       }
       if (transactional) {
-        setTableSnapshotForTransactionalPartition(conf, newPart);
+        setTableSnapshotForTransactionalPartition(conf, newPart, true);
       }
       getSynchronizedMSC().alter_partition(dbName, tblName, newPart.getTPartition(), environmentContext);
 
@@ -769,7 +769,7 @@ public class Hive {
     try {
       AcidUtils.TableSnapshot tableSnapshot = null;
       if (transactional) {
-        tableSnapshot = AcidUtils.getTableSnapshot(conf, newParts.get(0).getTable());
+        tableSnapshot = AcidUtils.getTableSnapshot(conf, newParts.get(0).getTable(), true);
       }
       // Remove the DDL time so that it gets refreshed
       for (Partition tmpPart: newParts) {
@@ -785,7 +785,8 @@ public class Hive {
       }
       getMSC().alter_partitions(names[0], names[1], newTParts, environmentContext,
           tableSnapshot != null ? tableSnapshot.getTxnId() : -1,
-          tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
+          tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null,
+          tableSnapshot != null ? tableSnapshot.getWriteId() : -1    );
     } catch (MetaException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
@@ -917,7 +918,7 @@ public class Hive {
         }
       }
       // Set table snapshot to api.Table to make it persistent.
-      setTableSnapshotForTransactionalTable(conf, tbl);
+      setTableSnapshotForTransactionalTable(conf, tbl, true);
       if (primaryKeys == null && foreignKeys == null
               && uniqueConstraints == null && notNullConstraints == null && defaultConstraints == null
           && checkConstraints == null) {
@@ -1813,7 +1814,7 @@ public class Hive {
       Partition newTPart = oldPart != null ? oldPart : new Partition(tbl, partSpec, newPartPath);
       alterPartitionSpecInMemory(tbl, partSpec, newTPart.getTPartition(), inheritTableSpecs, newPartPath.toString());
       validatePartition(newTPart);
-      setTableSnapshotForTransactionalPartition(conf, newTPart);
+      setTableSnapshotForTransactionalPartition(conf, newTPart, true);
 
       // If config is set, table is not temporary and partition being inserted exists, capture
       // the list of files added. For not yet existing partitions (insert overwrite to new partition
@@ -4448,9 +4449,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       ColumnStatisticsDesc statsDesc = colStat.getStatsDesc();
       Table tbl = getTable(statsDesc.getDbName(), statsDesc.getTableName());
 
-      AcidUtils.TableSnapshot tableSnapshot  = AcidUtils.getTableSnapshot(conf, tbl);
+      AcidUtils.TableSnapshot tableSnapshot  = AcidUtils.getTableSnapshot(conf, tbl, true);
       request.setTxnId(tableSnapshot != null ? tableSnapshot.getTxnId() : 0);
       request.setValidWriteIdList(tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
+      request.setWriteId(tableSnapshot != null ? tableSnapshot.getWriteId() : 0);
       return getMSC().setPartitionColumnStatistics(request);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
@@ -5331,24 +5333,33 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   private void setTableSnapshotForTransactionalTable(
-      HiveConf conf, Table newTbl)
+      HiveConf conf, Table newTbl, boolean isStatsUpdater)
       throws LockException {
 
     org.apache.hadoop.hive.metastore.api.Table newTTbl = newTbl.getTTable();
-    AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, newTbl);
+    AcidUtils.TableSnapshot tableSnapshot =
+            AcidUtils.getTableSnapshot(conf, newTbl, isStatsUpdater);
 
     newTTbl.setTxnId(tableSnapshot != null ? tableSnapshot.getTxnId() : -1);
     newTTbl.setValidWriteIdList(
         tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
+    if (isStatsUpdater) {
+      newTTbl.setWriteId(tableSnapshot != null ? tableSnapshot.getWriteId() : -1);
+    }
   }
 
-  private void setTableSnapshotForTransactionalPartition(HiveConf conf, Partition partition)
+  private void setTableSnapshotForTransactionalPartition(
+      HiveConf conf, Partition partition, boolean isStatsUpdater)
       throws LockException {
 
-    AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, partition.getTable());
+    AcidUtils.TableSnapshot tableSnapshot =
+            AcidUtils.getTableSnapshot(conf, partition.getTable(), isStatsUpdater);
     org.apache.hadoop.hive.metastore.api.Partition tpartition = partition.getTPartition();
     tpartition.setTxnId(tableSnapshot != null ? tableSnapshot.getTxnId() : -1);
     tpartition.setValidWriteIdList(
         tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
+    if (isStatsUpdater) {
+      tpartition.setWriteId(tableSnapshot != null ? tableSnapshot.getWriteId() : -1);
+    }
   }
 }

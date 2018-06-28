@@ -516,12 +516,13 @@ public interface RawStore extends Configurable {
    *                  partition, not just the pieces to update.
    * @param txnId transaction id of the transaction that called this method.
    * @param writeIdList valid write id list of the transaction on the current table
+   * @param writeid write id of the transaction for the table
    * @throws InvalidObjectException One of the indicated partitions does not exist.
    * @throws MetaException error accessing the RDBMS.
    */
   void alterPartitions(String catName, String db_name, String tbl_name,
       List<List<String>> part_vals_list, List<Partition> new_parts,
-      long txnId, String writeIdList)
+      long txnId, String writeIdList, long writeId)
       throws InvalidObjectException, MetaException;
 
   /**
