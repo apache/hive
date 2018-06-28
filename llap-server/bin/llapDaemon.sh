@@ -113,7 +113,7 @@ case $startStop in
     #rotate_log $logOut
     echo starting llapdaemon, logging to $logLog and $logOut
     export LLAP_DAEMON_LOGFILE=${LLAP_DAEMON_LOG_BASE}.log
-    nohup nice -n $LLAP_DAEMON_NICENESS "$LLAP_DAEMON_BIN_HOME"/runLlapDaemon.sh run  >> "$logOut" 2>&1 < /dev/null &
+    nohup nice -n $LLAP_DAEMON_NICENESS "$LLAP_DAEMON_BIN_HOME"/runLlapDaemon.sh run  >> "$logOut" 2>&1 < /dev/null
     echo $! > $pid
     # capture the ulimit output
     echo "ulimit -a" >> $logOut
