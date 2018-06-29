@@ -33,6 +33,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -41,13 +44,10 @@ import java.util.stream.Collectors;
 public class TestSparkStatistics {
 
   @Test
-  public void testSparkStatistics() {
+  public void testSparkStatistics() throws MalformedURLException {
+    String confDir = "../../data/conf/spark/standalone/hive-site.xml";
+    HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
     HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-            SQLStdHiveAuthorizerFactory.class.getName());
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "spark");
-    conf.set("spark.master", "local-cluster[1,2,1024]");
     conf.set("spark.local.dir", Paths.get(System.getProperty("test.tmp.dir"),
             "TestSparkStatistics-local-dir").toString());
 
