@@ -24,19 +24,22 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.SequenceFile.Reader;
 
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
 
 public class ProtoMessageReader<T extends MessageLite> implements Closeable {
   private final Path filePath;
-  private final SequenceFile.Reader reader;
+  private final Reader reader;
   private final ProtoMessageWritable<T> writable;
 
   ProtoMessageReader(Configuration conf, Path filePath, Parser<T> parser) throws IOException {
     this.filePath = filePath;
-    this.reader = new SequenceFile.Reader(conf, SequenceFile.Reader.file(filePath));
+    // The writer does not flush the length during hflush. Using length options lets us read
+    // past length in the FileStatus but it will throw EOFException during a read instead
+    // of returning null.
+    this.reader = new Reader(conf, Reader.file(filePath), Reader.length(Long.MAX_VALUE));
     this.writable = new ProtoMessageWritable<>(parser);
   }
 

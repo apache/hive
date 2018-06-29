@@ -86,6 +86,7 @@ import static org.apache.hadoop.hive.ql.plan.HiveOperation.UNLOCKTABLE;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -100,6 +101,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -180,6 +182,9 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     private final DatePartitionedLogger<HiveHookEventProto> logger;
     private final ExecutorService eventHandler;
     private final ExecutorService logWriter;
+    private int logFileCount = 0;
+    private ProtoMessageWriter<HiveHookEventProto> writer;
+    private LocalDate writerDate;
 
     EventLogger(HiveConf conf, Clock clock) {
       this.clock = clock;
@@ -233,6 +238,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
           LOG.warn("Got interrupted exception while waiting for events to be flushed", e);
         }
       }
+      IOUtils.closeQuietly(writer);
     }
 
     void handle(HookContext hookContext) {
@@ -284,12 +290,24 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     private static final int MAX_RETRIES = 2;
     private void writeEvent(HiveHookEventProto event) {
       for (int retryCount = 0; retryCount <= MAX_RETRIES; ++retryCount) {
-        try (ProtoMessageWriter<HiveHookEventProto> writer = logger.getWriter(logFileName)) {
+        try {
+          if (writer == null || !logger.getNow().toLocalDate().equals(writerDate)) {
+            if (writer != null) {
+              // Day change over case, reset the logFileCount.
+              logFileCount = 0;
+              IOUtils.closeQuietly(writer);
+            }
+            // increment log file count, if creating a new writer.
+            writer = logger.getWriter(logFileName + "_" + ++logFileCount);
+            writerDate = logger.getDateFromDir(writer.getPath().getParent().getName());
+          }
           writer.writeProto(event);
-          // This does not work hence, opening and closing file for every event.
-          // writer.hflush();
+          writer.hflush();
           return;
         } catch (IOException e) {
+          // Something wrong with writer, lets close and reopen.
+          IOUtils.closeQuietly(writer);
+          writer = null;
           if (retryCount < MAX_RETRIES) {
             LOG.warn("Error writing proto message for query {}, eventType: {}, retryCount: {}," +
                 " error: {} ", event.getHiveQueryId(), event.getEventType(), retryCount,
