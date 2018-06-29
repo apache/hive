@@ -95,9 +95,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   Map<String, ColumnStatsList>                    colStatsCache;
   AtomicInteger                                   noColsMissingStats;
 
-  protected static final Logger                      LOG             = LoggerFactory
-                                                                      .getLogger(RelOptHiveTable.class
-                                                                          .getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(RelOptHiveTable.class.getName());
 
   public RelOptHiveTable(RelOptSchema calciteSchema, String qualifiedTblName,
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
