@@ -180,8 +180,9 @@ public class TestSparkSessionManagerImpl {
         "initial executor number 5 must between min executor number10 and max executor number 50");
 
     // Other exceptions which defaults to SPARK_CREATE_CLIENT_ERROR
-    e = new Exception("Other exception");
-    checkHiveException(ss, e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, "Other exception");
+    e = new java.lang.NoClassDefFoundError("org/apache/spark/SparkConf");
+    checkHiveException(ss, e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR,
+        "java.lang.NoClassDefFoundError: org/apache/spark/SparkConf");
   }
 
   private void checkHiveException(SparkSessionImpl ss, Throwable e, ErrorMsg expectedErrMsg) {
