@@ -220,11 +220,12 @@ public class Metrics {
           reporters.add(reporter);
           scheduledReporters.add(reporter);
         } else if (reporterName.startsWith("hadoop") || reporterName.endsWith("metrics2reporter")) {
+          String applicationName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METRICS_HADOOP2_COMPONENT_NAME);
           HadoopMetrics2Reporter reporter = HadoopMetrics2Reporter.forRegistry(registry)
               .convertRatesTo(TimeUnit.SECONDS)
               .convertDurationsTo(TimeUnit.MILLISECONDS)
-              .build(DefaultMetricsSystem.initialize("metastore"), "metastore", "Runtime metadata" +
-                  " catalog", "general-metadata");
+              .build(DefaultMetricsSystem.initialize(applicationName), applicationName, "Runtime metadata" +
+                  " catalog", "General");
           reporter.start(1, TimeUnit.MINUTES);
           reporters.add(reporter);
           scheduledReporters.add(reporter);
