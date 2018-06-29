@@ -21,21 +21,31 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.spark.serializer.KryoRegistrator;
+import org.apache.spark.SparkConf;
+import org.apache.spark.serializer.KryoSerializer;
+
 
 /**
- * Kryo registrator for shuffle data, i.e. HiveKey and BytesWritable.
- *
- * Active use (e.g. reflection to get a class instance) of this class on hive side can cause
- * problems because kryo is relocated in hive-exec.
+ * A {@link KryoSerializer} that does not serialize hash codes while serializing a
+ * {@link HiveKey}. This decreases the amount of data to be shuffled during a Spark shuffle.
  */
-public class HiveKryoRegistrator implements KryoRegistrator {
+public class NoHashCodeKryoSerializer extends KryoSerializer {
+
+  private static final long serialVersionUID = 3350910170041648022L;
+
+  public NoHashCodeKryoSerializer(SparkConf conf) {
+    super(conf);
+  }
+
   @Override
-  public void registerClasses(Kryo kryo) {
+  public Kryo newKryo() {
+    Kryo kryo = super.newKryo();
     kryo.register(HiveKey.class, new HiveKeySerializer());
-    kryo.register(BytesWritable.class, new BytesWritableSerializer());
+    kryo.register(BytesWritable.class, new HiveKryoRegistrator.BytesWritableSerializer());
+    return kryo;
   }
 
   private static class HiveKeySerializer extends Serializer<HiveKey> {
@@ -43,30 +53,13 @@ public class HiveKryoRegistrator implements KryoRegistrator {
     public void write(Kryo kryo, Output output, HiveKey object) {
       output.writeVarInt(object.getLength(), true);
       output.write(object.getBytes(), 0, object.getLength());
-      output.writeVarInt(object.hashCode(), false);
     }
 
     public HiveKey read(Kryo kryo, Input input, Class<HiveKey> type) {
       int len = input.readVarInt(true);
       byte[] bytes = new byte[len];
       input.readBytes(bytes);
-      return new HiveKey(bytes, input.readVarInt(false));
+      return new HiveKey(bytes);
     }
-  }
-
-  static class BytesWritableSerializer extends Serializer<BytesWritable> {
-
-    public void write(Kryo kryo, Output output, BytesWritable object) {
-      output.writeVarInt(object.getLength(), true);
-      output.write(object.getBytes(), 0, object.getLength());
-    }
-
-    public BytesWritable read(Kryo kryo, Input input, Class<BytesWritable> type) {
-      int len = input.readVarInt(true);
-      byte[] bytes = new byte[len];
-      input.readBytes(bytes);
-      return new BytesWritable(bytes);
-    }
-
   }
 }

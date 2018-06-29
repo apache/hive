@@ -18,9 +18,11 @@
 
 package org.apache.hive.jdbc;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.MalformedURLException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -65,7 +67,9 @@ public class TestJdbcWithMiniHS2ErasureCoding {
   private static HiveConf conf;
   private Connection hs2Conn = null;
 
-  private static HiveConf createHiveOnSparkConf() {
+  private static HiveConf createHiveOnSparkConf() throws MalformedURLException {
+    String confDir = "../../data/conf/spark/standalone/hive-site.xml";
+    HiveConf.setHiveSiteLocation(new File(confDir).toURI().toURL());
     HiveConf hiveConf = new HiveConf();
     // Tell dfs not to consider load when choosing a datanode as this can cause failure as
     // in a test we do not have spare datanode capacity.
