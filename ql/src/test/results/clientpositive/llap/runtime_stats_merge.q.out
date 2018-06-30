@@ -1,0 +1,194 @@
+PREHOOK: query: create table lineitem1 (L_ORDERKEY integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineitem1
+POSTHOOK: query: create table lineitem1 (L_ORDERKEY integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineitem1
+PREHOOK: query: insert into lineitem1 values (1),(2),(3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@lineitem1
+POSTHOOK: query: insert into lineitem1 values (1),(2),(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@lineitem1
+POSTHOOK: Lineage: lineitem1.l_orderkey SCRIPT []
+PREHOOK: query: create table lineitem2
+ stored as orc  TBLPROPERTIES ('transactional'='true')
+  as select * from lineitem1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@lineitem1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineitem2
+POSTHOOK: query: create table lineitem2
+ stored as orc  TBLPROPERTIES ('transactional'='true')
+  as select * from lineitem1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@lineitem1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineitem2
+POSTHOOK: Lineage: lineitem2.l_orderkey SIMPLE [(lineitem1)lineitem1.FieldSchema(name:l_orderkey, type:int, comment:null), ]
+PREHOOK: query: create table lineitem_stage
+ stored as orc  TBLPROPERTIES ('transactional'='true')
+  as select * from lineitem1 limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@lineitem1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineitem_stage
+POSTHOOK: query: create table lineitem_stage
+ stored as orc  TBLPROPERTIES ('transactional'='true')
+  as select * from lineitem1 limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@lineitem1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineitem_stage
+POSTHOOK: Lineage: lineitem_stage.l_orderkey SIMPLE [(lineitem1)lineitem1.FieldSchema(name:l_orderkey, type:int, comment:null), ]
+PREHOOK: query: analyze table lineitem2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@lineitem2
+PREHOOK: Output: default@lineitem2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table lineitem2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@lineitem2
+POSTHOOK: Output: default@lineitem2
+#### A masked pattern was here ####
+PREHOOK: query: analyze table lineitem_stage compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@lineitem_stage
+PREHOOK: Output: default@lineitem_stage
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table lineitem_stage compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@lineitem_stage
+POSTHOOK: Output: default@lineitem_stage
+#### A masked pattern was here ####
+PREHOOK: query: explain reoptimization
+merge into lineitem2 using
+	(select * from lineitem_stage) sub
+	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
+	when matched then delete
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem2
+PREHOOK: Input: default@lineitem_stage
+PREHOOK: Output: default@lineitem2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: explain reoptimization
+merge into lineitem2 using
+	(select * from lineitem_stage) sub
+	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
+	when matched then delete
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem2
+POSTHOOK: Input: default@lineitem_stage
+POSTHOOK: Output: default@lineitem2
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(lineitem2)lineitem2.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+PREHOOK: query: explain reoptimization
+merge into lineitem2 using
+	(select * from lineitem_stage) sub
+	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
+	when matched then delete
+PREHOOK: type: QUERY
+POSTHOOK: query: explain reoptimization
+merge into lineitem2 using
+	(select * from lineitem_stage) sub
+	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
+	when matched then delete
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(lineitem2)lineitem2.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+Vertex dependency in root stage
+Map 2 <- Map 1 (BROADCAST_EDGE)
+Reducer 3 <- Map 2 (SIMPLE_EDGE)
+Reducer 4 <- Map 2 (SIMPLE_EDGE)
+
+Stage-4
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.lineitem2"}
+        Stage-3
+          Dependency Collection{}
+            Stage-2
+              Reducer 3 vectorized, llap
+              File Output Operator [FS_51]
+                table:{"name:":"default.lineitem2"}
+                Select Operator [SEL_50] (runtime: rows=1 width=76)
+                  Output:["_col0"]
+                <-Map 2 [SIMPLE_EDGE] llap
+                  SHUFFLE [RS_10]
+                    PartitionCols:UDFToInteger(_col0)
+                    Select Operator [SEL_9] (runtime: rows=1 width=76)
+                      Output:["_col0"]
+                      Filter Operator [FIL_32] (runtime: rows=1 width=84)
+                        predicate:(_col4 = _col0)
+                        Map Join Operator [MAPJOIN_38] (runtime: rows=1 width=84)
+                          Conds:FIL_36.l_orderkey=RS_42._col0(Inner),Output:["_col0","_col3","_col4"]
+                        <-Map 1 [BROADCAST_EDGE] vectorized, llap
+                          BROADCAST [RS_42]
+                            PartitionCols:_col0
+                            Select Operator [SEL_41] (runtime: rows=1 width=4)
+                              Output:["_col0"]
+                              Filter Operator [FIL_40] (runtime: rows=1 width=4)
+                                predicate:l_orderkey is not null
+                                TableScan [TS_0] (runtime: rows=1 width=4)
+                                  default@lineitem_stage,lineitem_stage, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["l_orderkey"]
+                        <-Filter Operator [FIL_36] (runtime: rows=3 width=4)
+                            predicate:l_orderkey is not null
+                            TableScan [TS_2] (runtime: rows=3 width=4)
+                              default@lineitem2,lineitem2, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["l_orderkey"]
+              Reducer 4 llap
+              File Output Operator [FS_22]
+                table:{"name:":"default.merge_tmp_table"}
+                Select Operator [SEL_21] (runtime: rows=0 width=-1)
+                  Output:["_col0"]
+                  Filter Operator [FIL_33] (runtime: rows=0 width=-1)
+                    predicate:(_col1 > 1L)
+                    Group By Operator [GBY_19] (runtime: rows=1 width=84)
+                      Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
+                    <-Map 2 [SIMPLE_EDGE] llap
+                      SHUFFLE [RS_18]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_17] (runtime: rows=1 width=84)
+                          Output:["_col0","_col1"],aggregations:["count()"],keys:_col3
+                          Select Operator [SEL_16] (runtime: rows=1 width=84)
+                            Output:["_col3"]
+                            Filter Operator [FIL_34] (runtime: rows=1 width=84)
+                              predicate:(_col4 = _col0)
+                               Please refer to the previous Map Join Operator [MAPJOIN_38]
+              File Output Operator [FS_29]
+                Select Operator [SEL_28] (runtime: rows=1 width=424)
+                  Output:["_col0"]
+                  Group By Operator [GBY_27] (runtime: rows=1 width=424)
+                    Output:["_col0"],aggregations:["compute_stats(val, 'hll')"]
+                    Select Operator [SEL_24] (runtime: rows=0 width=-1)
+                      Output:["val"]
+                       Please refer to the previous Select Operator [SEL_21]
+Stage-5
+  Stats Work{}
+    Stage-1
+      Move Operator
+        table:{"name:":"default.merge_tmp_table"}
+         Please refer to the previous Stage-3
+
+PREHOOK: query: merge into lineitem2 using
+	(select * from lineitem_stage) sub
+	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
+	when matched then delete
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem2
+PREHOOK: Input: default@lineitem_stage
+PREHOOK: Output: default@lineitem2
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: merge into lineitem2 using
+	(select * from lineitem_stage) sub
+	on sub.L_ORDERKEY = lineitem2.L_ORDERKEY
+	when matched then delete
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem2
+POSTHOOK: Input: default@lineitem_stage
+POSTHOOK: Output: default@lineitem2
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(lineitem2)lineitem2.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
