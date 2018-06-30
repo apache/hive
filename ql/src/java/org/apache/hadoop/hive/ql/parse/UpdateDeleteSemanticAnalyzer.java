@@ -536,6 +536,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
     rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
     rewrittenCtx.setExplainPlan(ctx.isExplainPlan());
+    rewrittenCtx.setStatsSource(ctx.getStatsSource());
+    rewrittenCtx.setPlanMapper(ctx.getPlanMapper());
     rewrittenCtx.setIsUpdateDeleteMerge(true);
     rewrittenCtx.setCmd(rewrittenQueryStr.toString());
 
@@ -770,7 +772,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
   /**
    * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it.
-   * Since HiveLexer.g is written such that it strips away any ` (back ticks) around 
+   * Since HiveLexer.g is written such that it strips away any ` (back ticks) around
    * quoted identifiers we need to add those back to generated SQL.
    * Additionally, the parser only produces tokens of type Identifier and never
    * QuotedIdentifier (HIVE-6013).  So here we just quote all identifiers.
@@ -808,7 +810,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
   /**
    * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it without
    * needing to understand what it is (except for QuotedIdentifiers)
-   * 
+   *
    */
   private String getMatchedText(ASTNode n) {
     quotedIdenfierHelper.visit(n);
@@ -1096,10 +1098,10 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       .append("\n  SELECT cardinality_violation(")
       .append(getSimpleTableName(target)).append(".ROW__ID");
       addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
-    
+
       rewrittenQueryStr.append(")\n WHERE ").append(onClauseAsString)
       .append(" GROUP BY ").append(getSimpleTableName(target)).append(".ROW__ID");
-    
+
       addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
 
       rewrittenQueryStr.append(" HAVING count(*) > 1");
