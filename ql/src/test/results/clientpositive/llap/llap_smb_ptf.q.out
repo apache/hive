@@ -1,0 +1,740 @@
+PREHOOK: query: CREATE TABLE cogs_alc_rqst_trgt_offs(
+  cogs_alc_rqst_trgt_offs_id int,
+  last_upd_sysusr_id string,
+  last_upd_ts string,
+  cogs_alc_rqst_id int,
+  offs_mnr_acct_nbr smallint,
+  offs_mjr_acct_nbr smallint,
+  offs_amt decimal(17,4),
+  offs_dr_cr_ind string,
+  offs_loc_nbr string,
+  offs_loc_typ_cd string,
+  offs_sap_co_nbr string)
+PARTITIONED BY (
+  part_dt string)
+CLUSTERED BY (cogs_alc_rqst_id)
+SORTED BY (cogs_alc_rqst_id)
+INTO 5 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='SNAPPY')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cogs_alc_rqst_trgt_offs
+POSTHOOK: query: CREATE TABLE cogs_alc_rqst_trgt_offs(
+  cogs_alc_rqst_trgt_offs_id int,
+  last_upd_sysusr_id string,
+  last_upd_ts string,
+  cogs_alc_rqst_id int,
+  offs_mnr_acct_nbr smallint,
+  offs_mjr_acct_nbr smallint,
+  offs_amt decimal(17,4),
+  offs_dr_cr_ind string,
+  offs_loc_nbr string,
+  offs_loc_typ_cd string,
+  offs_sap_co_nbr string)
+PARTITIONED BY (
+  part_dt string)
+CLUSTERED BY (cogs_alc_rqst_id)
+SORTED BY (cogs_alc_rqst_id)
+INTO 5 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='SNAPPY')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cogs_alc_rqst_trgt_offs
+PREHOOK: query: CREATE TABLE cogs_alc_rqst(
+  cogs_alc_rqst_id int,
+  crt_sysusr_id string,
+  crt_ts string,
+  last_upd_sysusr_id string,
+  last_upd_ts string,
+  cogs_alc_bth_prcss_id int,
+  cogs_alc_mde_cd smallint,
+  cogs_alc_stat_cd smallint,
+  cogs_alc_typ_cd smallint,
+  cogs_alc_basis_cd smallint,
+  fin_post_typ_cd smallint,
+  eff_bgn_dt string,
+  eff_end_dt string,
+  cogs_alc_pstruct_cd smallint,
+  cogs_alc_os_cd smallint,
+  cogs_alc_fti_cd smallint,
+  cogs_alc_os_fti_cd smallint,
+  cogs_alc_rqst_dt string,
+  bgn_fscl_yr smallint,
+  bgn_fscl_wk_nbr smallint,
+  bgn_fscl_prd_nbr smallint,
+  bgn_dt string,
+  end_fscl_yr smallint,
+  end_fscl_wk_nbr smallint,
+  end_fscl_prd_nbr smallint,
+  end_dt string,
+  alloc_amt decimal(17,4),
+  dr_cr_ind string,
+  alloc_pvndr_nbr int,
+  alloc_mvndr_nbr int,
+  purch_vndr_typ_ind string,
+  alloc_mjr_acct_nbr smallint,
+  alloc_mnr_acct_nbr smallint,
+  cogs_alc_prnt_rqst_id int,
+  cogs_alc_prnt_rqst_dt string,
+  sap_xref_txt string,
+  stats_xref_txt string,
+  alloc_stat_dest_ind string,
+  invc_nbr string,
+  ap_po_nbr string,
+  bth_src_file_line_nbr int,
+  cogs_alc_bth_src_xref_id string,
+  mer_alloc_flg string,
+  sap_snd_flg string)
+PARTITIONED BY (
+  part_dt string)
+CLUSTERED BY (cogs_alc_rqst_id)
+SORTED BY (cogs_alc_rqst_id)
+INTO 5 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='SNAPPY',
+'totalSize'='820240')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cogs_alc_rqst
+POSTHOOK: query: CREATE TABLE cogs_alc_rqst(
+  cogs_alc_rqst_id int,
+  crt_sysusr_id string,
+  crt_ts string,
+  last_upd_sysusr_id string,
+  last_upd_ts string,
+  cogs_alc_bth_prcss_id int,
+  cogs_alc_mde_cd smallint,
+  cogs_alc_stat_cd smallint,
+  cogs_alc_typ_cd smallint,
+  cogs_alc_basis_cd smallint,
+  fin_post_typ_cd smallint,
+  eff_bgn_dt string,
+  eff_end_dt string,
+  cogs_alc_pstruct_cd smallint,
+  cogs_alc_os_cd smallint,
+  cogs_alc_fti_cd smallint,
+  cogs_alc_os_fti_cd smallint,
+  cogs_alc_rqst_dt string,
+  bgn_fscl_yr smallint,
+  bgn_fscl_wk_nbr smallint,
+  bgn_fscl_prd_nbr smallint,
+  bgn_dt string,
+  end_fscl_yr smallint,
+  end_fscl_wk_nbr smallint,
+  end_fscl_prd_nbr smallint,
+  end_dt string,
+  alloc_amt decimal(17,4),
+  dr_cr_ind string,
+  alloc_pvndr_nbr int,
+  alloc_mvndr_nbr int,
+  purch_vndr_typ_ind string,
+  alloc_mjr_acct_nbr smallint,
+  alloc_mnr_acct_nbr smallint,
+  cogs_alc_prnt_rqst_id int,
+  cogs_alc_prnt_rqst_dt string,
+  sap_xref_txt string,
+  stats_xref_txt string,
+  alloc_stat_dest_ind string,
+  invc_nbr string,
+  ap_po_nbr string,
+  bth_src_file_line_nbr int,
+  cogs_alc_bth_src_xref_id string,
+  mer_alloc_flg string,
+  sap_snd_flg string)
+PARTITIONED BY (
+  part_dt string)
+CLUSTERED BY (cogs_alc_rqst_id)
+SORTED BY (cogs_alc_rqst_id)
+INTO 5 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='SNAPPY',
+'totalSize'='820240')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cogs_alc_rqst
+PREHOOK: query: CREATE TABLE cogs_alc_stat(
+  cogs_alc_bth_prcss_id int,
+  cogs_alc_rqst_id int,
+  cogs_alc_stat_cd smallint,
+  last_upd_pgm_id string,
+  last_upd_ts string,
+  d_stat_cd string,
+  intrvl_cnt int)
+PARTITIONED BY (
+  part_stat_desc string)
+CLUSTERED BY (cogs_alc_rqst_id)
+SORTED BY (cogs_alc_rqst_id)
+INTO 5 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cogs_alc_stat
+POSTHOOK: query: CREATE TABLE cogs_alc_stat(
+  cogs_alc_bth_prcss_id int,
+  cogs_alc_rqst_id int,
+  cogs_alc_stat_cd smallint,
+  last_upd_pgm_id string,
+  last_upd_ts string,
+  d_stat_cd string,
+  intrvl_cnt int)
+PARTITIONED BY (
+  part_stat_desc string)
+CLUSTERED BY (cogs_alc_rqst_id)
+SORTED BY (cogs_alc_rqst_id)
+INTO 5 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cogs_alc_stat
+PREHOOK: query: CREATE TABLE int_cogs_alc_post_stg(
+  cogs_alc_rqst_id int,
+  cogs_alc_rqst_dt string,
+  loc_nbr string,
+  loc_typ_cd string,
+  mvndr_nbr int,
+  mer_dept_nbr smallint,
+  sku_nbr int,
+  last_upd_pgm_id string,
+  last_upd_ts string,
+  cogs_alc_bth_prcss_id int,
+  alloc_assg_ind string,
+  alloc_stat_dest_ind string,
+  bgn_dt string,
+  end_dt string,
+  pvndr_nbr int,
+  ibu_id string,
+  ext_cost_amt decimal(22,9),
+  ext_cost_rnd_amt decimal(17,4),
+  ext_retl_amt decimal(22,9),
+  ext_retl_rnd_amt decimal(17,4),
+  alloc_mjr_acct_nbr smallint,
+  alloc_mnr_acct_nbr smallint,
+  recpt_typ_cd string,
+  recpt_sub_typ_cd string,
+  onln_rlse_typ_ind string,
+  rcvd_unt_cnt int,
+  ord_unt_qty int,
+  purch_typ_ind string,
+  keyrec_typ_ind string,
+  key_xfer_nbr int,
+  dtl_rcvd_dt string,
+  po_nbr string,
+  invc_nbr string,
+  invc_dt string,
+  pj_trans_typ_cd string,
+  src_sub_sys_cd string,
+  fin_sys_adoc_nbr string,
+  rga_txt string,
+  rtv_evnt_txt string,
+  rtv_evnt_ts string,
+  stk_flow_thru_ind string,
+  po_crt_dt string,
+  upc_cd string,
+  fin_post_typ_cd smallint,
+  offs_flg string,
+  sap_co_nbr string,
+  cost_ctr_id string,
+  cogs_alc_stat_cd smallint,
+  acct_typ_ind string,
+  dom_purch_inv_ind string)
+PARTITIONED BY (
+  part_dt string)
+CLUSTERED BY (cogs_alc_rqst_id)
+SORTED BY (cogs_alc_rqst_id)
+INTO 5 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='SNAPPY')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@int_cogs_alc_post_stg
+POSTHOOK: query: CREATE TABLE int_cogs_alc_post_stg(
+  cogs_alc_rqst_id int,
+  cogs_alc_rqst_dt string,
+  loc_nbr string,
+  loc_typ_cd string,
+  mvndr_nbr int,
+  mer_dept_nbr smallint,
+  sku_nbr int,
+  last_upd_pgm_id string,
+  last_upd_ts string,
+  cogs_alc_bth_prcss_id int,
+  alloc_assg_ind string,
+  alloc_stat_dest_ind string,
+  bgn_dt string,
+  end_dt string,
+  pvndr_nbr int,
+  ibu_id string,
+  ext_cost_amt decimal(22,9),
+  ext_cost_rnd_amt decimal(17,4),
+  ext_retl_amt decimal(22,9),
+  ext_retl_rnd_amt decimal(17,4),
+  alloc_mjr_acct_nbr smallint,
+  alloc_mnr_acct_nbr smallint,
+  recpt_typ_cd string,
+  recpt_sub_typ_cd string,
+  onln_rlse_typ_ind string,
+  rcvd_unt_cnt int,
+  ord_unt_qty int,
+  purch_typ_ind string,
+  keyrec_typ_ind string,
+  key_xfer_nbr int,
+  dtl_rcvd_dt string,
+  po_nbr string,
+  invc_nbr string,
+  invc_dt string,
+  pj_trans_typ_cd string,
+  src_sub_sys_cd string,
+  fin_sys_adoc_nbr string,
+  rga_txt string,
+  rtv_evnt_txt string,
+  rtv_evnt_ts string,
+  stk_flow_thru_ind string,
+  po_crt_dt string,
+  upc_cd string,
+  fin_post_typ_cd smallint,
+  offs_flg string,
+  sap_co_nbr string,
+  cost_ctr_id string,
+  cogs_alc_stat_cd smallint,
+  acct_typ_ind string,
+  dom_purch_inv_ind string)
+PARTITIONED BY (
+  part_dt string)
+CLUSTERED BY (cogs_alc_rqst_id)
+SORTED BY (cogs_alc_rqst_id)
+INTO 5 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\n'
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='SNAPPY')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@int_cogs_alc_post_stg
+PREHOOK: query: EXPLAIN
+SELECT status_rqst.*
+FROM (
+  SELECT status_rnk.cogs_alc_rqst_id,
+         rqst.fin_post_typ_cd,
+         rqst.dr_cr_ind,
+         rqst.cogs_alc_typ_cd,
+         rqst.mer_alloc_flg,
+         rqst.cogs_alc_basis_cd,
+         rqst.end_dt,
+         offs_trgt.offs_mnr_acct_nbr,
+         offs_trgt.offs_mjr_acct_nbr,
+         offs_trgt.offs_dr_cr_ind,
+         offs_trgt.offs_sap_co_nbr,
+         offs_trgt.offs_loc_nbr,
+         '201611160940'
+  FROM (
+    SELECT distinct cogs_alc_rqst_id,
+                    last_upd_ts AS rnk
+    FROM COGS_ALC_STAT ) status_rnk
+    JOIN (
+      SELECT fin_post_typ_cd,
+             dr_cr_ind,
+             cogs_alc_typ_cd,
+             mer_alloc_flg,
+             cogs_alc_rqst_id,
+             cogs_alc_rqst_dt,
+             cogs_alc_basis_cd,
+             end_dt,
+             Row_number( )
+             over (
+             PARTITION BY cogs_alc_rqst_id, last_upd_ts
+             ORDER BY last_upd_ts  ) AS rnk
+      FROM COGS_ALC_RQST ) rqst
+      ON ( rqst.cogs_alc_rqst_id = status_rnk.cogs_alc_rqst_id )
+    LEFT OUTER JOIN (
+      SELECT OFF.*
+      FROM (
+        SELECT offs_mnr_acct_nbr,
+               offs_mjr_acct_nbr,
+               offs_loc_nbr,
+               offs_dr_cr_ind,
+               offs_sap_co_nbr,
+               cogs_alc_rqst_id,
+               Row_number( )
+               over (
+               PARTITION BY cogs_alc_rqst_id, last_upd_ts
+               ORDER BY last_upd_ts  ) AS rnk
+        FROM COGS_ALC_RQST_TRGT_OFFS ) OFF
+      WHERE OFF.rnk = 1 ) offs_trgt
+      ON ( rqst.cogs_alc_rqst_id = offs_trgt.cogs_alc_rqst_id )
+  WHERE rqst.rnk = 1 ) status_rqst
+  LEFT OUTER JOIN (
+    SELECT DISTINCT temp_post.cogs_alc_rqst_id,
+                    temp_post.last_upd_ts
+    FROM INT_COGS_ALC_POST_STG temp_post
+    WHERE part_dt IN ( '201611181320' ) ) failed_rqst
+    ON ( failed_rqst.cogs_alc_rqst_id = status_rqst.cogs_alc_rqst_id )
+WHERE failed_rqst.cogs_alc_rqst_id IS NULL
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT status_rqst.*
+FROM (
+  SELECT status_rnk.cogs_alc_rqst_id,
+         rqst.fin_post_typ_cd,
+         rqst.dr_cr_ind,
+         rqst.cogs_alc_typ_cd,
+         rqst.mer_alloc_flg,
+         rqst.cogs_alc_basis_cd,
+         rqst.end_dt,
+         offs_trgt.offs_mnr_acct_nbr,
+         offs_trgt.offs_mjr_acct_nbr,
+         offs_trgt.offs_dr_cr_ind,
+         offs_trgt.offs_sap_co_nbr,
+         offs_trgt.offs_loc_nbr,
+         '201611160940'
+  FROM (
+    SELECT distinct cogs_alc_rqst_id,
+                    last_upd_ts AS rnk
+    FROM COGS_ALC_STAT ) status_rnk
+    JOIN (
+      SELECT fin_post_typ_cd,
+             dr_cr_ind,
+             cogs_alc_typ_cd,
+             mer_alloc_flg,
+             cogs_alc_rqst_id,
+             cogs_alc_rqst_dt,
+             cogs_alc_basis_cd,
+             end_dt,
+             Row_number( )
+             over (
+             PARTITION BY cogs_alc_rqst_id, last_upd_ts
+             ORDER BY last_upd_ts  ) AS rnk
+      FROM COGS_ALC_RQST ) rqst
+      ON ( rqst.cogs_alc_rqst_id = status_rnk.cogs_alc_rqst_id )
+    LEFT OUTER JOIN (
+      SELECT OFF.*
+      FROM (
+        SELECT offs_mnr_acct_nbr,
+               offs_mjr_acct_nbr,
+               offs_loc_nbr,
+               offs_dr_cr_ind,
+               offs_sap_co_nbr,
+               cogs_alc_rqst_id,
+               Row_number( )
+               over (
+               PARTITION BY cogs_alc_rqst_id, last_upd_ts
+               ORDER BY last_upd_ts  ) AS rnk
+        FROM COGS_ALC_RQST_TRGT_OFFS ) OFF
+      WHERE OFF.rnk = 1 ) offs_trgt
+      ON ( rqst.cogs_alc_rqst_id = offs_trgt.cogs_alc_rqst_id )
+  WHERE rqst.rnk = 1 ) status_rqst
+  LEFT OUTER JOIN (
+    SELECT DISTINCT temp_post.cogs_alc_rqst_id,
+                    temp_post.last_upd_ts
+    FROM INT_COGS_ALC_POST_STG temp_post
+    WHERE part_dt IN ( '201611181320' ) ) failed_rqst
+    ON ( failed_rqst.cogs_alc_rqst_id = status_rqst.cogs_alc_rqst_id )
+WHERE failed_rqst.cogs_alc_rqst_id IS NULL
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 11 <- Map 10 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (ONE_TO_ONE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 11 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+        Reducer 7 <- Map 6 (SIMPLE_EDGE)
+        Reducer 9 <- Map 8 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cogs_alc_rqst
+                  Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: cogs_alc_rqst_id is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: cogs_alc_rqst_id (type: int), last_upd_ts (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: cogs_alc_rqst_id (type: int), last_upd_ts (type: string)
+                      Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: cogs_alc_typ_cd (type: smallint), cogs_alc_basis_cd (type: smallint), fin_post_typ_cd (type: smallint), end_dt (type: string), dr_cr_ind (type: string), mer_alloc_flg (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: temp_post
+                  Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((part_dt = '201611181320') and cogs_alc_rqst_id is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cogs_alc_rqst_id (type: int), last_upd_ts (type: string)
+                      outputColumnNames: cogs_alc_rqst_id, last_upd_ts
+                      Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: cogs_alc_rqst_id (type: int), last_upd_ts (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: string)
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                          Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: cogs_alc_stat
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: cogs_alc_rqst_id is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: cogs_alc_rqst_id (type: int), last_upd_ts (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: cogs_alc_rqst_trgt_offs
+                  Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: cogs_alc_rqst_id is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: cogs_alc_rqst_id (type: int), last_upd_ts (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: cogs_alc_rqst_id (type: int), last_upd_ts (type: string)
+                      Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: offs_mnr_acct_nbr (type: smallint), offs_mjr_acct_nbr (type: smallint), offs_dr_cr_ind (type: string), offs_loc_nbr (type: string), offs_sap_co_nbr (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+        Reducer 11 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), VALUE._col6 (type: smallint), VALUE._col7 (type: smallint), VALUE._col8 (type: smallint), VALUE._col23 (type: string), VALUE._col25 (type: string), VALUE._col40 (type: string)
+                outputColumnNames: _col0, _col4, _col8, _col9, _col10, _col25, _col27, _col42
+                Statistics: Num rows: 1 Data size: 788 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: int, _col4: string, _col8: smallint, _col9: smallint, _col10: smallint, _col25: string, _col27: string, _col42: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col4 ASC NULLS FIRST
+                        partition by: _col0, _col4
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: Row_number_window_0
+                              name: Row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 1 Data size: 788 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (Row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 788 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col10 (type: smallint), _col27 (type: string), _col8 (type: smallint), _col42 (type: string), _col0 (type: int), _col9 (type: smallint), _col25 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                      Statistics: Num rows: 1 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col4 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col4 (type: int)
+                        Statistics: Num rows: 1 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: smallint), _col1 (type: string), _col2 (type: smallint), _col3 (type: string), _col5 (type: smallint), _col6 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col4 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Statistics: Num rows: 1 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col4 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col4 (type: int)
+                  Statistics: Num rows: 1 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: smallint), _col1 (type: string), _col2 (type: smallint), _col3 (type: string), _col5 (type: smallint), _col6 (type: string), _col7 (type: int)
+        Reducer 4 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col4 (type: int)
+                  1 _col5 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col5, _col6, _col7, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col7 (type: int), _col0 (type: smallint), _col1 (type: string), _col2 (type: smallint), _col3 (type: string), _col5 (type: smallint), _col6 (type: string), _col9 (type: smallint), _col10 (type: smallint), _col12 (type: string), _col13 (type: string), _col11 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: smallint), _col2 (type: string), _col3 (type: smallint), _col4 (type: string), _col5 (type: smallint), _col6 (type: string), _col7 (type: smallint), _col8 (type: smallint), _col9 (type: string), _col10 (type: string), _col11 (type: string)
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col12 is null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: string), _col3 (type: smallint), _col4 (type: string), _col5 (type: smallint), _col6 (type: string), _col7 (type: smallint), _col8 (type: smallint), _col9 (type: string), _col10 (type: string), _col11 (type: string), '201611160940' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                    Statistics: Num rows: 1 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 7 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 9 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: int), VALUE._col2 (type: smallint), VALUE._col3 (type: smallint), VALUE._col5 (type: string), VALUE._col6 (type: string), VALUE._col8 (type: string)
+                outputColumnNames: _col2, _col3, _col4, _col5, _col7, _col8, _col10
+                Statistics: Num rows: 1 Data size: 788 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col2: string, _col3: int, _col4: smallint, _col5: smallint, _col7: string, _col8: string, _col10: string
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS FIRST
+                        partition by: _col3, _col2
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: Row_number_window_0
+                              name: Row_number
+                              window function: GenericUDAFRowNumberEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 1 Data size: 788 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (Row_number_window_0 = 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 788 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col4 (type: smallint), _col5 (type: smallint), _col8 (type: string), _col7 (type: string), _col10 (type: string), _col3 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 1 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col5 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col5 (type: int)
+                        Statistics: Num rows: 1 Data size: 252 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: smallint), _col1 (type: smallint), _col2 (type: string), _col3 (type: string), _col4 (type: string)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
