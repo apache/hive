@@ -593,6 +593,7 @@ public class HiveStrictManagedMigration {
       }
       LOG.info("Converting {} to external table ...", getQualifiedName(tableObj));
       if (!runOptions.dryRun) {
+        tableObj.setTableType(TableType.EXTERNAL_TABLE.toString());
         getHiveUpdater().updateTableProperties(tableObj, convertToExternalTableProps);
       }
       return true;
@@ -724,7 +725,8 @@ public class HiveStrictManagedMigration {
       Path tablePath = new Path(tableObj.getSd().getLocation());
       FileSystem fs = tablePath.getFileSystem(conf);
       if (isHdfs(fs)) {
-        shouldBeExternal = checkDirectoryOwnership(fs, tablePath, ownerName, true);
+        boolean ownedByHive = checkDirectoryOwnership(fs, tablePath, ownerName, true);
+        shouldBeExternal = !ownedByHive;
       } else {
         // Set non-hdfs tables to external, unless transactional (should have been checked before this).
         shouldBeExternal = true;
@@ -737,7 +739,8 @@ public class HiveStrictManagedMigration {
         Path partPath = new Path(partObj.getSd().getLocation());
         FileSystem fs = partPath.getFileSystem(conf);
         if (isHdfs(fs)) {
-          shouldBeExternal = checkDirectoryOwnership(fs, partPath, ownerName, true);
+          boolean ownedByHive = checkDirectoryOwnership(fs, partPath, ownerName, true);
+          shouldBeExternal = !ownedByHive;
         } else {
           shouldBeExternal = true;
         }
@@ -872,7 +875,7 @@ public class HiveStrictManagedMigration {
 
   static boolean isPartitionedTable(Table tableObj) {
     List<FieldSchema> partKeys = tableObj.getPartitionKeys();
-    if (partKeys != null || partKeys.size() > 0) {
+    if (partKeys != null && partKeys.size() > 0) {
       return true;
     }
     return false;
