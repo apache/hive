@@ -79,7 +79,7 @@ public class LoadDatabase {
       }
       return tracker;
     } catch (Exception e) {
-      throw new SemanticException(e);
+      throw new SemanticException(e.getMessage(), e);
     }
   }
 
