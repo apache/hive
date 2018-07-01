@@ -225,7 +225,7 @@ public class HiveMetaStoreUtils {
   public static IMetaStoreClient getHiveMetastoreClient(HiveConf hiveConf)
     throws MetaException, IOException {
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.METASTORE_CLIENT_CACHE_ENABLED)){
+    if (!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.METASTORE_CLIENT_CACHE_ENABLED)){
       // If cache is disabled, don't use it.
       return HiveClientCache.getNonCachedHiveMetastoreClient(hiveConf);
     }
