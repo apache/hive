@@ -102,8 +102,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -158,9 +160,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
             .collect(Collectors.toSet());
   }
 
-  public static final String HIVE_EVENTS_BASE_PATH = "hive.hook.proto.base-directory";
-  public static final String HIVE_HOOK_PROTO_QUEUE_CAPACITY = "hive.hook.proto.queue.capacity";
-  public static final int HIVE_HOOK_PROTO_QUEUE_CAPACITY_DEFAULT = 64;
+  private static final int HIVE_HOOK_PROTO_QUEUE_CAPACITY_DEFAULT = 64;
   private static final int WAIT_TIME = 5;
 
   public enum EventType {
@@ -190,9 +190,10 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       this.clock = clock;
       // randomUUID is slow, since its cryptographically secure, only first query will take time.
       this.logFileName = "hive_" + UUID.randomUUID().toString();
-      String baseDir = conf.get(HIVE_EVENTS_BASE_PATH);
-      if (baseDir == null) {
-        LOG.error(HIVE_EVENTS_BASE_PATH + " is not set, logging disabled.");
+      String baseDir = conf.getVar(ConfVars.HIVE_PROTO_EVENTS_BASE_PATH);
+      if (StringUtils.isBlank(baseDir)) {
+        baseDir = null;
+        LOG.error(ConfVars.HIVE_PROTO_EVENTS_BASE_PATH.varname + " is not set, logging disabled.");
       }
 
       DatePartitionedLogger<HiveHookEventProto> tmpLogger = null;
@@ -211,7 +212,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         return;
       }
 
-      int queueCapacity = conf.getInt(HIVE_HOOK_PROTO_QUEUE_CAPACITY,
+      int queueCapacity = conf.getInt(ConfVars.HIVE_PROTO_EVENTS_QUEUE_CAPACITY.varname,
           HIVE_HOOK_PROTO_QUEUE_CAPACITY_DEFAULT);
 
       ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
