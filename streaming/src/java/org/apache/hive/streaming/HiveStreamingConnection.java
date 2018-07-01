@@ -1037,7 +1037,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Overriding HiveConf setting : " + var + " = " + value);
     }
-    conf.setBoolVar(var, true);
+    conf.setBoolVar(var, value);
   }
 
   private static void setHiveConf(HiveConf conf, String var) {
