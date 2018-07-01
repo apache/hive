@@ -474,7 +474,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         client.getPartition(DB_NAME, tableName, Lists.newArrayList(DEFAULT_YEAR_VALUE));
     Assert.assertNotNull(resultPart);
     Assert.assertNotNull(resultPart.getSd());
-    String defaultTableLocation = metaStore.getWarehouseRoot() + "/" + DB_NAME + ".db/" + tableName;
+    String defaultTableLocation = metaStore.getExternalWarehouseRoot() + "/" + DB_NAME + ".db/" + tableName;
     String defaulPartitionLocation = defaultTableLocation + "/year=2017";
     Assert.assertEquals(defaulPartitionLocation, resultPart.getSd().getLocation());
   }
@@ -1090,7 +1090,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         Lists.newArrayList("year=2017", "year=2018"));
     Assert.assertNotNull(resultParts);
     Assert.assertEquals(2, resultParts.size());
-    String defaultTableLocation = metaStore.getWarehouseRoot() + "/" + DB_NAME + ".db/" + tableName;
+    String defaultTableLocation = metaStore.getExternalWarehouseRoot() + "/" + DB_NAME + ".db/" + tableName;
     String defaultPartLocation1 = defaultTableLocation + "/year=2017";
     String defaultPartLocation2 = defaultTableLocation + "/year=2018";
     if (resultParts.get(0).getValues().get(0).equals("2017")) {

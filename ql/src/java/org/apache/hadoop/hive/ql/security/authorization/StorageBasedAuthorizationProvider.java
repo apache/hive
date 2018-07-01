@@ -138,7 +138,11 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
   @Override
   public void authorize(Database db, Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
       throws HiveException, AuthorizationException {
-    Path path = getDbLocation(db);
+    Path path;
+    path = wh.determineDatabaseExternalPath(db);
+    if (path == null) {
+      path = getDbLocation(db);
+    }
 
     // extract drop privileges
     DropPrivilegeExtractor privExtractor = new DropPrivilegeExtractor(readRequiredPriv,

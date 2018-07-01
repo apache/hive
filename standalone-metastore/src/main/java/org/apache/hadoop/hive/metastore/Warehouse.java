@@ -200,6 +200,23 @@ public class Warehouse {
     }
   }
 
+  /**
+   *  Returns the external path if it exists in the expected location. Null otherwise
+   * @param db
+   * @return the path if it exists, null otherwise
+   * file system.
+   */
+  public Path determineDatabaseExternalPath(Database db){
+    if (hasExternalWarehouseRoot()) {
+      try {
+        return getDefaultExternalDatabasePath(db.getName());
+      } catch (MetaException e) {
+        LOG.warn("Unable to determine external path for database " + db.getName());
+      }
+    }
+    return null;
+  }
+
   private String dbDirFromDbName(Database db) throws MetaException {
     return db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX;
   }
@@ -239,7 +256,7 @@ public class Warehouse {
     return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
-  private boolean hasExternalWarehouseRoot() {
+  public boolean hasExternalWarehouseRoot() {
     return !StringUtils.isBlank(whRootExternalString);
   }
 
@@ -352,6 +369,16 @@ public class Warehouse {
     } catch (IOException e) {
       throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
+  }
+
+  public boolean deleteDirIfEmpty(Path f) throws MetaException, IOException {
+    FileSystem fs = getFs(f);
+    if (FileUtils.isDirEmpty(fs, f)) {
+      return deleteDir(f, false, false, false);
+    } else {
+      LOG.info("Will not delete external directory " + f + " since it's not empty");
+    }
+    return true;
   }
 
   public boolean deleteDir(Path f, boolean recursive, Database db) throws MetaException {
