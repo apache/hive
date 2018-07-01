@@ -367,7 +367,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         createdTable.getSd().getLocation());
   }
 
-  @Test(expected = InvalidObjectException.class)
+  @Test(expected = MetaException.class)
   public void testCreateTableNullDatabase() throws Exception {
     Table table = testTables[0];
     table.setDbName(null);
