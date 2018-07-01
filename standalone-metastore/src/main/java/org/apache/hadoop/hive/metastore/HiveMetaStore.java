@@ -1774,6 +1774,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                    List<SQLCheckConstraint> checkConstraints)
         throws AlreadyExistsException, MetaException,
         InvalidObjectException, NoSuchObjectException {
+      // To preserve backward compatibility throw MetaException in case of null database
+      if (tbl.getDbName() == null) {
+        throw new MetaException("Null database name is not allowed");
+      }
+
       if (!MetaStoreUtils.validateName(tbl.getTableName(), conf)) {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
