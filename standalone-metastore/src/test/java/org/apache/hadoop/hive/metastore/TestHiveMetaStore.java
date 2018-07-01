@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.io.IOException;
 import java.sql.Connection;
@@ -40,6 +41,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Sets;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -47,6 +49,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.junit.Assert;
@@ -1067,6 +1070,50 @@ public abstract class TestHiveMetaStore {
     }
 
     assertTrue("Database creation succeeded even with permission problem", createFailed);
+  }
+
+  @Test
+  public void testExternalDirectory() throws Exception{
+    String externalDirString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
+    Path externalDir = new Path(externalDirString);
+    silentDropDatabase(TEST_DB1_NAME);
+
+    String dbLocation =
+        MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test/_testDB_create_";
+
+    String dbExternalLocation = externalDirString + "/testdb1.db";
+
+
+    FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
+    fs.mkdirs(
+        new Path(MetastoreConf.getVar(conf, ConfVars.WAREHOUSE)),
+        new FsPermission((short) 700));
+
+    fs.mkdirs(externalDir, new FsPermission((short) 0777));
+
+    Database db = new DatabaseBuilder()
+        .setName(TEST_DB1_NAME)
+        .setLocation(dbLocation)
+        .build(conf);
+    client.createDatabase(db);
+    FileStatus fileStatus = fs.getFileStatus(new Path(dbExternalLocation));
+
+    assertTrue("External folder should have been created", fileStatus.isDirectory());
+    assertEquals("External folder should have the right permissions", new FsPermission((short) 0755),
+        fileStatus.getPermission());
+    assertEquals("External folder should be owned by the right username",
+        UserGroupInformation.getCurrentUser().getShortUserName(), fileStatus.getOwner());
+    client.dropDatabase(db.getName());
+
+    try {
+      fs.getFileStatus(new Path(dbExternalLocation));
+      fail("External directory should have been deleted");
+    } catch (FileNotFoundException e) {
+    } finally {
+      fs.delete(new Path(MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test"), true);
+      fs.delete(new Path(MetastoreConf.getVar(conf,
+          ConfVars.WAREHOUSE_EXTERNAL) + "/test"), true);
+    }
   }
 
   @Test
