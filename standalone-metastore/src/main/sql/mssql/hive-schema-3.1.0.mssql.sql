@@ -282,6 +282,7 @@ CREATE TABLE DBS
     DB_ID bigint NOT NULL,
     "DESC" nvarchar(4000) NULL,
     DB_LOCATION_URI nvarchar(4000) NOT NULL,
+    DB_EXTERNAL_LOCATION_URI nvarchar(4000) NULL,
     "NAME" nvarchar(128) NULL,
     OWNER_NAME nvarchar(128) NULL,
     OWNER_TYPE nvarchar(10) NULL,

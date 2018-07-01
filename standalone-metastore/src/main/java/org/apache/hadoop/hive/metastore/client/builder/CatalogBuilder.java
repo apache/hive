@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.thrift.TException;
 
 public class CatalogBuilder {
-  private String name, description, location;
+  private String name, description, location, externalLocation;
 
   public CatalogBuilder setName(String name) {
     this.name = name;
@@ -40,10 +40,16 @@ public class CatalogBuilder {
     return this;
   }
 
+  public CatalogBuilder setExternalLocation(String externalLocation) {
+    this.externalLocation = externalLocation;
+    return this;
+  }
+
   public Catalog build() throws MetaException {
     if (name == null) throw new MetaException("You must name the catalog");
     if (location == null) throw new MetaException("You must give the catalog a location");
     Catalog catalog = new Catalog(name, location);
+    catalog.setExternalLocationUri(externalLocation);
     if (description != null) catalog.setDescription(description);
     return catalog;
   }

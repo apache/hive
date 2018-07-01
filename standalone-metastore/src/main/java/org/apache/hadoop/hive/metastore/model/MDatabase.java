@@ -35,6 +35,7 @@ import java.util.Set;
 public class MDatabase {
   private String name;
   private String locationUri;
+  private String externalLocationUri;
   private String description;
   private Map<String, String> parameters;
   private String ownerName;
@@ -153,5 +154,13 @@ public class MDatabase {
 
   public void setCatalogName(String catalogName) {
     this.catalogName = catalogName;
+  }
+
+  public String getExternalLocationUri() {
+    return externalLocationUri;
+  }
+
+  public void setExternalLocationUri(String externalLocationUri) {
+    this.externalLocationUri = externalLocationUri;
   }
 }

@@ -37,7 +37,7 @@ import java.util.Map;
  * selects reasonable defaults.
  */
 public class DatabaseBuilder {
-  private String name, description, location, catalogName;
+  private String name, description, location, externalLocation, catalogName;
   private Map<String, String> params = new HashMap<>();
   private String ownerName;
   private PrincipalType ownerType;
@@ -67,6 +67,11 @@ public class DatabaseBuilder {
 
   public DatabaseBuilder setLocation(String location) {
     this.location = location;
+    return this;
+  }
+
+  public DatabaseBuilder setExternalLocation(String externalLocation) {
+    this.externalLocation = externalLocation;
     return this;
   }
 
@@ -100,6 +105,7 @@ public class DatabaseBuilder {
       db.setOwnerName(ownerName);
       if (ownerType == null) ownerType = PrincipalType.USER;
       db.setOwnerType(ownerType);
+      db.setExternalLocationUri(externalLocation);
       return db;
     } catch (IOException e) {
       throw MetaStoreUtils.newMetaException(e);

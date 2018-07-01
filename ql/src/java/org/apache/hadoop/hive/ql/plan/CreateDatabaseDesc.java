@@ -34,6 +34,7 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
 
   String databaseName;
   String locationUri;
+  String locationExternalUri;
   String comment;
   boolean ifNotExists;
   Map<String, String> dbProperties;
@@ -96,5 +97,14 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
 
   public void setLocationUri(String locationUri) {
     this.locationUri = locationUri;
+  }
+
+  @Explain(displayName="externalLocationUri")
+  public String getLocationExternalUri() {
+    return locationExternalUri;
+  }
+
+  public void setLocationExternalUri(String locationExternalUri) {
+    this.locationExternalUri = locationExternalUri;
   }
 }

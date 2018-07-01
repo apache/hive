@@ -30,6 +30,8 @@ ALTER TABLE TXNS ADD TXN_TYPE number(10) NULL;
 
 CREATE INDEX TAB_COL_STATS_IDX ON TAB_COL_STATS (CAT_NAME, DB_NAME, TABLE_NAME, COLUMN_NAME);
 
+ALTER TABLE DBS ADD DB_EXTERNAL_LOCATION_URI VARCHAR2(4000) NULL;
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.1.0', VERSION_COMMENT='Hive release version 3.1.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 3.0.0 to 3.1.0' AS Status from dual;

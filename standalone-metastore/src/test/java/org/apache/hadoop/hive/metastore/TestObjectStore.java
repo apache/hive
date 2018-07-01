@@ -218,6 +218,7 @@ public class TestObjectStore {
         .setName(DB1)
         .setDescription("description")
         .setLocation("locationurl")
+        .setExternalLocation("externalurl")
         .build(conf);
     objectStore.createDatabase(db1);
     StorageDescriptor sd1 =
@@ -316,6 +317,7 @@ public class TestObjectStore {
         .setName(DB1)
         .setDescription("description")
         .setLocation("locationurl")
+        .setExternalLocation("externalurl")
         .build(conf);
     objectStore.createDatabase(db1);
     StorageDescriptor sd = createFakeSd("location");
@@ -485,6 +487,7 @@ public class TestObjectStore {
                        .setName(DB1)
                        .setDescription("description")
                        .setLocation("locationurl")
+                       .setExternalLocation("externalurl")
                        .build(conf);
     objectStore.createDatabase(db1);
     Table tbl1 =

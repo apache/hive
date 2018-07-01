@@ -4824,6 +4824,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     database.setName(crtDb.getName());
     database.setDescription(crtDb.getComment());
     database.setLocationUri(crtDb.getLocationUri());
+    database.setExternalLocationUri(crtDb.getLocationExternalUri());
     database.setParameters(crtDb.getDatabaseProperties());
     database.setOwnerName(SessionState.getUserFromAuthenticator());
     database.setOwnerType(PrincipalType.USER);

@@ -47,6 +47,9 @@
       <field name="locationUri">
         <column name="DB_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
+      <field name="externalLocationUri">
+        <column name="DB_EXTERNAL_LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
       <field name="parameters" table="DATABASE_PARAMS">
         <map key-type="java.lang.String" value-type="java.lang.String"/>
         <join>

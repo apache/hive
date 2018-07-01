@@ -26,14 +26,18 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -166,6 +170,25 @@ public class FileUtils {
   public static boolean mkdir(FileSystem fs, Path f) throws IOException {
     LOG.info("Creating directory if it doesn't exist: " + f);
     return fs.mkdirs(f);
+  }
+
+  /**
+   * Creates the directory and all necessary parent directories.
+   * @param fs FileSystem to use
+   * @param f path to create.
+   * @param fsPermission permissions to use.
+   * @return true if directory created successfully.  False otherwise, including if it exists.
+   * @throws IOException exception in creating the directory
+   */
+  public static boolean mkdir(FileSystem fs, Path f, FsPermission fsPermission) throws IOException {
+    LOG.info("Creating directory if it doesn't exist: " + f
+        + " , with permissions: " + fsPermission);
+    // We need to create it in two steps, otherwise we may get different permissions
+    if(fs.mkdirs(f)) {
+      fs.setPermission(f, fsPermission);
+      return true;
+    }
+    return false;
   }
 
   /**

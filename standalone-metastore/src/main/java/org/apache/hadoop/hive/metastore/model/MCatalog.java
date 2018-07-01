@@ -21,6 +21,7 @@ public class MCatalog {
   private String name;
   private String description;
   private String locationUri;
+  private String externalLocationUri;
 
   public MCatalog() {
 
@@ -54,5 +55,13 @@ public class MCatalog {
 
   public void setLocationUri(String locationUri) {
     this.locationUri = locationUri;
+  }
+
+  public String getExternalLocationUri() {
+    return externalLocationUri;
+  }
+
+  public void setExternalLocationUri(String externalLocationUri) {
+    this.externalLocationUri = externalLocationUri;
   }
 }

@@ -838,6 +838,9 @@ public class ObjectStore implements RawStore, Configurable {
       if (org.apache.commons.lang.StringUtils.isNotBlank(cat.getLocationUri())) {
         mCat.setLocationUri(cat.getLocationUri());
       }
+      if (org.apache.commons.lang.StringUtils.isNotBlank(cat.getExternalLocationUri())) {
+        mCat.setLocationUri(cat.getExternalLocationUri());
+      }
       if (org.apache.commons.lang.StringUtils.isNotBlank(cat.getDescription())) {
         mCat.setDescription(cat.getDescription());
       }
@@ -928,11 +931,13 @@ public class ObjectStore implements RawStore, Configurable {
       mCat.setDescription(cat.getDescription());
     }
     mCat.setLocationUri(cat.getLocationUri());
+    mCat.setExternalLocationUri(cat.getExternalLocationUri());
     return mCat;
   }
 
   private Catalog mCatToCat(MCatalog mCat) {
     Catalog cat = new Catalog(mCat.getName(), mCat.getLocationUri());
+    cat.setExternalLocationUri(mCat.getExternalLocationUri());
     if (mCat.getDescription() != null) {
       cat.setDescription(mCat.getDescription());
     }
@@ -948,6 +953,7 @@ public class ObjectStore implements RawStore, Configurable {
     assert mdb.getCatalogName() != null;
     mdb.setName(db.getName().toLowerCase());
     mdb.setLocationUri(db.getLocationUri());
+    mdb.setExternalLocationUri(db.getExternalLocationUri());
     mdb.setDescription(db.getDescription());
     mdb.setParameters(db.getParameters());
     mdb.setOwnerName(db.getOwnerName());
@@ -1040,6 +1046,7 @@ public class ObjectStore implements RawStore, Configurable {
     db.setName(mdb.getName());
     db.setDescription(mdb.getDescription());
     db.setLocationUri(mdb.getLocationUri());
+    db.setExternalLocationUri(mdb.getExternalLocationUri());
     db.setParameters(convertMap(mdb.getParameters()));
     db.setOwnerName(mdb.getOwnerName());
     String type = org.apache.commons.lang.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
@@ -1075,6 +1082,9 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (org.apache.commons.lang.StringUtils.isNotBlank(db.getLocationUri())) {
         mdb.setLocationUri(db.getLocationUri());
+      }
+      if (org.apache.commons.lang.StringUtils.isNotBlank(db.getExternalLocationUri())) {
+        mdb.setExternalLocationUri(db.getExternalLocationUri());
       }
       openTransaction();
       pm.makePersistent(mdb);
