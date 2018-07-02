@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -43,7 +44,7 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
   public static final Logger LOG = LoggerFactory.getLogger(HiveProtoEventsCleanerTask.class);
 
   private final String[] eventsSubDirs = new String[] { "query_data", "dag_meta", "dag_data", "app_data" };
-  private List<Path> eventsBasePaths = new ArrayList<>(eventsSubDirs.length);
+  private List<Path> eventsBasePaths = new ArrayList<>();
   private Configuration conf;
   private static long ttl;
   private static String expiredDatePtn = null;
@@ -52,14 +53,18 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
   @Override
   public void setConf(Configuration conf) {
     this.conf = conf;
-    ttl = HiveConf.getTimeVar(conf, ConfVars.HIVE_PROTO_EVENTS_TTL, TimeUnit.MILLISECONDS);
 
-    Path hiveEventsBasePath = new Path(HiveConf.getVar(conf, ConfVars.HIVE_PROTO_EVENTS_BASE_PATH));
+    String hiveEventsDir = HiveConf.getVar(conf, ConfVars.HIVE_PROTO_EVENTS_BASE_PATH);
+    if (StringUtils.isBlank(hiveEventsDir)) {
+      return;
+    }
+    Path hiveEventsBasePath = new Path(hiveEventsDir);
     Path baseDir = hiveEventsBasePath.getParent();
     for (String subDir : eventsSubDirs) {
       eventsBasePaths.add(new Path(baseDir, subDir));
     }
     assert(eventsBasePaths.get(0).equals(hiveEventsBasePath));
+    ttl = HiveConf.getTimeVar(conf, ConfVars.HIVE_PROTO_EVENTS_TTL, TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -74,6 +79,10 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
 
   @Override
   public void run() {
+    if (eventsBasePaths.isEmpty()) {
+      return;
+    }
+
     // Expired date should be computed each time we run cleaner thread.
     expiredDatePtn = getExpiredDatePtn();
     for (Path basePath : eventsBasePaths) {
