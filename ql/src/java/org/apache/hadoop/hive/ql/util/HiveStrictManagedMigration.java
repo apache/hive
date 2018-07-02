@@ -255,6 +255,7 @@ public class HiveStrictManagedMigration {
   private HiveConf conf;
   private HiveMetaStoreClient hms;
   private boolean failedValidationChecks;
+  private boolean failuresEncountered;
   private Warehouse wh;
   private Warehouse oldWh;
   private String ownerName;
@@ -277,7 +278,12 @@ public class HiveStrictManagedMigration {
       LOG.info("Found {} databases", databases.size());
       for (String dbName : databases) {
         if (dbName.matches(runOptions.dbRegex)) {
-          processDatabase(dbName);
+          try {
+            processDatabase(dbName);
+          } catch (Exception err) {
+            LOG.error("Error processing database %s", dbName);
+            failuresEncountered = true;
+          }
         }
       }
       LOG.info("Done processing databases.");
@@ -285,6 +291,9 @@ public class HiveStrictManagedMigration {
       hms.close();
     }
 
+    if (failuresEncountered) {
+      throw new HiveException("One or more failures encountered during processing.");
+    }
     if (failedValidationChecks) {
       throw new HiveException("One or more tables failed validation checks for strict managed table mode.");
     }
@@ -372,7 +381,12 @@ public class HiveStrictManagedMigration {
     List<String> tableNames = hms.getTables(dbName, runOptions.tableRegex);
     for (String tableName : tableNames) {
       // If we did not change the DB location, there is no need to move the table directories.
-      processTable(dbObj, tableName, modifyDefaultManagedLocation);
+      try {
+        processTable(dbObj, tableName, modifyDefaultManagedLocation);
+      } catch (Exception err) {
+        LOG.error("Error processing table %s", getQualifiedName(dbObj.getName(), tableName));
+        failuresEncountered = true;
+      }
     }
   }
 
@@ -485,11 +499,13 @@ public class HiveStrictManagedMigration {
     LOG.info("Moving location of {} from {} to {}", getQualifiedName(tableObj), oldTablePath, newTablePath);
     if (!runOptions.dryRun) {
       FileSystem fs = newTablePath.getFileSystem(conf);
-      boolean movedData = fs.rename(oldTablePath, newTablePath);
-      if (!movedData) {
-        String msg = String.format("Unable to move data directory for table %s from %s to %s",
-            getQualifiedName(tableObj), oldTablePath, newTablePath);
-        throw new HiveException(msg);
+      if (fs.exists(oldTablePath)) {
+        boolean movedData = fs.rename(oldTablePath, newTablePath);
+        if (!movedData) {
+          String msg = String.format("Unable to move data directory for table %s from %s to %s",
+              getQualifiedName(tableObj), oldTablePath, newTablePath);
+          throw new HiveException(msg);
+        }
       }
     }
     if (!runOptions.dryRun) {
@@ -522,12 +538,20 @@ public class HiveStrictManagedMigration {
       List<String> partNames = hms.listPartitionNames(dbName, tableName, Short.MAX_VALUE);
       for (String partName : partNames) {
         Partition partObj = hms.getPartition(dbName, tableName, partName);
-        UpgradeTool.handleRenameFiles(tableObj, new Path(partObj.getSd().getLocation()),
-            !runOptions.dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
+        Path partPath = new Path(partObj.getSd().getLocation());
+        FileSystem fs = partPath.getFileSystem(conf);
+        if (fs.exists(partPath)) {
+          UpgradeTool.handleRenameFiles(tableObj, partPath,
+              !runOptions.dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
+        }
       }
     } else {
-      UpgradeTool.handleRenameFiles(tableObj, new Path(tableObj.getSd().getLocation()),
-          !runOptions.dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
+      Path tablePath = new Path(tableObj.getSd().getLocation());
+      FileSystem fs = tablePath.getFileSystem(conf);
+      if (fs.exists(tablePath)) {
+        UpgradeTool.handleRenameFiles(tableObj, tablePath,
+            !runOptions.dryRun, conf, tableObj.getSd().getBucketColsSize() > 0, null);
+      }
     }
   }
 
@@ -932,7 +956,7 @@ public class HiveStrictManagedMigration {
       String userName, String groupName,
       FsPermission dirPerms, FsPermission filePerms,
       boolean dryRun, boolean recurse) throws IOException {
-    FileStatus fStatus = fs.getFileStatus(path);
+    FileStatus fStatus = getFileStatus(fs, path);
     checkAndSetFileOwnerPermissions(fs, fStatus, userName, groupName, dirPerms, filePerms, dryRun, recurse);
   }
 
@@ -953,6 +977,10 @@ public class HiveStrictManagedMigration {
       String userName, String groupName,
       FsPermission dirPerms, FsPermission filePerms,
       boolean dryRun, boolean recurse) throws IOException {
+    if (fStatus == null) {
+      return;
+    }
+
     Path path = fStatus.getPath();
     boolean setOwner = false;
     if (userName != null && !userName.equals(fStatus.getOwner())) {
@@ -997,7 +1025,7 @@ public class HiveStrictManagedMigration {
       Path path,
       String userName,
       boolean recurse) throws IOException {
-    FileStatus fStatus = fs.getFileStatus(path);
+    FileStatus fStatus = getFileStatus(fs, path);
     return checkDirectoryOwnership(fs, fStatus, userName, recurse);
   }
 
@@ -1005,6 +1033,11 @@ public class HiveStrictManagedMigration {
       FileStatus fStatus,
       String userName,
       boolean recurse) throws IOException {
+    if (fStatus == null) {
+      // Non-existent file returns true.
+      return true;
+    }
+
     Path path = fStatus.getPath();
     boolean result = true;
 
@@ -1025,5 +1058,19 @@ public class HiveStrictManagedMigration {
     }
 
     return result;
+  }
+
+  static FileStatus getFileStatus(FileSystem fs, Path path) throws IOException {
+    if (!fs.exists(path)) {
+      return null;
+    }
+    return fs.getFileStatus(path);
+  }
+
+  static FileStatus[] listStatus(FileSystem fs, Path path) throws IOException {
+    if (!fs.exists(path)) {
+      return null;
+    }
+    return fs.listStatus(path);
   }
 }
