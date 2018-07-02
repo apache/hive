@@ -1093,6 +1093,10 @@ public class Context {
     return executionId;
   }
 
+  public void setPlanMapper(PlanMapper planMapper) {
+    this.planMapper = planMapper;
+  }
+
   public PlanMapper getPlanMapper() {
     return planMapper;
   }

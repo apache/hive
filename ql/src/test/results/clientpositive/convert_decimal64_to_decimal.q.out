@@ -1,0 +1,438 @@
+PREHOOK: query: CREATE TABLE table_8_txt (tinyint_col_1 TINYINT, float_col_2 FLOAT, bigint_col_3 BIGINT, boolean_col_4 BOOLEAN, decimal0202_col_5 DECIMAL(2, 2), decimal1612_col_6 DECIMAL(16, 12), double_col_7 DOUBLE, char0205_col_8 CHAR(205), bigint_col_9 BIGINT, decimal1202_col_10 DECIMAL(12, 2), boolean_col_11 BOOLEAN, double_col_12 DOUBLE, decimal2208_col_13 DECIMAL(22, 8), decimal3722_col_14 DECIMAL(37, 22), smallint_col_15 SMALLINT, decimal2824_col_16 DECIMAL(28, 24), boolean_col_17 BOOLEAN, float_col_18 FLOAT, timestamp_col_19 TIMESTAMP, decimal0402_col_20 DECIMAL(4, 2), char0208_col_21 CHAR(208), char0077_col_22 CHAR(77), decimal2915_col_23 DECIMAL(29, 15), char0234_col_24 CHAR(234), timestamp_col_25 TIMESTAMP, tinyint_col_26 TINYINT, decimal3635_col_27 DECIMAL(36, 35), boolean_col_28 BOOLEAN, float_col_29 FLOAT, smallint_col_30 SMALLINT, varchar0200_col_31 VARCHAR(200), boolean_col_32 BOOLEAN)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\001'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_8_txt
+POSTHOOK: query: CREATE TABLE table_8_txt (tinyint_col_1 TINYINT, float_col_2 FLOAT, bigint_col_3 BIGINT, boolean_col_4 BOOLEAN, decimal0202_col_5 DECIMAL(2, 2), decimal1612_col_6 DECIMAL(16, 12), double_col_7 DOUBLE, char0205_col_8 CHAR(205), bigint_col_9 BIGINT, decimal1202_col_10 DECIMAL(12, 2), boolean_col_11 BOOLEAN, double_col_12 DOUBLE, decimal2208_col_13 DECIMAL(22, 8), decimal3722_col_14 DECIMAL(37, 22), smallint_col_15 SMALLINT, decimal2824_col_16 DECIMAL(28, 24), boolean_col_17 BOOLEAN, float_col_18 FLOAT, timestamp_col_19 TIMESTAMP, decimal0402_col_20 DECIMAL(4, 2), char0208_col_21 CHAR(208), char0077_col_22 CHAR(77), decimal2915_col_23 DECIMAL(29, 15), char0234_col_24 CHAR(234), timestamp_col_25 TIMESTAMP, tinyint_col_26 TINYINT, decimal3635_col_27 DECIMAL(36, 35), boolean_col_28 BOOLEAN, float_col_29 FLOAT, smallint_col_30 SMALLINT, varchar0200_col_31 VARCHAR(200), boolean_col_32 BOOLEAN)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\001'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_8_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/table_8.dat' INTO TABLE table_8_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@table_8_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/table_8.dat' INTO TABLE table_8_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@table_8_txt
+PREHOOK: query: CREATE TABLE table_8
+STORED AS orc AS
+SELECT * FROM table_8_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@table_8_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_8
+POSTHOOK: query: CREATE TABLE table_8
+STORED AS orc AS
+SELECT * FROM table_8_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@table_8_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_8
+POSTHOOK: Lineage: table_8.bigint_col_3 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:bigint_col_3, type:bigint, comment:null), ]
+POSTHOOK: Lineage: table_8.bigint_col_9 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:bigint_col_9, type:bigint, comment:null), ]
+POSTHOOK: Lineage: table_8.boolean_col_11 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:boolean_col_11, type:boolean, comment:null), ]
+POSTHOOK: Lineage: table_8.boolean_col_17 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:boolean_col_17, type:boolean, comment:null), ]
+POSTHOOK: Lineage: table_8.boolean_col_28 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:boolean_col_28, type:boolean, comment:null), ]
+POSTHOOK: Lineage: table_8.boolean_col_32 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:boolean_col_32, type:boolean, comment:null), ]
+POSTHOOK: Lineage: table_8.boolean_col_4 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:boolean_col_4, type:boolean, comment:null), ]
+POSTHOOK: Lineage: table_8.char0077_col_22 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:char0077_col_22, type:char(77), comment:null), ]
+POSTHOOK: Lineage: table_8.char0205_col_8 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:char0205_col_8, type:char(205), comment:null), ]
+POSTHOOK: Lineage: table_8.char0208_col_21 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:char0208_col_21, type:char(208), comment:null), ]
+POSTHOOK: Lineage: table_8.char0234_col_24 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:char0234_col_24, type:char(234), comment:null), ]
+POSTHOOK: Lineage: table_8.decimal0202_col_5 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:decimal0202_col_5, type:decimal(2,2), comment:null), ]
+POSTHOOK: Lineage: table_8.decimal0402_col_20 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:decimal0402_col_20, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: table_8.decimal1202_col_10 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:decimal1202_col_10, type:decimal(12,2), comment:null), ]
+POSTHOOK: Lineage: table_8.decimal1612_col_6 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:decimal1612_col_6, type:decimal(16,12), comment:null), ]
+POSTHOOK: Lineage: table_8.decimal2208_col_13 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:decimal2208_col_13, type:decimal(22,8), comment:null), ]
+POSTHOOK: Lineage: table_8.decimal2824_col_16 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:decimal2824_col_16, type:decimal(28,24), comment:null), ]
+POSTHOOK: Lineage: table_8.decimal2915_col_23 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:decimal2915_col_23, type:decimal(29,15), comment:null), ]
+POSTHOOK: Lineage: table_8.decimal3635_col_27 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:decimal3635_col_27, type:decimal(36,35), comment:null), ]
+POSTHOOK: Lineage: table_8.decimal3722_col_14 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:decimal3722_col_14, type:decimal(37,22), comment:null), ]
+POSTHOOK: Lineage: table_8.double_col_12 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:double_col_12, type:double, comment:null), ]
+POSTHOOK: Lineage: table_8.double_col_7 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:double_col_7, type:double, comment:null), ]
+POSTHOOK: Lineage: table_8.float_col_18 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:float_col_18, type:float, comment:null), ]
+POSTHOOK: Lineage: table_8.float_col_2 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:float_col_2, type:float, comment:null), ]
+POSTHOOK: Lineage: table_8.float_col_29 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:float_col_29, type:float, comment:null), ]
+POSTHOOK: Lineage: table_8.smallint_col_15 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:smallint_col_15, type:smallint, comment:null), ]
+POSTHOOK: Lineage: table_8.smallint_col_30 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:smallint_col_30, type:smallint, comment:null), ]
+POSTHOOK: Lineage: table_8.timestamp_col_19 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:timestamp_col_19, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: table_8.timestamp_col_25 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:timestamp_col_25, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: table_8.tinyint_col_1 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:tinyint_col_1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: table_8.tinyint_col_26 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:tinyint_col_26, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: table_8.varchar0200_col_31 SIMPLE [(table_8_txt)table_8_txt.FieldSchema(name:varchar0200_col_31, type:varchar(200), comment:null), ]
+PREHOOK: query: analyze table table_8 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_8
+PREHOOK: Output: default@table_8
+POSTHOOK: query: analyze table table_8 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_8
+POSTHOOK: Output: default@table_8
+PREHOOK: query: CREATE EXTERNAL TABLE table_19_txt (float_col_1 FLOAT, varchar0037_col_2 VARCHAR(37), decimal2912_col_3 DECIMAL(29, 12), decimal0801_col_4 DECIMAL(8, 1), timestamp_col_5 TIMESTAMP, boolean_col_6 BOOLEAN, string_col_7 STRING, tinyint_col_8 TINYINT, boolean_col_9 BOOLEAN, decimal1614_col_10 DECIMAL(16, 14), boolean_col_11 BOOLEAN, float_col_12 FLOAT, char0116_col_13 CHAR(116), boolean_col_14 BOOLEAN, string_col_15 STRING, double_col_16 DOUBLE, string_col_17 STRING, bigint_col_18 BIGINT, int_col_19 INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\001'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_19_txt
+POSTHOOK: query: CREATE EXTERNAL TABLE table_19_txt (float_col_1 FLOAT, varchar0037_col_2 VARCHAR(37), decimal2912_col_3 DECIMAL(29, 12), decimal0801_col_4 DECIMAL(8, 1), timestamp_col_5 TIMESTAMP, boolean_col_6 BOOLEAN, string_col_7 STRING, tinyint_col_8 TINYINT, boolean_col_9 BOOLEAN, decimal1614_col_10 DECIMAL(16, 14), boolean_col_11 BOOLEAN, float_col_12 FLOAT, char0116_col_13 CHAR(116), boolean_col_14 BOOLEAN, string_col_15 STRING, double_col_16 DOUBLE, string_col_17 STRING, bigint_col_18 BIGINT, int_col_19 INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\001'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_19_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/table_19.dat' INTO TABLE table_19_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@table_19_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/table_19.dat' INTO TABLE table_19_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@table_19_txt
+PREHOOK: query: CREATE TABLE table_19
+STORED AS orc AS
+SELECT * FROM table_19_txt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@table_19_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_19
+POSTHOOK: query: CREATE TABLE table_19
+STORED AS orc AS
+SELECT * FROM table_19_txt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@table_19_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_19
+POSTHOOK: Lineage: table_19.bigint_col_18 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:bigint_col_18, type:bigint, comment:null), ]
+POSTHOOK: Lineage: table_19.boolean_col_11 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:boolean_col_11, type:boolean, comment:null), ]
+POSTHOOK: Lineage: table_19.boolean_col_14 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:boolean_col_14, type:boolean, comment:null), ]
+POSTHOOK: Lineage: table_19.boolean_col_6 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:boolean_col_6, type:boolean, comment:null), ]
+POSTHOOK: Lineage: table_19.boolean_col_9 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:boolean_col_9, type:boolean, comment:null), ]
+POSTHOOK: Lineage: table_19.char0116_col_13 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:char0116_col_13, type:char(116), comment:null), ]
+POSTHOOK: Lineage: table_19.decimal0801_col_4 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:decimal0801_col_4, type:decimal(8,1), comment:null), ]
+POSTHOOK: Lineage: table_19.decimal1614_col_10 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:decimal1614_col_10, type:decimal(16,14), comment:null), ]
+POSTHOOK: Lineage: table_19.decimal2912_col_3 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:decimal2912_col_3, type:decimal(29,12), comment:null), ]
+POSTHOOK: Lineage: table_19.double_col_16 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:double_col_16, type:double, comment:null), ]
+POSTHOOK: Lineage: table_19.float_col_1 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:float_col_1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_19.float_col_12 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:float_col_12, type:float, comment:null), ]
+POSTHOOK: Lineage: table_19.int_col_19 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:int_col_19, type:int, comment:null), ]
+POSTHOOK: Lineage: table_19.string_col_15 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:string_col_15, type:string, comment:null), ]
+POSTHOOK: Lineage: table_19.string_col_17 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:string_col_17, type:string, comment:null), ]
+POSTHOOK: Lineage: table_19.string_col_7 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:string_col_7, type:string, comment:null), ]
+POSTHOOK: Lineage: table_19.timestamp_col_5 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:timestamp_col_5, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: table_19.tinyint_col_8 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:tinyint_col_8, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: table_19.varchar0037_col_2 SIMPLE [(table_19_txt)table_19_txt.FieldSchema(name:varchar0037_col_2, type:varchar(37), comment:null), ]
+PREHOOK: query: analyze table table_19 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_19
+PREHOOK: Output: default@table_19
+POSTHOOK: query: analyze table table_19 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_19
+POSTHOOK: Output: default@table_19
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:t1 
+          TableScan
+            alias: t1
+            filterExpr: decimal0801_col_4 is not null (type: boolean)
+            Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: decimal0801_col_4 is not null (type: boolean)
+              Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: decimal0801_col_4 (type: decimal(8,1))
+                outputColumnNames: _col0
+                Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: decimal(9,2))
+                    1 _col1 (type: decimal(9,2))
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            filterExpr: decimal0402_col_20 is not null (type: boolean)
+            Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:tinyint_col_1:tinyint, 1:float_col_2:float, 2:bigint_col_3:bigint, 3:boolean_col_4:boolean, 4:decimal0202_col_5:decimal(2,2)/DECIMAL_64, 5:decimal1612_col_6:decimal(16,12)/DECIMAL_64, 6:double_col_7:double, 7:char0205_col_8:char(205), 8:bigint_col_9:bigint, 9:decimal1202_col_10:decimal(12,2)/DECIMAL_64, 10:boolean_col_11:boolean, 11:double_col_12:double, 12:decimal2208_col_13:decimal(22,8), 13:decimal3722_col_14:decimal(37,22), 14:smallint_col_15:smallint, 15:decimal2824_col_16:decimal(28,24), 16:boolean_col_17:boolean, 17:float_col_18:float, 18:timestamp_col_19:timestamp, 19:decimal0402_col_20:decimal(4,2)/DECIMAL_64, 20:char0208_col_21:char(208), 21:char0077_col_22:char(77), 22:decimal2915_col_23:decimal(29,15), 23:char0234_col_24:char(234), 24:timestamp_col_25:timestamp, 25:tinyint_col_26:tinyint, 26:decimal3635_col_27:decimal(36,35), 27:boolean_col_28:boolean, 28:float_col_29:float, 29:smallint_col_30:smallint, 30:varchar0200_col_31:varchar(200), 31:boolean_col_32:boolean, 32:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: SelectColumnIsNotNull(col 33:decimal(4,2))(children: ConvertDecimal64ToDecimal(col 19:decimal(4,2)/DECIMAL_64) -> 33:decimal(4,2))
+              predicate: decimal0402_col_20 is not null (type: boolean)
+              Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: smallint_col_15 (type: smallint), decimal0402_col_20 (type: decimal(4,2))
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [14, 19]
+                Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: decimal(9,2))
+                    1 _col1 (type: decimal(9,2))
+                  Map Join Vectorization:
+                      bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 19:decimal(9,2)/DECIMAL_64) -> 34:decimal(9,2)
+                      bigTableValueExpressions: col 14:smallint
+                      className: VectorMapJoinOperator
+                      native: false
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
+                      nativeNotSupportedKeyTypes: DECIMAL
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 1188 Data size: 1047048 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count(_col1)
+                    Group By Vectorization:
+                        aggregators: VectorUDAFCount(col 0:smallint) -> bigint
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: [0]
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          featureSupportInUse: [DECIMAL_64]
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 32
+              includeColumns: [14, 19]
+              dataColumns: tinyint_col_1:tinyint, float_col_2:float, bigint_col_3:bigint, boolean_col_4:boolean, decimal0202_col_5:decimal(2,2)/DECIMAL_64, decimal1612_col_6:decimal(16,12)/DECIMAL_64, double_col_7:double, char0205_col_8:char(205), bigint_col_9:bigint, decimal1202_col_10:decimal(12,2)/DECIMAL_64, boolean_col_11:boolean, double_col_12:double, decimal2208_col_13:decimal(22,8), decimal3722_col_14:decimal(37,22), smallint_col_15:smallint, decimal2824_col_16:decimal(28,24), boolean_col_17:boolean, float_col_18:float, timestamp_col_19:timestamp, decimal0402_col_20:decimal(4,2)/DECIMAL_64, char0208_col_21:char(208), char0077_col_22:char(77), decimal2915_col_23:decimal(29,15), char0234_col_24:char(234), timestamp_col_25:timestamp, tinyint_col_26:tinyint, decimal3635_col_27:decimal(36,35), boolean_col_28:boolean, float_col_29:float, smallint_col_30:smallint, varchar0200_col_31:varchar(200), boolean_col_32:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [decimal(4,2), decimal(9,2)]
+      Local Work:
+        Map Reduce Local Work
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_19
+PREHOOK: Input: default@table_8
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_19
+POSTHOOK: Input: default@table_8
+#### A masked pattern was here ####
+2
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:t1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:t1 
+          TableScan
+            alias: t1
+            filterExpr: decimal0801_col_4 is not null (type: boolean)
+            Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: decimal0801_col_4 is not null (type: boolean)
+              Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: decimal0801_col_4 (type: decimal(8,1))
+                outputColumnNames: _col0
+                Statistics: Num rows: 1080 Data size: 951862 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  keys:
+                    0 _col0 (type: decimal(9,2))
+                    1 _col1 (type: decimal(9,2))
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            filterExpr: decimal0402_col_20 is not null (type: boolean)
+            Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:tinyint_col_1:tinyint, 1:float_col_2:float, 2:bigint_col_3:bigint, 3:boolean_col_4:boolean, 4:decimal0202_col_5:decimal(2,2), 5:decimal1612_col_6:decimal(16,12), 6:double_col_7:double, 7:char0205_col_8:char(205), 8:bigint_col_9:bigint, 9:decimal1202_col_10:decimal(12,2), 10:boolean_col_11:boolean, 11:double_col_12:double, 12:decimal2208_col_13:decimal(22,8), 13:decimal3722_col_14:decimal(37,22), 14:smallint_col_15:smallint, 15:decimal2824_col_16:decimal(28,24), 16:boolean_col_17:boolean, 17:float_col_18:float, 18:timestamp_col_19:timestamp, 19:decimal0402_col_20:decimal(4,2), 20:char0208_col_21:char(208), 21:char0077_col_22:char(77), 22:decimal2915_col_23:decimal(29,15), 23:char0234_col_24:char(234), 24:timestamp_col_25:timestamp, 25:tinyint_col_26:tinyint, 26:decimal3635_col_27:decimal(36,35), 27:boolean_col_28:boolean, 28:float_col_29:float, 29:smallint_col_30:smallint, 30:varchar0200_col_31:varchar(200), 31:boolean_col_32:boolean, 32:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+            Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: SelectColumnIsNotNull(col 19:decimal(4,2))
+              predicate: decimal0402_col_20 is not null (type: boolean)
+              Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: smallint_col_15 (type: smallint), decimal0402_col_20 (type: decimal(4,2))
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [14, 19]
+                Statistics: Num rows: 1000 Data size: 2087309 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: decimal(9,2))
+                    1 _col1 (type: decimal(9,2))
+                  Map Join Vectorization:
+                      bigTableKeyExpressions: col 19:decimal(9,2)
+                      bigTableValueExpressions: col 14:smallint
+                      className: VectorMapJoinOperator
+                      native: false
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Optimized Table and Supports Key Types IS false
+                      nativeNotSupportedKeyTypes: DECIMAL
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 1188 Data size: 1047048 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: count(_col1)
+                    Group By Vectorization:
+                        aggregators: VectorUDAFCount(col 0:smallint) -> bigint
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: [0]
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: [DECIMAL_64]
+          vectorizationSupportRemovedReasons: [[] is disabled because it is not in hive.vectorized.input.format.supports.enabled []]
+          featureSupportInUse: []
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 32
+              includeColumns: [14, 19]
+              dataColumns: tinyint_col_1:tinyint, float_col_2:float, bigint_col_3:bigint, boolean_col_4:boolean, decimal0202_col_5:decimal(2,2), decimal1612_col_6:decimal(16,12), double_col_7:double, char0205_col_8:char(205), bigint_col_9:bigint, decimal1202_col_10:decimal(12,2), boolean_col_11:boolean, double_col_12:double, decimal2208_col_13:decimal(22,8), decimal3722_col_14:decimal(37,22), smallint_col_15:smallint, decimal2824_col_16:decimal(28,24), boolean_col_17:boolean, float_col_18:float, timestamp_col_19:timestamp, decimal0402_col_20:decimal(4,2), char0208_col_21:char(208), char0077_col_22:char(77), decimal2915_col_23:decimal(29,15), char0234_col_24:char(234), timestamp_col_25:timestamp, tinyint_col_26:tinyint, decimal3635_col_27:decimal(36,35), boolean_col_28:boolean, float_col_29:float, smallint_col_30:smallint, varchar0200_col_31:varchar(200), boolean_col_32:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: []
+      Local Work:
+        Map Reduce Local Work
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_19
+PREHOOK: Input: default@table_8
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(t2.smallint_col_15) FROM   table_19 t1  INNER JOIN table_8 t2 ON t2.decimal0402_col_20 = t1.decimal0801_col_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_19
+POSTHOOK: Input: default@table_8
+#### A masked pattern was here ####
+2
