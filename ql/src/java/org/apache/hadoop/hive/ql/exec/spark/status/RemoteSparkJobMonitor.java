@@ -131,13 +131,13 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
               }
             }
 
-            printStatus(progressMap, lastProgressMap);
+            updateFunction.printStatus(progressMap, lastProgressMap);
             lastProgressMap = progressMap;
           }
           break;
         case SUCCEEDED:
           Map<SparkStage, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
-          printStatus(progressMap, lastProgressMap);
+          updateFunction.printStatus(progressMap, lastProgressMap);
           lastProgressMap = progressMap;
           double duration = (System.currentTimeMillis() - startTime) / 1000.0;
           console.printInfo("Spark job[" + sparkJobStatus.getJobId() + "] finished successfully in "
