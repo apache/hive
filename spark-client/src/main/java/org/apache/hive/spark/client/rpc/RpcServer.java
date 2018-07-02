@@ -202,11 +202,12 @@ public class RpcServer implements Closeable {
   }
 
   /**
-   * Tells the RPC server to cancel the connection from an existing pending client
+   * Tells the RPC server to cancel the connection from an existing pending client.
+   *
    * @param clientId The identifier for the client
-   * @param msg The error message about why the connection should be canceled
+   * @param failure The error about why the connection should be canceled
    */
-  public void cancelClient(final String clientId, final String msg) {
+  public void cancelClient(final String clientId, final Throwable failure) {
     final ClientInfo cinfo = pendingClients.remove(clientId);
     if (cinfo == null) {
       // Nothing to be done here.
@@ -214,9 +215,19 @@ public class RpcServer implements Closeable {
     }
     cinfo.timeoutFuture.cancel(true);
     if (!cinfo.promise.isDone()) {
-      cinfo.promise.setFailure(new RuntimeException(
-          String.format("Cancelling Remote Spark Driver client connection '%s' with error: " + msg, clientId)));
+      cinfo.promise.setFailure(failure);
     }
+  }
+
+  /**
+   * Tells the RPC server to cancel the connection from an existing pending client.
+   *
+   * @param clientId The identifier for the client
+   * @param msg The error message about why the connection should be canceled
+   */
+  public void cancelClient(final String clientId, final String msg) {
+    cancelClient(clientId, new RuntimeException(String.format(
+            "Cancelling Remote Spark Driver client connection '%s' with error: " + msg, clientId)));
   }
 
   /**
