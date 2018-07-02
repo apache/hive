@@ -3780,7 +3780,7 @@ public class HiveConf extends Configuration {
         "hive.server2.in.place.progress",
         true,
         "Allows hive server 2 to send progress bar update information. This is currently available"
-            + " only if the execution engine is tez."),
+            + " only if the execution engine is tez or Spark."),
     TEZ_DAG_STATUS_CHECK_INTERVAL("hive.tez.dag.status.check.interval", "500ms",
       new TimeValidator(TimeUnit.MILLISECONDS), "Interval between subsequent DAG status invocation."),
     SPARK_EXEC_INPLACE_PROGRESS("hive.spark.exec.inplace.progress", true,
