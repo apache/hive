@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -262,6 +263,7 @@ public class HiveStrictManagedMigration {
   private String groupName;
   private FsPermission dirPerms;
   private FsPermission filePerms;
+  private boolean createExternalDirsForDbs;
 
   HiveStrictManagedMigration(RunOptions runOptions) {
     this.runOptions = runOptions;
@@ -270,6 +272,7 @@ public class HiveStrictManagedMigration {
 
   void run() throws Exception {
     checkOldWarehouseRoot();
+    checkExternalWarehouseDir();
     checkOwnerPermsOptions();
 
     hms = new HiveMetaStoreClient(conf);//MetaException
@@ -348,10 +351,17 @@ public class HiveStrictManagedMigration {
       if (dirPermsString != null) {
         dirPerms = new FsPermission(dirPermsString);
       }
-      String filePermsString = conf.get("strict.managed.tables.migration.dir.permissions", "700");
+      String filePermsString = conf.get("strict.managed.tables.migration.file.permissions", "700");
       if (filePermsString != null) {
         filePerms = new FsPermission(filePermsString);
       }
+    }
+  }
+
+  void checkExternalWarehouseDir() {
+    String externalWarehouseDir = conf.getVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL);
+    if (externalWarehouseDir != null && !externalWarehouseDir.isEmpty()) {
+      createExternalDirsForDbs = true;
     }
   }
 
@@ -376,6 +386,10 @@ public class HiveStrictManagedMigration {
         Database modifiedDb = dbObj.deepCopy();
         getHiveUpdater().updateDbLocation(modifiedDb, newDefaultDbLocation);
       }
+    }
+
+    if (createExternalDirsForDbs) {
+      createExternalDbDir(dbObj);
     }
 
     List<String> tableNames = hms.getTables(dbName, runOptions.tableRegex);
@@ -488,6 +502,42 @@ public class HiveStrictManagedMigration {
     String partLocation = partObj.getSd().getLocation();
     Path oldDefaultPartLocation = oldWh.getDefaultPartitionPath(dbObj, tableObj, partSpec);
     return arePathsEqual(conf, partLocation, oldDefaultPartLocation.toString());
+  }
+
+  void createExternalDbDir(Database dbObj) throws IOException, MetaException {
+    Path externalTableDbPath = wh.getDefaultExternalDatabasePath(dbObj.getName());
+    FileSystem fs = externalTableDbPath.getFileSystem(conf);
+    if (!fs.exists(externalTableDbPath)) {
+      String dbOwner = ownerName;
+      String dbGroup = null;
+
+      String dbOwnerName = dbObj.getOwnerName();
+      if (dbOwnerName != null && !dbOwnerName.isEmpty()) {
+        switch (dbObj.getOwnerType()) {
+        case USER:
+          dbOwner = dbOwnerName;
+          break;
+        case ROLE:
+          break;
+        case GROUP:
+          dbGroup = dbOwnerName;
+          break;
+        }
+      }
+
+      LOG.info("Creating external table directory for database {} at {} with ownership {}/{}",
+          dbObj.getName(), externalTableDbPath, dbOwner, dbGroup);
+      if (!runOptions.dryRun) {
+        // Just rely on parent perms/umask for permissions.
+        fs.mkdirs(externalTableDbPath);
+        checkAndSetFileOwnerPermissions(fs, externalTableDbPath, dbOwner, dbGroup,
+            null, null, runOptions.dryRun, false);
+      }
+    } else {
+      LOG.info("Not creating external table directory for database {} - {} already exists.",
+          dbObj.getName(), externalTableDbPath);
+      // Leave the directory owner/perms as-is if the path already exists.
+    }
   }
 
   void moveTableData(Database dbObj, Table tableObj, Path newTablePath) throws HiveException, IOException, TException {
