@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASELOCATION;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASEPROPERTIES;
 
 import java.io.FileNotFoundException;
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -73,7 +72,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsUpdateTask;
-import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -110,7 +108,6 @@ import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.AlterWMTriggerDesc;
@@ -124,6 +121,7 @@ import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.CreateWMTriggerDesc;
 import org.apache.hadoop.hive.ql.plan.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
@@ -686,7 +684,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeGrantRevokeRole(boolean grant, ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task;
+    Task<?> task;
     if(grant) {
       task = hiveAuthorizationTaskFactory.createGrantRoleTask(ast, getInputs(), getOutputs());
     } else {
@@ -698,7 +696,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeShowGrant(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
+    Task<?> task = hiveAuthorizationTaskFactory.
         createShowGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
@@ -707,7 +705,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeGrant(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
+    Task<?> task = hiveAuthorizationTaskFactory.
         createGrantTask(ast, getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
@@ -715,7 +713,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeRevoke(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
+    Task<?> task = hiveAuthorizationTaskFactory.
         createRevokeTask(ast, getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
@@ -723,7 +721,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeCreateRole(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
+    Task<?> task = hiveAuthorizationTaskFactory.
         createCreateRoleTask(ast, getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
@@ -731,7 +729,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeDropRole(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
+    Task<?> task = hiveAuthorizationTaskFactory.
         createDropRoleTask(ast, getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
@@ -739,7 +737,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeShowRoleGrant(ASTNode ast) throws SemanticException {
-    Task<? extends Serializable> task = hiveAuthorizationTaskFactory.
+    Task<?> task = hiveAuthorizationTaskFactory.
         createShowRoleGrantTask(ast, ctx.getResFile(), getInputs(), getOutputs());
     if(task != null) {
       rootTasks.add(task);
@@ -1483,7 +1481,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     TruncateTableDesc truncateTblDesc = new TruncateTableDesc(tableName, partSpec, null);
 
     DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), truncateTblDesc);
-    Task<? extends Serializable> truncateTask = TaskFactory.get(ddlWork);
+    Task<?> truncateTask = TaskFactory.get(ddlWork);
 
     // Is this a truncate column command
     List<String> columnNames = null;
@@ -1613,7 +1611,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           basicStatsWork.setClearAggregatorStats(true);
           StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, conf);
 
-          Task<? extends Serializable> statTask = TaskFactory.get(columnStatsWork);
+          Task<?> statTask = TaskFactory.get(columnStatsWork);
           moveTsk.addDependentTask(statTask);
         }
       } catch (HiveException e) {
@@ -2075,7 +2073,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       addInputsOutputsAlterTable(tableName, partSpec, AlterTableTypes.MERGEFILES);
       DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), mergeDesc);
       ddlWork.setNeedLock(true);
-      Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork);
+      Task<?> mergeTask = TaskFactory.get(ddlWork);
       TableDesc tblDesc = Utilities.getTableDesc(tblObj);
       Path queryTmpdir = ctx.getExternalTmpPath(newTblPartLoc);
       mergeDesc.setOutputDir(queryTmpdir);
@@ -2100,7 +2098,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         basicStatsWork.setClearAggregatorStats(true);
         StatsWork columnStatsWork = new StatsWork(tblObj, basicStatsWork, conf);
 
-        Task<? extends Serializable> statTask = TaskFactory.get(columnStatsWork);
+        Task<?> statTask = TaskFactory.get(columnStatsWork);
         moveTsk.addDependentTask(statTask);
       }
 
@@ -3176,7 +3174,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         case HiveParser.TOK_RESTRICT:
           break;
         default:
-          constraintChild = (ASTNode) child;
+          constraintChild = child;
       }
     }
     List<SQLPrimaryKey> primaryKeys = null;

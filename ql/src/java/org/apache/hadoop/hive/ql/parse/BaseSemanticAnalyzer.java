@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -36,8 +35,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.TokenRewriteStream;
+import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -246,7 +245,7 @@ public abstract class BaseSemanticAnalyzer {
       this.queryState = queryState;
       this.conf = queryState.getConf();
       this.db = db;
-      rootTasks = new ArrayList<Task<? extends Serializable>>();
+      rootTasks = new ArrayList<Task<?>>();
       LOG = LoggerFactory.getLogger(this.getClass().getName());
       console = new LogHelper(LOG);
       idToTableNameMap = new HashMap<String, String>();
@@ -289,7 +288,7 @@ public abstract class BaseSemanticAnalyzer {
     // Implementations may choose to override this
   }
 
-  public List<Task<? extends Serializable>> getRootTasks() {
+  public List<Task<?>> getRootTasks() {
     return rootTasks;
   }
 
@@ -309,7 +308,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected void reset(boolean clearPartsCache) {
-    rootTasks = new ArrayList<Task<? extends Serializable>>();
+    rootTasks = new ArrayList<Task<?>>();
   }
 
   public static String stripIdentifierQuotes(String val) {
@@ -841,7 +840,9 @@ public abstract class BaseSemanticAnalyzer {
   // it throws an error.
   // This method is used to validate check expression since check expression isn't allowed to have subquery
   private static void validateCheckExprAST(ASTNode checkExpr) throws SemanticException {
-    if(checkExpr == null) return;
+    if(checkExpr == null) {
+      return;
+    }
     if(checkExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
       throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Subqueries are not allowed "
                                                                           + "in Check Constraints"));
@@ -2241,7 +2242,7 @@ public abstract class BaseSemanticAnalyzer {
     return detail == null ? message.getMsg() : message.getMsg(detail.toString());
   }
 
-  public List<Task<? extends Serializable>> getAllRootTasks() {
+  public List<Task<?>> getAllRootTasks() {
     return rootTasks;
   }
 
