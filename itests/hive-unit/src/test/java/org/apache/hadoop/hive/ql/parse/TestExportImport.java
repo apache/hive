@@ -42,6 +42,7 @@ public class TestExportImport {
   protected static final Logger LOG = LoggerFactory.getLogger(TestExportImport.class);
   private static WarehouseInstance srcHiveWarehouse;
   private static WarehouseInstance destHiveWarehouse;
+  private static WarehouseInstance dumpExternalWarehouse;
 
   @Rule
   public final TestName testName = new TestName();
@@ -58,9 +59,15 @@ public class TestExportImport {
     HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
       put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
     }};
+    HashMap<String, String> overridesForHiveConfDump = new HashMap<String, String>() {{
+        put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
+        put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
+    }};
     srcHiveWarehouse =
         new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
     destHiveWarehouse = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
+    dumpExternalWarehouse =
+            new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConfDump);
   }
 
   @AfterClass
@@ -107,6 +114,54 @@ public class TestExportImport {
         .run("import table " + replDbName + ".t1 from " + exportDataPath)
         .run("select * from " + replDbName + ".t1")
         .verifyResults(new String[] { "1", "2" });
+  }
+
+  @Test
+  public void testExportExternalTableSetFalse() throws Throwable {
+    String path = "hdfs:///tmp/" + dbName + "/";
+    String exportMDPath = "'" + path + "1/'";
+    String exportDataPath = "'" + path + "2/'";
+    String exportDataPathRepl = "'" + path + "3/'";
+    srcHiveWarehouse.run("create external table " + dbName + ".t1 (i int)")
+            .run("insert into table " + dbName + ".t1 values (1),(2)")
+            .run("export table " + dbName + ".t1 to " + exportMDPath + " for metadata replication('1')")
+            .run("export table " + dbName + ".t1 to " + exportDataPath)
+            .runFailure("export table " + dbName + ".t1 to " + exportDataPathRepl + " for replication('2')");
+
+    destHiveWarehouse.run("use " + replDbName)
+            .run("import table " + replDbName + ".t1 from " + exportMDPath)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("import table " + replDbName + ".t2 from " + exportDataPath)
+            .run("select * from " + replDbName + ".t2")
+            .verifyResults(new String[] {"1", "2" })
+            .runFailure("import table " + replDbName + ".t3 from " + exportDataPathRepl)
+            .run("show tables like 't3'")
+            .verifyFailure(new String[] {"t3"});
+  }
+
+  @Test
+  public void testExportExternalTableSetTrue() throws Throwable {
+    String path = "hdfs:///tmp/" + dbName + "/";
+    String exportMDPath = "'" + path + "1/'";
+    String exportDataPath = "'" + path + "2/'";
+    String exportDataPathRepl = "'" + path + "3/'";
+    dumpExternalWarehouse.run("create external table " + dbName + ".t1 (i int)")
+            .run("insert into table " + dbName + ".t1 values (1),(2)")
+            .run("export table " + dbName + ".t1 to " + exportDataPathRepl + " for replication('2')")
+            .run("export table " + dbName + ".t1 to " + exportMDPath + " for metadata replication('1')")
+            .run("export table " + dbName + ".t1 to " + exportDataPath);
+
+    destHiveWarehouse.run("use " + replDbName)
+            .run("import table " + replDbName + ".t1 from " + exportMDPath)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("import table " + replDbName + ".t2 from " + exportDataPath)
+            .run("select * from " + replDbName + ".t2")
+            .verifyResults(new String[] {"1", "2" })
+            .run("import table " + replDbName + ".t3 from " + exportDataPathRepl)
+            .run("select * from " + replDbName + ".t3")
+            .verifyResults(new String[] {"1", "2" });
   }
 
   @Test
