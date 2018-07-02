@@ -90,7 +90,8 @@ public class LlapServiceDriver {
 
   private static final String[] DEFAULT_AUX_CLASSES = new String[] {
     "org.apache.hive.hcatalog.data.JsonSerDe","org.apache.hadoop.hive.druid.DruidStorageHandler",
-    "org.apache.hive.storage.jdbc.JdbcStorageHandler"
+    "org.apache.hive.storage.jdbc.JdbcStorageHandler", "org.apache.commons.dbcp.BasicDataSourceFactory",
+    "org.apache.commons.pool.impl.GenericObjectPool"
   };
   private static final String HBASE_SERDE_CLASS = "org.apache.hadoop.hive.hbase.HBaseSerDe";
   private static final String[] NEEDED_CONFIGS = LlapDaemonConfiguration.DAEMON_CONFIGS;
@@ -433,7 +434,9 @@ public class LlapServiceDriver {
               localizeJarForClass(lfs, libDir, codecClassName, false);
             }
           }
-
+          for (String className : getDbSpecificJdbcJars()) {
+            localizeJarForClass(lfs, libDir, className, false);
+          }
           if (options.getIsHBase()) {
             try {
               localizeJarForClass(lfs, libDir, HBASE_SERDE_CLASS, true);
@@ -736,6 +739,22 @@ public class LlapServiceDriver {
       }
     }
     return udfs.keySet();
+  }
+
+  private void addJarForClassToListIfExists(String cls, List<String> jarList) {
+    try {
+      Class.forName(cls);
+      jarList.add(cls);
+    } catch (Exception e) {
+    }
+  }
+  private List<String> getDbSpecificJdbcJars() {
+    List<String> jdbcJars = new ArrayList<String>();
+    addJarForClassToListIfExists("com.mysql.jdbc.Driver", jdbcJars); // add mysql jdbc driver
+    addJarForClassToListIfExists("org.postgresql.Driver", jdbcJars); // add postgresql jdbc driver
+    addJarForClassToListIfExists("oracle.jdbc.OracleDriver", jdbcJars); // add oracle jdbc driver
+    addJarForClassToListIfExists("com.microsoft.sqlserver.jdbc.SQLServerDriver", jdbcJars); // add mssql jdbc driver
+    return jdbcJars;
   }
 
   private void localizeJarForClass(FileSystem lfs, Path libDir, String className, boolean doThrow)

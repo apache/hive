@@ -1,5 +1,7 @@
 -- Test MAPJOIN hint
 
+-- SORT_QUERY_RESULTS
+
 DROP TABLE keyval1;
 DROP TABLE keyval2;
 

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
@@ -115,9 +116,8 @@ public class ReplUtils {
       if (props.get(REPL_CHECKPOINT_KEY).equals(dumpRoot)) {
         return true;
       }
-      throw new InvalidOperationException("REPL LOAD with Dump: " + dumpRoot
-              + " is not allowed as the target DB: " + dbName
-              + " is already bootstrap loaded by another Dump " + props.get(REPL_CHECKPOINT_KEY));
+      throw new InvalidOperationException(ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.format(dumpRoot,
+              props.get(REPL_CHECKPOINT_KEY)));
     }
     return false;
   }
