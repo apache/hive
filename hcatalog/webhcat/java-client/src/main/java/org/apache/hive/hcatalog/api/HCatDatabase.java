@@ -34,6 +34,7 @@ public class HCatDatabase {
 
   private String dbName;
   private String dbLocation;
+  private String dbExternalLocation;
   private String comment;
   private Map<String, String> props;
 
@@ -41,16 +42,26 @@ public class HCatDatabase {
     this.dbName = db.getName();
     this.props = db.getParameters();
     this.dbLocation = db.getLocationUri();
+    this.dbExternalLocation = db.getExternalLocationUri();
     this.comment = db.getDescription();
   }
 
   /**
    * Gets the database name.
-   *
+   *public String getExternalLocation() {
    * @return the database name
    */
   public String getName() {
     return dbName;
+  }
+
+  /**
+   * Gets the external dB location.
+   *
+   * @return the external dB location
+   */
+  public String getExternalLocation() {
+    return dbExternalLocation;
   }
 
   /**
@@ -85,6 +96,7 @@ public class HCatDatabase {
     return "HCatDatabase ["
       + (dbName != null ? "dbName=" + dbName + ", " : "dbName=null")
       + (dbLocation != null ? "dbLocation=" + dbLocation + ", " : "dbLocation=null")
+      + (dbExternalLocation != null ? "dbExternalLocation=" + dbExternalLocation + ", " : "dbExternalLocation=null")
       + (comment != null ? "comment=" + comment + ", " : "comment=null")
       + (props != null ? "props=" + props : "props=null") + "]";
   }

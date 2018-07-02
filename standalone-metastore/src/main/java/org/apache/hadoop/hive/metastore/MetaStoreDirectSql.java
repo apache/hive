@@ -327,8 +327,8 @@ class MetaStoreDirectSql {
       catName = catName.toLowerCase();
 
       String queryTextDbSelector= "select "
-          + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DESC\", "
-          + "\"OWNER_NAME\", \"OWNER_TYPE\", \"CTLG_NAME\" "
+          + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DB_EXTERNAL_LOCATION_URI\", "
+          + " \"DESC\", \"OWNER_NAME\", \"OWNER_TYPE\", \"CTLG_NAME\" "
           + "FROM "+ DBS
           + " where \"NAME\" = ? and \"CTLG_NAME\" = ? ";
       Object[] params = new Object[] { dbName, catName };
@@ -375,17 +375,19 @@ class MetaStoreDirectSql {
       Database db = new Database();
       db.setName(extractSqlString(dbline[1]));
       db.setLocationUri(extractSqlString(dbline[2]));
-      db.setDescription(extractSqlString(dbline[3]));
-      db.setOwnerName(extractSqlString(dbline[4]));
-      String type = extractSqlString(dbline[5]);
+      db.setExternalLocationUri(extractSqlString(dbline[3]));
+      db.setDescription(extractSqlString(dbline[4]));
+      db.setOwnerName(extractSqlString(dbline[5]));
+      String type = extractSqlString(dbline[6]);
       db.setOwnerType(
           (null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
-      db.setCatalogName(extractSqlString(dbline[6]));
+      db.setCatalogName(extractSqlString(dbline[7]));
       db.setParameters(MetaStoreUtils.trimMapNulls(dbParams,convertMapNullsToEmptyStrings));
       if (LOG.isDebugEnabled()){
         LOG.debug("getDatabase: directsql returning db " + db.getName()
-            + " locn["+db.getLocationUri()  +"] desc [" +db.getDescription()
-            + "] owner [" + db.getOwnerName() + "] ownertype ["+ db.getOwnerType() +"]");
+            + " locn["+db.getLocationUri()  +"] "+ " extLocn["+db.getExternalLocationUri()  +"] "
+            + " desc [" +db.getDescription() + "] owner [" + db.getOwnerName() + "]"
+            + " ownertype ["+ db.getOwnerType() +"]");
       }
       return db;
     } finally {

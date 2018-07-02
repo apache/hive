@@ -147,7 +147,7 @@ enum PartitionEventType {
   LOAD_DONE = 1,
 }
 
-// Enums for transaction and lock management 
+// Enums for transaction and lock management
 enum TxnState {
     COMMITTED = 1,
     ABORTED = 2,
@@ -327,11 +327,14 @@ struct GrantRevokeRoleResponse {
 }
 
 struct Catalog {
-  1: string name,                    // Name of the catalog
-  2: optional string description,    // description of the catalog
-  3: string locationUri              // default storage location.  When databases are created in
-                                     // this catalog, if they do not specify a location, they will
-                                     // be placed in this location.
+  1: string name,                           // Name of the catalog
+  2: optional string description,           // description of the catalog
+  3: string locationUri,                    // default storage location.  When databases are created in
+                                            // this catalog, if they do not specify a location, they will
+                                            // be placed in this location.
+  4: optional string externalLocationUri    // same as locationUri but for external tables. If it's not
+                                            // specified the external default warehouse directory will be
+                                            // used.
 }
 
 struct CreateCatalogRequest {
@@ -364,11 +367,12 @@ struct Database {
   1: string name,
   2: string description,
   3: string locationUri,
-  4: map<string, string> parameters, // properties associated with the database
-  5: optional PrincipalPrivilegeSet privileges,
-  6: optional string ownerName,
-  7: optional PrincipalType ownerType,
-  8: optional string catalogName
+  4: optional string externalLocationUri, // optional since it can't be specified when creating the database
+  5: map<string, string> parameters, // properties associated with the database
+  6: optional PrincipalPrivilegeSet privileges,
+  7: optional string ownerName,
+  8: optional PrincipalType ownerType,
+  9: optional string catalogName
 }
 
 // This object holds the information needed by SerDes
@@ -656,7 +660,7 @@ struct CheckConstraintsResponse {
 
 
 struct DropConstraintRequest {
-  1: required string dbname, 
+  1: required string dbname,
   2: required string tablename,
   3: required string constraintname,
   4: optional string catName
@@ -1122,7 +1126,7 @@ struct FireEventRequest {
 struct FireEventResponse {
     // NOP for now, this is just a place holder for future responses
 }
-    
+
 struct MetadataPpdResult {
   1: optional binary metadata,
   2: optional binary includeBitset
@@ -1669,7 +1673,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_primary_key(1:AddPrimaryKeyRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_foreign_key(1:AddForeignKeyRequest req)
-      throws(1:NoSuchObjectException o1, 2:MetaException o2)  
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_unique_constraint(1:AddUniqueConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_not_null_constraint(1:AddNotNullConstraintRequest req)
@@ -2093,13 +2097,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   ShowLocksResponse show_locks(1:ShowLocksRequest rqst)
   void heartbeat(1:HeartbeatRequest ids) throws (1:NoSuchLockException o1, 2:NoSuchTxnException o2, 3:TxnAbortedException o3)
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
-  void compact(1:CompactionRequest rqst) 
-  CompactionResponse compact2(1:CompactionRequest rqst) 
+  void compact(1:CompactionRequest rqst)
+  CompactionResponse compact2(1:CompactionRequest rqst)
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
 
   // Notification logging calls
-  NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
+  NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst)
   CurrentNotificationEventId get_current_notificationEventId()
   NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
@@ -2202,7 +2206,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
   bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
-  
+
   void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
   list<RuntimeStat> get_runtime_stats(1: GetRuntimeStatsRequest rqst) throws(1:MetaException o1)
 }

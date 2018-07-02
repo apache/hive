@@ -41,11 +41,12 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField LOCATION_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("locationUri", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField PARAMETERS_FIELD_DESC = new org.apache.thrift.protocol.TField("parameters", org.apache.thrift.protocol.TType.MAP, (short)4);
-  private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)5);
-  private static final org.apache.thrift.protocol.TField OWNER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerName", org.apache.thrift.protocol.TType.STRING, (short)6);
-  private static final org.apache.thrift.protocol.TField OWNER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerType", org.apache.thrift.protocol.TType.I32, (short)7);
-  private static final org.apache.thrift.protocol.TField CATALOG_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catalogName", org.apache.thrift.protocol.TType.STRING, (short)8);
+  private static final org.apache.thrift.protocol.TField EXTERNAL_LOCATION_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("externalLocationUri", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField PARAMETERS_FIELD_DESC = new org.apache.thrift.protocol.TField("parameters", org.apache.thrift.protocol.TType.MAP, (short)5);
+  private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)6);
+  private static final org.apache.thrift.protocol.TField OWNER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerName", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField OWNER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerType", org.apache.thrift.protocol.TType.I32, (short)8);
+  private static final org.apache.thrift.protocol.TField CATALOG_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catalogName", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -56,6 +57,7 @@ import org.slf4j.LoggerFactory;
   private String name; // required
   private String description; // required
   private String locationUri; // required
+  private String externalLocationUri; // optional
   private Map<String,String> parameters; // required
   private PrincipalPrivilegeSet privileges; // optional
   private String ownerName; // optional
@@ -67,15 +69,16 @@ import org.slf4j.LoggerFactory;
     NAME((short)1, "name"),
     DESCRIPTION((short)2, "description"),
     LOCATION_URI((short)3, "locationUri"),
-    PARAMETERS((short)4, "parameters"),
-    PRIVILEGES((short)5, "privileges"),
-    OWNER_NAME((short)6, "ownerName"),
+    EXTERNAL_LOCATION_URI((short)4, "externalLocationUri"),
+    PARAMETERS((short)5, "parameters"),
+    PRIVILEGES((short)6, "privileges"),
+    OWNER_NAME((short)7, "ownerName"),
     /**
      * 
      * @see PrincipalType
      */
-    OWNER_TYPE((short)7, "ownerType"),
-    CATALOG_NAME((short)8, "catalogName");
+    OWNER_TYPE((short)8, "ownerType"),
+    CATALOG_NAME((short)9, "catalogName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -96,15 +99,17 @@ import org.slf4j.LoggerFactory;
           return DESCRIPTION;
         case 3: // LOCATION_URI
           return LOCATION_URI;
-        case 4: // PARAMETERS
+        case 4: // EXTERNAL_LOCATION_URI
+          return EXTERNAL_LOCATION_URI;
+        case 5: // PARAMETERS
           return PARAMETERS;
-        case 5: // PRIVILEGES
+        case 6: // PRIVILEGES
           return PRIVILEGES;
-        case 6: // OWNER_NAME
+        case 7: // OWNER_NAME
           return OWNER_NAME;
-        case 7: // OWNER_TYPE
+        case 8: // OWNER_TYPE
           return OWNER_TYPE;
-        case 8: // CATALOG_NAME
+        case 9: // CATALOG_NAME
           return CATALOG_NAME;
         default:
           return null;
@@ -146,7 +151,7 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME};
+  private static final _Fields optionals[] = {_Fields.EXTERNAL_LOCATION_URI,_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -155,6 +160,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.DESCRIPTION, new org.apache.thrift.meta_data.FieldMetaData("description", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.LOCATION_URI, new org.apache.thrift.meta_data.FieldMetaData("locationUri", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.EXTERNAL_LOCATION_URI, new org.apache.thrift.meta_data.FieldMetaData("externalLocationUri", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PARAMETERS, new org.apache.thrift.meta_data.FieldMetaData("parameters", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
@@ -201,6 +208,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetLocationUri()) {
       this.locationUri = other.locationUri;
     }
+    if (other.isSetExternalLocationUri()) {
+      this.externalLocationUri = other.externalLocationUri;
+    }
     if (other.isSetParameters()) {
       Map<String,String> __this__parameters = new HashMap<String,String>(other.parameters);
       this.parameters = __this__parameters;
@@ -228,6 +238,7 @@ import org.slf4j.LoggerFactory;
     this.name = null;
     this.description = null;
     this.locationUri = null;
+    this.externalLocationUri = null;
     this.parameters = null;
     this.privileges = null;
     this.ownerName = null;
@@ -301,6 +312,29 @@ import org.slf4j.LoggerFactory;
   public void setLocationUriIsSet(boolean value) {
     if (!value) {
       this.locationUri = null;
+    }
+  }
+
+  public String getExternalLocationUri() {
+    return this.externalLocationUri;
+  }
+
+  public void setExternalLocationUri(String externalLocationUri) {
+    this.externalLocationUri = externalLocationUri;
+  }
+
+  public void unsetExternalLocationUri() {
+    this.externalLocationUri = null;
+  }
+
+  /** Returns true if field externalLocationUri is set (has been assigned a value) and false otherwise */
+  public boolean isSetExternalLocationUri() {
+    return this.externalLocationUri != null;
+  }
+
+  public void setExternalLocationUriIsSet(boolean value) {
+    if (!value) {
+      this.externalLocationUri = null;
     }
   }
 
@@ -464,6 +498,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case EXTERNAL_LOCATION_URI:
+      if (value == null) {
+        unsetExternalLocationUri();
+      } else {
+        setExternalLocationUri((String)value);
+      }
+      break;
+
     case PARAMETERS:
       if (value == null) {
         unsetParameters();
@@ -518,6 +560,9 @@ import org.slf4j.LoggerFactory;
     case LOCATION_URI:
       return getLocationUri();
 
+    case EXTERNAL_LOCATION_URI:
+      return getExternalLocationUri();
+
     case PARAMETERS:
       return getParameters();
 
@@ -550,6 +595,8 @@ import org.slf4j.LoggerFactory;
       return isSetDescription();
     case LOCATION_URI:
       return isSetLocationUri();
+    case EXTERNAL_LOCATION_URI:
+      return isSetExternalLocationUri();
     case PARAMETERS:
       return isSetParameters();
     case PRIVILEGES:
@@ -601,6 +648,15 @@ import org.slf4j.LoggerFactory;
       if (!(this_present_locationUri && that_present_locationUri))
         return false;
       if (!this.locationUri.equals(that.locationUri))
+        return false;
+    }
+
+    boolean this_present_externalLocationUri = true && this.isSetExternalLocationUri();
+    boolean that_present_externalLocationUri = true && that.isSetExternalLocationUri();
+    if (this_present_externalLocationUri || that_present_externalLocationUri) {
+      if (!(this_present_externalLocationUri && that_present_externalLocationUri))
+        return false;
+      if (!this.externalLocationUri.equals(that.externalLocationUri))
         return false;
     }
 
@@ -671,6 +727,11 @@ import org.slf4j.LoggerFactory;
     if (present_locationUri)
       list.add(locationUri);
 
+    boolean present_externalLocationUri = true && (isSetExternalLocationUri());
+    list.add(present_externalLocationUri);
+    if (present_externalLocationUri)
+      list.add(externalLocationUri);
+
     boolean present_parameters = true && (isSetParameters());
     list.add(present_parameters);
     if (present_parameters)
@@ -733,6 +794,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetLocationUri()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.locationUri, other.locationUri);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetExternalLocationUri()).compareTo(other.isSetExternalLocationUri());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExternalLocationUri()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.externalLocationUri, other.externalLocationUri);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -830,6 +901,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.locationUri);
     }
     first = false;
+    if (isSetExternalLocationUri()) {
+      if (!first) sb.append(", ");
+      sb.append("externalLocationUri:");
+      if (this.externalLocationUri == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.externalLocationUri);
+      }
+      first = false;
+    }
     if (!first) sb.append(", ");
     sb.append("parameters:");
     if (this.parameters == null) {
@@ -948,7 +1029,15 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // PARAMETERS
+          case 4: // EXTERNAL_LOCATION_URI
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.externalLocationUri = iprot.readString();
+              struct.setExternalLocationUriIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
                 org.apache.thrift.protocol.TMap _map102 = iprot.readMapBegin();
@@ -968,7 +1057,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // PRIVILEGES
+          case 6: // PRIVILEGES
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
               struct.privileges = new PrincipalPrivilegeSet();
               struct.privileges.read(iprot);
@@ -977,7 +1066,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // OWNER_NAME
+          case 7: // OWNER_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.ownerName = iprot.readString();
               struct.setOwnerNameIsSet(true);
@@ -985,7 +1074,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // OWNER_TYPE
+          case 8: // OWNER_TYPE
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.findByValue(iprot.readI32());
               struct.setOwnerTypeIsSet(true);
@@ -993,7 +1082,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 8: // CATALOG_NAME
+          case 9: // CATALOG_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.catalogName = iprot.readString();
               struct.setCatalogNameIsSet(true);
@@ -1028,6 +1117,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(LOCATION_URI_FIELD_DESC);
         oprot.writeString(struct.locationUri);
         oprot.writeFieldEnd();
+      }
+      if (struct.externalLocationUri != null) {
+        if (struct.isSetExternalLocationUri()) {
+          oprot.writeFieldBegin(EXTERNAL_LOCATION_URI_FIELD_DESC);
+          oprot.writeString(struct.externalLocationUri);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.parameters != null) {
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
@@ -1097,22 +1193,25 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetLocationUri()) {
         optionals.set(2);
       }
-      if (struct.isSetParameters()) {
+      if (struct.isSetExternalLocationUri()) {
         optionals.set(3);
       }
-      if (struct.isSetPrivileges()) {
+      if (struct.isSetParameters()) {
         optionals.set(4);
       }
-      if (struct.isSetOwnerName()) {
+      if (struct.isSetPrivileges()) {
         optionals.set(5);
       }
-      if (struct.isSetOwnerType()) {
+      if (struct.isSetOwnerName()) {
         optionals.set(6);
       }
-      if (struct.isSetCatalogName()) {
+      if (struct.isSetOwnerType()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetCatalogName()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
@@ -1121,6 +1220,9 @@ import org.slf4j.LoggerFactory;
       }
       if (struct.isSetLocationUri()) {
         oprot.writeString(struct.locationUri);
+      }
+      if (struct.isSetExternalLocationUri()) {
+        oprot.writeString(struct.externalLocationUri);
       }
       if (struct.isSetParameters()) {
         {
@@ -1149,7 +1251,7 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Database struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(8);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
@@ -1163,6 +1265,10 @@ import org.slf4j.LoggerFactory;
         struct.setLocationUriIsSet(true);
       }
       if (incoming.get(3)) {
+        struct.externalLocationUri = iprot.readString();
+        struct.setExternalLocationUriIsSet(true);
+      }
+      if (incoming.get(4)) {
         {
           org.apache.thrift.protocol.TMap _map108 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.parameters = new HashMap<String,String>(2*_map108.size);
@@ -1177,20 +1283,20 @@ import org.slf4j.LoggerFactory;
         }
         struct.setParametersIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(5)) {
         struct.privileges = new PrincipalPrivilegeSet();
         struct.privileges.read(iprot);
         struct.setPrivilegesIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(6)) {
         struct.ownerName = iprot.readString();
         struct.setOwnerNameIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(7)) {
         struct.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.findByValue(iprot.readI32());
         struct.setOwnerTypeIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(8)) {
         struct.catalogName = iprot.readString();
         struct.setCatalogNameIsSet(true);
       }

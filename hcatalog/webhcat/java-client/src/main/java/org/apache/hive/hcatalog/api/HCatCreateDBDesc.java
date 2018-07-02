@@ -34,6 +34,7 @@ public class HCatCreateDBDesc {
 
   private String dbName;
   private String locationUri;
+  private String externalLocationUri;
   private String comment;
   private Map<String, String> dbProperties;
   private boolean ifNotExits = false;
@@ -75,6 +76,15 @@ public class HCatCreateDBDesc {
   }
 
   /**
+   * Gets the external location.
+   *
+   * @return the external location
+   */
+  public String getExternalLocation() {
+    return this.externalLocationUri;
+  }
+
+  /**
    * Gets the database name.
    *
    * @return the database name
@@ -93,6 +103,8 @@ public class HCatCreateDBDesc {
       + (dbName != null ? "dbName=" + dbName + ", " : "dbName=null")
       + (locationUri != null ? "location=" + locationUri + ", "
       : "location=null")
+      + (externalLocationUri != null ? "externalLocationUri=" + externalLocationUri + ", "
+      : "externalLocationUri=null")
       + (comment != null ? "comment=" + comment + ", " : "comment=null")
       + (dbProperties != null ? "dbProperties=" + dbProperties + ", "
       : "dbProperties=null") + "ifNotExits=" + ifNotExits + "]";
@@ -112,6 +124,7 @@ public class HCatCreateDBDesc {
     Database hiveDB = new Database();
     hiveDB.setDescription(this.comment);
     hiveDB.setLocationUri(this.locationUri);
+    hiveDB.setExternalLocationUri(this.externalLocationUri);
     hiveDB.setName(this.dbName);
     hiveDB.setParameters(this.dbProperties);
     return hiveDB;
@@ -120,6 +133,7 @@ public class HCatCreateDBDesc {
   public static class Builder {
 
     private String innerLoc;
+    private String innerExternalLoc;
     private String innerComment;
     private Map<String, String> innerDBProps;
     private String dbName;
@@ -137,6 +151,17 @@ public class HCatCreateDBDesc {
      */
     public Builder location(String value) {
       this.innerLoc = value;
+      return this;
+    }
+
+    /**
+     * External location.
+     *
+     * @param value the external location of the database.
+     * @return the builder
+     */
+    public Builder externalLocation(String value) {
+      this.innerExternalLoc = value;
       return this;
     }
 
@@ -187,6 +212,7 @@ public class HCatCreateDBDesc {
       HCatCreateDBDesc desc = new HCatCreateDBDesc(this.dbName);
       desc.comment = this.innerComment;
       desc.locationUri = this.innerLoc;
+      desc.externalLocationUri = this.innerExternalLoc;
       desc.dbProperties = this.innerDBProps;
       desc.ifNotExits = this.ifNotExists;
       return desc;

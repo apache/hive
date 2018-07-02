@@ -26,11 +26,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -60,6 +62,9 @@ import org.apache.hadoop.util.ReflectionUtils;
  * This class represents a warehouse where data of Hive tables is stored
  */
 public class Warehouse {
+  private static final String DEFAULT_EXTERNAL_DIRECTORY = ".external";
+  private static final FsPermission DEFAULT_EXTERNAL_DIRECTORY_PERMISSIONS
+      = FsPermission.createImmutable((short)0777);
   public static final String DEFAULT_CATALOG_NAME = "hive";
   public static final String DEFAULT_CATALOG_COMMENT = "Default catalog, for Hive";
   public static final String DEFAULT_DATABASE_NAME = "default";
@@ -72,7 +77,7 @@ public class Warehouse {
   private Path whRootExternal;
   private final Configuration conf;
   private final String whRootString;
-  private final String whRootExternalString;
+  private String whRootExternalString;
 
   public static final Logger LOG = LoggerFactory.getLogger("hive.metastore.warehouse");
 
@@ -148,6 +153,11 @@ public class Warehouse {
     return getDnsPath(path, conf);
   }
 
+  public Path getHomeDir() throws IOException {
+    FileSystem fs =FileSystem.get(conf);
+    return fs.getHomeDirectory();
+  }
+
   /**
    * Resolve the configured warehouse root dir with respect to the configuration
    * This involves opening the FileSystem corresponding to the warehouse root
@@ -172,6 +182,22 @@ public class Warehouse {
       whRootExternal = getDnsPath(new Path(whRootExternalString));
     }
     return whRootExternal;
+  }
+
+  void maybeCreateExternalWarehouseDir() throws MetaException{
+    if (!hasExternalWarehouseRoot()) {
+      Path externalDir = null;
+      try {
+        externalDir = new Path(getHomeDir(), DEFAULT_EXTERNAL_DIRECTORY);
+      } catch (IOException e) {
+        MetaStoreUtils.logAndThrowMetaException(e);
+      }
+      whRootExternal = externalDir;
+      whRootExternalString = externalDir.toString();
+      if (!(isDir(externalDir))) {
+        mkdirs(externalDir, DEFAULT_EXTERNAL_DIRECTORY_PERMISSIONS);
+      }
+    }
   }
 
   /**
@@ -201,6 +227,38 @@ public class Warehouse {
     }
   }
 
+  /**
+   * Build the database external path based on catalog name and database name.  This should only be used
+   * when a database is being created or altered.  If you just want to find out the path a
+   * database is already using call {@link #getDatabaseExternalPath(Database)}.  If the passed in
+   * database already has a path set that will be used.  If not the location will be built using
+   * catalog's path and the database name.
+   * @param cat catalog the database is in
+   * @param db database object
+   * @return Path representing the directory for the database
+   * @throws MetaException when the file path cannot be properly determined from the configured
+   * file system.
+   */
+  public Path determineExternalDatabasePath(Catalog cat, Database db) throws MetaException {
+    if (db.isSetExternalLocationUri()) {
+      return getDnsPath(new Path(db.getExternalLocationUri()));
+    }
+    if (cat == null || cat.getName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
+      if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+        return getWhRootExternal();
+      } else {
+        return new Path(getWhRootExternal(), dbDirFromDbName(db));
+      }
+    } else {
+      if (cat.isSetExternalLocationUri()) {
+        return new Path(getDnsPath(new Path(cat.getExternalLocationUri())), dbDirFromDbName(db));
+      }
+      LOG.warn("Default external directory should be set in catalog or in the database, setting: "
+          + getWhRootExternal() + " for database " + db.getName());
+      return new Path(getWhRootExternal(), dbDirFromDbName(db));
+    }
+  }
+
   private String dbDirFromDbName(Database db) throws MetaException {
     return db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX;
   }
@@ -219,6 +277,25 @@ public class Warehouse {
       return getWhRoot();
     }
     return new Path(db.getLocationUri());
+  }
+
+  /**
+   * Get the external path specified by the database.  In the case of the default database the root of the
+   * external warehouse is returned.
+   * @param db database to get the external path of
+   * @return external path to the database directory
+   * @throws MetaException when the file path cannot be properly determined from the configured
+   * file system.
+   */
+  public Optional<Path> getDatabaseExternalPath(Database db) throws MetaException {
+    if (db.getCatalogName().equalsIgnoreCase(DEFAULT_CATALOG_NAME) &&
+        db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+      return Optional.of(getWhRootExternal());
+    }
+    if (db.isSetExternalLocationUri()) {
+      return Optional.of(new Path(db.getExternalLocationUri()));
+    }
+    return Optional.empty();
   }
 
   public Path getDefaultDatabasePath(String dbName) throws MetaException {
@@ -318,6 +395,17 @@ public class Warehouse {
     return false;
   }
 
+  public boolean mkdirs(Path f, FsPermission permission) throws MetaException {
+    FileSystem fs;
+    try {
+      fs = getFs(f);
+      return FileUtils.mkdir(fs, f, permission);
+    } catch (IOException e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return false;
+  }
+
   public boolean renameDir(Path sourcePath, Path destPath, boolean needCmRecycle) throws MetaException {
     try {
       if (needCmRecycle) {
@@ -342,6 +430,16 @@ public class Warehouse {
     }
   }
 
+  public boolean deleteDirIfEmpty(Path f) throws MetaException, IOException {
+    FileSystem fs = getFs(f);
+    if (FileUtils.isDirEmpty(fs, f)) {
+      return deleteDir(f, false, false, false);
+    } else {
+      LOG.info("Will not delete external directory " + f + " since it's not empty");
+    }
+    return true;
+  }
+  
   public boolean deleteDir(Path f, boolean recursive, Database db) throws MetaException {
     return deleteDir(f, recursive, false, db);
   }

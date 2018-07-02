@@ -90,6 +90,7 @@ final class CreateDatabaseHook extends HCatSemanticAnalyzerBase {
     if (createDb != null) {
       Database db = new Database(createDb.getName(), createDb.getComment(),
         createDb.getLocationUri(), createDb.getDatabaseProperties());
+      db.setExternalLocationUri(createDb.getLocationExternalUri());
       authorize(db, Privilege.CREATE);
     }
   }

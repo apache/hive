@@ -2347,10 +2347,11 @@ inline std::ostream& operator<<(std::ostream& out, const GrantRevokeRoleResponse
 }
 
 typedef struct _Catalog__isset {
-  _Catalog__isset() : name(false), description(false), locationUri(false) {}
+  _Catalog__isset() : name(false), description(false), locationUri(false), externalLocationUri(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
+  bool externalLocationUri :1;
 } _Catalog__isset;
 
 class Catalog {
@@ -2358,13 +2359,14 @@ class Catalog {
 
   Catalog(const Catalog&);
   Catalog& operator=(const Catalog&);
-  Catalog() : name(), description(), locationUri() {
+  Catalog() : name(), description(), locationUri(), externalLocationUri() {
   }
 
   virtual ~Catalog() throw();
   std::string name;
   std::string description;
   std::string locationUri;
+  std::string externalLocationUri;
 
   _Catalog__isset __isset;
 
@@ -2373,6 +2375,8 @@ class Catalog {
   void __set_description(const std::string& val);
 
   void __set_locationUri(const std::string& val);
+
+  void __set_externalLocationUri(const std::string& val);
 
   bool operator == (const Catalog & rhs) const
   {
@@ -2383,6 +2387,10 @@ class Catalog {
     else if (__isset.description && !(description == rhs.description))
       return false;
     if (!(locationUri == rhs.locationUri))
+      return false;
+    if (__isset.externalLocationUri != rhs.__isset.externalLocationUri)
+      return false;
+    else if (__isset.externalLocationUri && !(externalLocationUri == rhs.externalLocationUri))
       return false;
     return true;
   }
@@ -2689,10 +2697,11 @@ inline std::ostream& operator<<(std::ostream& out, const DropCatalogRequest& obj
 }
 
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), externalLocationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
+  bool externalLocationUri :1;
   bool parameters :1;
   bool privileges :1;
   bool ownerName :1;
@@ -2705,13 +2714,14 @@ class Database {
 
   Database(const Database&);
   Database& operator=(const Database&);
-  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName() {
+  Database() : name(), description(), locationUri(), externalLocationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName() {
   }
 
   virtual ~Database() throw();
   std::string name;
   std::string description;
   std::string locationUri;
+  std::string externalLocationUri;
   std::map<std::string, std::string>  parameters;
   PrincipalPrivilegeSet privileges;
   std::string ownerName;
@@ -2725,6 +2735,8 @@ class Database {
   void __set_description(const std::string& val);
 
   void __set_locationUri(const std::string& val);
+
+  void __set_externalLocationUri(const std::string& val);
 
   void __set_parameters(const std::map<std::string, std::string> & val);
 
@@ -2743,6 +2755,10 @@ class Database {
     if (!(description == rhs.description))
       return false;
     if (!(locationUri == rhs.locationUri))
+      return false;
+    if (__isset.externalLocationUri != rhs.__isset.externalLocationUri)
+      return false;
+    else if (__isset.externalLocationUri && !(externalLocationUri == rhs.externalLocationUri))
       return false;
     if (!(parameters == rhs.parameters))
       return false;

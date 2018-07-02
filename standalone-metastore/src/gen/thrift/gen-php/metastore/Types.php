@@ -4495,6 +4495,10 @@ class Catalog {
    * @var string
    */
   public $locationUri = null;
+  /**
+   * @var string
+   */
+  public $externalLocationUri = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -4511,6 +4515,10 @@ class Catalog {
           'var' => 'locationUri',
           'type' => TType::STRING,
           ),
+        4 => array(
+          'var' => 'externalLocationUri',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -4522,6 +4530,9 @@ class Catalog {
       }
       if (isset($vals['locationUri'])) {
         $this->locationUri = $vals['locationUri'];
+      }
+      if (isset($vals['externalLocationUri'])) {
+        $this->externalLocationUri = $vals['externalLocationUri'];
       }
     }
   }
@@ -4566,6 +4577,13 @@ class Catalog {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->externalLocationUri);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -4592,6 +4610,11 @@ class Catalog {
     if ($this->locationUri !== null) {
       $xfer += $output->writeFieldBegin('locationUri', TType::STRING, 3);
       $xfer += $output->writeString($this->locationUri);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->externalLocationUri !== null) {
+      $xfer += $output->writeFieldBegin('externalLocationUri', TType::STRING, 4);
+      $xfer += $output->writeString($this->externalLocationUri);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -5131,6 +5154,10 @@ class Database {
    */
   public $locationUri = null;
   /**
+   * @var string
+   */
+  public $externalLocationUri = null;
+  /**
    * @var array
    */
   public $parameters = null;
@@ -5167,6 +5194,10 @@ class Database {
           'type' => TType::STRING,
           ),
         4 => array(
+          'var' => 'externalLocationUri',
+          'type' => TType::STRING,
+          ),
+        5 => array(
           'var' => 'parameters',
           'type' => TType::MAP,
           'ktype' => TType::STRING,
@@ -5178,20 +5209,20 @@ class Database {
             'type' => TType::STRING,
             ),
           ),
-        5 => array(
+        6 => array(
           'var' => 'privileges',
           'type' => TType::STRUCT,
           'class' => '\metastore\PrincipalPrivilegeSet',
           ),
-        6 => array(
+        7 => array(
           'var' => 'ownerName',
           'type' => TType::STRING,
           ),
-        7 => array(
+        8 => array(
           'var' => 'ownerType',
           'type' => TType::I32,
           ),
-        8 => array(
+        9 => array(
           'var' => 'catalogName',
           'type' => TType::STRING,
           ),
@@ -5206,6 +5237,9 @@ class Database {
       }
       if (isset($vals['locationUri'])) {
         $this->locationUri = $vals['locationUri'];
+      }
+      if (isset($vals['externalLocationUri'])) {
+        $this->externalLocationUri = $vals['externalLocationUri'];
       }
       if (isset($vals['parameters'])) {
         $this->parameters = $vals['parameters'];
@@ -5266,6 +5300,13 @@ class Database {
           }
           break;
         case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->externalLocationUri);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
           if ($ftype == TType::MAP) {
             $this->parameters = array();
             $_size90 = 0;
@@ -5285,7 +5326,7 @@ class Database {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 5:
+        case 6:
           if ($ftype == TType::STRUCT) {
             $this->privileges = new \metastore\PrincipalPrivilegeSet();
             $xfer += $this->privileges->read($input);
@@ -5293,21 +5334,21 @@ class Database {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 6:
+        case 7:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->ownerName);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 7:
+        case 8:
           if ($ftype == TType::I32) {
             $xfer += $input->readI32($this->ownerType);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 8:
+        case 9:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->catalogName);
           } else {
@@ -5342,11 +5383,16 @@ class Database {
       $xfer += $output->writeString($this->locationUri);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->externalLocationUri !== null) {
+      $xfer += $output->writeFieldBegin('externalLocationUri', TType::STRING, 4);
+      $xfer += $output->writeString($this->externalLocationUri);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->parameters !== null) {
       if (!is_array($this->parameters)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('parameters', TType::MAP, 4);
+      $xfer += $output->writeFieldBegin('parameters', TType::MAP, 5);
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
         {
@@ -5364,22 +5410,22 @@ class Database {
       if (!is_object($this->privileges)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('privileges', TType::STRUCT, 5);
+      $xfer += $output->writeFieldBegin('privileges', TType::STRUCT, 6);
       $xfer += $this->privileges->write($output);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->ownerName !== null) {
-      $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 6);
+      $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 7);
       $xfer += $output->writeString($this->ownerName);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->ownerType !== null) {
-      $xfer += $output->writeFieldBegin('ownerType', TType::I32, 7);
+      $xfer += $output->writeFieldBegin('ownerType', TType::I32, 8);
       $xfer += $output->writeI32($this->ownerType);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->catalogName !== null) {
-      $xfer += $output->writeFieldBegin('catalogName', TType::STRING, 8);
+      $xfer += $output->writeFieldBegin('catalogName', TType::STRING, 9);
       $xfer += $output->writeString($this->catalogName);
       $xfer += $output->writeFieldEnd();
     }

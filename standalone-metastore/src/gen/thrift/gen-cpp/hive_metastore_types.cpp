@@ -4456,6 +4456,11 @@ void Catalog::__set_locationUri(const std::string& val) {
   this->locationUri = val;
 }
 
+void Catalog::__set_externalLocationUri(const std::string& val) {
+  this->externalLocationUri = val;
+__isset.externalLocationUri = true;
+}
+
 uint32_t Catalog::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -4501,6 +4506,14 @@ uint32_t Catalog::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->externalLocationUri);
+          this->__isset.externalLocationUri = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -4531,6 +4544,11 @@ uint32_t Catalog::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeString(this->locationUri);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.externalLocationUri) {
+    xfer += oprot->writeFieldBegin("externalLocationUri", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->externalLocationUri);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -4541,6 +4559,7 @@ void swap(Catalog &a, Catalog &b) {
   swap(a.name, b.name);
   swap(a.description, b.description);
   swap(a.locationUri, b.locationUri);
+  swap(a.externalLocationUri, b.externalLocationUri);
   swap(a.__isset, b.__isset);
 }
 
@@ -4548,12 +4567,14 @@ Catalog::Catalog(const Catalog& other130) {
   name = other130.name;
   description = other130.description;
   locationUri = other130.locationUri;
+  externalLocationUri = other130.externalLocationUri;
   __isset = other130.__isset;
 }
 Catalog& Catalog::operator=(const Catalog& other131) {
   name = other131.name;
   description = other131.description;
   locationUri = other131.locationUri;
+  externalLocationUri = other131.externalLocationUri;
   __isset = other131.__isset;
   return *this;
 }
@@ -4563,6 +4584,7 @@ void Catalog::printTo(std::ostream& out) const {
   out << "name=" << to_string(name);
   out << ", " << "description="; (__isset.description ? (out << to_string(description)) : (out << "<null>"));
   out << ", " << "locationUri=" << to_string(locationUri);
+  out << ", " << "externalLocationUri="; (__isset.externalLocationUri ? (out << to_string(externalLocationUri)) : (out << "<null>"));
   out << ")";
 }
 
@@ -5139,6 +5161,11 @@ void Database::__set_locationUri(const std::string& val) {
   this->locationUri = val;
 }
 
+void Database::__set_externalLocationUri(const std::string& val) {
+  this->externalLocationUri = val;
+__isset.externalLocationUri = true;
+}
+
 void Database::__set_parameters(const std::map<std::string, std::string> & val) {
   this->parameters = val;
 }
@@ -5209,6 +5236,14 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
         }
         break;
       case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->externalLocationUri);
+          this->__isset.externalLocationUri = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->parameters.clear();
@@ -5231,7 +5266,7 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 6:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->privileges.read(iprot);
           this->__isset.privileges = true;
@@ -5239,7 +5274,7 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
+      case 7:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->ownerName);
           this->__isset.ownerName = true;
@@ -5247,7 +5282,7 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 7:
+      case 8:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast157;
           xfer += iprot->readI32(ecast157);
@@ -5257,7 +5292,7 @@ uint32_t Database::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 8:
+      case 9:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->catalogName);
           this->__isset.catalogName = true;
@@ -5294,7 +5329,12 @@ uint32_t Database::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeString(this->locationUri);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("parameters", ::apache::thrift::protocol::T_MAP, 4);
+  if (this->__isset.externalLocationUri) {
+    xfer += oprot->writeFieldBegin("externalLocationUri", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->externalLocationUri);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("parameters", ::apache::thrift::protocol::T_MAP, 5);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->parameters.size()));
     std::map<std::string, std::string> ::const_iterator _iter158;
@@ -5308,22 +5348,22 @@ uint32_t Database::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldEnd();
 
   if (this->__isset.privileges) {
-    xfer += oprot->writeFieldBegin("privileges", ::apache::thrift::protocol::T_STRUCT, 5);
+    xfer += oprot->writeFieldBegin("privileges", ::apache::thrift::protocol::T_STRUCT, 6);
     xfer += this->privileges.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.ownerName) {
-    xfer += oprot->writeFieldBegin("ownerName", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeFieldBegin("ownerName", ::apache::thrift::protocol::T_STRING, 7);
     xfer += oprot->writeString(this->ownerName);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.ownerType) {
-    xfer += oprot->writeFieldBegin("ownerType", ::apache::thrift::protocol::T_I32, 7);
+    xfer += oprot->writeFieldBegin("ownerType", ::apache::thrift::protocol::T_I32, 8);
     xfer += oprot->writeI32((int32_t)this->ownerType);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.catalogName) {
-    xfer += oprot->writeFieldBegin("catalogName", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeFieldBegin("catalogName", ::apache::thrift::protocol::T_STRING, 9);
     xfer += oprot->writeString(this->catalogName);
     xfer += oprot->writeFieldEnd();
   }
@@ -5337,6 +5377,7 @@ void swap(Database &a, Database &b) {
   swap(a.name, b.name);
   swap(a.description, b.description);
   swap(a.locationUri, b.locationUri);
+  swap(a.externalLocationUri, b.externalLocationUri);
   swap(a.parameters, b.parameters);
   swap(a.privileges, b.privileges);
   swap(a.ownerName, b.ownerName);
@@ -5349,6 +5390,7 @@ Database::Database(const Database& other159) {
   name = other159.name;
   description = other159.description;
   locationUri = other159.locationUri;
+  externalLocationUri = other159.externalLocationUri;
   parameters = other159.parameters;
   privileges = other159.privileges;
   ownerName = other159.ownerName;
@@ -5360,6 +5402,7 @@ Database& Database::operator=(const Database& other160) {
   name = other160.name;
   description = other160.description;
   locationUri = other160.locationUri;
+  externalLocationUri = other160.externalLocationUri;
   parameters = other160.parameters;
   privileges = other160.privileges;
   ownerName = other160.ownerName;
@@ -5374,6 +5417,7 @@ void Database::printTo(std::ostream& out) const {
   out << "name=" << to_string(name);
   out << ", " << "description=" << to_string(description);
   out << ", " << "locationUri=" << to_string(locationUri);
+  out << ", " << "externalLocationUri="; (__isset.externalLocationUri ? (out << to_string(externalLocationUri)) : (out << "<null>"));
   out << ", " << "parameters=" << to_string(parameters);
   out << ", " << "privileges="; (__isset.privileges ? (out << to_string(privileges)) : (out << "<null>"));
   out << ", " << "ownerName="; (__isset.ownerName ? (out << to_string(ownerName)) : (out << "<null>"));

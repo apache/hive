@@ -3253,6 +3253,7 @@ class Catalog:
    - name
    - description
    - locationUri
+   - externalLocationUri
   """
 
   thrift_spec = (
@@ -3260,12 +3261,14 @@ class Catalog:
     (1, TType.STRING, 'name', None, None, ), # 1
     (2, TType.STRING, 'description', None, None, ), # 2
     (3, TType.STRING, 'locationUri', None, None, ), # 3
+    (4, TType.STRING, 'externalLocationUri', None, None, ), # 4
   )
 
-  def __init__(self, name=None, description=None, locationUri=None,):
+  def __init__(self, name=None, description=None, locationUri=None, externalLocationUri=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
+    self.externalLocationUri = externalLocationUri
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3291,6 +3294,11 @@ class Catalog:
           self.locationUri = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.externalLocationUri = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3313,6 +3321,10 @@ class Catalog:
       oprot.writeFieldBegin('locationUri', TType.STRING, 3)
       oprot.writeString(self.locationUri)
       oprot.writeFieldEnd()
+    if self.externalLocationUri is not None:
+      oprot.writeFieldBegin('externalLocationUri', TType.STRING, 4)
+      oprot.writeString(self.externalLocationUri)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3325,6 +3337,7 @@ class Catalog:
     value = (value * 31) ^ hash(self.name)
     value = (value * 31) ^ hash(self.description)
     value = (value * 31) ^ hash(self.locationUri)
+    value = (value * 31) ^ hash(self.externalLocationUri)
     return value
 
   def __repr__(self):
@@ -3758,6 +3771,7 @@ class Database:
    - name
    - description
    - locationUri
+   - externalLocationUri
    - parameters
    - privileges
    - ownerName
@@ -3770,17 +3784,19 @@ class Database:
     (1, TType.STRING, 'name', None, None, ), # 1
     (2, TType.STRING, 'description', None, None, ), # 2
     (3, TType.STRING, 'locationUri', None, None, ), # 3
-    (4, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 4
-    (5, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 5
-    (6, TType.STRING, 'ownerName', None, None, ), # 6
-    (7, TType.I32, 'ownerType', None, None, ), # 7
-    (8, TType.STRING, 'catalogName', None, None, ), # 8
+    (4, TType.STRING, 'externalLocationUri', None, None, ), # 4
+    (5, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 5
+    (6, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 6
+    (7, TType.STRING, 'ownerName', None, None, ), # 7
+    (8, TType.I32, 'ownerType', None, None, ), # 8
+    (9, TType.STRING, 'catalogName', None, None, ), # 9
   )
 
-  def __init__(self, name=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None,):
+  def __init__(self, name=None, description=None, locationUri=None, externalLocationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None,):
     self.name = name
     self.description = description
     self.locationUri = locationUri
+    self.externalLocationUri = externalLocationUri
     self.parameters = parameters
     self.privileges = privileges
     self.ownerName = ownerName
@@ -3812,6 +3828,11 @@ class Database:
         else:
           iprot.skip(ftype)
       elif fid == 4:
+        if ftype == TType.STRING:
+          self.externalLocationUri = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
         if ftype == TType.MAP:
           self.parameters = {}
           (_ktype91, _vtype92, _size90 ) = iprot.readMapBegin()
@@ -3822,23 +3843,23 @@ class Database:
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
-      elif fid == 5:
+      elif fid == 6:
         if ftype == TType.STRUCT:
           self.privileges = PrincipalPrivilegeSet()
           self.privileges.read(iprot)
         else:
           iprot.skip(ftype)
-      elif fid == 6:
+      elif fid == 7:
         if ftype == TType.STRING:
           self.ownerName = iprot.readString()
         else:
           iprot.skip(ftype)
-      elif fid == 7:
+      elif fid == 8:
         if ftype == TType.I32:
           self.ownerType = iprot.readI32()
         else:
           iprot.skip(ftype)
-      elif fid == 8:
+      elif fid == 9:
         if ftype == TType.STRING:
           self.catalogName = iprot.readString()
         else:
@@ -3865,8 +3886,12 @@ class Database:
       oprot.writeFieldBegin('locationUri', TType.STRING, 3)
       oprot.writeString(self.locationUri)
       oprot.writeFieldEnd()
+    if self.externalLocationUri is not None:
+      oprot.writeFieldBegin('externalLocationUri', TType.STRING, 4)
+      oprot.writeString(self.externalLocationUri)
+      oprot.writeFieldEnd()
     if self.parameters is not None:
-      oprot.writeFieldBegin('parameters', TType.MAP, 4)
+      oprot.writeFieldBegin('parameters', TType.MAP, 5)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
       for kiter97,viter98 in self.parameters.items():
         oprot.writeString(kiter97)
@@ -3874,19 +3899,19 @@ class Database:
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.privileges is not None:
-      oprot.writeFieldBegin('privileges', TType.STRUCT, 5)
+      oprot.writeFieldBegin('privileges', TType.STRUCT, 6)
       self.privileges.write(oprot)
       oprot.writeFieldEnd()
     if self.ownerName is not None:
-      oprot.writeFieldBegin('ownerName', TType.STRING, 6)
+      oprot.writeFieldBegin('ownerName', TType.STRING, 7)
       oprot.writeString(self.ownerName)
       oprot.writeFieldEnd()
     if self.ownerType is not None:
-      oprot.writeFieldBegin('ownerType', TType.I32, 7)
+      oprot.writeFieldBegin('ownerType', TType.I32, 8)
       oprot.writeI32(self.ownerType)
       oprot.writeFieldEnd()
     if self.catalogName is not None:
-      oprot.writeFieldBegin('catalogName', TType.STRING, 8)
+      oprot.writeFieldBegin('catalogName', TType.STRING, 9)
       oprot.writeString(self.catalogName)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -3901,6 +3926,7 @@ class Database:
     value = (value * 31) ^ hash(self.name)
     value = (value * 31) ^ hash(self.description)
     value = (value * 31) ^ hash(self.locationUri)
+    value = (value * 31) ^ hash(self.externalLocationUri)
     value = (value * 31) ^ hash(self.parameters)
     value = (value * 31) ^ hash(self.privileges)
     value = (value * 31) ^ hash(self.ownerName)

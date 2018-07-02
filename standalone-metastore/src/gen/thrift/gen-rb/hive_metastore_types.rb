@@ -789,11 +789,13 @@ class Catalog
   NAME = 1
   DESCRIPTION = 2
   LOCATIONURI = 3
+  EXTERNALLOCATIONURI = 4
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
-    LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri'}
+    LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri'},
+    EXTERNALLOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'externalLocationUri', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -907,16 +909,18 @@ class Database
   NAME = 1
   DESCRIPTION = 2
   LOCATIONURI = 3
-  PARAMETERS = 4
-  PRIVILEGES = 5
-  OWNERNAME = 6
-  OWNERTYPE = 7
-  CATALOGNAME = 8
+  EXTERNALLOCATIONURI = 4
+  PARAMETERS = 5
+  PRIVILEGES = 6
+  OWNERNAME = 7
+  OWNERTYPE = 8
+  CATALOGNAME = 9
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description'},
     LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri'},
+    EXTERNALLOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'externalLocationUri', :optional => true},
     PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName', :optional => true},

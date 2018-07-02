@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField LOCATION_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("locationUri", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField EXTERNAL_LOCATION_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("externalLocationUri", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -51,12 +52,14 @@ import org.slf4j.LoggerFactory;
   private String name; // required
   private String description; // optional
   private String locationUri; // required
+  private String externalLocationUri; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     NAME((short)1, "name"),
     DESCRIPTION((short)2, "description"),
-    LOCATION_URI((short)3, "locationUri");
+    LOCATION_URI((short)3, "locationUri"),
+    EXTERNAL_LOCATION_URI((short)4, "externalLocationUri");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ import org.slf4j.LoggerFactory;
           return DESCRIPTION;
         case 3: // LOCATION_URI
           return LOCATION_URI;
+        case 4: // EXTERNAL_LOCATION_URI
+          return EXTERNAL_LOCATION_URI;
         default:
           return null;
       }
@@ -117,7 +122,7 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.DESCRIPTION};
+  private static final _Fields optionals[] = {_Fields.DESCRIPTION,_Fields.EXTERNAL_LOCATION_URI};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -126,6 +131,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.DESCRIPTION, new org.apache.thrift.meta_data.FieldMetaData("description", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.LOCATION_URI, new org.apache.thrift.meta_data.FieldMetaData("locationUri", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.EXTERNAL_LOCATION_URI, new org.apache.thrift.meta_data.FieldMetaData("externalLocationUri", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Catalog.class, metaDataMap);
@@ -156,6 +163,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetLocationUri()) {
       this.locationUri = other.locationUri;
     }
+    if (other.isSetExternalLocationUri()) {
+      this.externalLocationUri = other.externalLocationUri;
+    }
   }
 
   public Catalog deepCopy() {
@@ -167,6 +177,7 @@ import org.slf4j.LoggerFactory;
     this.name = null;
     this.description = null;
     this.locationUri = null;
+    this.externalLocationUri = null;
   }
 
   public String getName() {
@@ -238,6 +249,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getExternalLocationUri() {
+    return this.externalLocationUri;
+  }
+
+  public void setExternalLocationUri(String externalLocationUri) {
+    this.externalLocationUri = externalLocationUri;
+  }
+
+  public void unsetExternalLocationUri() {
+    this.externalLocationUri = null;
+  }
+
+  /** Returns true if field externalLocationUri is set (has been assigned a value) and false otherwise */
+  public boolean isSetExternalLocationUri() {
+    return this.externalLocationUri != null;
+  }
+
+  public void setExternalLocationUriIsSet(boolean value) {
+    if (!value) {
+      this.externalLocationUri = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
@@ -264,6 +298,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case EXTERNAL_LOCATION_URI:
+      if (value == null) {
+        unsetExternalLocationUri();
+      } else {
+        setExternalLocationUri((String)value);
+      }
+      break;
+
     }
   }
 
@@ -277,6 +319,9 @@ import org.slf4j.LoggerFactory;
 
     case LOCATION_URI:
       return getLocationUri();
+
+    case EXTERNAL_LOCATION_URI:
+      return getExternalLocationUri();
 
     }
     throw new IllegalStateException();
@@ -295,6 +340,8 @@ import org.slf4j.LoggerFactory;
       return isSetDescription();
     case LOCATION_URI:
       return isSetLocationUri();
+    case EXTERNAL_LOCATION_URI:
+      return isSetExternalLocationUri();
     }
     throw new IllegalStateException();
   }
@@ -339,6 +386,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_externalLocationUri = true && this.isSetExternalLocationUri();
+    boolean that_present_externalLocationUri = true && that.isSetExternalLocationUri();
+    if (this_present_externalLocationUri || that_present_externalLocationUri) {
+      if (!(this_present_externalLocationUri && that_present_externalLocationUri))
+        return false;
+      if (!this.externalLocationUri.equals(that.externalLocationUri))
+        return false;
+    }
+
     return true;
   }
 
@@ -360,6 +416,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_locationUri);
     if (present_locationUri)
       list.add(locationUri);
+
+    boolean present_externalLocationUri = true && (isSetExternalLocationUri());
+    list.add(present_externalLocationUri);
+    if (present_externalLocationUri)
+      list.add(externalLocationUri);
 
     return list.hashCode();
   }
@@ -398,6 +459,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetLocationUri()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.locationUri, other.locationUri);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetExternalLocationUri()).compareTo(other.isSetExternalLocationUri());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExternalLocationUri()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.externalLocationUri, other.externalLocationUri);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -447,6 +518,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.locationUri);
     }
     first = false;
+    if (isSetExternalLocationUri()) {
+      if (!first) sb.append(", ");
+      sb.append("externalLocationUri:");
+      if (this.externalLocationUri == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.externalLocationUri);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -514,6 +595,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // EXTERNAL_LOCATION_URI
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.externalLocationUri = iprot.readString();
+              struct.setExternalLocationUriIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -544,6 +633,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeString(struct.locationUri);
         oprot.writeFieldEnd();
       }
+      if (struct.externalLocationUri != null) {
+        if (struct.isSetExternalLocationUri()) {
+          oprot.writeFieldBegin(EXTERNAL_LOCATION_URI_FIELD_DESC);
+          oprot.writeString(struct.externalLocationUri);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -571,7 +667,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetLocationUri()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetExternalLocationUri()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
@@ -581,12 +680,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetLocationUri()) {
         oprot.writeString(struct.locationUri);
       }
+      if (struct.isSetExternalLocationUri()) {
+        oprot.writeString(struct.externalLocationUri);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Catalog struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
@@ -598,6 +700,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(2)) {
         struct.locationUri = iprot.readString();
         struct.setLocationUriIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.externalLocationUri = iprot.readString();
+        struct.setExternalLocationUriIsSet(true);
       }
     }
   }

@@ -23,6 +23,7 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 
 import javax.security.auth.login.LoginException;
 
@@ -138,7 +139,12 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
   @Override
   public void authorize(Database db, Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
       throws HiveException, AuthorizationException {
-    Path path = getDbLocation(db);
+    Path path = getExternalDbLocation(db);
+
+    if (path == null) {
+      throw new AuthorizationException("Couldn't determine external directory for database "
+          + db.getName() + ", which the authorization is based on");
+    }
 
     // extract drop privileges
     DropPrivilegeExtractor privExtractor = new DropPrivilegeExtractor(readRequiredPriv,
@@ -424,6 +430,25 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
         return wh.getDefaultDatabasePath(db.getName());
       } else {
         return wh.getDnsPath(wh.getDatabasePath(db));
+      }
+    } catch (MetaException ex) {
+      throw hiveException(ex);
+    }
+  }
+
+  private Path getExternalDbLocation(Database db) throws HiveException {
+    try {
+      initWh();
+      String location = db.getExternalLocationUri();
+      if (location == null) {
+        return wh.getDefaultExternalDatabasePath(db.getName());
+      } else {
+        Optional<Path> path = wh.getDatabaseExternalPath(db);
+        if (path.isPresent()) {
+          return wh.getDnsPath(path.get());
+        } else {
+          return null;
+        }
       }
     } catch (MetaException ex) {
       throw hiveException(ex);
