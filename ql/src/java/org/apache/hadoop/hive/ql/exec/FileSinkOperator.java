@@ -232,7 +232,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     private void commit(FileSystem fs, List<Path> commitPaths) throws HiveException {
       for (int idx = 0; idx < outPaths.length; ++idx) {
         try {
-          commitOneOutPath(idx, fs, commitPaths);
+          if (outPaths[idx] != null) {
+            commitOneOutPath(idx, fs, commitPaths);
+          }
         } catch (IOException e) {
           throw new HiveException("Unable to commit output from: " +
               outPaths[idx] + " to: " + finalPaths[idx], e);
