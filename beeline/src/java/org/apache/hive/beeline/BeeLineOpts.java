@@ -48,7 +48,7 @@ import jline.console.completer.StringsCompleter;
 import jline.console.history.MemoryHistory;
 import org.apache.hadoop.hive.conf.HiveConf;
 
-class BeeLineOpts implements Completer {
+public class BeeLineOpts implements Completer {
   public static final int DEFAULT_MAX_WIDTH = 80;
   public static final int DEFAULT_MAX_HEIGHT = 80;
   public static final int DEFAULT_HEADER_INTERVAL = 100;
