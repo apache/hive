@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -165,7 +164,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     sem.validate();
 
     ctx.setResFile(ctx.getLocalTmpPath());
-    List<Task<? extends Serializable>> tasks = sem.getAllRootTasks();
+    List<Task<?>> tasks = sem.getAllRootTasks();
     if (tasks == null) {
       tasks = Collections.emptyList();
     }
@@ -262,7 +261,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public boolean skipAuthorization() {
-    List<Task<? extends Serializable>> rootTasks = getRootTasks();
+    List<Task<?>> rootTasks = getRootTasks();
     assert rootTasks != null && rootTasks.size() == 1;
     Task task = rootTasks.get(0);
     return task instanceof ExplainTask && ((ExplainTask)task).getWork().isAuthorize();

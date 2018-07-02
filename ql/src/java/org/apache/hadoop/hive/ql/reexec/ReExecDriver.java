@@ -80,7 +80,7 @@ public class ReExecDriver implements IDriver {
     }
 
     @Override
-    public void postAnalyze(HiveSemanticAnalyzerHookContext context, List<Task<? extends Serializable>> rootTasks)
+    public void postAnalyze(HiveSemanticAnalyzerHookContext context, List<Task<?>> rootTasks)
         throws SemanticException {
     }
   }

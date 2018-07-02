@@ -302,7 +302,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
   /**
    * Makes the exportTask run after all other tasks of the "insert into T ..." are done.
    */
-  private void addExportTask(List<Task<? extends Serializable>> rootTasks,
+  private void addExportTask(List<Task<?>> rootTasks,
       Task<ExportWork> exportTask, Task<DDLWork> alterTable) {
     for(Task<? extends  Serializable> t : rootTasks) {
       if(t.getNumChild() <= 0) {
@@ -315,8 +315,9 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
   }
-  private List<Task<? extends Serializable>> findStatsTasks(
-      List<Task<? extends Serializable>> rootTasks, List<Task<? extends Serializable>> statsTasks) {
+
+  private List<Task<?>> findStatsTasks(
+      List<Task<?>> rootTasks, List<Task<?>> statsTasks) {
     for(Task<? extends  Serializable> t : rootTasks) {
       if (t instanceof StatsTask) {
         if(statsTasks == null) {
@@ -330,16 +331,17 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
     return statsTasks;
   }
-  private void removeStatsTasks(List<Task<? extends Serializable>> rootTasks) {
-    List<Task<? extends Serializable>> statsTasks = findStatsTasks(rootTasks, null);
+
+  private void removeStatsTasks(List<Task<?>> rootTasks) {
+    List<Task<?>> statsTasks = findStatsTasks(rootTasks, null);
     if(statsTasks == null) {
       return;
     }
-    for(Task<? extends Serializable> statsTask : statsTasks) {
+    for (Task<?> statsTask : statsTasks) {
       if(statsTask.getParentTasks() == null) {
         continue; //should never happen
       }
-      for(Task<? extends Serializable> t : new ArrayList<>(statsTask.getParentTasks())) {
+      for (Task<?> t : new ArrayList<>(statsTask.getParentTasks())) {
         t.removeDependentTask(statsTask);
       }
     }
