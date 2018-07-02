@@ -184,6 +184,47 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     assertExpectedFileSet(expectedFiles, getWarehouseDir() + "/nobuckets");
   }
 
+  @Test
+  public void testNoBucketsDP() throws Exception {
+    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    int[][] sourceVals1 = {{0,0,0},{3,3,3}};
+    int[][] sourceVals2 = {{1,1,1},{2,2,2}};
+    int[][] sourceVals3 = {{3,3,3},{4,4,4}};
+    int[][] sourceVals4 = {{5,5,5},{6,6,6}};
+    runStatementOnDriver("drop table if exists tmp");
+    runStatementOnDriver("create table tmp (c1 integer, c2 integer) partitioned by (c3 integer) stored as orc " +
+      "tblproperties('transactional'='false')");
+    runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals1));
+    runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals2));
+    runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals3));
+    runStatementOnDriver("insert into tmp " + makeValuesClause(sourceVals4));
+    runStatementOnDriver("drop table if exists nobuckets");
+    runStatementOnDriver("create table nobuckets (c1 integer, c2 integer) partitioned by (c3 integer) stored " +
+      "as orc tblproperties('transactional'='true', 'transactional_properties'='default')");
+    String stmt = "insert into nobuckets partition(c3) select * from tmp";
+    runStatementOnDriver(stmt);
+    List<String> rs = runStatementOnDriver(
+      "select ROW__ID, c1, c2, c3, INPUT__FILE__NAME from nobuckets order by ROW__ID");
+    Assert.assertEquals("", 8, rs.size());
+    LOG.warn("after insert");
+    for(String s : rs) {
+      LOG.warn(s);
+    }
+
+    rs = runStatementOnDriver(
+      "select * from nobuckets where c2 in (0,3)");
+    Assert.assertEquals(3, rs.size());
+    runStatementOnDriver("update nobuckets set c2 = 17 where c2 in(0,3)");
+    rs = runStatementOnDriver("select ROW__ID, c1, c2, c3, INPUT__FILE__NAME from nobuckets order by INPUT__FILE__NAME, ROW__ID");
+    LOG.warn("after update");
+    for(String s : rs) {
+      LOG.warn(s);
+    }
+    rs = runStatementOnDriver(
+      "select * from nobuckets where c2=17");
+    Assert.assertEquals(3, rs.size());
+  }
+
   /**
    * See CTAS tests in TestAcidOnTez
    */
