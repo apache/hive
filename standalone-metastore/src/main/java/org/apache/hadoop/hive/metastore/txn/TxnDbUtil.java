@@ -245,6 +245,34 @@ public final class TxnDbUtil {
       stmt.execute("INSERT INTO \"APP\".\"NOTIFICATION_SEQUENCE\" (\"NNI_ID\", \"NEXT_EVENT_ID\")" +
               " SELECT * FROM (VALUES (1,1)) tmp_table WHERE NOT EXISTS ( SELECT " +
               "\"NEXT_EVENT_ID\" FROM \"APP\".\"NOTIFICATION_SEQUENCE\")");
+
+      try {
+        stmt.execute("CREATE TABLE TXN_WRITE_NOTIFICATION_LOG (" +
+                "WNL_ID bigint NOT NULL," +
+                "WNL_TXNID bigint NOT NULL," +
+                "WNL_WRITEID bigint NOT NULL," +
+                "WNL_DATABASE varchar(128) NOT NULL," +
+                "WNL_TABLE varchar(128) NOT NULL," +
+                "WNL_PARTITION varchar(1024) NOT NULL," +
+                "WNL_TABLE_OBJ clob NOT NULL," +
+                "WNL_PARTITION_OBJ clob," +
+                "WNL_FILES clob," +
+                "WNL_EVENT_TIME integer NOT NULL," +
+                "PRIMARY KEY (WNL_TXNID, WNL_DATABASE, WNL_TABLE, WNL_PARTITION))"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("TXN_WRITE_NOTIFICATION_LOG table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      stmt.execute("INSERT INTO \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\") " +
+              "SELECT * FROM (VALUES ('org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog', " +
+              "1)) tmp_table WHERE NOT EXISTS ( SELECT \"NEXT_VAL\" FROM \"APP\"" +
+              ".\"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\" = 'org.apache.hadoop.hive.metastore" +
+              ".model.MTxnWriteNotificationLog')");
     } catch (SQLException e) {
       try {
         conn.rollback();

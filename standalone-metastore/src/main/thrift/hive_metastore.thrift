@@ -867,6 +867,18 @@ struct AbortTxnsRequest {
 struct CommitTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
+    // Information related to write operations done in this transaction.
+    3: optional list<WriteEventInfo> writeEventInfos,
+}
+
+struct WriteEventInfo {
+    1: required i64    writeId,
+    2: required string database,
+    3: required string table,
+    4: required string files,
+    5: optional string partition,
+    6: optional string tableObj, // repl txn task does not need table object for commit
+    7: optional string partitionObj,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -1102,6 +1114,8 @@ struct InsertEventRequestData {
     2: required list<string> filesAdded,
     // Checksum of files (hex string of checksum byte payload)
     3: optional list<string> filesAddedChecksum,
+    // Used by acid operation to create the sub directory
+    4: optional list<string> subDirectoryList,
 }
 
 union FireEventRequestData {
@@ -1122,7 +1136,20 @@ struct FireEventRequest {
 struct FireEventResponse {
     // NOP for now, this is just a place holder for future responses
 }
-    
+
+struct WriteNotificationLogRequest {
+    1: required i64 txnId,
+    2: required i64 writeId,
+    3: required string db,
+    4: required string table,
+    5: required InsertEventRequestData fileInfo,
+    6: optional list<string> partitionVals,
+}
+
+struct WriteNotificationLogResponse {
+    // NOP for now, this is just a place holder for future responses
+}
+
 struct MetadataPpdResult {
   1: optional binary metadata,
   2: optional binary includeBitset
@@ -2104,6 +2131,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   NotificationEventsCountResponse get_notification_events_count(1:NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
+  WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
 
   // Repl Change Management api
   CmRecycleResponse cm_recycle(1:CmRecycleRequest request) throws(1:MetaException o1)

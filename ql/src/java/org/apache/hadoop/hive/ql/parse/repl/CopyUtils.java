@@ -400,7 +400,7 @@ public class CopyUtils {
     return result;
   }
 
-  private Path getCopyDestination(ReplChangeManager.FileInfo fileInfo, Path destRoot) {
+  public static Path getCopyDestination(ReplChangeManager.FileInfo fileInfo, Path destRoot) {
     if (fileInfo.getSubDir() == null) {
       return destRoot;
     }
