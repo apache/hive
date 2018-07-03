@@ -45,7 +45,7 @@ STAGE PLANS:
                   alias: acidtbldefault
                   filterExpr: (a = 1) (type: boolean)
                   buckets included: [13,] of 16
-                  Statistics: Num rows: 1850 Data size: 7036 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 9174 Data size: 34868 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -99,6 +99,8 @@ STAGE PLANS:
                     location hdfs://### HDFS PATH ###
                     name default.acidtbldefault
                     numFiles 17
+                    numRows 9174
+                    rawDataSize 0
                     serialization.ddl struct acidtbldefault { i32 a}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -122,6 +124,8 @@ STAGE PLANS:
                       location hdfs://### HDFS PATH ###
                       name default.acidtbldefault
                       numFiles 17
+                      numRows 9174
+                      rawDataSize 0
                       serialization.ddl struct acidtbldefault { i32 a}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
