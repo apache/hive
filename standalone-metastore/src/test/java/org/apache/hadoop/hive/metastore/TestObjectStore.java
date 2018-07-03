@@ -519,7 +519,7 @@ public class TestObjectStore {
    */
   // TODO MS-SPLIT uncomment once we move EventMessage over
   @Test
-  public void testNotificationOps() throws InterruptedException {
+  public void testNotificationOps() throws InterruptedException, MetaException {
     final int NO_EVENT_ID = 0;
     final int FIRST_EVENT_ID = 1;
     final int SECOND_EVENT_ID = 2;
@@ -571,7 +571,7 @@ public class TestObjectStore {
           + " https://db.apache.org/derby/docs/10.10/devguide/cdevconcepts842385.html"
   )
   @Test
-  public void testConcurrentAddNotifications() throws ExecutionException, InterruptedException {
+  public void testConcurrentAddNotifications() throws ExecutionException, InterruptedException, MetaException {
 
     final int NUM_THREADS = 10;
     CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_THREADS,
@@ -620,10 +620,10 @@ public class TestObjectStore {
 
             try {
               cyclicBarrier.await();
-            } catch (InterruptedException | BrokenBarrierException e) {
+              store.addNotificationEvent(dbEvent);
+            } catch (InterruptedException | BrokenBarrierException | MetaException e) {
               throw new RuntimeException(e);
             }
-            store.addNotificationEvent(dbEvent);
             System.out.println("FINISH NOTIFICATION");
           });
     }
