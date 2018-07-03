@@ -141,14 +141,6 @@ module SchemaVersionState
   VALID_VALUES = Set.new([INITIATED, START_REVIEW, CHANGES_REQUIRED, REVIEWED, ENABLED, DISABLED, ARCHIVED, DELETED]).freeze
 end
 
-module IsolationLevelCompliance
-  YES = 1
-  NO = 2
-  UNKNOWN = 3
-  VALUE_MAP = {1 => "YES", 2 => "NO", 3 => "UNKNOWN"}
-  VALID_VALUES = Set.new([YES, NO, UNKNOWN]).freeze
-end
-
 module FunctionType
   JAVA = 1
   VALUE_MAP = {1 => "JAVA"}
@@ -1070,10 +1062,8 @@ class Table
   CREATIONMETADATA = 16
   CATNAME = 17
   OWNERTYPE = 18
-  TXNID = 19
-  WRITEID = 20
-  VALIDWRITEIDLIST = 21
-  ISSTATSCOMPLIANT = 22
+  WRITEID = 19
+  ISSTATSCOMPLIANT = 20
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -1094,10 +1084,8 @@ class Table
     CREATIONMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creationMetadata', :class => ::CreationMetadata, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     OWNERTYPE => {:type => ::Thrift::Types::I32, :name => 'ownerType', :default =>     1, :optional => true, :enum_class => ::PrincipalType},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1105,9 +1093,6 @@ class Table
   def validate
     unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
-    end
-    unless @isStatsCompliant.nil? || ::IsolationLevelCompliance::VALID_VALUES.include?(@isStatsCompliant)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field isStatsCompliant!')
     end
   end
 
@@ -1125,10 +1110,8 @@ class Partition
   PARAMETERS = 7
   PRIVILEGES = 8
   CATNAME = 9
-  TXNID = 10
-  WRITEID = 11
-  VALIDWRITEIDLIST = 12
-  ISSTATSCOMPLIANT = 13
+  WRITEID = 10
+  ISSTATSCOMPLIANT = 11
 
   FIELDS = {
     VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRING}},
@@ -1140,18 +1123,13 @@ class Partition
     PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    unless @isStatsCompliant.nil? || ::IsolationLevelCompliance::VALID_VALUES.include?(@isStatsCompliant)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field isStatsCompliant!')
-    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -1225,10 +1203,8 @@ class PartitionSpec
   SHAREDSDPARTITIONSPEC = 4
   PARTITIONLIST = 5
   CATNAME = 6
-  TXNID = 7
-  WRITEID = 8
-  VALIDWRITEIDLIST = 9
-  ISSTATSCOMPLIANT = 10
+  WRITEID = 7
+  ISSTATSCOMPLIANT = 8
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -1237,18 +1213,13 @@ class PartitionSpec
     SHAREDSDPARTITIONSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'sharedSDPartitionSpec', :class => ::PartitionSpecWithSharedSD, :optional => true},
     PARTITIONLIST => {:type => ::Thrift::Types::STRUCT, :name => 'partitionList', :class => ::PartitionListComposingSpec, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    unless @isStatsCompliant.nil? || ::IsolationLevelCompliance::VALID_VALUES.include?(@isStatsCompliant)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field isStatsCompliant!')
-    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -1597,7 +1568,7 @@ class ColumnStatistics
     STATSOBJ => {:type => ::Thrift::Types::LIST, :name => 'statsObj', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatisticsObj}},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1605,9 +1576,6 @@ class ColumnStatistics
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field statsDesc is unset!') unless @statsDesc
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field statsObj is unset!') unless @statsObj
-    unless @isStatsCompliant.nil? || ::IsolationLevelCompliance::VALID_VALUES.include?(@isStatsCompliant)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field isStatsCompliant!')
-    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -1622,7 +1590,7 @@ class AggrStats
   FIELDS = {
     COLSTATS => {:type => ::Thrift::Types::LIST, :name => 'colStats', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatisticsObj}},
     PARTSFOUND => {:type => ::Thrift::Types::I64, :name => 'partsFound'},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1630,9 +1598,6 @@ class AggrStats
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field colStats is unset!') unless @colStats
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partsFound is unset!') unless @partsFound
-    unless @isStatsCompliant.nil? || ::IsolationLevelCompliance::VALID_VALUES.include?(@isStatsCompliant)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field isStatsCompliant!')
-    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2120,16 +2085,13 @@ class TableStatsResult
 
   FIELDS = {
     TABLESTATS => {:type => ::Thrift::Types::LIST, :name => 'tableStats', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatisticsObj}},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableStats is unset!') unless @tableStats
-    unless @isStatsCompliant.nil? || ::IsolationLevelCompliance::VALID_VALUES.include?(@isStatsCompliant)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field isStatsCompliant!')
-    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2142,16 +2104,13 @@ class PartitionsStatsResult
 
   FIELDS = {
     PARTSTATS => {:type => ::Thrift::Types::MAP, :name => 'partStats', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatisticsObj}}},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partStats is unset!') unless @partStats
-    unless @isStatsCompliant.nil? || ::IsolationLevelCompliance::VALID_VALUES.include?(@isStatsCompliant)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field isStatsCompliant!')
-    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2225,15 +2184,12 @@ class AddPartitionsResult
 
   FIELDS = {
     PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}, :optional => true},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    unless @isStatsCompliant.nil? || ::IsolationLevelCompliance::VALID_VALUES.include?(@isStatsCompliant)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field isStatsCompliant!')
-    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -3930,16 +3886,13 @@ class GetTableResult
 
   FIELDS = {
     TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'table', :class => ::Table},
-    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::I32, :name => 'isStatsCompliant', :optional => true, :enum_class => ::IsolationLevelCompliance}
+    ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
-    unless @isStatsCompliant.nil? || ::IsolationLevelCompliance::VALID_VALUES.include?(@isStatsCompliant)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field isStatsCompliant!')
-    end
   end
 
   ::Thrift::Struct.generate_accessors self

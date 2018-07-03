@@ -1921,7 +1921,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setTxnId(txnId);
     req.setValidWriteIdList(writeIdList);
     req.setWriteId(writeId);
-    client.alter_partitions_with_environment_context(req);
+    client.alter_partitions_with_environment_context_req(req);
   }
 
   @Override

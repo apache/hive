@@ -593,6 +593,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     return getColStat(projIndxLst, HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS));
   }
 
+  /** Note: DOES NOT CHECK txn stats. */
   public List<ColStatistics> getColStat(List<Integer> projIndxLst, boolean allowMissingStats) {
     List<ColStatistics> colStatsBldr = Lists.newArrayList();
     Set<Integer> projIndxSet = new HashSet<Integer>(projIndxLst);

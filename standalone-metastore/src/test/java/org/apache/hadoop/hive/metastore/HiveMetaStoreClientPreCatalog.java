@@ -1635,7 +1635,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     req.setTableName(tblName);
     req.setPartitions(newParts);
     req.setEnvironmentContext(environmentContext);
-    client.alter_partitions_with_environment_context(req);
+    // TODO: this is ugly... account for ability to pass via EC for the old API.
+    if (environmentContext != null && environmentContext.isSetProperties()
+        && environmentContext.getProperties().containsKey(StatsSetupConst.VALID_WRITE_IDS)) {
+      req.setTxnId(Long.parseLong(environmentContext.getProperties().get(StatsSetupConst.TXN_ID)));
+      req.setValidWriteIdList(environmentContext.getProperties().get(StatsSetupConst.VALID_WRITE_IDS));
+    }
+    client.alter_partitions_with_environment_context_req(req);
   }
 
   @Override
@@ -1650,7 +1656,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     req.setEnvironmentContext(environmentContext);
     req.setTxnId(txnId);
     req.setValidWriteIdList(writeIdList);
-    client.alter_partitions_with_environment_context(req);
+    client.alter_partitions_with_environment_context_req(req);
   }
 
   @Override

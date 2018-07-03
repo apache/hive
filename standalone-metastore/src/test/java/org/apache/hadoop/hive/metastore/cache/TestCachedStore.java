@@ -232,7 +232,7 @@ public class TestCachedStore {
     tblOwner = "role1";
     tbl.setOwner(tblOwner);
     tbl.setOwnerType(PrincipalType.ROLE);
-    objectStore.alterTable(DEFAULT_CATALOG_NAME, dbName, tblName, tbl);
+    objectStore.alterTable(DEFAULT_CATALOG_NAME, dbName, tblName, tbl, -1, null);
     tbl = objectStore.getTable(DEFAULT_CATALOG_NAME, dbName, tblName);
 
     Assert.assertEquals("Owner of the table did not change.", tblOwner, tbl.getOwner());
@@ -338,7 +338,7 @@ public class TestCachedStore {
     Partition ptn1Atl =
         new Partition(Arrays.asList(ptnColVal1Alt), dbName, tblName, 0, 0, tbl.getSd(), partParams);
     ptn1Atl.setCatName(DEFAULT_CATALOG_NAME);
-    objectStore.alterPartition(DEFAULT_CATALOG_NAME, dbName, tblName, Arrays.asList(ptnColVal1), ptn1Atl);
+    objectStore.alterPartition(DEFAULT_CATALOG_NAME, dbName, tblName, Arrays.asList(ptnColVal1), ptn1Atl, -1, null);
     ptn1Atl = objectStore.getPartition(DEFAULT_CATALOG_NAME, dbName, tblName, Arrays.asList(ptnColVal1Alt));
 
     // Drop an existing partition ("bbb") via ObjectStore

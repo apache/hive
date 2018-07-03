@@ -594,9 +594,11 @@ class CompactionTxnHandler extends TxnHandler {
         StringBuilder suffix = new StringBuilder();
 
         // Turn off COLUMN_STATS_ACCURATE for txnids' components in TBLS and PARTITIONS
-        prefix.append("select tbl_id from TBLS where ");
+        prefix.append("select tbl_id from TBLS inner join DBS on TBLS.DB_ID = DBS.DB_ID "
+            + "inner join TXN_TO_WRITE_ID on t2w_database = DBS.NAME and t2w_table = TBLS.TBL_NAME"
+            + " and t2w_writeid = TBLS.WRITE_ID where ");
         suffix.append("");
-        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", true, false);
+        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "t2w_txnid", true, false);
 
         // Delete COLUMN_STATS_ACCURATE.BASIC_STATS rows from TABLE_PARAMS for the txnids.
         List<StringBuilder> finalCommands = new ArrayList<>(queries.size());
@@ -616,9 +618,13 @@ class CompactionTxnHandler extends TxnHandler {
         finalCommands.clear();
 
         // Delete COLUMN_STATS_ACCURATE.BASIC_STATS rows from PARTITIONS_PARAMS for the txnids.
-        prefix.append("select part_id from PARTITIONS where ");
+        prefix.append("select part_id from PARTITIONS "
+            + "inner join TBLS on PARTITIONS.TBL_ID = TBLS.TBL_ID "
+            + "inner join DBS on TBLS.DB_ID = DBS.DB_ID "
+            + "inner join TXN_TO_WRITE_ID on t2w_database = DBS.NAME and t2w_table = TBLS.TBL_NAME"
+            + " and t2w_writeid = TBLS.WRITE_ID where ");
         suffix.append("");
-        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "txn_id", true, false);
+        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "t2w_txnid", true, false);
 
         for (int i = 0; i < queries.size(); i++) {
           String query = queries.get(i);

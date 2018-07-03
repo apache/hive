@@ -44,10 +44,8 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField SHARED_SDPARTITION_SPEC_FIELD_DESC = new org.apache.thrift.protocol.TField("sharedSDPartitionSpec", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField PARTITION_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionList", org.apache.thrift.protocol.TType.STRUCT, (short)5);
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)6);
-  private static final org.apache.thrift.protocol.TField TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnId", org.apache.thrift.protocol.TType.I64, (short)7);
-  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)8);
-  private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)9);
-  private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.I32, (short)10);
+  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)7);
+  private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -61,10 +59,8 @@ import org.slf4j.LoggerFactory;
   private PartitionSpecWithSharedSD sharedSDPartitionSpec; // optional
   private PartitionListComposingSpec partitionList; // optional
   private String catName; // optional
-  private long txnId; // optional
   private long writeId; // optional
-  private String validWriteIdList; // optional
-  private IsolationLevelCompliance isStatsCompliant; // optional
+  private boolean isStatsCompliant; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -74,14 +70,8 @@ import org.slf4j.LoggerFactory;
     SHARED_SDPARTITION_SPEC((short)4, "sharedSDPartitionSpec"),
     PARTITION_LIST((short)5, "partitionList"),
     CAT_NAME((short)6, "catName"),
-    TXN_ID((short)7, "txnId"),
-    WRITE_ID((short)8, "writeId"),
-    VALID_WRITE_ID_LIST((short)9, "validWriteIdList"),
-    /**
-     * 
-     * @see IsolationLevelCompliance
-     */
-    IS_STATS_COMPLIANT((short)10, "isStatsCompliant");
+    WRITE_ID((short)7, "writeId"),
+    IS_STATS_COMPLIANT((short)8, "isStatsCompliant");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -108,13 +98,9 @@ import org.slf4j.LoggerFactory;
           return PARTITION_LIST;
         case 6: // CAT_NAME
           return CAT_NAME;
-        case 7: // TXN_ID
-          return TXN_ID;
-        case 8: // WRITE_ID
+        case 7: // WRITE_ID
           return WRITE_ID;
-        case 9: // VALID_WRITE_ID_LIST
-          return VALID_WRITE_ID_LIST;
-        case 10: // IS_STATS_COMPLIANT
+        case 8: // IS_STATS_COMPLIANT
           return IS_STATS_COMPLIANT;
         default:
           return null;
@@ -156,10 +142,10 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __TXNID_ISSET_ID = 0;
-  private static final int __WRITEID_ISSET_ID = 1;
+  private static final int __WRITEID_ISSET_ID = 0;
+  private static final int __ISSTATSCOMPLIANT_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.SHARED_SDPARTITION_SPEC,_Fields.PARTITION_LIST,_Fields.CAT_NAME,_Fields.TXN_ID,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST,_Fields.IS_STATS_COMPLIANT};
+  private static final _Fields optionals[] = {_Fields.SHARED_SDPARTITION_SPEC,_Fields.PARTITION_LIST,_Fields.CAT_NAME,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -175,21 +161,15 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PartitionListComposingSpec.class)));
     tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("writeId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, IsolationLevelCompliance.class)));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PartitionSpec.class, metaDataMap);
   }
 
   public PartitionSpec() {
-    this.txnId = -1L;
-
     this.writeId = -1L;
 
   }
@@ -228,14 +208,8 @@ import org.slf4j.LoggerFactory;
     if (other.isSetCatName()) {
       this.catName = other.catName;
     }
-    this.txnId = other.txnId;
     this.writeId = other.writeId;
-    if (other.isSetValidWriteIdList()) {
-      this.validWriteIdList = other.validWriteIdList;
-    }
-    if (other.isSetIsStatsCompliant()) {
-      this.isStatsCompliant = other.isStatsCompliant;
-    }
+    this.isStatsCompliant = other.isStatsCompliant;
   }
 
   public PartitionSpec deepCopy() {
@@ -250,12 +224,10 @@ import org.slf4j.LoggerFactory;
     this.sharedSDPartitionSpec = null;
     this.partitionList = null;
     this.catName = null;
-    this.txnId = -1L;
-
     this.writeId = -1L;
 
-    this.validWriteIdList = null;
-    this.isStatsCompliant = null;
+    setIsStatsCompliantIsSet(false);
+    this.isStatsCompliant = false;
   }
 
   public String getDbName() {
@@ -396,28 +368,6 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public long getTxnId() {
-    return this.txnId;
-  }
-
-  public void setTxnId(long txnId) {
-    this.txnId = txnId;
-    setTxnIdIsSet(true);
-  }
-
-  public void unsetTxnId() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TXNID_ISSET_ID);
-  }
-
-  /** Returns true if field txnId is set (has been assigned a value) and false otherwise */
-  public boolean isSetTxnId() {
-    return EncodingUtils.testBit(__isset_bitfield, __TXNID_ISSET_ID);
-  }
-
-  public void setTxnIdIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
-  }
-
   public long getWriteId() {
     return this.writeId;
   }
@@ -440,58 +390,26 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __WRITEID_ISSET_ID, value);
   }
 
-  public String getValidWriteIdList() {
-    return this.validWriteIdList;
-  }
-
-  public void setValidWriteIdList(String validWriteIdList) {
-    this.validWriteIdList = validWriteIdList;
-  }
-
-  public void unsetValidWriteIdList() {
-    this.validWriteIdList = null;
-  }
-
-  /** Returns true if field validWriteIdList is set (has been assigned a value) and false otherwise */
-  public boolean isSetValidWriteIdList() {
-    return this.validWriteIdList != null;
-  }
-
-  public void setValidWriteIdListIsSet(boolean value) {
-    if (!value) {
-      this.validWriteIdList = null;
-    }
-  }
-
-  /**
-   * 
-   * @see IsolationLevelCompliance
-   */
-  public IsolationLevelCompliance getIsStatsCompliant() {
+  public boolean isIsStatsCompliant() {
     return this.isStatsCompliant;
   }
 
-  /**
-   * 
-   * @see IsolationLevelCompliance
-   */
-  public void setIsStatsCompliant(IsolationLevelCompliance isStatsCompliant) {
+  public void setIsStatsCompliant(boolean isStatsCompliant) {
     this.isStatsCompliant = isStatsCompliant;
+    setIsStatsCompliantIsSet(true);
   }
 
   public void unsetIsStatsCompliant() {
-    this.isStatsCompliant = null;
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
   }
 
   /** Returns true if field isStatsCompliant is set (has been assigned a value) and false otherwise */
   public boolean isSetIsStatsCompliant() {
-    return this.isStatsCompliant != null;
+    return EncodingUtils.testBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
   }
 
   public void setIsStatsCompliantIsSet(boolean value) {
-    if (!value) {
-      this.isStatsCompliant = null;
-    }
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -544,14 +462,6 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case TXN_ID:
-      if (value == null) {
-        unsetTxnId();
-      } else {
-        setTxnId((Long)value);
-      }
-      break;
-
     case WRITE_ID:
       if (value == null) {
         unsetWriteId();
@@ -560,19 +470,11 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case VALID_WRITE_ID_LIST:
-      if (value == null) {
-        unsetValidWriteIdList();
-      } else {
-        setValidWriteIdList((String)value);
-      }
-      break;
-
     case IS_STATS_COMPLIANT:
       if (value == null) {
         unsetIsStatsCompliant();
       } else {
-        setIsStatsCompliant((IsolationLevelCompliance)value);
+        setIsStatsCompliant((Boolean)value);
       }
       break;
 
@@ -599,17 +501,11 @@ import org.slf4j.LoggerFactory;
     case CAT_NAME:
       return getCatName();
 
-    case TXN_ID:
-      return getTxnId();
-
     case WRITE_ID:
       return getWriteId();
 
-    case VALID_WRITE_ID_LIST:
-      return getValidWriteIdList();
-
     case IS_STATS_COMPLIANT:
-      return getIsStatsCompliant();
+      return isIsStatsCompliant();
 
     }
     throw new IllegalStateException();
@@ -634,12 +530,8 @@ import org.slf4j.LoggerFactory;
       return isSetPartitionList();
     case CAT_NAME:
       return isSetCatName();
-    case TXN_ID:
-      return isSetTxnId();
     case WRITE_ID:
       return isSetWriteId();
-    case VALID_WRITE_ID_LIST:
-      return isSetValidWriteIdList();
     case IS_STATS_COMPLIANT:
       return isSetIsStatsCompliant();
     }
@@ -713,15 +605,6 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_txnId = true && this.isSetTxnId();
-    boolean that_present_txnId = true && that.isSetTxnId();
-    if (this_present_txnId || that_present_txnId) {
-      if (!(this_present_txnId && that_present_txnId))
-        return false;
-      if (this.txnId != that.txnId)
-        return false;
-    }
-
     boolean this_present_writeId = true && this.isSetWriteId();
     boolean that_present_writeId = true && that.isSetWriteId();
     if (this_present_writeId || that_present_writeId) {
@@ -731,21 +614,12 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_validWriteIdList = true && this.isSetValidWriteIdList();
-    boolean that_present_validWriteIdList = true && that.isSetValidWriteIdList();
-    if (this_present_validWriteIdList || that_present_validWriteIdList) {
-      if (!(this_present_validWriteIdList && that_present_validWriteIdList))
-        return false;
-      if (!this.validWriteIdList.equals(that.validWriteIdList))
-        return false;
-    }
-
     boolean this_present_isStatsCompliant = true && this.isSetIsStatsCompliant();
     boolean that_present_isStatsCompliant = true && that.isSetIsStatsCompliant();
     if (this_present_isStatsCompliant || that_present_isStatsCompliant) {
       if (!(this_present_isStatsCompliant && that_present_isStatsCompliant))
         return false;
-      if (!this.isStatsCompliant.equals(that.isStatsCompliant))
+      if (this.isStatsCompliant != that.isStatsCompliant)
         return false;
     }
 
@@ -786,25 +660,15 @@ import org.slf4j.LoggerFactory;
     if (present_catName)
       list.add(catName);
 
-    boolean present_txnId = true && (isSetTxnId());
-    list.add(present_txnId);
-    if (present_txnId)
-      list.add(txnId);
-
     boolean present_writeId = true && (isSetWriteId());
     list.add(present_writeId);
     if (present_writeId)
       list.add(writeId);
 
-    boolean present_validWriteIdList = true && (isSetValidWriteIdList());
-    list.add(present_validWriteIdList);
-    if (present_validWriteIdList)
-      list.add(validWriteIdList);
-
     boolean present_isStatsCompliant = true && (isSetIsStatsCompliant());
     list.add(present_isStatsCompliant);
     if (present_isStatsCompliant)
-      list.add(isStatsCompliant.getValue());
+      list.add(isStatsCompliant);
 
     return list.hashCode();
   }
@@ -877,32 +741,12 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetTxnId()).compareTo(other.isSetTxnId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTxnId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnId, other.txnId);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetWriteId()).compareTo(other.isSetWriteId());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetWriteId()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.writeId, other.writeId);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetValidWriteIdList()).compareTo(other.isSetValidWriteIdList());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetValidWriteIdList()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.validWriteIdList, other.validWriteIdList);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -990,36 +834,16 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
-    if (isSetTxnId()) {
-      if (!first) sb.append(", ");
-      sb.append("txnId:");
-      sb.append(this.txnId);
-      first = false;
-    }
     if (isSetWriteId()) {
       if (!first) sb.append(", ");
       sb.append("writeId:");
       sb.append(this.writeId);
       first = false;
     }
-    if (isSetValidWriteIdList()) {
-      if (!first) sb.append(", ");
-      sb.append("validWriteIdList:");
-      if (this.validWriteIdList == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.validWriteIdList);
-      }
-      first = false;
-    }
     if (isSetIsStatsCompliant()) {
       if (!first) sb.append(", ");
       sb.append("isStatsCompliant:");
-      if (this.isStatsCompliant == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.isStatsCompliant);
-      }
+      sb.append(this.isStatsCompliant);
       first = false;
     }
     sb.append(")");
@@ -1123,15 +947,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // TXN_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.txnId = iprot.readI64();
-              struct.setTxnIdIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 8: // WRITE_ID
+          case 7: // WRITE_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.writeId = iprot.readI64();
               struct.setWriteIdIsSet(true);
@@ -1139,17 +955,9 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 9: // VALID_WRITE_ID_LIST
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.validWriteIdList = iprot.readString();
-              struct.setValidWriteIdListIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 10: // IS_STATS_COMPLIANT
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.isStatsCompliant = org.apache.hadoop.hive.metastore.api.IsolationLevelCompliance.findByValue(iprot.readI32());
+          case 8: // IS_STATS_COMPLIANT
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isStatsCompliant = iprot.readBool();
               struct.setIsStatsCompliantIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -1204,29 +1012,15 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
-      if (struct.isSetTxnId()) {
-        oprot.writeFieldBegin(TXN_ID_FIELD_DESC);
-        oprot.writeI64(struct.txnId);
-        oprot.writeFieldEnd();
-      }
       if (struct.isSetWriteId()) {
         oprot.writeFieldBegin(WRITE_ID_FIELD_DESC);
         oprot.writeI64(struct.writeId);
         oprot.writeFieldEnd();
       }
-      if (struct.validWriteIdList != null) {
-        if (struct.isSetValidWriteIdList()) {
-          oprot.writeFieldBegin(VALID_WRITE_ID_LIST_FIELD_DESC);
-          oprot.writeString(struct.validWriteIdList);
-          oprot.writeFieldEnd();
-        }
-      }
-      if (struct.isStatsCompliant != null) {
-        if (struct.isSetIsStatsCompliant()) {
-          oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
-          oprot.writeI32(struct.isStatsCompliant.getValue());
-          oprot.writeFieldEnd();
-        }
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
+        oprot.writeBool(struct.isStatsCompliant);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1264,19 +1058,13 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCatName()) {
         optionals.set(5);
       }
-      if (struct.isSetTxnId()) {
+      if (struct.isSetWriteId()) {
         optionals.set(6);
       }
-      if (struct.isSetWriteId()) {
+      if (struct.isSetIsStatsCompliant()) {
         optionals.set(7);
       }
-      if (struct.isSetValidWriteIdList()) {
-        optionals.set(8);
-      }
-      if (struct.isSetIsStatsCompliant()) {
-        optionals.set(9);
-      }
-      oprot.writeBitSet(optionals, 10);
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetDbName()) {
         oprot.writeString(struct.dbName);
       }
@@ -1295,24 +1083,18 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
       }
-      if (struct.isSetTxnId()) {
-        oprot.writeI64(struct.txnId);
-      }
       if (struct.isSetWriteId()) {
         oprot.writeI64(struct.writeId);
       }
-      if (struct.isSetValidWriteIdList()) {
-        oprot.writeString(struct.validWriteIdList);
-      }
       if (struct.isSetIsStatsCompliant()) {
-        oprot.writeI32(struct.isStatsCompliant.getValue());
+        oprot.writeBool(struct.isStatsCompliant);
       }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, PartitionSpec struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(10);
+      BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.dbName = iprot.readString();
         struct.setDbNameIsSet(true);
@@ -1340,19 +1122,11 @@ import org.slf4j.LoggerFactory;
         struct.setCatNameIsSet(true);
       }
       if (incoming.get(6)) {
-        struct.txnId = iprot.readI64();
-        struct.setTxnIdIsSet(true);
-      }
-      if (incoming.get(7)) {
         struct.writeId = iprot.readI64();
         struct.setWriteIdIsSet(true);
       }
-      if (incoming.get(8)) {
-        struct.validWriteIdList = iprot.readString();
-        struct.setValidWriteIdListIsSet(true);
-      }
-      if (incoming.get(9)) {
-        struct.isStatsCompliant = org.apache.hadoop.hive.metastore.api.IsolationLevelCompliance.findByValue(iprot.readI32());
+      if (incoming.get(7)) {
+        struct.isStatsCompliant = iprot.readBool();
         struct.setIsStatsCompliantIsSet(true);
       }
     }

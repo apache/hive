@@ -149,6 +149,10 @@ public class StatsSetupConst {
 
   public static final String CASCADE = "CASCADE";
 
+  // TODO: when alter calls are switched to req/resp models, replace these and the above with fields.
+  public static final String TXN_ID = "WRITER_TXN_ID";
+  public static final String VALID_WRITE_IDS = "WRITER_WRITE_ID";
+
   public static final String TRUE = "true";
 
   public static final String FALSE = "false";

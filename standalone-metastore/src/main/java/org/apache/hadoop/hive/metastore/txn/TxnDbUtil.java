@@ -203,8 +203,8 @@ public final class TxnDbUtil {
             " \"OWNER\" VARCHAR(767), \"OWNER_TYPE\" VARCHAR(10), \"RETENTION\" INTEGER NOT NULL, " +
             " \"SD_ID\" BIGINT, \"TBL_NAME\" VARCHAR(256), \"TBL_TYPE\" VARCHAR(128), " +
             " \"VIEW_EXPANDED_TEXT\" LONG VARCHAR, \"VIEW_ORIGINAL_TEXT\" LONG VARCHAR, " +
-            " \"IS_REWRITE_ENABLED\" CHAR(1) NOT NULL DEFAULT \'N\', \"TXN_ID\" BIGINT DEFAULT 0, " +
-            " \"WRITE_ID\" BIGINT DEFAULT 0, \"WRITEID_LIST\" CLOB, " +
+            " \"IS_REWRITE_ENABLED\" CHAR(1) NOT NULL DEFAULT \'N\', " +
+            " \"WRITE_ID\" BIGINT DEFAULT 0, " +
             " PRIMARY KEY (TBL_ID))"
         );
       } catch (SQLException e) {
@@ -219,8 +219,8 @@ public final class TxnDbUtil {
         stmt.execute("CREATE TABLE \"APP\".\"PARTITIONS\" (" +
             " \"PART_ID\" BIGINT NOT NULL, \"CREATE_TIME\" INTEGER NOT NULL, " +
             " \"LAST_ACCESS_TIME\" INTEGER NOT NULL, \"PART_NAME\" VARCHAR(767), " +
-            " \"SD_ID\" BIGINT, \"TBL_ID\" BIGINT, \"TXN_ID\" BIGINT DEFAULT 0, " +
-            " \"WRITE_ID\" BIGINT DEFAULT 0, \"WRITEID_LIST\" CLOB, " +
+            " \"SD_ID\" BIGINT, \"TBL_ID\" BIGINT, " +
+            " \"WRITE_ID\" BIGINT DEFAULT 0, " +
             " PRIMARY KEY (PART_ID))"
         );
       } catch (SQLException e) {

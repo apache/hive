@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
@@ -137,6 +138,11 @@ public interface TxnStore extends Configurable {
   BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
       String inputDbName, String inputTableName, ValidWriteIdList txnList)
           throws MetaException;
+
+  @RetrySemantics.ReadOnly
+  long getTxnIdForWriteId(String dbName, String tblName, long writeId)
+      throws MetaException;
+
   /**
    * Gets the list of valid write ids for the given table wrt to current txn
    * @param rqst info on transaction and list of table names associated with given transaction

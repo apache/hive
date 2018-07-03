@@ -1301,7 +1301,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new AssertionError("Unsupported alter materialized view type! : " + alterMVDesc.getOp());
     }
 
-    db.alterTable(mv,environmentContext);
+    db.alterTable(mv, false, environmentContext, true);
+
     return 0;
   }
 
@@ -1451,7 +1452,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     tbl.getTTable().setPartitionKeys(newPartitionKeys);
 
-    db.alterTable(tbl, null);
+    db.alterTable(tbl, false, null, true);
 
     work.getInputs().add(new ReadEntity(tbl));
     // We've already locked the table as the input, don't relock it as the output.
@@ -1477,7 +1478,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     if (touchDesc.getPartSpec() == null) {
-      db.alterTable(tbl, environmentContext);
+      db.alterTable(tbl, false, environmentContext, true);
       work.getInputs().add(new ReadEntity(tbl));
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
     } else {
@@ -1486,7 +1487,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException("Specified partition does not exist");
       }
       try {
-        db.alterPartition(touchDesc.getTableName(), part, environmentContext);
+        db.alterPartition(touchDesc.getTableName(), part, environmentContext, true);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
       }
@@ -1835,7 +1836,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             authority.toString(),
             harPartitionDir.getPath()); // make in Path to ensure no slash at the end
         setArchived(p, harPath, partSpecInfo.values.size());
-        db.alterPartition(simpleDesc.getTableName(), p, null);
+        db.alterPartition(simpleDesc.getTableName(), p, null, true);
       }
     } catch (Exception e) {
       throw new HiveException("Unable to change the partition info for HAR", e);
@@ -2041,7 +2042,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     for(Partition p: partitions) {
       setUnArchived(p);
       try {
-        db.alterPartition(simpleDesc.getTableName(), p, null);
+        db.alterPartition(simpleDesc.getTableName(), p, null, true);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
       }
@@ -3730,7 +3731,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               } else {
                 cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
                 List<String> parts = db.getPartitionNames(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), (short) -1);
-                AggrStats aggrStats = db.getAggrColStatsFor(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames, parts);
+                AggrStats aggrStats = db.getAggrColStatsFor(
+                    dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames, parts, false);
                 colStats = aggrStats.getColStats();
                 if (parts.size() == aggrStats.getPartsFound()) {
                   StatsSetupConst.setColumnStatsState(tblProps, colNames);
@@ -3741,13 +3743,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               tbl.setParameters(tblProps);
             } else {
               cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
-              colStats = db.getTableColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames);
+              colStats = db.getTableColumnStatistics(
+                  dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames, false);
             }
           } else {
             List<String> partitions = new ArrayList<String>();
             partitions.add(part.getName());
             cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
-            colStats = db.getPartitionColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), partitions, colNames).get(part.getName());
+            colStats = db.getPartitionColumnStatistics(dbTab[0].toLowerCase(),
+                dbTab[1].toLowerCase(), partitions, colNames, false).get(part.getName());
           }
         } else {
           cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
@@ -3965,10 +3969,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         environmentContext = new EnvironmentContext();
       }
       environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, alterTbl.getOp().name());
+      // Note: in the old default overloads that I've removed, "transactional" was true for tables,
+      //       but false for partitions. Seems to be ok here because we are not updating
+      //       partition-stats-related stuff from this call (alterTable).
       if (allPartitions == null) {
-        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), environmentContext);
+        db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), environmentContext, true);
       } else {
-        db.alterPartitions(Warehouse.getQualifiedName(tbl.getTTable()), allPartitions, environmentContext);
+        db.alterPartitions(
+            Warehouse.getQualifiedName(tbl.getTTable()), allPartitions, environmentContext, false);
       }
       // Add constraints if necessary
       addConstraints(db, alterTbl);
@@ -4943,7 +4951,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // create the table
     if (crtTbl.getReplaceMode()) {
       // replace-mode creates are really alters using CreateTableDesc.
-      db.alterTable(tbl, null);
+      db.alterTable(tbl, false, null, true);
     } else {
       if ((foreignKeys != null && foreignKeys.size() > 0) ||
           (primaryKeys != null && primaryKeys.size() > 0) ||
@@ -5173,7 +5181,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         oldview.setOutputFormatClass(crtView.getOutputFormat());
       }
       oldview.checkValidity(null);
-      db.alterTable(crtView.getViewName(), oldview, null);
+      db.alterTable(crtView.getViewName(), oldview, false, null, true);
       addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
     } else {
       // We create new view

@@ -1677,11 +1677,15 @@ public class AcidUtils {
       if (txnId > 0 && isTransactionalTable(tbl)) {
         validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
         if (isStatsUpdater) {
-          // TODO# it should be invalid to update stats without write ID...
-          //       Why would there be a stats updater that doesn't have a write ID?
           writeId = SessionState.get().getTxnMgr() != null ?
                   SessionState.get().getTxnMgr().getAllocatedTableWriteId(
                     tbl.getDbName(), tbl.getTableName()) : -1;
+          if (writeId < 1) {
+            // TODO: this is not ideal... stats updater that doesn't have write ID is currently
+            //       "create table"; writeId would be 0/-1 here. No need to call this w/true.
+            LOG.debug("Stats updater for {}.{} doesn't have a write ID",
+                tbl.getDbName(), tbl.getTableName());
+          }
         }
 
 

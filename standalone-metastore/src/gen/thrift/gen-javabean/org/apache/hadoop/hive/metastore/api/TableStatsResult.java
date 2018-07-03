@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TableStatsResult");
 
   private static final org.apache.thrift.protocol.TField TABLE_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("tableStats", org.apache.thrift.protocol.TType.LIST, (short)1);
-  private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -48,15 +48,11 @@ import org.slf4j.LoggerFactory;
   }
 
   private List<ColumnStatisticsObj> tableStats; // required
-  private IsolationLevelCompliance isStatsCompliant; // optional
+  private boolean isStatsCompliant; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TABLE_STATS((short)1, "tableStats"),
-    /**
-     * 
-     * @see IsolationLevelCompliance
-     */
     IS_STATS_COMPLIANT((short)2, "isStatsCompliant");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -116,6 +112,8 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
+  private static final int __ISSTATSCOMPLIANT_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
   private static final _Fields optionals[] = {_Fields.IS_STATS_COMPLIANT};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -124,7 +122,7 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatisticsObj.class))));
     tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, IsolationLevelCompliance.class)));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableStatsResult.class, metaDataMap);
   }
@@ -143,6 +141,7 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public TableStatsResult(TableStatsResult other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetTableStats()) {
       List<ColumnStatisticsObj> __this__tableStats = new ArrayList<ColumnStatisticsObj>(other.tableStats.size());
       for (ColumnStatisticsObj other_element : other.tableStats) {
@@ -150,9 +149,7 @@ import org.slf4j.LoggerFactory;
       }
       this.tableStats = __this__tableStats;
     }
-    if (other.isSetIsStatsCompliant()) {
-      this.isStatsCompliant = other.isStatsCompliant;
-    }
+    this.isStatsCompliant = other.isStatsCompliant;
   }
 
   public TableStatsResult deepCopy() {
@@ -162,7 +159,8 @@ import org.slf4j.LoggerFactory;
   @Override
   public void clear() {
     this.tableStats = null;
-    this.isStatsCompliant = null;
+    setIsStatsCompliantIsSet(false);
+    this.isStatsCompliant = false;
   }
 
   public int getTableStatsSize() {
@@ -203,35 +201,26 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  /**
-   * 
-   * @see IsolationLevelCompliance
-   */
-  public IsolationLevelCompliance getIsStatsCompliant() {
+  public boolean isIsStatsCompliant() {
     return this.isStatsCompliant;
   }
 
-  /**
-   * 
-   * @see IsolationLevelCompliance
-   */
-  public void setIsStatsCompliant(IsolationLevelCompliance isStatsCompliant) {
+  public void setIsStatsCompliant(boolean isStatsCompliant) {
     this.isStatsCompliant = isStatsCompliant;
+    setIsStatsCompliantIsSet(true);
   }
 
   public void unsetIsStatsCompliant() {
-    this.isStatsCompliant = null;
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
   }
 
   /** Returns true if field isStatsCompliant is set (has been assigned a value) and false otherwise */
   public boolean isSetIsStatsCompliant() {
-    return this.isStatsCompliant != null;
+    return EncodingUtils.testBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID);
   }
 
   public void setIsStatsCompliantIsSet(boolean value) {
-    if (!value) {
-      this.isStatsCompliant = null;
-    }
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -248,7 +237,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetIsStatsCompliant();
       } else {
-        setIsStatsCompliant((IsolationLevelCompliance)value);
+        setIsStatsCompliant((Boolean)value);
       }
       break;
 
@@ -261,7 +250,7 @@ import org.slf4j.LoggerFactory;
       return getTableStats();
 
     case IS_STATS_COMPLIANT:
-      return getIsStatsCompliant();
+      return isIsStatsCompliant();
 
     }
     throw new IllegalStateException();
@@ -309,7 +298,7 @@ import org.slf4j.LoggerFactory;
     if (this_present_isStatsCompliant || that_present_isStatsCompliant) {
       if (!(this_present_isStatsCompliant && that_present_isStatsCompliant))
         return false;
-      if (!this.isStatsCompliant.equals(that.isStatsCompliant))
+      if (this.isStatsCompliant != that.isStatsCompliant)
         return false;
     }
 
@@ -328,7 +317,7 @@ import org.slf4j.LoggerFactory;
     boolean present_isStatsCompliant = true && (isSetIsStatsCompliant());
     list.add(present_isStatsCompliant);
     if (present_isStatsCompliant)
-      list.add(isStatsCompliant.getValue());
+      list.add(isStatsCompliant);
 
     return list.hashCode();
   }
@@ -391,11 +380,7 @@ import org.slf4j.LoggerFactory;
     if (isSetIsStatsCompliant()) {
       if (!first) sb.append(", ");
       sb.append("isStatsCompliant:");
-      if (this.isStatsCompliant == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.isStatsCompliant);
-      }
+      sb.append(this.isStatsCompliant);
       first = false;
     }
     sb.append(")");
@@ -421,6 +406,8 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -465,8 +452,8 @@ import org.slf4j.LoggerFactory;
             }
             break;
           case 2: // IS_STATS_COMPLIANT
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.isStatsCompliant = org.apache.hadoop.hive.metastore.api.IsolationLevelCompliance.findByValue(iprot.readI32());
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isStatsCompliant = iprot.readBool();
               struct.setIsStatsCompliantIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -497,12 +484,10 @@ import org.slf4j.LoggerFactory;
         }
         oprot.writeFieldEnd();
       }
-      if (struct.isStatsCompliant != null) {
-        if (struct.isSetIsStatsCompliant()) {
-          oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
-          oprot.writeI32(struct.isStatsCompliant.getValue());
-          oprot.writeFieldEnd();
-        }
+      if (struct.isSetIsStatsCompliant()) {
+        oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
+        oprot.writeBool(struct.isStatsCompliant);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -534,7 +519,7 @@ import org.slf4j.LoggerFactory;
       }
       oprot.writeBitSet(optionals, 1);
       if (struct.isSetIsStatsCompliant()) {
-        oprot.writeI32(struct.isStatsCompliant.getValue());
+        oprot.writeBool(struct.isStatsCompliant);
       }
     }
 
@@ -555,7 +540,7 @@ import org.slf4j.LoggerFactory;
       struct.setTableStatsIsSet(true);
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
-        struct.isStatsCompliant = org.apache.hadoop.hive.metastore.api.IsolationLevelCompliance.findByValue(iprot.readI32());
+        struct.isStatsCompliant = iprot.readBool();
         struct.setIsStatsCompliantIsSet(true);
       }
     }

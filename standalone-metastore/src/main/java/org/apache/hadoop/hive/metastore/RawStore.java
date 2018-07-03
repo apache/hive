@@ -361,7 +361,8 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException The new table object is invalid.
    * @throws MetaException something went wrong, usually in the RDBMS or storage.
    */
-  void alterTable(String catName, String dbname, String name, Table newTable)
+  void alterTable(String catName, String dbname, String name, Table newTable,
+      long queryTxnId, String queryValidWriteIds)
       throws InvalidObjectException, MetaException;
 
   /**
@@ -502,7 +503,8 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS.
    */
   void alterPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
-      Partition new_part) throws InvalidObjectException, MetaException;
+      Partition new_part, long queryTxnId, String queryValidWriteIds)
+          throws InvalidObjectException, MetaException;
 
   /**
    * Alter a set of partitions.
@@ -521,8 +523,8 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS.
    */
   void alterPartitions(String catName, String db_name, String tbl_name,
-      List<List<String>> part_vals_list, List<Partition> new_parts,
-      long txnId, String writeIdList, long writeId)
+      List<List<String>> part_vals_list, List<Partition> new_parts, long writeId,
+      long queryTxnId, String queryValidWriteIds)
       throws InvalidObjectException, MetaException;
 
   /**
