@@ -203,17 +203,6 @@ final class SchemaVersionState {
   );
 }
 
-final class IsolationLevelCompliance {
-  const YES = 1;
-  const NO = 2;
-  const UNKNOWN = 3;
-  static public $__names = array(
-    1 => 'YES',
-    2 => 'NO',
-    3 => 'UNKNOWN',
-  );
-}
-
 final class FunctionType {
   const JAVA = 1;
   static public $__names = array(
@@ -6531,17 +6520,9 @@ class Table {
   /**
    * @var int
    */
-  public $txnId = -1;
-  /**
-   * @var int
-   */
   public $writeId = -1;
   /**
-   * @var string
-   */
-  public $validWriteIdList = null;
-  /**
-   * @var int
+   * @var bool
    */
   public $isStatsCompliant = null;
 
@@ -6637,20 +6618,12 @@ class Table {
           'type' => TType::I32,
           ),
         19 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        20 => array(
           'var' => 'writeId',
           'type' => TType::I64,
           ),
-        21 => array(
-          'var' => 'validWriteIdList',
-          'type' => TType::STRING,
-          ),
-        22 => array(
+        20 => array(
           'var' => 'isStatsCompliant',
-          'type' => TType::I32,
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -6709,14 +6682,8 @@ class Table {
       if (isset($vals['ownerType'])) {
         $this->ownerType = $vals['ownerType'];
       }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
-      }
       if (isset($vals['writeId'])) {
         $this->writeId = $vals['writeId'];
-      }
-      if (isset($vals['validWriteIdList'])) {
-        $this->validWriteIdList = $vals['validWriteIdList'];
       }
       if (isset($vals['isStatsCompliant'])) {
         $this->isStatsCompliant = $vals['isStatsCompliant'];
@@ -6898,28 +6865,14 @@ class Table {
           break;
         case 19:
           if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 20:
-          if ($ftype == TType::I64) {
             $xfer += $input->readI64($this->writeId);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 21:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->validWriteIdList);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 22:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->isStatsCompliant);
+        case 20:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isStatsCompliant);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -7061,24 +7014,14 @@ class Table {
       $xfer += $output->writeI32($this->ownerType);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 19);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 20);
+      $xfer += $output->writeFieldBegin('writeId', TType::I64, 19);
       $xfer += $output->writeI64($this->writeId);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 21);
-      $xfer += $output->writeString($this->validWriteIdList);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->isStatsCompliant !== null) {
-      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::I32, 22);
-      $xfer += $output->writeI32($this->isStatsCompliant);
+      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 20);
+      $xfer += $output->writeBool($this->isStatsCompliant);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -7130,17 +7073,9 @@ class Partition {
   /**
    * @var int
    */
-  public $txnId = -1;
-  /**
-   * @var int
-   */
   public $writeId = -1;
   /**
-   * @var string
-   */
-  public $validWriteIdList = null;
-  /**
-   * @var int
+   * @var bool
    */
   public $isStatsCompliant = null;
 
@@ -7198,20 +7133,12 @@ class Partition {
           'type' => TType::STRING,
           ),
         10 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        11 => array(
           'var' => 'writeId',
           'type' => TType::I64,
           ),
-        12 => array(
-          'var' => 'validWriteIdList',
-          'type' => TType::STRING,
-          ),
-        13 => array(
+        11 => array(
           'var' => 'isStatsCompliant',
-          'type' => TType::I32,
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -7243,14 +7170,8 @@ class Partition {
       if (isset($vals['catName'])) {
         $this->catName = $vals['catName'];
       }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
-      }
       if (isset($vals['writeId'])) {
         $this->writeId = $vals['writeId'];
-      }
-      if (isset($vals['validWriteIdList'])) {
-        $this->validWriteIdList = $vals['validWriteIdList'];
       }
       if (isset($vals['isStatsCompliant'])) {
         $this->isStatsCompliant = $vals['isStatsCompliant'];
@@ -7367,28 +7288,14 @@ class Partition {
           break;
         case 10:
           if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 11:
-          if ($ftype == TType::I64) {
             $xfer += $input->readI64($this->writeId);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 12:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->validWriteIdList);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 13:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->isStatsCompliant);
+        case 11:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isStatsCompliant);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -7482,24 +7389,14 @@ class Partition {
       $xfer += $output->writeString($this->catName);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 10);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 11);
+      $xfer += $output->writeFieldBegin('writeId', TType::I64, 10);
       $xfer += $output->writeI64($this->writeId);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 12);
-      $xfer += $output->writeString($this->validWriteIdList);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->isStatsCompliant !== null) {
-      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::I32, 13);
-      $xfer += $output->writeI32($this->isStatsCompliant);
+      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 11);
+      $xfer += $output->writeBool($this->isStatsCompliant);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -8028,17 +7925,9 @@ class PartitionSpec {
   /**
    * @var int
    */
-  public $txnId = -1;
-  /**
-   * @var int
-   */
   public $writeId = -1;
   /**
-   * @var string
-   */
-  public $validWriteIdList = null;
-  /**
-   * @var int
+   * @var bool
    */
   public $isStatsCompliant = null;
 
@@ -8072,20 +7961,12 @@ class PartitionSpec {
           'type' => TType::STRING,
           ),
         7 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        8 => array(
           'var' => 'writeId',
           'type' => TType::I64,
           ),
-        9 => array(
-          'var' => 'validWriteIdList',
-          'type' => TType::STRING,
-          ),
-        10 => array(
+        8 => array(
           'var' => 'isStatsCompliant',
-          'type' => TType::I32,
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -8108,14 +7989,8 @@ class PartitionSpec {
       if (isset($vals['catName'])) {
         $this->catName = $vals['catName'];
       }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
-      }
       if (isset($vals['writeId'])) {
         $this->writeId = $vals['writeId'];
-      }
-      if (isset($vals['validWriteIdList'])) {
-        $this->validWriteIdList = $vals['validWriteIdList'];
       }
       if (isset($vals['isStatsCompliant'])) {
         $this->isStatsCompliant = $vals['isStatsCompliant'];
@@ -8188,28 +8063,14 @@ class PartitionSpec {
           break;
         case 7:
           if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 8:
-          if ($ftype == TType::I64) {
             $xfer += $input->readI64($this->writeId);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 9:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->validWriteIdList);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 10:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->isStatsCompliant);
+        case 8:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isStatsCompliant);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -8263,24 +8124,14 @@ class PartitionSpec {
       $xfer += $output->writeString($this->catName);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 7);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 8);
+      $xfer += $output->writeFieldBegin('writeId', TType::I64, 7);
       $xfer += $output->writeI64($this->writeId);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 9);
-      $xfer += $output->writeString($this->validWriteIdList);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->isStatsCompliant !== null) {
-      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::I32, 10);
-      $xfer += $output->writeI32($this->isStatsCompliant);
+      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 8);
+      $xfer += $output->writeBool($this->isStatsCompliant);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -10190,7 +10041,7 @@ class ColumnStatistics {
    */
   public $validWriteIdList = null;
   /**
-   * @var int
+   * @var bool
    */
   public $isStatsCompliant = null;
 
@@ -10221,7 +10072,7 @@ class ColumnStatistics {
           ),
         5 => array(
           'var' => 'isStatsCompliant',
-          'type' => TType::I32,
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -10304,8 +10155,8 @@ class ColumnStatistics {
           }
           break;
         case 5:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->isStatsCompliant);
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isStatsCompliant);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -10359,8 +10210,8 @@ class ColumnStatistics {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->isStatsCompliant !== null) {
-      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::I32, 5);
-      $xfer += $output->writeI32($this->isStatsCompliant);
+      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 5);
+      $xfer += $output->writeBool($this->isStatsCompliant);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -10382,7 +10233,7 @@ class AggrStats {
    */
   public $partsFound = null;
   /**
-   * @var int
+   * @var bool
    */
   public $isStatsCompliant = null;
 
@@ -10404,7 +10255,7 @@ class AggrStats {
           ),
         3 => array(
           'var' => 'isStatsCompliant',
-          'type' => TType::I32,
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -10466,8 +10317,8 @@ class AggrStats {
           }
           break;
         case 3:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->isStatsCompliant);
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isStatsCompliant);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -10508,8 +10359,8 @@ class AggrStats {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->isStatsCompliant !== null) {
-      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::I32, 3);
-      $xfer += $output->writeI32($this->isStatsCompliant);
+      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 3);
+      $xfer += $output->writeBool($this->isStatsCompliant);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -13459,7 +13310,7 @@ class TableStatsResult {
    */
   public $tableStats = null;
   /**
-   * @var int
+   * @var bool
    */
   public $isStatsCompliant = null;
 
@@ -13477,7 +13328,7 @@ class TableStatsResult {
           ),
         2 => array(
           'var' => 'isStatsCompliant',
-          'type' => TType::I32,
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -13529,8 +13380,8 @@ class TableStatsResult {
           }
           break;
         case 2:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->isStatsCompliant);
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isStatsCompliant);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -13566,8 +13417,8 @@ class TableStatsResult {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->isStatsCompliant !== null) {
-      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::I32, 2);
-      $xfer += $output->writeI32($this->isStatsCompliant);
+      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 2);
+      $xfer += $output->writeBool($this->isStatsCompliant);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -13585,7 +13436,7 @@ class PartitionsStatsResult {
    */
   public $partStats = null;
   /**
-   * @var int
+   * @var bool
    */
   public $isStatsCompliant = null;
 
@@ -13611,7 +13462,7 @@ class PartitionsStatsResult {
           ),
         2 => array(
           'var' => 'isStatsCompliant',
-          'type' => TType::I32,
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -13676,8 +13527,8 @@ class PartitionsStatsResult {
           }
           break;
         case 2:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->isStatsCompliant);
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isStatsCompliant);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -13723,8 +13574,8 @@ class PartitionsStatsResult {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->isStatsCompliant !== null) {
-      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::I32, 2);
-      $xfer += $output->writeI32($this->isStatsCompliant);
+      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 2);
+      $xfer += $output->writeBool($this->isStatsCompliant);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -14223,7 +14074,7 @@ class AddPartitionsResult {
    */
   public $partitions = null;
   /**
-   * @var int
+   * @var bool
    */
   public $isStatsCompliant = null;
 
@@ -14241,7 +14092,7 @@ class AddPartitionsResult {
           ),
         2 => array(
           'var' => 'isStatsCompliant',
-          'type' => TType::I32,
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -14293,8 +14144,8 @@ class AddPartitionsResult {
           }
           break;
         case 2:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->isStatsCompliant);
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isStatsCompliant);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -14330,8 +14181,8 @@ class AddPartitionsResult {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->isStatsCompliant !== null) {
-      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::I32, 2);
-      $xfer += $output->writeI32($this->isStatsCompliant);
+      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 2);
+      $xfer += $output->writeBool($this->isStatsCompliant);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -25019,7 +24870,7 @@ class GetTableResult {
    */
   public $table = null;
   /**
-   * @var int
+   * @var bool
    */
   public $isStatsCompliant = null;
 
@@ -25033,7 +24884,7 @@ class GetTableResult {
           ),
         2 => array(
           'var' => 'isStatsCompliant',
-          'type' => TType::I32,
+          'type' => TType::BOOL,
           ),
         );
     }
@@ -25075,8 +24926,8 @@ class GetTableResult {
           }
           break;
         case 2:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->isStatsCompliant);
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->isStatsCompliant);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -25103,8 +24954,8 @@ class GetTableResult {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->isStatsCompliant !== null) {
-      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::I32, 2);
-      $xfer += $output->writeI32($this->isStatsCompliant);
+      $xfer += $output->writeFieldBegin('isStatsCompliant', TType::BOOL, 2);
+      $xfer += $output->writeBool($this->isStatsCompliant);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

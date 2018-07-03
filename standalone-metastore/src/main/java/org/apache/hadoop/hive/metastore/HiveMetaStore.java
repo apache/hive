@@ -708,6 +708,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public TxnStore getTxnHandler() {
+      return getMsThreadTxnHandler(conf);
+    }
+
+    public static TxnStore getMsThreadTxnHandler(Configuration conf) {
       TxnStore txn = threadLocalTxn.get();
       if (txn == null) {
         txn = TxnUtils.getTxnStore(conf);
@@ -4892,7 +4896,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public AlterPartitionsResponse alter_partitions_with_environment_context(
+    public AlterPartitionsResponse alter_partitions_with_environment_context_req(
             AlterPartitionsRequest req)
             throws TException {
       alter_partitions_with_environment_context(
@@ -4901,6 +4905,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           req.isSetValidWriteIdList() ? req.getValidWriteIdList() : null,
           req.isSetWriteId() ? req.getWriteId() : -1);
       return new AlterPartitionsResponse();
+    }
+
+    // The old API we are keeping for backward compat. Not used within Hive.
+    @Deprecated
+    @Override
+    public void alter_partitions_with_environment_context(final String db_name, final String tbl_name,
+        final List<Partition> new_parts, EnvironmentContext environmentContext)
+            throws TException {
+      alter_partitions_with_environment_context(db_name, tbl_name, new_parts, environmentContext,
+          -1, null, -1);
     }
 
     private void alter_partitions_with_environment_context(final String db_name, final String tbl_name,
@@ -5655,9 +5669,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return result;
     }
 
+    @Deprecated
     @Override
     public ColumnStatistics get_partition_column_statistics(String dbName, String tableName,
       String partName, String colName) throws TException {
+      // Note: this method appears to be unused within Hive.
+      //       It doesn't take txn stats into account.
       dbName = dbName.toLowerCase();
       String[] parsedDbName = parseDbName(dbName, conf);
       tableName = tableName.toLowerCase();
@@ -7530,6 +7547,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           for (ColumnStatistics csOld : csOlds) {
             oldStatsMap.put(csOld.getStatsDesc().getPartName(), csOld);
           }
+
           // another single call to get all the partition objects
           partitions = getMS().getPartitionsByNames(catName, dbName, tableName, partitionNames);
           for (int index = 0; index < partitionNames.size(); index++) {

@@ -279,6 +279,7 @@ public class CachedStore implements RawStore, Configurable {
                     rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
                 Deadline.stopTimer();
               }
+              // TODO## should this take write ID into account? or at least cache write ID to verify?
               // If the table could not cached due to memory limit, stop prewarm
               boolean isSuccess = sharedCache.populateTableInCache(table, tableColStats, partitions,
                   partitionColStats, aggrStatsAllPartitions, aggrStatsAllButDefaultPartition);
@@ -550,6 +551,7 @@ public class CachedStore implements RawStore, Configurable {
               rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
           Deadline.stopTimer();
           if (tableColStats != null) {
+            // TODO## should this take write ID into account? or at least cache write ID to verify?
             sharedCache.refreshTableColStatsInCache(StringUtils.normalizeIdentifier(catName),
                 StringUtils.normalizeIdentifier(dbName),
                 StringUtils.normalizeIdentifier(tblName), tableColStats.getStatsObj());
@@ -580,6 +582,7 @@ public class CachedStore implements RawStore, Configurable {
         List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
         // Get partition column stats for this table
         Deadline.startTimer("getPartitionColumnStatistics");
+        // TODO## should this take write ID into account? or at least cache write ID to verify?
         List<ColumnStatistics> partitionColStats =
             rawStore.getPartitionColumnStatistics(catName, dbName, tblName, partNames, colNames);
         Deadline.stopTimer();
@@ -1006,9 +1009,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void alterTable(String catName, String dbName, String tblName, Table newTable)
-      throws InvalidObjectException, MetaException {
-    rawStore.alterTable(catName, dbName, tblName, newTable);
+  public void alterTable(String catName, String dbName, String tblName, Table newTable,
+      long txnId, String validWriteIds) throws InvalidObjectException, MetaException {
+    rawStore.alterTable(catName, dbName, tblName, newTable, txnId, validWriteIds);
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
@@ -1158,8 +1161,9 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public void alterPartition(String catName, String dbName, String tblName, List<String> partVals,
-                             Partition newPart) throws InvalidObjectException, MetaException {
-    rawStore.alterPartition(catName, dbName, tblName, partVals, newPart);
+                             Partition newPart, long queryTxnId, String queryValidWriteIds)
+                                 throws InvalidObjectException, MetaException {
+    rawStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryTxnId, queryValidWriteIds);
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
@@ -1172,9 +1176,10 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
                               List<List<String>> partValsList, List<Partition> newParts,
-                              long txnId, String writeIdList, long writeId)
+                              long writeId, long txnId, String validWriteIds)
       throws InvalidObjectException, MetaException {
-    rawStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, txnId, writeIdList, writeId);
+    rawStore.alterPartitions(
+        catName, dbName, tblName, partValsList, newParts, writeId, txnId, validWriteIds);
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);

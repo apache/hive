@@ -321,10 +321,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void alterTable(String catName, String dbName, String name, Table newTable)
+  public void alterTable(String catName, String dbName, String name, Table newTable, long queryTxnId, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
     if (shouldEventSucceed) {
-      objectStore.alterTable(catName, dbName, name, newTable);
+      objectStore.alterTable(catName, dbName, name, newTable, queryTxnId, queryValidWriteIds);
     } else {
       throw new RuntimeException("Event failed.");
     }
@@ -386,9 +386,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public void alterPartition(String catName, String dbName, String tblName, List<String> partVals,
-                             Partition newPart) throws InvalidObjectException, MetaException {
+                             Partition newPart, long queryTxnId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
     if (shouldEventSucceed) {
-      objectStore.alterPartition(catName, dbName, tblName, partVals, newPart);
+      objectStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryTxnId, queryValidWriteIds);
     } else {
       throw new RuntimeException("Event failed.");
     }
@@ -397,9 +397,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
                               List<List<String>> partValsList, List<Partition> newParts,
-                              long txnId, String writeIdList, long writeId)
+                              long writeId, long queryTxnId, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
-    objectStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, txnId, writeIdList, writeId);
+    objectStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, writeId, queryTxnId, queryValidWriteIds);
   }
 
   @Override

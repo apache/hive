@@ -233,12 +233,6 @@ enum SchemaVersionState {
   DELETED = 8
 }
 
-enum IsolationLevelCompliance {
-  YES = 1,
-  NO = 2, 
-  UNKNOWN = 3
-}
-
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -437,10 +431,8 @@ struct Table {
   16: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
   17: optional string catName,          // Name of the catalog the table is in
   18: optional PrincipalType ownerType = PrincipalType.USER, // owner type of this table (default to USER for backward compatibility)
-  19: optional i64 txnId=-1,
-  20: optional i64 writeId=-1,
-  21: optional string validWriteIdList,
-  22: optional IsolationLevelCompliance isStatsCompliant
+  19: optional i64 writeId=-1,
+  20: optional bool isStatsCompliant
 }
 
 struct Partition {
@@ -453,10 +445,8 @@ struct Partition {
   7: map<string, string> parameters,
   8: optional PrincipalPrivilegeSet privileges,
   9: optional string catName,
-  10: optional i64 txnId=-1,
-  11: optional i64 writeId=-1,
-  12: optional string validWriteIdList,
-  13: optional IsolationLevelCompliance isStatsCompliant
+  10: optional i64 writeId=-1,
+  11: optional bool isStatsCompliant
 }
 
 struct PartitionWithoutSD {
@@ -484,10 +474,8 @@ struct PartitionSpec {
   4: optional PartitionSpecWithSharedSD sharedSDPartitionSpec,
   5: optional PartitionListComposingSpec partitionList,
   6: optional string catName,
-  7: optional i64 txnId=-1,
-  8: optional i64 writeId=-1,
-  9: optional string validWriteIdList,
-  10: optional IsolationLevelCompliance isStatsCompliant
+  7: optional i64 writeId=-1,
+  8: optional bool isStatsCompliant
 }
 
 // column statistics
@@ -583,16 +571,16 @@ struct ColumnStatisticsDesc {
 struct ColumnStatistics {
 1: required ColumnStatisticsDesc statsDesc,
 2: required list<ColumnStatisticsObj> statsObj,
-3: optional i64 txnId=-1,            // transaction id of the query that sends this structure
+3: optional i64 txnId=-1,            // transaction id of the query that sends this structure TODO## needed?
 4: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
-5: optional IsolationLevelCompliance isStatsCompliant // Are the stats isolation-level-compliant with the
+5: optional bool isStatsCompliant // Are the stats isolation-level-compliant with the
                                                       // the calling query?
 }
 
 struct AggrStats {
 1: required list<ColumnStatisticsObj> colStats,
 2: required i64 partsFound, // number of partitions for which stats were found
-3: optional IsolationLevelCompliance isStatsCompliant
+3: optional bool isStatsCompliant
 }
 
 struct SetPartitionsStatsRequest {
@@ -730,12 +718,12 @@ struct PartitionsByExprRequest {
 
 struct TableStatsResult {
   1: required list<ColumnStatisticsObj> tableStats,
-  2: optional IsolationLevelCompliance isStatsCompliant
+  2: optional bool isStatsCompliant
 }
 
 struct PartitionsStatsResult {
   1: required map<string, list<ColumnStatisticsObj>> partStats,
-  2: optional IsolationLevelCompliance isStatsCompliant
+  2: optional bool isStatsCompliant
 }
 
 struct TableStatsRequest {
@@ -760,7 +748,7 @@ struct PartitionsStatsRequest {
 // Return type for add_partitions_req
 struct AddPartitionsResult {
   1: optional list<Partition> partitions,
-  2: optional IsolationLevelCompliance isStatsCompliant
+  2: optional bool isStatsCompliant
 }
 
 // Request type for add_partitions_req
@@ -1278,7 +1266,7 @@ struct GetTableRequest {
 
 struct GetTableResult {
   1: required Table table,
-  2: optional IsolationLevelCompliance isStatsCompliant
+  2: optional bool isStatsCompliant
 }
 
 struct GetTablesRequest {
@@ -1953,7 +1941,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void alter_partitions(1:string db_name, 2:string tbl_name, 3:list<Partition> new_parts)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
 
-  AlterPartitionsResponse alter_partitions_with_environment_context(1:AlterPartitionsRequest req)
+  void alter_partitions_with_environment_context(1:string db_name, 2:string tbl_name, 3:list<Partition> new_parts, 4:EnvironmentContext environment_context) throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+  AlterPartitionsResponse alter_partitions_with_environment_context_req(1:AlterPartitionsRequest req)
       throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   void alter_partition_with_environment_context(1:string db_name,

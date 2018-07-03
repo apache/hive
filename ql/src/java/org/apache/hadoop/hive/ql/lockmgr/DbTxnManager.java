@@ -1047,6 +1047,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     try {
       long writeId = getMS().allocateTableWriteId(txnId, dbName, tableName);
+      LOG.debug("Allocated write ID {} for {}.{}", writeId, dbName, tableName);
       tableWriteIds.put(fullTableName, writeId);
       return writeId;
     } catch (TException e) {

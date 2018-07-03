@@ -409,6 +409,8 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       List<String> allCols) throws MetaException {
     ColumnStatistics existingStats = null;
     try {
+      // Note: this should NOT do txn verification - we want to get outdated stats, to
+      //       see if we need to update anything.
       existingStats = rs.getTableColumnStatistics(cat, db, tbl, allCols);
     } catch (NoSuchObjectException e) {
       LOG.error("Cannot retrieve existing stats, skipping " + fullTableName, e);

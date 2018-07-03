@@ -305,23 +305,6 @@ class SchemaVersionState:
     "DELETED": 8,
   }
 
-class IsolationLevelCompliance:
-  YES = 1
-  NO = 2
-  UNKNOWN = 3
-
-  _VALUES_TO_NAMES = {
-    1: "YES",
-    2: "NO",
-    3: "UNKNOWN",
-  }
-
-  _NAMES_TO_VALUES = {
-    "YES": 1,
-    "NO": 2,
-    "UNKNOWN": 3,
-  }
-
 class FunctionType:
   JAVA = 1
 
@@ -4567,9 +4550,7 @@ class Table:
    - creationMetadata
    - catName
    - ownerType
-   - txnId
    - writeId
-   - validWriteIdList
    - isStatsCompliant
   """
 
@@ -4593,13 +4574,11 @@ class Table:
     (16, TType.STRUCT, 'creationMetadata', (CreationMetadata, CreationMetadata.thrift_spec), None, ), # 16
     (17, TType.STRING, 'catName', None, None, ), # 17
     (18, TType.I32, 'ownerType', None,     1, ), # 18
-    (19, TType.I64, 'txnId', None, -1, ), # 19
-    (20, TType.I64, 'writeId', None, -1, ), # 20
-    (21, TType.STRING, 'validWriteIdList', None, None, ), # 21
-    (22, TType.I32, 'isStatsCompliant', None, None, ), # 22
+    (19, TType.I64, 'writeId', None, -1, ), # 19
+    (20, TType.BOOL, 'isStatsCompliant', None, None, ), # 20
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=thrift_spec[18][4], txnId=thrift_spec[19][4], writeId=thrift_spec[20][4], validWriteIdList=None, isStatsCompliant=None,):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=thrift_spec[18][4], writeId=thrift_spec[19][4], isStatsCompliant=None,):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -4618,9 +4597,7 @@ class Table:
     self.creationMetadata = creationMetadata
     self.catName = catName
     self.ownerType = ownerType
-    self.txnId = txnId
     self.writeId = writeId
-    self.validWriteIdList = validWriteIdList
     self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
@@ -4739,22 +4716,12 @@ class Table:
           iprot.skip(ftype)
       elif fid == 19:
         if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 20:
-        if ftype == TType.I64:
           self.writeId = iprot.readI64()
         else:
           iprot.skip(ftype)
-      elif fid == 21:
-        if ftype == TType.STRING:
-          self.validWriteIdList = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 22:
-        if ftype == TType.I32:
-          self.isStatsCompliant = iprot.readI32()
+      elif fid == 20:
+        if ftype == TType.BOOL:
+          self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -4846,21 +4813,13 @@ class Table:
       oprot.writeFieldBegin('ownerType', TType.I32, 18)
       oprot.writeI32(self.ownerType)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 19)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 20)
+      oprot.writeFieldBegin('writeId', TType.I64, 19)
       oprot.writeI64(self.writeId)
       oprot.writeFieldEnd()
-    if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 21)
-      oprot.writeString(self.validWriteIdList)
-      oprot.writeFieldEnd()
     if self.isStatsCompliant is not None:
-      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 22)
-      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 20)
+      oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -4889,9 +4848,7 @@ class Table:
     value = (value * 31) ^ hash(self.creationMetadata)
     value = (value * 31) ^ hash(self.catName)
     value = (value * 31) ^ hash(self.ownerType)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.writeId)
-    value = (value * 31) ^ hash(self.validWriteIdList)
     value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
@@ -4918,9 +4875,7 @@ class Partition:
    - parameters
    - privileges
    - catName
-   - txnId
    - writeId
-   - validWriteIdList
    - isStatsCompliant
   """
 
@@ -4935,13 +4890,11 @@ class Partition:
     (7, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 7
     (8, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 8
     (9, TType.STRING, 'catName', None, None, ), # 9
-    (10, TType.I64, 'txnId', None, -1, ), # 10
-    (11, TType.I64, 'writeId', None, -1, ), # 11
-    (12, TType.STRING, 'validWriteIdList', None, None, ), # 12
-    (13, TType.I32, 'isStatsCompliant', None, None, ), # 13
+    (10, TType.I64, 'writeId', None, -1, ), # 10
+    (11, TType.BOOL, 'isStatsCompliant', None, None, ), # 11
   )
 
-  def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None, catName=None, txnId=thrift_spec[10][4], writeId=thrift_spec[11][4], validWriteIdList=None, isStatsCompliant=None,):
+  def __init__(self, values=None, dbName=None, tableName=None, createTime=None, lastAccessTime=None, sd=None, parameters=None, privileges=None, catName=None, writeId=thrift_spec[10][4], isStatsCompliant=None,):
     self.values = values
     self.dbName = dbName
     self.tableName = tableName
@@ -4951,9 +4904,7 @@ class Partition:
     self.parameters = parameters
     self.privileges = privileges
     self.catName = catName
-    self.txnId = txnId
     self.writeId = writeId
-    self.validWriteIdList = validWriteIdList
     self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
@@ -5025,22 +4976,12 @@ class Partition:
           iprot.skip(ftype)
       elif fid == 10:
         if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 11:
-        if ftype == TType.I64:
           self.writeId = iprot.readI64()
         else:
           iprot.skip(ftype)
-      elif fid == 12:
-        if ftype == TType.STRING:
-          self.validWriteIdList = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 13:
-        if ftype == TType.I32:
-          self.isStatsCompliant = iprot.readI32()
+      elif fid == 11:
+        if ftype == TType.BOOL:
+          self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -5096,21 +5037,13 @@ class Partition:
       oprot.writeFieldBegin('catName', TType.STRING, 9)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 10)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 11)
+      oprot.writeFieldBegin('writeId', TType.I64, 10)
       oprot.writeI64(self.writeId)
       oprot.writeFieldEnd()
-    if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 12)
-      oprot.writeString(self.validWriteIdList)
-      oprot.writeFieldEnd()
     if self.isStatsCompliant is not None:
-      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 13)
-      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 11)
+      oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -5130,9 +5063,7 @@ class Partition:
     value = (value * 31) ^ hash(self.parameters)
     value = (value * 31) ^ hash(self.privileges)
     value = (value * 31) ^ hash(self.catName)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.writeId)
-    value = (value * 31) ^ hash(self.validWriteIdList)
     value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
@@ -5467,9 +5398,7 @@ class PartitionSpec:
    - sharedSDPartitionSpec
    - partitionList
    - catName
-   - txnId
    - writeId
-   - validWriteIdList
    - isStatsCompliant
   """
 
@@ -5481,22 +5410,18 @@ class PartitionSpec:
     (4, TType.STRUCT, 'sharedSDPartitionSpec', (PartitionSpecWithSharedSD, PartitionSpecWithSharedSD.thrift_spec), None, ), # 4
     (5, TType.STRUCT, 'partitionList', (PartitionListComposingSpec, PartitionListComposingSpec.thrift_spec), None, ), # 5
     (6, TType.STRING, 'catName', None, None, ), # 6
-    (7, TType.I64, 'txnId', None, -1, ), # 7
-    (8, TType.I64, 'writeId', None, -1, ), # 8
-    (9, TType.STRING, 'validWriteIdList', None, None, ), # 9
-    (10, TType.I32, 'isStatsCompliant', None, None, ), # 10
+    (7, TType.I64, 'writeId', None, -1, ), # 7
+    (8, TType.BOOL, 'isStatsCompliant', None, None, ), # 8
   )
 
-  def __init__(self, dbName=None, tableName=None, rootPath=None, sharedSDPartitionSpec=None, partitionList=None, catName=None, txnId=thrift_spec[7][4], writeId=thrift_spec[8][4], validWriteIdList=None, isStatsCompliant=None,):
+  def __init__(self, dbName=None, tableName=None, rootPath=None, sharedSDPartitionSpec=None, partitionList=None, catName=None, writeId=thrift_spec[7][4], isStatsCompliant=None,):
     self.dbName = dbName
     self.tableName = tableName
     self.rootPath = rootPath
     self.sharedSDPartitionSpec = sharedSDPartitionSpec
     self.partitionList = partitionList
     self.catName = catName
-    self.txnId = txnId
     self.writeId = writeId
-    self.validWriteIdList = validWriteIdList
     self.isStatsCompliant = isStatsCompliant
 
   def read(self, iprot):
@@ -5542,22 +5467,12 @@ class PartitionSpec:
           iprot.skip(ftype)
       elif fid == 7:
         if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 8:
-        if ftype == TType.I64:
           self.writeId = iprot.readI64()
         else:
           iprot.skip(ftype)
-      elif fid == 9:
-        if ftype == TType.STRING:
-          self.validWriteIdList = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 10:
-        if ftype == TType.I32:
-          self.isStatsCompliant = iprot.readI32()
+      elif fid == 8:
+        if ftype == TType.BOOL:
+          self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -5594,21 +5509,13 @@ class PartitionSpec:
       oprot.writeFieldBegin('catName', TType.STRING, 6)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 7)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 8)
+      oprot.writeFieldBegin('writeId', TType.I64, 7)
       oprot.writeI64(self.writeId)
       oprot.writeFieldEnd()
-    if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 9)
-      oprot.writeString(self.validWriteIdList)
-      oprot.writeFieldEnd()
     if self.isStatsCompliant is not None:
-      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 10)
-      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 8)
+      oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -5625,9 +5532,7 @@ class PartitionSpec:
     value = (value * 31) ^ hash(self.sharedSDPartitionSpec)
     value = (value * 31) ^ hash(self.partitionList)
     value = (value * 31) ^ hash(self.catName)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.writeId)
-    value = (value * 31) ^ hash(self.validWriteIdList)
     value = (value * 31) ^ hash(self.isStatsCompliant)
     return value
 
@@ -7025,7 +6930,7 @@ class ColumnStatistics:
     (2, TType.LIST, 'statsObj', (TType.STRUCT,(ColumnStatisticsObj, ColumnStatisticsObj.thrift_spec)), None, ), # 2
     (3, TType.I64, 'txnId', None, -1, ), # 3
     (4, TType.STRING, 'validWriteIdList', None, None, ), # 4
-    (5, TType.I32, 'isStatsCompliant', None, None, ), # 5
+    (5, TType.BOOL, 'isStatsCompliant', None, None, ), # 5
   )
 
   def __init__(self, statsDesc=None, statsObj=None, txnId=thrift_spec[3][4], validWriteIdList=None, isStatsCompliant=None,):
@@ -7072,8 +6977,8 @@ class ColumnStatistics:
         else:
           iprot.skip(ftype)
       elif fid == 5:
-        if ftype == TType.I32:
-          self.isStatsCompliant = iprot.readI32()
+        if ftype == TType.BOOL:
+          self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -7106,8 +7011,8 @@ class ColumnStatistics:
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
     if self.isStatsCompliant is not None:
-      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 5)
-      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 5)
+      oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -7152,7 +7057,7 @@ class AggrStats:
     None, # 0
     (1, TType.LIST, 'colStats', (TType.STRUCT,(ColumnStatisticsObj, ColumnStatisticsObj.thrift_spec)), None, ), # 1
     (2, TType.I64, 'partsFound', None, None, ), # 2
-    (3, TType.I32, 'isStatsCompliant', None, None, ), # 3
+    (3, TType.BOOL, 'isStatsCompliant', None, None, ), # 3
   )
 
   def __init__(self, colStats=None, partsFound=None, isStatsCompliant=None,):
@@ -7186,8 +7091,8 @@ class AggrStats:
         else:
           iprot.skip(ftype)
       elif fid == 3:
-        if ftype == TType.I32:
-          self.isStatsCompliant = iprot.readI32()
+        if ftype == TType.BOOL:
+          self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -7212,8 +7117,8 @@ class AggrStats:
       oprot.writeI64(self.partsFound)
       oprot.writeFieldEnd()
     if self.isStatsCompliant is not None:
-      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 3)
-      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 3)
+      oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -9403,7 +9308,7 @@ class TableStatsResult:
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'tableStats', (TType.STRUCT,(ColumnStatisticsObj, ColumnStatisticsObj.thrift_spec)), None, ), # 1
-    (2, TType.I32, 'isStatsCompliant', None, None, ), # 2
+    (2, TType.BOOL, 'isStatsCompliant', None, None, ), # 2
   )
 
   def __init__(self, tableStats=None, isStatsCompliant=None,):
@@ -9431,8 +9336,8 @@ class TableStatsResult:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.I32:
-          self.isStatsCompliant = iprot.readI32()
+        if ftype == TType.BOOL:
+          self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -9453,8 +9358,8 @@ class TableStatsResult:
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.isStatsCompliant is not None:
-      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 2)
-      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 2)
+      oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -9492,7 +9397,7 @@ class PartitionsStatsResult:
   thrift_spec = (
     None, # 0
     (1, TType.MAP, 'partStats', (TType.STRING,None,TType.LIST,(TType.STRUCT,(ColumnStatisticsObj, ColumnStatisticsObj.thrift_spec))), None, ), # 1
-    (2, TType.I32, 'isStatsCompliant', None, None, ), # 2
+    (2, TType.BOOL, 'isStatsCompliant', None, None, ), # 2
   )
 
   def __init__(self, partStats=None, isStatsCompliant=None,):
@@ -9526,8 +9431,8 @@ class PartitionsStatsResult:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.I32:
-          self.isStatsCompliant = iprot.readI32()
+        if ftype == TType.BOOL:
+          self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -9552,8 +9457,8 @@ class PartitionsStatsResult:
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.isStatsCompliant is not None:
-      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 2)
-      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 2)
+      oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -9902,7 +9807,7 @@ class AddPartitionsResult:
   thrift_spec = (
     None, # 0
     (1, TType.LIST, 'partitions', (TType.STRUCT,(Partition, Partition.thrift_spec)), None, ), # 1
-    (2, TType.I32, 'isStatsCompliant', None, None, ), # 2
+    (2, TType.BOOL, 'isStatsCompliant', None, None, ), # 2
   )
 
   def __init__(self, partitions=None, isStatsCompliant=None,):
@@ -9930,8 +9835,8 @@ class AddPartitionsResult:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.I32:
-          self.isStatsCompliant = iprot.readI32()
+        if ftype == TType.BOOL:
+          self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -9952,8 +9857,8 @@ class AddPartitionsResult:
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.isStatsCompliant is not None:
-      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 2)
-      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 2)
+      oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -17517,7 +17422,7 @@ class GetTableResult:
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'table', (Table, Table.thrift_spec), None, ), # 1
-    (2, TType.I32, 'isStatsCompliant', None, None, ), # 2
+    (2, TType.BOOL, 'isStatsCompliant', None, None, ), # 2
   )
 
   def __init__(self, table=None, isStatsCompliant=None,):
@@ -17540,8 +17445,8 @@ class GetTableResult:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.I32:
-          self.isStatsCompliant = iprot.readI32()
+        if ftype == TType.BOOL:
+          self.isStatsCompliant = iprot.readBool()
         else:
           iprot.skip(ftype)
       else:
@@ -17559,8 +17464,8 @@ class GetTableResult:
       self.table.write(oprot)
       oprot.writeFieldEnd()
     if self.isStatsCompliant is not None:
-      oprot.writeFieldBegin('isStatsCompliant', TType.I32, 2)
-      oprot.writeI32(self.isStatsCompliant)
+      oprot.writeFieldBegin('isStatsCompliant', TType.BOOL, 2)
+      oprot.writeBool(self.isStatsCompliant)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

@@ -43,37 +43,6 @@ public class TxnIdUtils {
   }
 
   /**
-   * Check if the give two write id lists are for concurrent writes
-   * on the table.
-   */
-  public static boolean areTheseConcurrentWrites(
-          ValidWriteIdList older, long olderWriteId,
-          ValidWriteIdList newer, long newerWriteId) {
-    if (!older.getTableName().equalsIgnoreCase(newer.getTableName())) {
-      return false;
-    }
-
-    assert(older.getHighWatermark() <= newer.getHighWatermark());
-
-    // Return false when a write id is not positive.
-    if (olderWriteId <= 0 || newerWriteId <= 0) {
-      return false;
-    }
-
-    // If olderWriteId is for aborted write, return false.
-    if (newer.isWriteIdAborted(olderWriteId)) {
-      return false;
-    }
-
-    // TODO: does this need to account for watermark?
-    // If either writeId is contained in the other's writeIdList,
-    // it is a concurrent INSERTs case.
-    int index2Older = Arrays.binarySearch(older.getInvalidWriteIds(), olderWriteId);
-    int index2Newer = Arrays.binarySearch(newer.getInvalidWriteIds(), newerWriteId);
-    return index2Older >= 0 || index2Newer >= 0;
-  }
-
-  /**
    * Check the min open ID/highwater mark/exceptions list to see if 2 ID lists are at the same commit point.
    * This can also be used for ValidTxnList as well as ValidWriteIdList.
    */

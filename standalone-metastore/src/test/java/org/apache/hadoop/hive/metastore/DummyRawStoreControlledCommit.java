@@ -292,9 +292,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void alterTable(String catName, String dbName, String name, Table newTable)
+  public void alterTable(String catName, String dbName, String name, Table newTable,
+      long queryTxnId, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
-    objectStore.alterTable(catName, dbName, name, newTable);
+    objectStore.alterTable(catName, dbName, name, newTable, queryTxnId, queryValidWriteIds);
   }
 
   @Override
@@ -357,17 +358,16 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public void alterPartition(String catName, String dbName, String tblName, List<String> partVals,
-      Partition newPart) throws InvalidObjectException, MetaException {
-    objectStore.alterPartition(catName, dbName, tblName, partVals, newPart);
+      Partition newPart, long queryTxnId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
+    objectStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryTxnId, queryValidWriteIds);
   }
 
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
       List<List<String>> partValsList, List<Partition> newParts,
-      long txnId, String writeIdList, long writeId)
-      throws InvalidObjectException, MetaException {
+      long writeId, long queryTxnId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
     objectStore.alterPartitions(
-        catName, dbName, tblName, partValsList, newParts, txnId, writeIdList, writeId);
+        catName, dbName, tblName, partValsList, newParts, writeId, queryTxnId, queryValidWriteIds);
   }
 
   @Override

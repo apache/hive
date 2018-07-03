@@ -325,11 +325,8 @@ public class TestHive extends TestCase {
       tbl.getParameters().put(hive_metastoreConstants.DDL_TIME,
           ft.getParameters().get(hive_metastoreConstants.DDL_TIME));
       // Txn stuff set by metastore
-      if (tbl.getTTable().isSetTxnId()) {
-        ft.getTTable().setTxnId(tbl.getTTable().getTxnId());
-      }
-      if (tbl.getTTable().isSetValidWriteIdList()) {
-        ft.getTTable().setValidWriteIdList(tbl.getTTable().getValidWriteIdList());
+      if (tbl.getTTable().isSetWriteId()) {
+        ft.getTTable().setWriteId(tbl.getTTable().getWriteId());
       }
       assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
           + "; " + tbl.getTTable() + ")", ft.getTTable().equals(tbl.getTTable()));
@@ -600,7 +597,7 @@ public class TestHive extends TestCase {
 
       Table table = createPartitionedTable(dbName, tableName);
       table.getParameters().put("auto.purge", "true");
-      hm.alterTable(tableName, table, null);
+      hm.alterTable(tableName, table, false, null, true);
 
       Map<String, String> partitionSpec =  new ImmutableMap.Builder<String, String>()
           .put("ds", "20141216")

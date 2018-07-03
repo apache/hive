@@ -210,14 +210,8 @@
       <field name="tableType">
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>
-      <field name="txnId">
-        <column name="TXN_ID"/>
-      </field>
       <field name="writeId">
         <column name="WRITE_ID"/>
-      </field>
-      <field name="writeIdList">
-        <column name="WRITEID_LIST" jdbc-type="CLOB" allows-null="true"/>
       </field>
     </class>
 
@@ -498,14 +492,8 @@
            <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
         </value>
       </field>
-      <field name="txnId">
-        <column name="TXN_ID"/>
-      </field>
       <field name="writeId">
         <column name="WRITE_ID"/>
-      </field>
-      <field name="writeIdList">
-        <column name="WRITEID_LIST" jdbc-type="CLOB" allows-null="true"/>
       </field>
     </class>
     

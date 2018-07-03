@@ -38,9 +38,7 @@ public class MTable {
   private String viewExpandedText;
   private boolean rewriteEnabled;
   private String tableType;
-  private long txnId;
   private long writeId;
-  private String writeIdList;
 
   public MTable() {}
 
@@ -275,27 +273,11 @@ public class MTable {
     return tableType;
   }
 
-  public long getTxnId() {
-    return txnId;
-  }
-
-  public void setTxnId(long txnId) {
-    this.txnId = txnId;
-  }
-
   public long getWriteId() {
     return writeId;
   }
 
   public void setWriteId(long writeId) {
     this.writeId = writeId;
-  }
-
-  public String getWriteIdList() {
-    return writeIdList;
-  }
-
-  public void setWriteIdList(String writeIdList) {
-    this.writeIdList = writeIdList;
   }
 }

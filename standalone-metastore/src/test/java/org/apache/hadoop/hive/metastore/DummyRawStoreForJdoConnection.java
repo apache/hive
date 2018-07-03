@@ -290,7 +290,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void alterTable(String catName, String dbname, String name, Table newTable)
+  public void alterTable(String catName, String dbname, String name, Table newTable, long queryTxnId, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
   }
 
@@ -359,15 +359,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void alterPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
-      Partition new_part) throws InvalidObjectException, MetaException {
+      Partition new_part, long queryTxnId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
   }
 
   @Override
   public void alterPartitions(String catName, String db_name, String tbl_name,
                               List<List<String>> part_vals_list, List<Partition> new_parts,
-                              long txnId, String writeIdList, long writeId)
-      throws InvalidObjectException, MetaException {
-
+                              long writeId, long queryTxnId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
   }
 
   @Override
