@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.thrift.TException;
 
 
@@ -107,6 +108,10 @@ public final class SynchronizedMetaStoreClient {
 
   public synchronized FireEventResponse fireListenerEvent(FireEventRequest rqst) throws TException {
     return client.fireListenerEvent(rqst);
+  }
+
+  public synchronized void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
+    client.addWriteNotificationLog(rqst);
   }
 
   public synchronized void close() {

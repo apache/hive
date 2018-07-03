@@ -162,7 +162,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     try {
       this.acidOutputFormat = (AcidOutputFormat<?, ?>) ReflectionUtils
         .newInstance(JavaUtils.loadClass(outFormatName), conf);
-    } catch (ClassNotFoundException e) {
+    } catch (Exception e) {
       String shadePrefix = conf.getVar(HiveConf.ConfVars.HIVE_CLASSLOADER_SHADE_PREFIX);
       if (shadePrefix != null && !shadePrefix.trim().isEmpty()) {
         try {

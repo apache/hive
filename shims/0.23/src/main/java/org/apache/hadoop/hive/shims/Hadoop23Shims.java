@@ -739,6 +739,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     @Override
     public Long getFileId() {
+      if (fileId == HdfsConstants.GRANDFATHER_INODE_ID) {
+        return null;
+      }
       return fileId;
     }
   }

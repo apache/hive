@@ -179,9 +179,23 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     String newTableName = getTmptTableNameForExport(exportTable); //this is db.table
     Map<String, String> tblProps = new HashMap<>();
     tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.FALSE.toString());
+    String location;
+
+    // for temporary tables we set the location to something in the session's scratch dir
+    // it has the same life cycle as the tmp table
+    try {
+      // Generate a unique ID for temp table path.
+      // This path will be fixed for the life of the temp table.
+      Path path = new Path(SessionState.getTempTableSpace(conf), UUID.randomUUID().toString());
+      path = Warehouse.getDnsPath(path, conf);
+      location = path.toString();
+    } catch (MetaException err) {
+      throw new SemanticException("Error while generating temp table path:", err);
+    }
+
     CreateTableLikeDesc ctlt = new CreateTableLikeDesc(newTableName,
         false, true, null,
-        null, null, null, null,
+        null, location, null, null,
         tblProps,
         true, //important so we get an exception on name collision
         Warehouse.getQualifiedName(exportTable.getTTable()), false);
@@ -302,7 +316,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
   /**
    * Makes the exportTask run after all other tasks of the "insert into T ..." are done.
    */
-  private void addExportTask(List<Task<? extends Serializable>> rootTasks,
+  private void addExportTask(List<Task<?>> rootTasks,
       Task<ExportWork> exportTask, Task<DDLWork> alterTable) {
     for(Task<? extends  Serializable> t : rootTasks) {
       if(t.getNumChild() <= 0) {
@@ -315,8 +329,9 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
   }
-  private List<Task<? extends Serializable>> findStatsTasks(
-      List<Task<? extends Serializable>> rootTasks, List<Task<? extends Serializable>> statsTasks) {
+
+  private List<Task<?>> findStatsTasks(
+      List<Task<?>> rootTasks, List<Task<?>> statsTasks) {
     for(Task<? extends  Serializable> t : rootTasks) {
       if (t instanceof StatsTask) {
         if(statsTasks == null) {
@@ -330,16 +345,17 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
     return statsTasks;
   }
-  private void removeStatsTasks(List<Task<? extends Serializable>> rootTasks) {
-    List<Task<? extends Serializable>> statsTasks = findStatsTasks(rootTasks, null);
+
+  private void removeStatsTasks(List<Task<?>> rootTasks) {
+    List<Task<?>> statsTasks = findStatsTasks(rootTasks, null);
     if(statsTasks == null) {
       return;
     }
-    for(Task<? extends Serializable> statsTask : statsTasks) {
+    for (Task<?> statsTask : statsTasks) {
       if(statsTask.getParentTasks() == null) {
         continue; //should never happen
       }
-      for(Task<? extends Serializable> t : new ArrayList<>(statsTask.getParentTasks())) {
+      for (Task<?> t : new ArrayList<>(statsTask.getParentTasks())) {
         t.removeDependentTask(statsTask);
       }
     }

@@ -32,6 +32,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.hadoop.hive.common.log.LogRedirector;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -200,19 +202,19 @@ class SparkSubmitSparkClient extends AbstractSparkClient {
       try {
         int exitCode = child.waitFor();
         if (exitCode != 0) {
-          StringBuilder errStr = new StringBuilder();
-          synchronized(childErrorLog) {
-            for (Object aChildErrorLog : childErrorLog) {
-              errStr.append(aChildErrorLog);
-              errStr.append('\n');
+          List<String> errorMessages = new ArrayList<>();
+          synchronized (childErrorLog) {
+            for (String line : childErrorLog) {
+              if (StringUtils.containsIgnoreCase(line, "Error")) {
+                errorMessages.add("\"" + line + "\"");
+              }
             }
           }
 
-          LOG.warn("Child process exited with code {}", exitCode);
-          rpcServer.cancelClient(clientId,
-              "Child process (spark-submit) exited before connecting back with error log " + errStr.toString());
-        } else {
-          LOG.info("Child process (spark-submit) exited successfully.");
+          String errStr = errorMessages.isEmpty() ? "?" : Joiner.on(',').join(errorMessages);
+
+          rpcServer.cancelClient(clientId, new RuntimeException("spark-submit process failed " +
+                  "with exit code " + exitCode + " and error " + errStr));
         }
       } catch (InterruptedException ie) {
         LOG.warn("Thread waiting on the child process (spark-submit) is interrupted, killing the child process.");

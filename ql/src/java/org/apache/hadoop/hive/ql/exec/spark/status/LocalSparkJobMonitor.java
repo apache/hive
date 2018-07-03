@@ -89,11 +89,11 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
                 + "SucceededTasksCount(+RunningTasksCount-FailedTasksCount)/TotalTasksCount [StageCost]");
             }
 
-            printStatus(progressMap, lastProgressMap);
+            updateFunction.printStatus(progressMap, lastProgressMap);
             lastProgressMap = progressMap;
             break;
           case SUCCEEDED:
-            printStatus(progressMap, lastProgressMap);
+            updateFunction.printStatus(progressMap, lastProgressMap);
             lastProgressMap = progressMap;
             double duration = (System.currentTimeMillis() - startTime) / 1000.0;
             console.printInfo("Status: Finished successfully in "

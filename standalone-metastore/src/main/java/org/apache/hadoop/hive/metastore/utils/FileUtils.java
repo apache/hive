@@ -511,7 +511,6 @@ public class FileUtils {
     return new Path(scheme, authority, pathUri.getPath());
   }
 
-
   /**
    * Returns a BEST GUESS as to whether or not other is a subdirectory of parent. It does not
    * take into account any intricacies of the underlying file system, which is assumed to be
@@ -523,5 +522,16 @@ public class FileUtils {
    */
   public static boolean isSubdirectory(String parent, String other) {
     return other.startsWith(parent.endsWith(Path.SEPARATOR) ? parent : parent + Path.SEPARATOR);
+  }
+
+  public static Path getTransformedPath(String name, String subDir, String root) {
+    if (root != null) {
+      Path newPath = new Path(root);
+      if (subDir != null) {
+        newPath = new Path(newPath, subDir);
+      }
+      return new Path(newPath, name);
+    }
+    return null;
   }
 }

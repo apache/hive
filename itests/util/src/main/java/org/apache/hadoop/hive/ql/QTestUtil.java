@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -1781,7 +1780,7 @@ public class QTestUtil {
   }
 
 
-  public List<Task<? extends Serializable>> analyzeAST(ASTNode ast) throws Exception {
+  public List<Task<?>> analyzeAST(ASTNode ast) throws Exception {
 
     // Do semantic analysis and plan generation
     Context ctx = new Context(conf);

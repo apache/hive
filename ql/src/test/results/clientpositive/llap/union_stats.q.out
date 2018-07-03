@@ -236,7 +236,7 @@ POSTHOOK: query: select count(1) from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-500
+1000
 PREHOOK: query: desc formatted t
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@t
@@ -257,8 +257,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	2                   
-	numRows             	500                 
-	rawDataSize         	5312                
+	numRows             	1000                
+	rawDataSize         	10624               
 	totalSize           	11624               
 #### A masked pattern was here ####
 	 	 
@@ -306,8 +306,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	2                   
-	numRows             	1000                
-	rawDataSize         	10624               
+	numRows             	1500                
+	rawDataSize         	15936               
 	totalSize           	17436               
 #### A masked pattern was here ####
 	 	 
@@ -363,8 +363,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	2                   
-	numRows             	1000                
-	rawDataSize         	10624               
+	numRows             	1500                
+	rawDataSize         	15936               
 	totalSize           	17436               
 #### A masked pattern was here ####
 	 	 
@@ -394,24 +394,155 @@ POSTHOOK: query: create table t2 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
+PREHOOK: query: create table t3 like src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: create table t3 like src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: explain from (select * from src union all select * from src)s
+insert overwrite table t1 select *
+insert overwrite table t2 select *
+insert overwrite table t3 select *
+PREHOOK: type: QUERY
+POSTHOOK: query: explain from (select * from src union all select * from src)s
+insert overwrite table t1 select *
+insert overwrite table t2 select *
+insert overwrite table t3 select *
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Union 2 (CONTAINS)
+Map 6 <- Union 2 (CONTAINS)
+Reducer 3 <- Union 2 (CUSTOM_SIMPLE_EDGE)
+Reducer 4 <- Union 2 (CUSTOM_SIMPLE_EDGE)
+Reducer 5 <- Union 2 (CUSTOM_SIMPLE_EDGE)
+
+Stage-5
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.t1"}
+        Stage-4
+          Dependency Collection{}
+            Stage-3
+              Reducer 3 llap
+              File Output Operator [FS_6]
+                Group By Operator [GBY_4] (rows=1 width=880)
+                  Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+                <-Union 2 [CUSTOM_SIMPLE_EDGE]
+                  <-Map 1 [CONTAINS] llap
+                    File Output Operator [FS_7]
+                      table:{"name:":"default.t1"}
+                      Select Operator [SEL_1] (rows=500 width=178)
+                        Output:["_col0","_col1"]
+                        TableScan [TS_0] (rows=500 width=178)
+                          Output:["key","value"]
+                    Reduce Output Operator [RS_3]
+                      Group By Operator [GBY_2] (rows=1 width=880)
+                        Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
+                        Select Operator [SEL_1] (rows=1000 width=178)
+                          Output:["key","value"]
+                           Please refer to the previous Select Operator [SEL_1]
+                    File Output Operator [FS_9]
+                      table:{"name:":"default.t2"}
+                       Please refer to the previous Select Operator [SEL_1]
+                    Reduce Output Operator [RS_3]
+                      Group By Operator [GBY_2] (rows=1 width=880)
+                        Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
+                        Select Operator [SEL_1] (rows=1000 width=178)
+                          Output:["key","value"]
+                           Please refer to the previous Select Operator [SEL_1]
+                    File Output Operator [FS_11]
+                      table:{"name:":"default.t3"}
+                       Please refer to the previous Select Operator [SEL_1]
+                    Reduce Output Operator [RS_3]
+                      Group By Operator [GBY_2] (rows=1 width=880)
+                        Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
+                        Select Operator [SEL_1] (rows=1000 width=178)
+                          Output:["key","value"]
+                           Please refer to the previous Select Operator [SEL_1]
+                  <-Map 6 [CONTAINS] llap
+                    File Output Operator [FS_7]
+                      table:{"name:":"default.t1"}
+                      Select Operator [SEL_3] (rows=500 width=178)
+                        Output:["_col0","_col1"]
+                        TableScan [TS_2] (rows=500 width=178)
+                          Output:["key","value"]
+                    Reduce Output Operator [RS_3]
+                      Group By Operator [GBY_2] (rows=1 width=880)
+                        Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
+                        Select Operator [SEL_1] (rows=1000 width=178)
+                          Output:["key","value"]
+                           Please refer to the previous Select Operator [SEL_3]
+                    File Output Operator [FS_9]
+                      table:{"name:":"default.t2"}
+                       Please refer to the previous Select Operator [SEL_3]
+                    Reduce Output Operator [RS_3]
+                      Group By Operator [GBY_2] (rows=1 width=880)
+                        Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
+                        Select Operator [SEL_1] (rows=1000 width=178)
+                          Output:["key","value"]
+                           Please refer to the previous Select Operator [SEL_3]
+                    File Output Operator [FS_11]
+                      table:{"name:":"default.t3"}
+                       Please refer to the previous Select Operator [SEL_3]
+                    Reduce Output Operator [RS_3]
+                      Group By Operator [GBY_2] (rows=1 width=880)
+                        Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
+                        Select Operator [SEL_1] (rows=1000 width=178)
+                          Output:["key","value"]
+                           Please refer to the previous Select Operator [SEL_3]
+              Reducer 4 llap
+              File Output Operator [FS_6]
+                Group By Operator [GBY_4] (rows=1 width=880)
+                  Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+                <- Please refer to the previous Union 2 [CUSTOM_SIMPLE_EDGE]
+              Reducer 5 llap
+              File Output Operator [FS_6]
+                Group By Operator [GBY_4] (rows=1 width=880)
+                  Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+                <- Please refer to the previous Union 2 [CUSTOM_SIMPLE_EDGE]
+Stage-6
+  Stats Work{}
+    Stage-1
+      Move Operator
+        table:{"name:":"default.t2"}
+         Please refer to the previous Stage-4
+Stage-7
+  Stats Work{}
+    Stage-2
+      Move Operator
+        table:{"name:":"default.t3"}
+         Please refer to the previous Stage-4
+
 PREHOOK: query: from (select * from src union all select * from src)s
 insert overwrite table t1 select *
 insert overwrite table t2 select *
+insert overwrite table t3 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1
 PREHOOK: Output: default@t2
+PREHOOK: Output: default@t3
 POSTHOOK: query: from (select * from src union all select * from src)s
 insert overwrite table t1 select *
 insert overwrite table t2 select *
+insert overwrite table t3 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1
 POSTHOOK: Output: default@t2
+POSTHOOK: Output: default@t3
 POSTHOOK: Lineage: t1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: t2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t3.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted t1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@t1
