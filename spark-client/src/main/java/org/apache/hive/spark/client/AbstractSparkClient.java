@@ -24,7 +24,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
 
@@ -41,8 +40,6 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -125,17 +122,19 @@ abstract class AbstractSparkClient implements SparkClient {
       } else {
         errorMsg = "Error while waiting for Remote Spark Driver to connect back to HiveServer2.";
       }
-      LOG.error(errorMsg, e);
-      driverFuture.cancel(true);
-      try {
-        driverFuture.get();
-      } catch (InterruptedException ie) {
-        // Give up.
-        LOG.warn("Interrupted before driver thread was finished.", ie);
-      } catch (ExecutionException ee) {
-        LOG.error("Driver thread failed", ee);
+      if (driverFuture.isDone()) {
+        try {
+          driverFuture.get();
+        } catch (InterruptedException ie) {
+          // Give up.
+          LOG.warn("Interrupted before driver thread was finished.", ie);
+        } catch (ExecutionException ee) {
+          LOG.error("Driver thread failed", ee);
+        }
+      } else {
+        driverFuture.cancel(true);
       }
-      throw Throwables.propagate(e);
+      throw new RuntimeException(errorMsg, e);
     }
 
     LOG.info("Successfully connected to Remote Spark Driver at: " + this.driverRpc.getRemoteAddress());

@@ -1907,12 +1907,12 @@ public final class GenMapRedUtils {
         mvTasks, fsOp.getConf().getFinalDirName(), fsOp.getConf().isMmTable());
 
     // TODO: wtf?!! why is this in this method? This has nothing to do with anything.
-    if (mvTask != null && isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
+    if (isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
         && !fsOp.getConf().isMaterialization()) {
       // mark the MapredWork and FileSinkOperator for gathering stats
       fsOp.getConf().setGatherStats(true);
       fsOp.getConf().setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
-      if (!mvTask.hasFollowingStatsTask()) {
+      if (mvTask != null && !mvTask.hasFollowingStatsTask()) {
         GenMapRedUtils.addStatsTask(fsOp, mvTask, currTask, hconf);
       }
     }

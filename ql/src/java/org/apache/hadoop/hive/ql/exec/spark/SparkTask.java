@@ -180,7 +180,7 @@ public class SparkTask extends Task<SparkWork> {
         killJob();
       } else if (rc == 4) {
         LOG.info("The Spark job or one stage of it has too many tasks" +
-            ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID );
+            ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID);
         killJob();
       }
 
@@ -189,12 +189,7 @@ public class SparkTask extends Task<SparkWork> {
       }
       sparkJobStatus.cleanup();
     } catch (Exception e) {
-      String msg = "Failed to execute Spark task " + getId() + ", with exception '" + Utilities.getNameMessage(e) + "'";
-
-      // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
-      console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      LOG.error(msg, e);
+      LOG.error("Failed to execute Spark task \"" + getId() + "\"", e);
       setException(e);
       if (e instanceof HiveException) {
         HiveException he = (HiveException) e;
@@ -609,7 +604,7 @@ public class SparkTask extends Task<SparkWork> {
   private boolean isTaskFailure(Throwable error) {
     Pattern taskFailedPattern = Pattern.compile("Task.*in stage.*failed.*times");
     while (error != null) {
-      if (taskFailedPattern.matcher(error.getMessage()).find()) {
+      if (error.getMessage() != null && taskFailedPattern.matcher(error.getMessage()).find()) {
         return true;
       }
       error = error.getCause();
@@ -621,8 +616,8 @@ public class SparkTask extends Task<SparkWork> {
     while (error != null) {
       if (error instanceof OutOfMemoryError) {
         return true;
-      } else if (error.getMessage().contains("Container killed by YARN for exceeding memory " +
-              "limits")) {
+      } else if (error.getMessage() != null && error.getMessage().contains("Container killed by " +
+              "YARN for exceeding memory limits")) {
         return true;
       }
       error = error.getCause();

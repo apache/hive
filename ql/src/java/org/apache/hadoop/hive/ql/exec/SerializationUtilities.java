@@ -668,28 +668,6 @@ public class SerializationUtilities {
     return result;
   }
 
-  public static List<Operator<?>> cloneOperatorTree(List<Operator<?>> roots, int indexForTezUnion) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    CompilationOpContext ctx = roots.isEmpty() ? null : roots.get(0).getCompilationOpContext();
-    serializePlan(roots, baos, true);
-    @SuppressWarnings("unchecked")
-    List<Operator<?>> result =
-        deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
-            roots.getClass(), true);
-    // Restore the context.
-    LinkedList<Operator<?>> newOps = new LinkedList<>(result);
-    while (!newOps.isEmpty()) {
-      Operator<?> newOp = newOps.poll();
-      newOp.setIndexForTezUnion(indexForTezUnion);
-      newOp.setCompilationOpContext(ctx);
-      List<Operator<?>> children = newOp.getChildOperators();
-      if (children != null) {
-        newOps.addAll(children);
-      }
-    }
-    return result;
-  }
-
   /**
    * Clones using the powers of XML. Do not use unless necessary.
    * @param plan The plan.

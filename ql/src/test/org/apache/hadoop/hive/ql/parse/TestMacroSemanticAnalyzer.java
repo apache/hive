@@ -17,10 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.Serializable;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -32,6 +29,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMacro;
 import org.junit.Before;
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 public class TestMacroSemanticAnalyzer {
 
@@ -54,9 +53,9 @@ public class TestMacroSemanticAnalyzer {
   }
   private void analyze(ASTNode ast) throws Exception {
     analyzer.analyze(ast, context);
-    List<Task<? extends Serializable>> rootTasks = analyzer.getRootTasks();
+    List<Task<?>> rootTasks = analyzer.getRootTasks();
     Assert.assertEquals(1, rootTasks.size());
-    for(Task<? extends Serializable> task : rootTasks) {
+    for (Task<?> task : rootTasks) {
       Assert.assertEquals(0, task.executeTask(null));
     }
   }

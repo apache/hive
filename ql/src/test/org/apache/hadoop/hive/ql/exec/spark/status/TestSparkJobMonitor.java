@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,22 +41,23 @@ public class TestSparkJobMonitor {
   private SparkJobMonitor monitor;
   private PrintStream curOut;
   private PrintStream curErr;
+  private RenderStrategy.InPlaceUpdateFunction updateFunction;
 
   @Before
   public void setUp() {
-    testConf = new HiveConf();
     curOut = System.out;
     curErr = System.err;
     System.setOut(new PrintStream(outContent));
     System.setErr(new PrintStream(errContent));
-
+    testConf = new HiveConf();
+    SessionState.start(testConf);
     monitor = new SparkJobMonitor(testConf) {
       @Override
       public int startMonitor() {
         return 0;
       }
     };
-
+    updateFunction = new RenderStrategy.InPlaceUpdateFunction(monitor);
   }
 
   private Map<SparkStage, SparkStageProgress> progressMap() {
@@ -72,12 +74,27 @@ public class TestSparkJobMonitor {
   }
 
   @Test
-  public void testGetReport() {
+  public void testProgress() {
     Map<SparkStage, SparkStageProgress> progressMap = progressMap();
-    monitor.printStatus(progressMap, null);
-    assertTrue(errContent.toString().contains(
+    updateFunction.printStatus(progressMap, null);
+    String testOutput = errContent.toString();
+    assertTrue(testOutput.contains(
         "Stage-1_0: 3(+1)/4\tStage-3_1: 4(+1,-1)/6\tStage-9_0: 5/5 Finished\tStage-10_2: 3(+2)/5\t"
             + "Stage-15_1: 3(+1)/4\tStage-15_2: 4/4 Finished\tStage-20_3: 1(+1,-1)/3\tStage-21_1: 2/2 Finished"));
+    String[] testStrings = new String[]{
+        "STAGES   ATTEMPT        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED",
+        "Stage-1 ......           0       RUNNING      4          3        1        0       0",
+        "Stage-3 .....            1       RUNNING      6          4        1        1       1",
+        "Stage-9 ........         0      FINISHED      5          5        0        0       0",
+        "Stage-10 ....            2       RUNNING      5          3        2        0       0",
+        "Stage-15 .....           1       RUNNING      4          3        1        0       0",
+        "Stage-15 .......         2      FINISHED      4          4        0        0       0",
+        "Stage-20 ..              3       RUNNING      3          1        1        1       1",
+        "Stage-21 .......         1      FINISHED      2          2        0        0       0",
+        "STAGES: 03/08    [===================>>-------] 75%   ELAPSED TIME:"};
+    for(String testString : testStrings) {
+      assertTrue(testOutput.contains(testString));
+    }
   }
 
   @After

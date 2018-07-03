@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField TXNID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnid", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField REPL_POLICY_FIELD_DESC = new org.apache.thrift.protocol.TField("replPolicy", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField WRITE_EVENT_INFOS_FIELD_DESC = new org.apache.thrift.protocol.TField("writeEventInfos", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,11 +50,13 @@ import org.slf4j.LoggerFactory;
 
   private long txnid; // required
   private String replPolicy; // optional
+  private List<WriteEventInfo> writeEventInfos; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TXNID((short)1, "txnid"),
-    REPL_POLICY((short)2, "replPolicy");
+    REPL_POLICY((short)2, "replPolicy"),
+    WRITE_EVENT_INFOS((short)3, "writeEventInfos");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,6 +75,8 @@ import org.slf4j.LoggerFactory;
           return TXNID;
         case 2: // REPL_POLICY
           return REPL_POLICY;
+        case 3: // WRITE_EVENT_INFOS
+          return WRITE_EVENT_INFOS;
         default:
           return null;
       }
@@ -114,7 +119,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.REPL_POLICY};
+  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.WRITE_EVENT_INFOS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -122,6 +127,9 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.REPL_POLICY, new org.apache.thrift.meta_data.FieldMetaData("replPolicy", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.WRITE_EVENT_INFOS, new org.apache.thrift.meta_data.FieldMetaData("writeEventInfos", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "WriteEventInfo"))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CommitTxnRequest.class, metaDataMap);
   }
@@ -146,6 +154,13 @@ import org.slf4j.LoggerFactory;
     if (other.isSetReplPolicy()) {
       this.replPolicy = other.replPolicy;
     }
+    if (other.isSetWriteEventInfos()) {
+      List<WriteEventInfo> __this__writeEventInfos = new ArrayList<WriteEventInfo>(other.writeEventInfos.size());
+      for (WriteEventInfo other_element : other.writeEventInfos) {
+        __this__writeEventInfos.add(other_element);
+      }
+      this.writeEventInfos = __this__writeEventInfos;
+    }
   }
 
   public CommitTxnRequest deepCopy() {
@@ -157,6 +172,7 @@ import org.slf4j.LoggerFactory;
     setTxnidIsSet(false);
     this.txnid = 0;
     this.replPolicy = null;
+    this.writeEventInfos = null;
   }
 
   public long getTxnid() {
@@ -204,6 +220,44 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public int getWriteEventInfosSize() {
+    return (this.writeEventInfos == null) ? 0 : this.writeEventInfos.size();
+  }
+
+  public java.util.Iterator<WriteEventInfo> getWriteEventInfosIterator() {
+    return (this.writeEventInfos == null) ? null : this.writeEventInfos.iterator();
+  }
+
+  public void addToWriteEventInfos(WriteEventInfo elem) {
+    if (this.writeEventInfos == null) {
+      this.writeEventInfos = new ArrayList<WriteEventInfo>();
+    }
+    this.writeEventInfos.add(elem);
+  }
+
+  public List<WriteEventInfo> getWriteEventInfos() {
+    return this.writeEventInfos;
+  }
+
+  public void setWriteEventInfos(List<WriteEventInfo> writeEventInfos) {
+    this.writeEventInfos = writeEventInfos;
+  }
+
+  public void unsetWriteEventInfos() {
+    this.writeEventInfos = null;
+  }
+
+  /** Returns true if field writeEventInfos is set (has been assigned a value) and false otherwise */
+  public boolean isSetWriteEventInfos() {
+    return this.writeEventInfos != null;
+  }
+
+  public void setWriteEventInfosIsSet(boolean value) {
+    if (!value) {
+      this.writeEventInfos = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TXNID:
@@ -222,6 +276,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case WRITE_EVENT_INFOS:
+      if (value == null) {
+        unsetWriteEventInfos();
+      } else {
+        setWriteEventInfos((List<WriteEventInfo>)value);
+      }
+      break;
+
     }
   }
 
@@ -232,6 +294,9 @@ import org.slf4j.LoggerFactory;
 
     case REPL_POLICY:
       return getReplPolicy();
+
+    case WRITE_EVENT_INFOS:
+      return getWriteEventInfos();
 
     }
     throw new IllegalStateException();
@@ -248,6 +313,8 @@ import org.slf4j.LoggerFactory;
       return isSetTxnid();
     case REPL_POLICY:
       return isSetReplPolicy();
+    case WRITE_EVENT_INFOS:
+      return isSetWriteEventInfos();
     }
     throw new IllegalStateException();
   }
@@ -283,6 +350,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_writeEventInfos = true && this.isSetWriteEventInfos();
+    boolean that_present_writeEventInfos = true && that.isSetWriteEventInfos();
+    if (this_present_writeEventInfos || that_present_writeEventInfos) {
+      if (!(this_present_writeEventInfos && that_present_writeEventInfos))
+        return false;
+      if (!this.writeEventInfos.equals(that.writeEventInfos))
+        return false;
+    }
+
     return true;
   }
 
@@ -299,6 +375,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_replPolicy);
     if (present_replPolicy)
       list.add(replPolicy);
+
+    boolean present_writeEventInfos = true && (isSetWriteEventInfos());
+    list.add(present_writeEventInfos);
+    if (present_writeEventInfos)
+      list.add(writeEventInfos);
 
     return list.hashCode();
   }
@@ -327,6 +408,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetReplPolicy()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.replPolicy, other.replPolicy);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetWriteEventInfos()).compareTo(other.isSetWriteEventInfos());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWriteEventInfos()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.writeEventInfos, other.writeEventInfos);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -361,6 +452,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.replPolicy);
+      }
+      first = false;
+    }
+    if (isSetWriteEventInfos()) {
+      if (!first) sb.append(", ");
+      sb.append("writeEventInfos:");
+      if (this.writeEventInfos == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.writeEventInfos);
       }
       first = false;
     }
@@ -429,6 +530,25 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // WRITE_EVENT_INFOS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list594 = iprot.readListBegin();
+                struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list594.size);
+                WriteEventInfo _elem595;
+                for (int _i596 = 0; _i596 < _list594.size; ++_i596)
+                {
+                  _elem595 = new WriteEventInfo();
+                  _elem595.read(iprot);
+                  struct.writeEventInfos.add(_elem595);
+                }
+                iprot.readListEnd();
+              }
+              struct.setWriteEventInfosIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -449,6 +569,20 @@ import org.slf4j.LoggerFactory;
         if (struct.isSetReplPolicy()) {
           oprot.writeFieldBegin(REPL_POLICY_FIELD_DESC);
           oprot.writeString(struct.replPolicy);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.writeEventInfos != null) {
+        if (struct.isSetWriteEventInfos()) {
+          oprot.writeFieldBegin(WRITE_EVENT_INFOS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.writeEventInfos.size()));
+            for (WriteEventInfo _iter597 : struct.writeEventInfos)
+            {
+              _iter597.write(oprot);
+            }
+            oprot.writeListEnd();
+          }
           oprot.writeFieldEnd();
         }
       }
@@ -474,9 +608,21 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetReplPolicy()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetWriteEventInfos()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetReplPolicy()) {
         oprot.writeString(struct.replPolicy);
+      }
+      if (struct.isSetWriteEventInfos()) {
+        {
+          oprot.writeI32(struct.writeEventInfos.size());
+          for (WriteEventInfo _iter598 : struct.writeEventInfos)
+          {
+            _iter598.write(oprot);
+          }
+        }
       }
     }
 
@@ -485,10 +631,24 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.txnid = iprot.readI64();
       struct.setTxnidIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.replPolicy = iprot.readString();
         struct.setReplPolicyIsSet(true);
+      }
+      if (incoming.get(1)) {
+        {
+          org.apache.thrift.protocol.TList _list599 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.writeEventInfos = new ArrayList<WriteEventInfo>(_list599.size);
+          WriteEventInfo _elem600;
+          for (int _i601 = 0; _i601 < _list599.size; ++_i601)
+          {
+            _elem600 = new WriteEventInfo();
+            _elem600.read(iprot);
+            struct.writeEventInfos.add(_elem600);
+          }
+        }
+        struct.setWriteEventInfosIsSet(true);
       }
     }
   }

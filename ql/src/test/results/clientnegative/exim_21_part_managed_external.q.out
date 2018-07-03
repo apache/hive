@@ -109,4 +109,4 @@ POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_employee
-FAILED: SemanticException [Error 10120]: The existing table is not compatible with the import spec.   External table cannot overwrite existing table. Drop existing table first.
+FAILED: SemanticException [Error 10120]: The existing table is not compatible with the Export/Import spec.   External table cannot overwrite existing table. Drop existing table first.

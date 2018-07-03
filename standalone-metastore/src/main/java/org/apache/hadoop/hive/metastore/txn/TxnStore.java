@@ -24,6 +24,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -85,6 +86,9 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException;
+
+  @RetrySemantics.Idempotent
+  long getTargetTxnId(String replPolicy, long sourceTxnId) throws MetaException;
 
   /**
    * Abort (rollback) a transaction.
@@ -476,4 +480,11 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   void setHadoopJobId(String hadoopJobId, long id);
+
+  /**
+   * Add the ACID write event information to writeNotificationLog table.
+   * @param acidWriteEvent
+   */
+  @RetrySemantics.Idempotent
+  void addWriteNotificationLog(AcidWriteEvent acidWriteEvent) throws MetaException;
 }

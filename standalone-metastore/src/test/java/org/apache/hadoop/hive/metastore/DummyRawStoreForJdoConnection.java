@@ -83,6 +83,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -860,7 +861,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void addNotificationEvent(NotificationEvent event) {
+  public void addNotificationEvent(NotificationEvent event) throws MetaException {
 
   }
 
@@ -1234,6 +1235,15 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public Map<String, List<String>> getPartitionColsWithStats(String catName,
       String dbName, String tableName) throws MetaException,
       NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public void cleanWriteNotificationEvents(int olderThan) {
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
     return null;
   }
 }

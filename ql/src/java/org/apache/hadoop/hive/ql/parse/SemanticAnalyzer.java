@@ -18,13 +18,32 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.google.common.math.IntMath;
-import com.google.common.math.LongMath;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.AccessControlException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
+
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -111,11 +130,11 @@ import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
-import org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
+import org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -168,7 +187,6 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
-import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
@@ -254,33 +272,13 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessControlException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import java.util.stream.Collectors;
-
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.common.math.IntMath;
+import com.google.common.math.LongMath;
 
 /**
  * Implementation of the semantic analyzer. It generates the query plan.
@@ -667,7 +665,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private boolean isInsertInto(QBParseInfo qbp, String dest) {
     // get the destination and check if it is TABLE
-    if(qbp == null || dest == null ) return false;
+    if(qbp == null || dest == null ) {
+      return false;
+    }
     ASTNode destNode = qbp.getDestForClause(dest);
     if(destNode != null && destNode.getType() == HiveParser.TOK_TAB) {
       return true;
@@ -680,7 +680,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * e.g. VALUES(1,3..)
    */
   private boolean isValueClause(ASTNode select) {
-    if(select == null) return false;
+    if(select == null) {
+      return false;
+    }
     if(select.getChildCount() == 1) {
       ASTNode selectExpr = (ASTNode)select.getChild(0);
       if(selectExpr.getChildCount() == 1 ) {
@@ -1262,7 +1264,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final CTEClause rootClause = new CTEClause(null, null);
 
   @Override
-  public List<Task<? extends Serializable>> getAllRootTasks() {
+  public List<Task<?>> getAllRootTasks() {
     if (!rootTasksResolved) {
       rootTasks = toRealRootTasks(rootClause.asExecutionOrder());
       rootTasksResolved = true;
@@ -1308,7 +1310,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Table table;
     SemanticAnalyzer source;
 
-    List<Task<? extends Serializable>> getTasks() {
+    List<Task<?>> getTasks() {
       return source == null ? null : source.rootTasks;
     }
 
@@ -1333,11 +1335,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private List<Task<? extends Serializable>> toRealRootTasks(List<CTEClause> execution) {
-    List<Task<? extends Serializable>> cteRoots = new ArrayList<>();
-    List<Task<? extends Serializable>> cteLeafs = new ArrayList<>();
-    List<Task<? extends Serializable>> curTopRoots = null;
-    List<Task<? extends Serializable>> curBottomLeafs = null;
+  private List<Task<?>> toRealRootTasks(List<CTEClause> execution) {
+    List<Task<?>> cteRoots = new ArrayList<>();
+    List<Task<?>> cteLeafs = new ArrayList<>();
+    List<Task<?>> curTopRoots = null;
+    List<Task<?>> curBottomLeafs = null;
     for (int i = 0; i < execution.size(); i++) {
       CTEClause current = execution.get(i);
       if (current.parents.isEmpty() && curTopRoots != null) {
@@ -1345,7 +1347,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         cteLeafs.addAll(curBottomLeafs);
         curTopRoots = curBottomLeafs = null;
       }
-      List<Task<? extends Serializable>> curTasks = current.getTasks();
+      List<Task<?>> curTasks = current.getTasks();
       if (curTasks == null) {
         continue;
       }
@@ -6987,7 +6989,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       checkExpr.addChild(ASTBuilder.createAST(oldColChild.getType(), newColRef));
     }
     else {
-      for(int i=0; i< ((ASTNode)checkExpr).getChildCount(); i++) {
+      for(int i=0; i< checkExpr.getChildCount(); i++) {
         replaceColumnReference((ASTNode)(checkExpr.getChild(i)), col2Col, inputRR);
       }
     }
@@ -7307,7 +7309,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         try {
           if (ctx.getExplainConfig() != null) {
-            writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+            writeId = null; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
           } else {
             if (isMmTable) {
               writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
@@ -7322,6 +7324,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
             dest_tab.getDbName(), dest_tab.getTableName());
         ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, writeId);
+        if (writeId != null) {
+          ltd.setStmtId(txnMgr.getCurrentStmtId());
+        }
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         boolean isInsertInto = qb.getParseInfo().isInsertIntoTable(
@@ -7417,6 +7422,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException("Failed to allocate write Id", ex);
       }
       ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, writeId);
+      if (writeId != null) {
+        ltd.setStmtId(txnMgr.getCurrentStmtId());
+      }
       // For the current context for generating File Sink Operator, it is either INSERT INTO or INSERT OVERWRITE.
       // So the next line works.
       boolean isInsertInto = !qb.getParseInfo().isDestToOpTypeInsertOverwrite(dest);
@@ -12808,19 +12816,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         HiveConf.ConfVars.HIVE_REWORK_MAPREDWORK);
 
     // validate all tasks
-    for (Task<? extends Serializable> rootTask : rootTasks) {
+    for (Task<?> rootTask : rootTasks) {
       validate(rootTask, reworkMapredWork);
     }
   }
 
-  private void validate(Task<? extends Serializable> task, boolean reworkMapredWork)
+  private void validate(Task<?> task, boolean reworkMapredWork)
       throws SemanticException {
     Utilities.reworkMapRedWork(task, reworkMapredWork, conf);
     if (task.getChildTasks() == null) {
       return;
     }
 
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
+    for (Task<?> childTask : task.getChildTasks()) {
       validate(childTask, reworkMapredWork);
     }
   }
@@ -13174,7 +13182,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       tblProps = addDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
-      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
@@ -13198,7 +13206,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CTLT: // create table like <tbl_name>
       tblProps = addDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
-      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
 
       if (isTemporary) {
         Table likeTable = getTable(likeTableName, false);
@@ -13278,7 +13286,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = addDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary);
-      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, isTemporary, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
@@ -13302,13 +13310,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /** Adds entities for create table/create view. */
   private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type,
-      Map<String, String> tblProps) throws SemanticException {
+      boolean isTemporary, Map<String, String> tblProps) throws SemanticException {
     Database database  = getDatabase(qualifiedTabName[0]);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
 
     Table t = new Table(qualifiedTabName[0], qualifiedTabName[1]);
     t.setParameters(tblProps);
     t.setTableType(type);
+    t.setTemporary(isTemporary);
     outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 
@@ -13409,7 +13418,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
           location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
           storageFormat.getSerdeProps());
-      addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW, tblProps);
+      addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW, false, tblProps);
       queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
     } else {
       createVwDesc = new CreateViewDesc(
@@ -13418,7 +13427,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getOutputFormat(), storageFormat.getSerde());
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           createVwDesc)));
-      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW, tblProps);
+      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW, false, tblProps);
       queryState.setCommandType(HiveOperation.CREATEVIEW);
     }
     qb.setViewDesc(createVwDesc);
@@ -14921,10 +14930,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       rewrittenQueryStr.append(" partition (");
       boolean first = true;
       for (FieldSchema fschema : partCols) {
-        if (first)
+        if (first) {
           first = false;
-        else
+        } else {
           rewrittenQueryStr.append(", ");
+        }
         //would be nice if there was a way to determine if quotes are needed
         rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
       }

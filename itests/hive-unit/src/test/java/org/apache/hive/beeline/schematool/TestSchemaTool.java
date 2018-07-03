@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.beeline;
+package org.apache.hive.beeline.schematool;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -36,41 +36,53 @@ import junit.framework.TestCase;
 import org.apache.commons.dbcp.DelegatingConnection;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.NestedScriptParser;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.PostgresCommandParser;
 import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class TestSchemaTool extends TestCase {
-  private HiveSchemaTool schemaTool;
+  private static HiveSchemaTool schemaTool;
   private Connection conn;
   private HiveConf hiveConf;
   private String testMetastoreDB;
   private PrintStream errStream;
   private PrintStream outStream;
+  private String argsBase;
+  private HiveSchemaToolTaskValidate validator;
 
   @Override
   protected void setUp() throws Exception {
     super.setUp();
     testMetastoreDB = System.getProperty("java.io.tmpdir") +
         File.separator + "test_metastore-" + new Random().nextInt();
-    System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+    System.setProperty(MetastoreConf.ConfVars.CONNECT_URL_KEY.getVarname(),
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     hiveConf = new HiveConf(this.getClass());
     schemaTool = new HiveSchemaTool(
         System.getProperty("test.tmp.dir", "target/tmp"), hiveConf, "derby", null);
-    schemaTool.setUserName(
-        schemaTool.getHiveConf().get(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME.varname));
-    schemaTool.setPassWord(ShimLoader.getHadoopShims().getPassword(schemaTool.getHiveConf(),
-          HiveConf.ConfVars.METASTOREPWD.varname));
+
+    String userName = hiveConf.get(MetastoreConf.ConfVars.CONNECTION_USER_NAME.getVarname());
+    String passWord = ShimLoader.getHadoopShims().getPassword(schemaTool.getHiveConf(),
+        MetastoreConf.ConfVars.PWD.getVarname());
+    schemaTool.setUserName(userName);
+    schemaTool.setPassWord(passWord);
+
+    argsBase = "-dbType derby -userName " + userName + " -passWord " + passWord + " ";
+
     System.setProperty("beeLine.system.exit", "true");
     errStream = System.err;
     outStream = System.out;
     conn = schemaTool.getConnectionToMetastore(false);
+
+    validator = new HiveSchemaToolTaskValidate();
+    validator.setHiveSchemaTool(schemaTool);
   }
 
   @Override
@@ -91,10 +103,10 @@ public class TestSchemaTool extends TestCase {
    * @throws Exception
    */
   public void testValidateSequences() throws Exception {
-    schemaTool.doInit();
+    execute(new HiveSchemaToolTaskInit(), "-initSchema");
 
     // Test empty database
-    boolean isValid = schemaTool.validateSequences(conn);
+    boolean isValid = validator.validateSequences(conn);
     assertTrue(isValid);
 
     // Test valid case
@@ -105,7 +117,7 @@ public class TestSchemaTool extends TestCase {
     };
     File scriptFile = generateTestScript(scripts);
     schemaTool.runBeeLine(scriptFile.getPath());
-    isValid = schemaTool.validateSequences(conn);
+    isValid = validator.validateSequences(conn);
     assertTrue(isValid);
 
     // Test invalid case
@@ -117,7 +129,7 @@ public class TestSchemaTool extends TestCase {
     };
     scriptFile = generateTestScript(scripts);
     schemaTool.runBeeLine(scriptFile.getPath());
-    isValid = schemaTool.validateSequences(conn);
+    isValid = validator.validateSequences(conn);
     assertFalse(isValid);
   }
 
@@ -126,14 +138,14 @@ public class TestSchemaTool extends TestCase {
    * @throws Exception
    */
   public void testValidateSchemaTables() throws Exception {
-    schemaTool.doInit("2.0.0");
+    execute(new HiveSchemaToolTaskInit(), "-initSchemaTo 2.0.0");
 
-    boolean isValid = (boolean)schemaTool.validateSchemaTables(conn);
+    boolean isValid = (boolean)validator.validateSchemaTables(conn);
     assertTrue(isValid);
 
     // upgrade from 2.0.0 schema and re-validate
-    schemaTool.doUpgrade("2.0.0");
-    isValid = (boolean)schemaTool.validateSchemaTables(conn);
+    execute(new HiveSchemaToolTaskUpgrade(), "-upgradeSchemaFrom 2.0.0");
+    isValid = (boolean)validator.validateSchemaTables(conn);
     assertTrue(isValid);
 
     // Simulate a missing table scenario by renaming a couple of tables
@@ -144,7 +156,7 @@ public class TestSchemaTool extends TestCase {
 
     File scriptFile = generateTestScript(scripts);
     schemaTool.runBeeLine(scriptFile.getPath());
-    isValid = schemaTool.validateSchemaTables(conn);
+    isValid = validator.validateSchemaTables(conn);
     assertFalse(isValid);
 
     // Restored the renamed tables
@@ -155,14 +167,14 @@ public class TestSchemaTool extends TestCase {
 
     scriptFile = generateTestScript(scripts);
     schemaTool.runBeeLine(scriptFile.getPath());
-    isValid = schemaTool.validateSchemaTables(conn);
+    isValid = validator.validateSchemaTables(conn);
     assertTrue(isValid);
 
     // Check that an exception from getMetaData() is reported correctly
     try {
       // Make a Connection object that will throw an exception
       BadMetaDataConnection bad = new BadMetaDataConnection(conn);
-      schemaTool.validateSchemaTables(bad);
+      validator.validateSchemaTables(bad);
       fail("did not get expected exception");
     } catch (HiveMetaException hme) {
       String message = hme.getMessage();
@@ -181,15 +193,15 @@ public class TestSchemaTool extends TestCase {
    * @throws Exception
    */
   public void testValidateNullValues() throws Exception {
-    schemaTool.doInit();
+    execute(new HiveSchemaToolTaskInit(), "-initSchema");
 
     // Test empty database
-    boolean isValid = schemaTool.validateColumnNullValues(conn);
+    boolean isValid = validator.validateColumnNullValues(conn);
     assertTrue(isValid);
 
     // Test valid case
     createTestHiveTableSchemas();
-    isValid = schemaTool.validateColumnNullValues(conn);
+    isValid = validator.validateColumnNullValues(conn);
 
     // Test invalid case
     String[] scripts = new String[] {
@@ -197,7 +209,7 @@ public class TestSchemaTool extends TestCase {
     };
     File scriptFile = generateTestScript(scripts);
     schemaTool.runBeeLine(scriptFile.getPath());
-    isValid = schemaTool.validateColumnNullValues(conn);
+    isValid = validator.validateColumnNullValues(conn);
     assertFalse(isValid);
   }
 
@@ -207,7 +219,7 @@ public class TestSchemaTool extends TestCase {
    */
   public void testSchemaInitDryRun() throws Exception {
     schemaTool.setDryRun(true);
-    schemaTool.doInit("0.7.0");
+    execute(new HiveSchemaToolTaskInit(), "-initSchemaTo 0.7.0");
     schemaTool.setDryRun(false);
     try {
       schemaTool.verifySchemaVersion();
@@ -223,10 +235,10 @@ public class TestSchemaTool extends TestCase {
    * @throws Exception
    */
   public void testSchemaUpgradeDryRun() throws Exception {
-    schemaTool.doInit("0.7.0");
+    execute(new HiveSchemaToolTaskInit(), "-initSchemaTo 0.7.0");
 
     schemaTool.setDryRun(true);
-    schemaTool.doUpgrade("0.7.0");
+    execute(new HiveSchemaToolTaskUpgrade(), "-upgradeSchemaFrom 0.7.0");
     schemaTool.setDryRun(false);
     try {
       schemaTool.verifySchemaVersion();
@@ -244,7 +256,7 @@ public class TestSchemaTool extends TestCase {
   public void testSchemaInit() throws Exception {
     IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf,
         System.getProperty("test.tmp.dir", "target/tmp"), "derby");
-    schemaTool.doInit(metastoreSchemaInfo.getHiveSchemaVersion());
+    execute(new HiveSchemaToolTaskInit(), "-initSchemaTo " + metastoreSchemaInfo.getHiveSchemaVersion());
     schemaTool.verifySchemaVersion();
   }
 
@@ -252,35 +264,35 @@ public class TestSchemaTool extends TestCase {
   * Test validation for schema versions
   * @throws Exception
   */
- public void testValidateSchemaVersions() throws Exception {
-   schemaTool.doInit();
-   boolean isValid = schemaTool.validateSchemaVersions();
-   // Test an invalid case with multiple versions
-   String[] scripts = new String[] {
-       "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
-   };
-   File scriptFile = generateTestScript(scripts);
-   schemaTool.runBeeLine(scriptFile.getPath());
-   isValid = schemaTool.validateSchemaVersions();
-   assertFalse(isValid);
+  public void testValidateSchemaVersions() throws Exception {
+    execute(new HiveSchemaToolTaskInit(), "-initSchema");
+    boolean isValid = validator.validateSchemaVersions();
+    // Test an invalid case with multiple versions
+    String[] scripts = new String[] {
+        "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
+    };
+    File scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = validator.validateSchemaVersions();
+    assertFalse(isValid);
 
-   scripts = new String[] {
-       "delete from VERSION where VER_ID = 100"
-   };
-   scriptFile = generateTestScript(scripts);
-   schemaTool.runBeeLine(scriptFile.getPath());
-   isValid = schemaTool.validateSchemaVersions();
-   assertTrue(isValid);
+    scripts = new String[] {
+        "delete from VERSION where VER_ID = 100"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = validator.validateSchemaVersions();
+    assertTrue(isValid);
 
-   // Test an invalid case without version
-   scripts = new String[] {
-       "delete from VERSION"
-   };
-   scriptFile = generateTestScript(scripts);
-   schemaTool.runBeeLine(scriptFile.getPath());
-   isValid = schemaTool.validateSchemaVersions();
-   assertFalse(isValid);
- }
+    // Test an invalid case without version
+    scripts = new String[] {
+        "delete from VERSION"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = validator.validateSchemaVersions();
+    assertFalse(isValid);
+  }
 
   /**
    * Test schema upgrade
@@ -289,7 +301,7 @@ public class TestSchemaTool extends TestCase {
   public void testSchemaUpgrade() throws Exception {
     boolean foundException = false;
     // Initialize 0.7.0 schema
-    schemaTool.doInit("0.7.0");
+    execute(new HiveSchemaToolTaskInit(), "-initSchemaTo 0.7.0");
     // verify that driver fails due to older version schema
     try {
       schemaTool.verifySchemaVersion();
@@ -323,7 +335,7 @@ public class TestSchemaTool extends TestCase {
     System.setOut(outPrintStream);
 
     // Upgrade schema from 0.7.0 to latest
-    schemaTool.doUpgrade("0.7.0");
+    execute(new HiveSchemaToolTaskUpgrade(), "-upgradeSchemaFrom 0.7.0");
 
     // Verify that the schemaTool ran pre-upgrade scripts and ignored errors
     assertTrue(stderr.toString().contains(invalidPreUpgradeScript));
@@ -630,13 +642,13 @@ public class TestSchemaTool extends TestCase {
    * @throws Exception
    */
   public void testValidateLocations() throws Exception {
-    schemaTool.doInit();
+    execute(new HiveSchemaToolTaskInit(), "-initSchema");
     URI defaultRoot = new URI("hdfs://myhost.com:8020");
     URI defaultRoot2 = new URI("s3://myhost2.com:8888");
     //check empty DB
-    boolean isValid = schemaTool.validateLocations(conn, null);
+    boolean isValid = validator.validateLocations(conn, null);
     assertTrue(isValid);
-    isValid = schemaTool.validateLocations(conn, new URI[] {defaultRoot,defaultRoot2});
+    isValid = validator.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
     assertTrue(isValid);
 
  // Test valid case
@@ -659,9 +671,9 @@ public class TestSchemaTool extends TestCase {
        };
     File scriptFile = generateTestScript(scripts);
     schemaTool.runBeeLine(scriptFile.getPath());
-    isValid = schemaTool.validateLocations(conn, null);
+    isValid = validator.validateLocations(conn, null);
     assertTrue(isValid);
-    isValid = schemaTool.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
+    isValid = validator.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
     assertTrue(isValid);
     scripts = new String[] {
         "delete from SKEWED_COL_VALUE_LOC_MAP",
@@ -702,20 +714,20 @@ public class TestSchemaTool extends TestCase {
     };
     scriptFile = generateTestScript(scripts);
     schemaTool.runBeeLine(scriptFile.getPath());
-    isValid = schemaTool.validateLocations(conn, null);
+    isValid = validator.validateLocations(conn, null);
     assertFalse(isValid);
-    isValid = schemaTool.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
+    isValid = validator.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
     assertFalse(isValid);
   }
 
   public void testHiveMetastoreDbPropertiesTable() throws HiveMetaException, IOException {
-    schemaTool.doInit("3.0.0");
+    execute(new HiveSchemaToolTaskInit(), "-initSchemaTo 3.0.0");
     validateMetastoreDbPropertiesTable();
   }
 
   public void testMetastoreDbPropertiesAfterUpgrade() throws HiveMetaException, IOException {
-    schemaTool.doInit("2.0.0");
-    schemaTool.doUpgrade();
+    execute(new HiveSchemaToolTaskInit(), "-initSchemaTo 2.0.0");
+    execute(new HiveSchemaToolTaskUpgrade(), "-upgradeSchema");
     validateMetastoreDbPropertiesTable();
   }
 
@@ -733,7 +745,7 @@ public class TestSchemaTool extends TestCase {
   }
 
   private void validateMetastoreDbPropertiesTable() throws HiveMetaException, IOException {
-    boolean isValid = (boolean) schemaTool.validateSchemaTables(conn);
+    boolean isValid = (boolean) validator.validateSchemaTables(conn);
     assertTrue(isValid);
     // adding same property key twice should throw unique key constraint violation exception
     String[] scripts = new String[] {
@@ -797,5 +809,18 @@ public class TestSchemaTool extends TestCase {
     public DatabaseMetaData getMetaData() throws SQLException {
       throw new SQLException(FAILURE_TEXT);
     }
+  }
+
+  private void execute(HiveSchemaToolTask task, String taskArgs) throws HiveMetaException {
+    try {
+      StrTokenizer tokenizer = new StrTokenizer(argsBase + taskArgs, ' ', '\"');
+      HiveSchemaToolCommandLine cl = new HiveSchemaToolCommandLine(tokenizer.getTokenArray());
+      task.setCommandLineArguments(cl);
+    } catch (Exception e) {
+      throw new IllegalStateException("Could not parse comman line \n" + argsBase + taskArgs, e);
+    }
+
+    task.setHiveSchemaTool(schemaTool);
+    task.execute();
   }
 }
