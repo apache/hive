@@ -3481,7 +3481,7 @@ public class HiveConf extends Configuration {
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false,
         "Whether to show the unquoted partition names in query results."),
 
-    HIVE_EXECUTION_ENGINE("hive.execution.engine", "tez", new StringSet(true, "tez", "spark"),
+    HIVE_EXECUTION_ENGINE("hive.execution.engine", "tez", new StringSet(true, "tez", "spark", "mr"),
         "Chooses execution engine. Options are: mr (Map reduce, default), tez, spark. While MR\n" +
         "remains the default engine for historical reasons, it is itself a historical engine\n" +
         "and is deprecated in Hive 2 line. It may be removed without further warning."),
@@ -5236,6 +5236,8 @@ public class HiveConf extends Configuration {
       }
     }
 
+    validateExecutionEngine();
+
     setupSQLStdAuthWhiteList();
 
     // setup list of conf vars that are not allowed to change runtime
@@ -5243,6 +5245,15 @@ public class HiveConf extends Configuration {
     hiddenSet.clear();
     hiddenSet.addAll(HiveConfUtil.getHiddenSet(this));
     setupRSCList();
+  }
+
+  /**
+   * 'mr' execution engine is only allowed by tests
+   */
+  private void validateExecutionEngine() {
+    if("mr".equals(getVar(ConfVars.HIVE_EXECUTION_ENGINE)) && !getBoolVar(ConfVars.HIVE_IN_TEST)) {
+      throw new IllegalArgumentException("mr execution engine is not supported!");
+    }
   }
 
   /**

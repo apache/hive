@@ -259,12 +259,15 @@ public class SetProcessor implements CommandProcessor {
     }
     conf.verifyAndSet(key, value);
     if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)) {
-      if (!"spark".equals(value)) {
-        ss.closeSparkSession();
-      }
       if ("mr".equals(value)) {
+        if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+          throw new IllegalArgumentException("hive execution engine " + value + " is not supported.");
+        }
         result = HiveConf.generateMrDeprecationWarning();
         LOG.warn(result);
+      }
+      if (!"spark".equals(value)) {
+        ss.closeSparkSession();
       }
     }
     if (register) {
