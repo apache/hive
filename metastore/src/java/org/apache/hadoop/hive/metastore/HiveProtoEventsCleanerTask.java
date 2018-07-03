@@ -79,6 +79,7 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
 
   @Override
   public void run() {
+    // If Hive proto logging is not enabled, then nothing to be cleaned-up.
     if (eventsBasePaths.isEmpty()) {
       return;
     }
@@ -124,8 +125,13 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
       }
       FileStatus[] statuses = fs.listStatus(eventsBasePath, expiredDatePartitionsFilter);
       for (FileStatus dir : statuses) {
-        deleteDir(fs, dir);
-        LOG.info("Deleted expired proto events dir: " + dir.getPath());
+        try {
+          deleteDirByOwner(fs, dir);
+          LOG.info("Deleted expired proto events dir: " + dir.getPath());
+        } catch (IOException ioe) {
+          // Log error and continue to delete other expired dirs.
+          LOG.error("Error deleting expired proto events dir " + dir.getPath(), ioe);
+        }
       }
     } catch (IOException e) {
       LOG.error("Error while trying to delete expired proto events from " + eventsBasePath, e);
@@ -133,52 +139,29 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
   }
 
   /**
-   * Delete the dir and if it fails, then retry deleting each files with file owner as proxy user.
+   * Delete the events dir with it's owner as proxy user.
    */
-  private void deleteDir(FileSystem fs, FileStatus eventsDir) throws IOException {
-    try {
-      deleteByOwner(fs, eventsDir);
-      return;
-    } catch (IOException e) {
-      // Fall through.
-      LOG.info("Unable to delete the events dir " + eventsDir.getPath()
-              + " and so trying to delete event files one by one.");
-    }
-
-    FileStatus[] statuses = fs.listStatus(eventsDir.getPath());
-    for (FileStatus file : statuses) {
-      deleteByOwner(fs, file);
-    }
-    deleteByOwner(fs, eventsDir);
-  }
-
-  /**
-   * Delete the file/dir with owner as proxy user.
-   */
-  private void deleteByOwner(FileSystem fs, FileStatus fileStatus) throws IOException {
-    String owner = fileStatus.getOwner();
+  private void deleteDirByOwner(FileSystem fs, FileStatus eventsDir) throws IOException {
+    String owner = eventsDir.getOwner();
     if (owner.equals(System.getProperty("user.name"))) {
-      fs.delete(fileStatus.getPath(), true);
+      fs.delete(eventsDir.getPath(), true);
     } else {
-      LOG.info("Deleting " + fileStatus.getPath() + " as user " + owner);
+      LOG.info("Deleting " + eventsDir.getPath() + " as user " + owner);
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(owner,
               UserGroupInformation.getLoginUser());
       try {
         ugi.doAs(new PrivilegedExceptionAction<Object>() {
           @Override
           public Object run() throws Exception {
-            fs.delete(fileStatus.getPath(), true);
+            // New FileSystem object to be obtained in user context for doAs flow.
+            try (FileSystem doAsFs = FileSystem.newInstance(eventsDir.getPath().toUri(), conf)) {
+              doAsFs.delete(eventsDir.getPath(), true);
+            }
             return null;
           }
         });
       } catch (InterruptedException ie) {
-        LOG.error("Could not delete " + fileStatus.getPath() + " for UGI: " + ugi, ie);
-      }
-      try {
-        FileSystem.closeAllForUGI(ugi);
-      } catch (IOException e) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " +
-                fileStatus.getPath(), e);
+        LOG.error("Could not delete " + eventsDir.getPath() + " for UGI: " + ugi, ie);
       }
     }
   }
