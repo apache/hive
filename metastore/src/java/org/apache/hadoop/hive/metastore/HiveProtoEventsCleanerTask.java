@@ -46,7 +46,7 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
   private final String[] eventsSubDirs = new String[] { "query_data", "dag_meta", "dag_data", "app_data" };
   private List<Path> eventsBasePaths = new ArrayList<>();
   private Configuration conf;
-  private static long ttl;
+  private long ttl;
   private static String expiredDatePtn = null;
   private static final SystemClock clock = SystemClock.getInstance();
 
@@ -85,20 +85,20 @@ public class HiveProtoEventsCleanerTask implements MetastoreTaskThread {
     }
 
     // Expired date should be computed each time we run cleaner thread.
-    expiredDatePtn = getExpiredDatePtn();
+    computeExpiredDatePtn(ttl);
     for (Path basePath : eventsBasePaths) {
       cleanupDir(basePath);
     }
   }
 
   /**
-   * Returns the expired date partition, using the underlying clock in UTC time.
+   * Compute the expired date partition, using the underlying clock in UTC time.
    */
-  private static String getExpiredDatePtn() {
+  private static void computeExpiredDatePtn(long ttl) {
     // Use UTC date to ensure reader date is same on all timezones.
     LocalDate expiredDate
             = LocalDateTime.ofEpochSecond((clock.getTime() - ttl) / 1000, 0, ZoneOffset.UTC).toLocalDate();
-    return "date=" + DateTimeFormatter.ISO_LOCAL_DATE.format(expiredDate);
+    expiredDatePtn = "date=" + DateTimeFormatter.ISO_LOCAL_DATE.format(expiredDate);
   }
 
   /**
