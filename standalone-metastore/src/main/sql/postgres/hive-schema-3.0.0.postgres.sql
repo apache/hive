@@ -1812,7 +1812,6 @@ CREATE TABLE REPL_TXN_MAP (
   PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
 );
 
-
 CREATE TABLE RUNTIME_STATS (
  RS_ID bigint primary key,
  CREATE_TIME bigint NOT NULL,
@@ -1821,7 +1820,6 @@ CREATE TABLE RUNTIME_STATS (
 );
 
 CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
-
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

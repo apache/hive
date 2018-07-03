@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 
 import java.util.Iterator;
@@ -74,6 +75,7 @@ public abstract class MessageFactory {
   public static final String ABORT_TXN_EVENT = "ABORT_TXN";
   public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
   public static final String ALTER_CATALOG_EVENT = "ALTER_CATALOG";
+  public static final String ACID_WRITE_EVENT = "ACID_WRITE_EVENT";
 
   private static MessageFactory instance = null;
 
@@ -326,4 +328,14 @@ public abstract class MessageFactory {
   public abstract DropCatalogMessage buildDropCatalogMessage(Catalog catalog);
 
   public abstract AlterCatalogMessage buildAlterCatalogMessage(Catalog oldCat, Catalog newCat);
+
+  /**
+   * Factory method for building acid write message
+   *
+   *
+   * @param acidWriteEvent information related to the acid write operation
+   * @param files files added by this write operation
+   * @return instance of AcidWriteMessage
+   */
+  public abstract AcidWriteMessage buildAcidWriteMessage(AcidWriteEvent acidWriteEvent, Iterator<String> files);
 }

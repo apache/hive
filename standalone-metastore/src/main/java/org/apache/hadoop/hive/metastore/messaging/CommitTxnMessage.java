@@ -17,6 +17,12 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+
+import java.util.List;
+
 /**
  * HCat message sent when an commit transaction is done.
  */
@@ -33,4 +39,21 @@ public abstract class CommitTxnMessage extends EventMessage {
    */
   public abstract Long getTxnId();
 
+  public abstract List<Long> getWriteIds();
+
+  public abstract List<String> getDatabases();
+
+  public abstract List<String> getTables();
+
+  public abstract List<String> getPartitions();
+
+  public abstract Table getTableObj(int idx) throws Exception;
+
+  public abstract Partition getPartitionObj(int idx) throws Exception;
+
+  public abstract String getFiles(int idx);
+
+  public abstract List<String> getFilesList();
+
+  public abstract void addWriteEventInfo(List<WriteEventInfo> writeEventInfoList);
 }
