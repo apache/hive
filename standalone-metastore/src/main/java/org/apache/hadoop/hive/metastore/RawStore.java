@@ -1195,8 +1195,9 @@ public interface RawStore extends Configurable {
   /**
    * Add a notification entry.  This should only be called from inside the metastore
    * @param event the notification to add
+   * @throws MetaException error accessing RDBMS
    */
-  void addNotificationEvent(NotificationEvent event);
+  void addNotificationEvent(NotificationEvent event) throws MetaException;
 
   /**
    * Remove older notification events.
