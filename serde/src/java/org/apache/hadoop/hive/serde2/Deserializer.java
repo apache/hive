@@ -68,6 +68,8 @@ public interface Deserializer {
 
   /**
    * Returns statistics collected when serializing
+   *
+   * @return {@link SerDeStats} object; or in case not supported: null
    */
   SerDeStats getSerDeStats();
 }
