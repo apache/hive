@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -74,6 +73,8 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -1008,6 +1009,10 @@ public class Table implements Serializable {
 
   public boolean isTemporary() {
     return tTable.isTemporary();
+  }
+
+  public void setTemporary(boolean isTemporary) {
+    tTable.setTemporary(isTemporary);
   }
 
   public static boolean hasMetastoreBasedSchema(HiveConf conf, String serdeLib) {
