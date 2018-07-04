@@ -2,13 +2,13 @@ PREHOOK: query: drop table tstz1_n0
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tstz1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tstz1_n0(`__time` timestamp with local time zone, n string, v integer)
+PREHOOK: query: create external table tstz1_n0(`__time` timestamp with local time zone, n string, v integer)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tstz1_n0
-POSTHOOK: query: create table tstz1_n0(`__time` timestamp with local time zone, n string, v integer)
+POSTHOOK: query: create external table tstz1_n0(`__time` timestamp with local time zone, n string, v integer)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 POSTHOOK: type: CREATETABLE

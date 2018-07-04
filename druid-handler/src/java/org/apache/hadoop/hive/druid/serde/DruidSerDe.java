@@ -483,7 +483,6 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
   }
 
   @Override public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
-    // If Druid table is not an external table store the schema in metadata store.
-    return !MetaStoreUtils.isExternal(tableParams);
+    return true;
   }
 }

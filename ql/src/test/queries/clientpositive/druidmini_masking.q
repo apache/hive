@@ -1,7 +1,8 @@
 set hive.mapred.mode=nonstrict;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
+SET hive.ctas.external.tables=true;
 
-CREATE TABLE masking_test_druid
+CREATE EXTERNAL TABLE masking_test_druid
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
