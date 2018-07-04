@@ -24,6 +24,12 @@
     <description>Internal marker for test. Used for masking env-dependent values</description>
   </property>
 
+  <property>
+    <name>hive.execution.engine</name>
+    <value>mr</value>
+  </property>
+
+
   <!-- Properties for test folders -->
   <property>
     <name>mapreduce.jobtracker.staging.root.dir</name>
