@@ -3879,7 +3879,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       try {
         srcs = srcFs.getFileStatus(srcf);
-        String runningUser = UserGroupInformation.getLoginUser().getUserName();
+        String runningUser = UserGroupInformation.getLoginUser().getShortUserName();
         boolean isOwned = FileUtils.isOwnerOfFileHierarchy(srcFs, srcs, configuredOwner, false);
         if (configuredOwner.equals(runningUser)) {
           // Check if owner has write permission, else it will have to copy
