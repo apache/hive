@@ -156,14 +156,10 @@ default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-PREHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
-PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
-POSTHOOK: type: DROPDATABASE
-PREHOOK: query: CREATE DATABASE SYS
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:SYS
-POSTHOOK: query: CREATE DATABASE SYS
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS SYS
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:SYS
 PREHOOK: query: USE SYS
@@ -1932,35 +1928,21 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@PART_COL_STATS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `VERSION` (
-  `VER_ID` BIGINT,
-  `SCHEMA_VERSION` string,
-  `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
-)
-PREHOOK: type: CREATETABLE
+PREHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: SYS@VERSION
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `VERSION` (
-  `VER_ID` BIGINT,
-  `SCHEMA_VERSION` string,
-  `VERSION_COMMENT` string,
-  CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE
-)
-POSTHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE OR REPLACE VIEW `VERSION` AS SELECT 1 AS `VER_ID`, '3.1.0' AS `SCHEMA_VERSION`,
+  'Hive release version 3.1.0' AS `VERSION_COMMENT`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: SYS@VERSION
 POSTHOOK: Output: database:sys
-PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: sys@version
-POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.1.0', 'Hive release version 3.1.0')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: sys@version
-POSTHOOK: Lineage: version.schema_version SCRIPT []
-POSTHOOK: Lineage: version.ver_id SCRIPT []
-POSTHOOK: Lineage: version.version_comment SCRIPT []
+POSTHOOK: Lineage: VERSION.schema_version SIMPLE []
+POSTHOOK: Lineage: VERSION.ver_id SIMPLE []
+POSTHOOK: Lineage: VERSION.version_comment SIMPLE []
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
@@ -2143,7 +2125,7 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@KEY_CONSTRAINTS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE VIEW `TABLE_STATS_VIEW` AS
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
 SELECT
   `TBL_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2157,7 +2139,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@table_params
 PREHOOK: Output: SYS@TABLE_STATS_VIEW
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE VIEW `TABLE_STATS_VIEW` AS
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLE_STATS_VIEW` AS
 SELECT
   `TBL_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2178,7 +2160,7 @@ POSTHOOK: Lineage: TABLE_STATS_VIEW.raw_data_size EXPRESSION [(table_params)tabl
 POSTHOOK: Lineage: TABLE_STATS_VIEW.tbl_id SIMPLE [(table_params)table_params.FieldSchema(name:tbl_id, type:bigint, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_STATS_VIEW.total_size EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_STATS_VIEW.transient_last_ddl_time EXPRESSION [(table_params)table_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (table_params)table_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE VIEW `PARTITION_STATS_VIEW` AS
+PREHOOK: query: CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
 SELECT
   `PART_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2192,7 +2174,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@partition_params
 PREHOOK: Output: SYS@PARTITION_STATS_VIEW
 PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE VIEW `PARTITION_STATS_VIEW` AS
+POSTHOOK: query: CREATE OR REPLACE VIEW `PARTITION_STATS_VIEW` AS
 SELECT
   `PART_ID`,
   max(CASE `PARAM_KEY` WHEN 'COLUMN_STATS_ACCURATE' THEN `PARAM_VALUE` END) AS COLUMN_STATS_ACCURATE,
@@ -2469,14 +2451,10 @@ LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_I
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
 POSTHOOK: Output: database:sys
-PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
-PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
-POSTHOOK: type: DROPDATABASE
-PREHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
-POSTHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS INFORMATION_SCHEMA
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:INFORMATION_SCHEMA
 PREHOOK: query: USE INFORMATION_SCHEMA
@@ -2485,7 +2463,7 @@ PREHOOK: Input: database:information_schema
 POSTHOOK: query: USE INFORMATION_SCHEMA
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:information_schema
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
+PREHOOK: query: CREATE OR REPLACE VIEW `SCHEMATA`
 (
   `CATALOG_NAME`,
   `SCHEMA_NAME`,
@@ -2518,7 +2496,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
+POSTHOOK: query: CREATE OR REPLACE VIEW `SCHEMATA`
 (
   `CATALOG_NAME`,
   `SCHEMA_NAME`,
@@ -2558,7 +2536,7 @@ POSTHOOK: Lineage: SCHEMATA.default_character_set_schema EXPRESSION []
 POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 #### A masked pattern was here ####
 POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLES`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2600,7 +2578,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@TABLES
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLES`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2654,7 +2632,7 @@ POSTHOOK: Lineage: TABLES.table_type EXPRESSION [(tbls)t.FieldSchema(name:view_o
 POSTHOOK: Lineage: TABLES.user_defined_type_catalog EXPRESSION []
 POSTHOOK: Lineage: TABLES.user_defined_type_name EXPRESSION []
 POSTHOOK: Lineage: TABLES.user_defined_type_schema EXPRESSION []
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
+PREHOOK: query: CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -2693,7 +2671,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@TABLE_PRIVILEGES
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
+POSTHOOK: query: CREATE OR REPLACE VIEW `TABLE_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -2740,7 +2718,7 @@ POSTHOOK: Lineage: TABLE_PRIVILEGES.table_catalog SIMPLE []
 POSTHOOK: Lineage: TABLE_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: TABLE_PRIVILEGES.with_hierarchy SIMPLE []
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
+PREHOOK: query: CREATE OR REPLACE VIEW `COLUMNS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -2902,7 +2880,7 @@ PREHOOK: Input: sys@tbl_col_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
+POSTHOOK: query: CREATE OR REPLACE VIEW `COLUMNS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -3111,7 +3089,7 @@ POSTHOOK: Lineage: COLUMNS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, ty
 POSTHOOK: Lineage: COLUMNS.udt_catalog EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.udt_name EXPRESSION []
 POSTHOOK: Lineage: COLUMNS.udt_schema EXPRESSION []
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
+PREHOOK: query: CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -3154,7 +3132,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
+POSTHOOK: query: CREATE OR REPLACE VIEW `COLUMN_PRIVILEGES`
 (
   `GRANTOR`,
   `GRANTEE`,
@@ -3205,7 +3183,7 @@ POSTHOOK: Lineage: COLUMN_PRIVILEGES.privilege_type SIMPLE [(tbl_col_privs)p.Fie
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_catalog SIMPLE []
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_name SIMPLE [(tbls)t.FieldSchema(name:tbl_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
-PREHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
+PREHOOK: query: CREATE OR REPLACE VIEW `VIEWS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
@@ -3247,7 +3225,7 @@ PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@VIEWS
 PREHOOK: Output: database:information_schema
-POSTHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
+POSTHOOK: query: CREATE OR REPLACE VIEW `VIEWS`
 (
   `TABLE_CATALOG`,
   `TABLE_SCHEMA`,
