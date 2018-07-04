@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+
+
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -29,11 +31,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.cache.CacheBuilder;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.thrift.TUnion;
-
+import java.util.concurrent.TimeUnit;
+import com.google.common.cache.Cache;
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
  * instances.
@@ -47,7 +51,6 @@ import org.apache.thrift.TUnion;
  * ObjectInspector.
  */
 public final class ObjectInspectorFactory {
-
   /**
    * ObjectInspectorOptions describes what ObjectInspector to use. JAVA is to
    * use pure JAVA reflection. THRIFT is to use JAVA reflection and filter out
@@ -342,20 +345,19 @@ public final class ObjectInspectorFactory {
     return new StandardConstantStructObjectInspector(structFieldNames, structFieldObjectInspectors, value);
   }
 
-  static ConcurrentHashMap<List<StructObjectInspector>, UnionStructObjectInspector> cachedUnionStructObjectInspector =
-      new ConcurrentHashMap<List<StructObjectInspector>, UnionStructObjectInspector>();
+  static Cache<List<StructObjectInspector>, UnionStructObjectInspector> cachedUnionStructObjectInspector = CacheBuilder.newBuilder()
+          .initialCapacity(1024)
+          .concurrencyLevel(Runtime.getRuntime().availableProcessors())
+          .expireAfterAccess(5,TimeUnit.MINUTES)
+          .softValues()
+          .build();
 
   public static UnionStructObjectInspector getUnionStructObjectInspector(
       List<StructObjectInspector> structObjectInspectors) {
-    UnionStructObjectInspector result = cachedUnionStructObjectInspector
-        .get(structObjectInspectors);
+    UnionStructObjectInspector result = cachedUnionStructObjectInspector.getIfPresent(structObjectInspectors);
     if (result == null) {
       result = new UnionStructObjectInspector(structObjectInspectors);
-      UnionStructObjectInspector prev =
-        cachedUnionStructObjectInspector.putIfAbsent(structObjectInspectors, result);
-      if (prev != null) {
-        result = prev;
-      }
+      cachedUnionStructObjectInspector.put(structObjectInspectors, result);
     }
     return result;
   }
