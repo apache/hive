@@ -424,7 +424,7 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@l3_monthly_dw_dimplan
 POSTHOOK: Output: default@l3_monthly_dw_dimplan
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[48][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
@@ -873,7 +873,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[48][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
 l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
@@ -915,7 +915,7 @@ POSTHOOK: Input: default@l3_monthly_dw_dimplan
 7147200	NULL	27114
 7147200	NULL	27114
 7147200	NULL	27114
-Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[48][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
@@ -1365,7 +1365,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[48][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
 FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
 l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
