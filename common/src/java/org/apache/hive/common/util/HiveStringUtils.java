@@ -31,19 +31,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Properties;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
@@ -1061,19 +1057,6 @@ public class HiveStringUtils {
   public static String normalizeIdentifier(String identifier) {
 	  return identifier.trim().toLowerCase();
 	}
-
-  public static Map getPropertiesExplain(Properties properties) {
-    if (properties != null) {
-      String value = properties.getProperty("columns.comments");
-      if (value != null) {
-        // should copy properties first
-        Map clone = new HashMap(properties);
-        clone.put("columns.comments", quoteComments(value));
-        return clone;
-      }
-    }
-    return properties;
-  }
 
   public static String quoteComments(String value) {
     char[] chars = value.toCharArray();

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -474,10 +475,16 @@ public final class MetaDataFormatUtils {
     List<String> keys = new ArrayList<String>(params.keySet());
     Collections.sort(keys);
     for (String key : keys) {
+      String value = params.get(key);
+      if (key.equals(StatsSetupConst.NUM_ERASURE_CODED_FILES)) {
+        if ("0".equals(value)) {
+          continue;
+        }
+      }
       tableInfo.append(FIELD_DELIM); // Ensures all params are indented.
       formatOutput(key,
-          escapeUnicode ? StringEscapeUtils.escapeJava(params.get(key))
-              : HiveStringUtils.escapeJava(params.get(key)),
+          escapeUnicode ? StringEscapeUtils.escapeJava(value)
+              : HiveStringUtils.escapeJava(value),
           tableInfo, isOutputPadded);
     }
   }

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -105,6 +106,11 @@ public class StatsSetupConst {
   public static final String RAW_DATA_SIZE = "rawDataSize";
 
   /**
+   * The name of the statistic for Number of Erasure Coded Files - to be published or gathered.
+   */
+  public static final String NUM_ERASURE_CODED_FILES = "numFilesErasureCoded";
+
+  /**
    * Temp dir for writing stats from tasks.
    */
   public static final String STATS_TMP_LOC = "hive.stats.tmp.loc";
@@ -113,18 +119,20 @@ public class StatsSetupConst {
   /**
    * List of all supported statistics
    */
-  public static final String[] supportedStats = {NUM_FILES,ROW_COUNT,TOTAL_SIZE,RAW_DATA_SIZE};
+  public static final List<String> SUPPORTED_STATS = ImmutableList.of(
+      NUM_FILES, ROW_COUNT, TOTAL_SIZE, RAW_DATA_SIZE, NUM_ERASURE_CODED_FILES);
 
   /**
    * List of all statistics that need to be collected during query execution. These are
    * statistics that inherently require a scan of the data.
    */
-  public static final String[] statsRequireCompute = new String[] {ROW_COUNT,RAW_DATA_SIZE};
+  public static final List<String> STATS_REQUIRE_COMPUTE = ImmutableList.of(ROW_COUNT, RAW_DATA_SIZE);
 
   /**
    * List of statistics that can be collected quickly without requiring a scan of the data.
    */
-  public static final String[] fastStats = new String[] {NUM_FILES,TOTAL_SIZE};
+  public static final List<String> FAST_STATS = ImmutableList.of(
+      NUM_FILES, TOTAL_SIZE, NUM_ERASURE_CODED_FILES);
 
   // This string constant is used to indicate to AlterHandler that
   // alterPartition/alterTable is happening via statsTask or via user.
@@ -154,8 +162,9 @@ public class StatsSetupConst {
   public static final String FALSE = "false";
 
   // The parameter keys for the table statistics. Those keys are excluded from 'show create table' command output.
-  public static final String[] TABLE_PARAMS_STATS_KEYS = new String[] {
-    COLUMN_STATS_ACCURATE, NUM_FILES, TOTAL_SIZE,ROW_COUNT, RAW_DATA_SIZE, NUM_PARTITIONS};
+  public static final List<String> TABLE_PARAMS_STATS_KEYS = ImmutableList.of(
+      COLUMN_STATS_ACCURATE, NUM_FILES, TOTAL_SIZE, ROW_COUNT, RAW_DATA_SIZE, NUM_PARTITIONS,
+      NUM_ERASURE_CODED_FILES);
 
   private static class ColumnStatsAccurate {
     private static ObjectReader objectReader;
@@ -299,7 +308,7 @@ public class StatsSetupConst {
   public static void setStatsStateForCreateTable(Map<String, String> params,
       List<String> cols, String setting) {
     if (TRUE.equals(setting)) {
-      for (String stat : StatsSetupConst.supportedStats) {
+      for (String stat : StatsSetupConst.SUPPORTED_STATS) {
         params.put(stat, "0");
       }
     }
