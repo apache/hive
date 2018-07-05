@@ -114,6 +114,16 @@ public abstract class AbstractMetaStoreService {
   }
 
   /**
+   * Returns the External MetaStore Warehouse root directory name.
+   *
+   * @return The external warehouse root directory
+   * @throws MetaException IO failure
+   */
+  public Path getExternalWarehouseRoot() throws MetaException {
+    return warehouse.getWhRootExternal();
+  }
+
+  /**
    * Check if a path exists.
    *
    * @param path The path to check

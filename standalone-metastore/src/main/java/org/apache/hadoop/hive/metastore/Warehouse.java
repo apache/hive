@@ -201,6 +201,48 @@ public class Warehouse {
     }
   }
 
+  /**
+   *  Returns the external path if it exists in the expected location. Null otherwise
+   * @param db
+   * @return the path if it exists, null otherwise
+   * file system.
+   */
+  public Path determineDatabaseExternalPath(Database db){
+    if (hasExternalWarehouseRoot()) {
+      try {
+        // This means the location has been set manually and therefore we didn't create
+        //  an external database directory
+        if (!isDatabaseLocationDefault(db)) {
+          return null;
+        }
+
+        return getDefaultExternalDatabasePath(db.getName());
+
+      } catch (MetaException e) {
+        LOG.warn("Unable to determine external path for database " + db.getName());
+      }
+    }
+    return null;
+  }
+
+  /**
+   * This function is used to determine if the default location for the database has been
+   * given. In this case we will create an external database folder that we will check
+   * for the permissions. Otherwise the permissions will be based on the real location
+   * of the database. Determining if the database location is the default one this way
+   * is not ideal but we don't receive that kind of information from the client at this
+   * point.
+   *
+   * @param db
+   * @return whether the db location is the default one inside the warehouse directory
+   * or has been set manually
+   *
+   * @throws MetaException
+   */
+  boolean isDatabaseLocationDefault(Database db) throws MetaException{
+    return db.getLocationUri().startsWith(getWhRoot().toString());
+  }
+
   private String dbDirFromDbName(Database db) throws MetaException {
     return db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX;
   }
@@ -240,7 +282,7 @@ public class Warehouse {
     return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
-  private boolean hasExternalWarehouseRoot() {
+  public boolean hasExternalWarehouseRoot() {
     return !StringUtils.isBlank(whRootExternalString);
   }
 
@@ -340,6 +382,16 @@ public class Warehouse {
     } catch (IOException e) {
       throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
+  }
+
+  public boolean deleteDirIfEmpty(Path f) throws MetaException, IOException {
+    FileSystem fs = getFs(f);
+    if (FileUtils.isDirEmpty(fs, f)) {
+      return deleteDir(f, false, false, false);
+    } else {
+      LOG.info("Will not delete external directory " + f + " since it's not empty");
+    }
+    return true;
   }
 
   public boolean deleteDir(Path f, boolean recursive, Database db) throws MetaException {
