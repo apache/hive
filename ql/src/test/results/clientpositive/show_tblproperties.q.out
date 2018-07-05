@@ -41,6 +41,7 @@ bar	bar value
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true
@@ -60,6 +61,7 @@ bar	bar value
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true
@@ -115,6 +117,7 @@ bar	bar value
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true
@@ -134,6 +137,7 @@ bar	bar value1
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true1
@@ -159,6 +163,7 @@ bar	bar value1
 bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	0
 rawDataSize	0
 tmp	true1

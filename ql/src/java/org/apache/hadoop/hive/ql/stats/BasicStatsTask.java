@@ -204,7 +204,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
     private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters,
         String aggKey) throws HiveException {
-      for (String statType : StatsSetupConst.statsRequireCompute) {
+      for (String statType : StatsSetupConst.STATS_REQUIRE_COMPUTE) {
         String value = statsAggregator.aggregateStats(aggKey, statType);
         if (value != null && !value.isEmpty()) {
           long longValue = Long.parseLong(value);

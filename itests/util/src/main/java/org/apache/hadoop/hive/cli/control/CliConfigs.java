@@ -715,8 +715,8 @@ public class CliConfigs {
         setResultsDir("ql/src/test/results/clientpositive/erasurecoding");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
 
-        setInitScript("q_test_init_src.sql");
-        setCleanupScript("q_test_cleanup_src.sql");
+        setInitScript("q_test_init.sql");
+        setCleanupScript("q_test_cleanup.sql");
 
         setClusterType(MiniClusterType.mr);
         setFsType(QTestUtil.FsType.erasure_coded_hdfs);

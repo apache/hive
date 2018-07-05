@@ -139,7 +139,7 @@ public class TestStatsReplicationScenarios {
 
   private Map<String, String> collectStatsParams(Map<String, String> allParams) {
     Map<String, String> statsParams = new HashMap<>();
-    List<String> params = new ArrayList<String>(Arrays.asList(StatsSetupConst.SUPPORTED_STATS));
+    List<String> params = new ArrayList<String>(StatsSetupConst.SUPPORTED_STATS);
     params.add(StatsSetupConst.COLUMN_STATS_ACCURATE);
     for (String param : params) {
       String value = allParams.get(param);

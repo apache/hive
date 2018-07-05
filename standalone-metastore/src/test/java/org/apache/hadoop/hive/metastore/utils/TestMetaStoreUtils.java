@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.utils;
 import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -43,6 +44,7 @@ import java.util.Map;
 
 import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
 import static org.apache.hadoop.hive.common.StatsSetupConst.NUM_FILES;
+import static org.apache.hadoop.hive.common.StatsSetupConst.NUM_ERASURE_CODED_FILES;
 import static org.apache.hadoop.hive.common.StatsSetupConst.STATS_GENERATED;
 import static org.apache.hadoop.hive.common.StatsSetupConst.TOTAL_SIZE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.updateTableStatsSlow;
@@ -60,7 +62,11 @@ public class TestMetaStoreUtils {
   private static final String DB_NAME = "db1";
   private static final String TABLE_NAME = "tbl1";
 
-  private final Map<String, String> paramsWithStats = ImmutableMap.of(NUM_FILES, "1", TOTAL_SIZE, "2");
+  private final Map<String, String> paramsWithStats = ImmutableMap.of(
+      NUM_FILES, "1",
+      TOTAL_SIZE, "2",
+      NUM_ERASURE_CODED_FILES, "0"
+  );
 
   private Database db;
 
@@ -120,7 +126,7 @@ public class TestMetaStoreUtils {
    *   <li>Create database</li>
    *   <li>Create unpartitioned table</li>
    *   <li>Create unpartitioned table which has params</li>
-   *   <li>Call updateTableStatsSlow with arguments which should caue stats calculation</li>
+   *   <li>Call updateTableStatsSlow with arguments which should cause stats calculation</li>
    *   <li>Verify table statistics using mocked warehouse</li>
    *   <li>Create table which already have stats</li>
    *   <li>Call updateTableStatsSlow forcing stats recompute</li>
@@ -141,18 +147,17 @@ public class TestMetaStoreUtils {
 
 
     // Set up mock warehouse
-    FileStatus fs1 = new FileStatus(1, true, 2, 3,
-        4, new Path("/tmp/0"));
-    FileStatus fs2 = new FileStatus(fileLength, false, 3, 4,
-        5, new Path("/tmp/1"));
-    FileStatus fs3 = new FileStatus(fileLength, false, 3, 4,
-        5, new Path("/tmp/1"));
+    FileStatus fs1 = getFileStatus(1, true, 2, 3, 4, "/tmp/0", false);
+    FileStatus fs2 = getFileStatus(fileLength, false, 3, 4, 5, "/tmp/1", true);
+    FileStatus fs3 = getFileStatus(fileLength, false, 3, 4, 5, "/tmp/1", false);
     List<FileStatus> fileStatus = Arrays.asList(fs1, fs2, fs3);
     Warehouse wh = mock(Warehouse.class);
     when(wh.getFileStatusesForUnpartitionedTable(db, tbl)).thenReturn(fileStatus);
 
     Map<String, String> expected = ImmutableMap.of(NUM_FILES, "2",
-        TOTAL_SIZE, String.valueOf(2 * fileLength));
+        TOTAL_SIZE, String.valueOf(2 * fileLength),
+        NUM_ERASURE_CODED_FILES, "1"
+    );
     updateTableStatsSlow(db, tbl, wh, false, false, null);
     assertThat(tbl.getParameters(), is(expected));
 
@@ -195,6 +200,7 @@ public class TestMetaStoreUtils {
 
     Map<String, String> expected1 = ImmutableMap.of(NUM_FILES, "2",
         TOTAL_SIZE, String.valueOf(2 * fileLength),
+        NUM_ERASURE_CODED_FILES, "1",
         COLUMN_STATS_ACCURATE, "{\"BASIC_STATS\":\"true\"}");
     assertThat(tbl3.getParameters(), is(expected1));
   }
@@ -227,7 +233,7 @@ public class TestMetaStoreUtils {
   }
 
   /**
-   * Verify that updateTableStatsSlow() does not calculate tabe statistics when
+   * Verify that updateTableStatsSlow() does not calculate table statistics when
    * <ol>
    *   <li>newDir is true</li>
    *   <li>Table is partitioned</li>
@@ -270,5 +276,16 @@ public class TestMetaStoreUtils {
     updateTableStatsSlow(db, tbl2, wh, false, false, null);
     verify(wh, never()).getFileStatusesForUnpartitionedTable(db, tbl2);
   }
+
+  /**
+   * Build a FileStatus object.
+   */
+  private static FileStatus getFileStatus(long fileLength, boolean isdir, int blockReplication,
+      int blockSize, int modificationTime, String pathString, boolean isErasureCoded) {
+    return new FileStatus(fileLength, isdir, blockReplication, blockSize, modificationTime,
+        0L, (FsPermission)null, (String)null, (String)null, null,
+        new Path(pathString), false, false, isErasureCoded);
+  }
+
 }
 

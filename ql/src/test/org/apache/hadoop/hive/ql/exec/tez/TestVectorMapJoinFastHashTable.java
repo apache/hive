@@ -91,7 +91,7 @@ public class TestVectorMapJoinFastHashTable {
       dataSize += 8;
     }
 
-    Statistics stat = new Statistics(keyCount, dataSize);
+    Statistics stat = new Statistics(keyCount, dataSize, 0);
 
     Long realObjectSize = getObjectSize(container);
     Long executionEstimate = container.getEstimatedMemorySize();

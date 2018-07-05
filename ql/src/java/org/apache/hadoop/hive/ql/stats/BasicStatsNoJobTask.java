@@ -172,6 +172,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         long rawDataSize = 0;
         long fileSize = 0;
         long numFiles = 0;
+        long numErasureCodedFiles = 0;
         // Note: this code would be invalid for transactional tables of any kind.
         Utilities.FILE_OP_LOGGER.debug("Aggregating stats for {}", dir);
         List<FileStatus> fileList = null;
@@ -199,6 +200,9 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
                   numRows += statsRR.getStats().getRowCount();
                   fileSize += file.getLen();
                   numFiles += 1;
+                  if (file.isErasureCoded()) {
+                    numErasureCodedFiles++;
+                  }
                 } else {
                   throw new HiveException(String.format("Unexpected file found during reading footers for: %s ", file));
                 }
@@ -215,6 +219,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         parameters.put(StatsSetupConst.RAW_DATA_SIZE, String.valueOf(rawDataSize));
         parameters.put(StatsSetupConst.TOTAL_SIZE, String.valueOf(fileSize));
         parameters.put(StatsSetupConst.NUM_FILES, String.valueOf(numFiles));
+        parameters.put(StatsSetupConst.NUM_ERASURE_CODED_FILES, String.valueOf(numErasureCodedFiles));
 
         if (partish.getPartition() != null) {
           result = new Partition(partish.getTable(), partish.getPartition().getTPartition());

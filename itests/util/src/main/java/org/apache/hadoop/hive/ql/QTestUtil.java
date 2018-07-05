@@ -160,9 +160,9 @@ public class QTestUtil {
   private static final String TEST_SRC_TABLES_PROPERTY = "test.src.tables";
 
   /**
-   * The Erasure Coding Policy to use in TestErasureCodingHDFSCliDriver.
+   * The default Erasure Coding Policy to use in Erasure Coding tests.
    */
-  private static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
+  public static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
 
   private String testWarehouse;
   @Deprecated

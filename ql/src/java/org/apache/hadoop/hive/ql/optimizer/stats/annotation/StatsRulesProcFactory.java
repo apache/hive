@@ -1955,7 +1955,7 @@ public class StatsRulesProcFactory {
           }
         }
 
-        Statistics wcStats = new Statistics(newNumRows, newDataSize);
+        Statistics wcStats = new Statistics(newNumRows, newDataSize, 0);
         wcStats.setBasicStatsState(statsState);
 
         // evaluate filter expression and update statistics

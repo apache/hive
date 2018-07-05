@@ -247,6 +247,7 @@ COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true
 bucketing_version	2
 key	value
 numFiles	1
+numFilesErasureCoded	0
 numRows	5
 rawDataSize	1605
 totalSize	703

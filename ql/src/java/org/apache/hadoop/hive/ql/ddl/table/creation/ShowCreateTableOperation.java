@@ -280,7 +280,7 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
 
   private static final Set<String> PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES = Sets.union(
       ImmutableSet.<String>of("TEMPORARY", "EXTERNAL", "comment", "SORTBUCKETCOLSPREFIX", META_TABLE_STORAGE),
-      new HashSet<String>(Arrays.asList(StatsSetupConst.TABLE_PARAMS_STATS_KEYS)));
+      new HashSet<String>(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
 
   private String getProperties(Table table) {
     return DDLUtils.propertiesToString(table.getParameters(), PROPERTIES_TO_IGNORE_AT_TBLPROPERTIES);
