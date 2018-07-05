@@ -7262,7 +7262,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private Table getTblObject(String db, String table) throws MetaException, NoSuchObjectException {
       GetTableRequest req = new GetTableRequest(db, table);
-      req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY)));
+      req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY, ClientCapability.INSERT_ONLY_TABLES)));
       return get_table_req(req).getTable();
     }
 
