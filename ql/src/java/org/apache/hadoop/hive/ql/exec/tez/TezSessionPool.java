@@ -97,7 +97,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       SessionObjectFactory<SessionType> sessionFactory) {
     this.initConf = initConf;
     this.initialSize = numSessionsTotal;
-    if (amRegistryName != null) {
+    if (amRegistryName != null && !amRegistryName.isEmpty()) {
       this.amRegistry = TezAmRegistryImpl.create(amRegistryName, initConf, true);
       this.amRegistryName = amRegistry.getRegistryName();
       this.amChangeListener = new ChangeListener();
