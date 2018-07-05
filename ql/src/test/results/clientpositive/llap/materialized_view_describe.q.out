@@ -98,6 +98,7 @@ bucketing_version	2
 comment	this is the first view
 key	foo
 numFiles	1
+numFilesErasureCoded	0
 numRows	5
 rawDataSize	580
 totalSize	345

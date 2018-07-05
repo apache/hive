@@ -150,9 +150,9 @@ public class QTestUtil {
   public static final String TEST_HIVE_USER_PROPERTY = "test.hive.user";
 
   /**
-   * The Erasure Coding Policy to use in TestErasureCodingHDFSCliDriver.
+   * The default Erasure Coding Policy to use in Erasure Coding tests.
    */
-  private static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
+  public static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
 
   private String testWarehouse;
   @Deprecated
