@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Privilege defines a privilege in Hive. Each privilege has a name and scope associated with it.
@@ -116,4 +117,12 @@ public class Privilege {
   public static Privilege SHOW_DATABASE = new Privilege(PrivilegeType.SHOW_DATABASE,
       EnumSet.of(PrivilegeScope.USER_LEVEL_SCOPE));
 
+  @Override public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    Privilege privilege = (Privilege) o;
+    return priv.equals(privilege.priv);
+  }
 }
