@@ -3743,16 +3743,35 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
         if (!sawNull) {
-          query.append(" and (hl_partition is null or hl_partition in(");
-          first = true;
-          for (String s : strings) {
-            if (first) first = false;
-            else query.append(", ");
-            query.append('\'');
-            query.append(s);
-            query.append('\'');
+          if (dbConn.getMetaData().getDatabaseProductName().equalsIgnoreCase("ORACLE")) {
+            query.append(" and (hl_partition is null or hl_partition in(");
+            first = true;
+            int partCount = 0;
+            for (String s : strings) {
+              if (first) first = false;
+              else query.append(", ");
+              query.append('\'');
+              query.append(s);
+              query.append('\'');
+              if (partCount != 0 && partCount % 1000 == 0) {
+                query.append(") or hl_partition in(");
+                first = true;
+              }
+              partCount++;
+            }
+            query.append("))");
+          } else {
+            query.append(" and (hl_partition is null or hl_partition in(");
+            first = true;
+            for (String s : strings) {
+              if (first) first = false;
+              else query.append(", ");
+              query.append('\'');
+              query.append(s);
+              query.append('\'');
+            }
+            query.append("))");
           }
-          query.append("))");
         }
       }
       query.append(" and hl_lock_ext_id < ").append(extLockId);
