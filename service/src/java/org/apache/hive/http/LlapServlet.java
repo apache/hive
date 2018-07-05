@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.llap.cli.LlapStatusServiceDriver;
 @SuppressWarnings("serial")
 public class LlapServlet extends HttpServlet {
 
-  private static final Log LOG = LogFactory.getLog(JMXJsonServlet.class);
+  private static final Log LOG = LogFactory.getLog(LlapServlet.class);
 
   /**
    * Initialize this servlet.
