@@ -1,0 +1,371 @@
+PREHOOK: query: CREATE TABLE t1(key string, value string, c_int int, c_float float, c_boolean boolean) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE t1(key string, value string, c_int int, c_float float, c_boolean boolean) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: CREATE TABLE t2(key string, value string, c_int int, c_float float, c_boolean boolean) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: CREATE TABLE t2(key string, value string, c_int int, c_float float, c_boolean boolean) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: CREATE TABLE t3(key string, value string, c_int int, c_float float, c_boolean boolean) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: CREATE TABLE t3(key string, value string, c_int int, c_float float, c_boolean boolean) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: insert into table t1 partition(dt='2018') values ('k1','v1',1,1.0,true)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1@dt=2018
+POSTHOOK: query: insert into table t1 partition(dt='2018') values ('k1','v1',1,1.0,true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1@dt=2018
+POSTHOOK: Lineage: t1 PARTITION(dt=2018).c_boolean SCRIPT []
+POSTHOOK: Lineage: t1 PARTITION(dt=2018).c_float SCRIPT []
+POSTHOOK: Lineage: t1 PARTITION(dt=2018).c_int SCRIPT []
+POSTHOOK: Lineage: t1 PARTITION(dt=2018).key SCRIPT []
+POSTHOOK: Lineage: t1 PARTITION(dt=2018).value SCRIPT []
+PREHOOK: query: insert into table t2 partition(dt='2018') values ('k2','v2',2,2.0,true)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2@dt=2018
+POSTHOOK: query: insert into table t2 partition(dt='2018') values ('k2','v2',2,2.0,true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2@dt=2018
+POSTHOOK: Lineage: t2 PARTITION(dt=2018).c_boolean SCRIPT []
+POSTHOOK: Lineage: t2 PARTITION(dt=2018).c_float SCRIPT []
+POSTHOOK: Lineage: t2 PARTITION(dt=2018).c_int SCRIPT []
+POSTHOOK: Lineage: t2 PARTITION(dt=2018).key SCRIPT []
+POSTHOOK: Lineage: t2 PARTITION(dt=2018).value SCRIPT []
+PREHOOK: query: insert into table t3 partition(dt='2018') values ('k3','v3',3,3.0,true)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3@dt=2018
+POSTHOOK: query: insert into table t3 partition(dt='2018') values ('k3','v3',3,3.0,true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3@dt=2018
+POSTHOOK: Lineage: t3 PARTITION(dt=2018).c_boolean SCRIPT []
+POSTHOOK: Lineage: t3 PARTITION(dt=2018).c_float SCRIPT []
+POSTHOOK: Lineage: t3 PARTITION(dt=2018).c_int SCRIPT []
+POSTHOOK: Lineage: t3 PARTITION(dt=2018).key SCRIPT []
+POSTHOOK: Lineage: t3 PARTITION(dt=2018).value SCRIPT []
+PREHOOK: query: CREATE VIEW `view1` AS select `t1`.`key`,`t1`.`value`,`t1`.`c_int`,`t1`.`c_float`,`t1`.`c_boolean`,`t1`.`dt` from `t1` union all select `t2`.`key`,`t2`.`value`,`t2`.`c_int`,`t2`.`c_float`,`t2`.`c_boolean`,`t2`.`dt` from `t2`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view1
+POSTHOOK: query: CREATE VIEW `view1` AS select `t1`.`key`,`t1`.`value`,`t1`.`c_int`,`t1`.`c_float`,`t1`.`c_boolean`,`t1`.`dt` from `t1` union all select `t2`.`key`,`t2`.`value`,`t2`.`c_int`,`t2`.`c_float`,`t2`.`c_boolean`,`t2`.`dt` from `t2`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view1
+POSTHOOK: Lineage: view1.c_boolean EXPRESSION [(t1)t1.FieldSchema(name:c_boolean, type:boolean, comment:null), (t2)t2.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
+POSTHOOK: Lineage: view1.c_float EXPRESSION [(t1)t1.FieldSchema(name:c_float, type:float, comment:null), (t2)t2.FieldSchema(name:c_float, type:float, comment:null), ]
+POSTHOOK: Lineage: view1.c_int EXPRESSION [(t1)t1.FieldSchema(name:c_int, type:int, comment:null), (t2)t2.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: view1.dt EXPRESSION [(t1)t1.FieldSchema(name:dt, type:string, comment:null), (t2)t2.FieldSchema(name:dt, type:string, comment:null), ]
+POSTHOOK: Lineage: view1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), (t2)t2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: view1.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:string, comment:null), (t2)t2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW `view2` AS select `t2`.`key`,`t2`.`value`,`t2`.`c_int`,`t2`.`c_float`,`t2`.`c_boolean`,`t2`.`dt` from `t2` union all select `t3`.`key`,`t3`.`value`,`t3`.`c_int`,`t3`.`c_float`,`t3`.`c_boolean`,`t3`.`dt` from `t3`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view2
+POSTHOOK: query: CREATE VIEW `view2` AS select `t2`.`key`,`t2`.`value`,`t2`.`c_int`,`t2`.`c_float`,`t2`.`c_boolean`,`t2`.`dt` from `t2` union all select `t3`.`key`,`t3`.`value`,`t3`.`c_int`,`t3`.`c_float`,`t3`.`c_boolean`,`t3`.`dt` from `t3`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view2
+POSTHOOK: Lineage: view2.c_boolean EXPRESSION [(t2)t2.FieldSchema(name:c_boolean, type:boolean, comment:null), (t3)t3.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
+POSTHOOK: Lineage: view2.c_float EXPRESSION [(t2)t2.FieldSchema(name:c_float, type:float, comment:null), (t3)t3.FieldSchema(name:c_float, type:float, comment:null), ]
+POSTHOOK: Lineage: view2.c_int EXPRESSION [(t2)t2.FieldSchema(name:c_int, type:int, comment:null), (t3)t3.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: view2.dt EXPRESSION [(t2)t2.FieldSchema(name:dt, type:string, comment:null), (t3)t3.FieldSchema(name:dt, type:string, comment:null), ]
+POSTHOOK: Lineage: view2.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), (t3)t3.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: view2.value EXPRESSION [(t2)t2.FieldSchema(name:value, type:string, comment:null), (t3)t3.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create table t4 as select key,value,c_int,c_float,c_boolean,dt from t1 union all select v1.key,v1.value,v1.c_int,v1.c_float,v1.c_boolean,v1.dt from view1 v1 join view2 v2 on v1.dt=v2.dt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2018
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@dt=2018
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t3@dt=2018
+PREHOOK: Input: default@view1
+PREHOOK: Input: default@view2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4
+POSTHOOK: query: create table t4 as select key,value,c_int,c_float,c_boolean,dt from t1 union all select v1.key,v1.value,v1.c_int,v1.c_float,v1.c_boolean,v1.dt from view1 v1 join view2 v2 on v1.dt=v2.dt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2018
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@dt=2018
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t3@dt=2018
+POSTHOOK: Input: default@view1
+POSTHOOK: Input: default@view2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4
+POSTHOOK: Lineage: t4.c_boolean EXPRESSION [(t1)t1.FieldSchema(name:c_boolean, type:boolean, comment:null), (t1)t1.FieldSchema(name:c_boolean, type:boolean, comment:null), (t2)t2.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
+POSTHOOK: Lineage: t4.c_float EXPRESSION [(t1)t1.FieldSchema(name:c_float, type:float, comment:null), (t1)t1.FieldSchema(name:c_float, type:float, comment:null), (t2)t2.FieldSchema(name:c_float, type:float, comment:null), ]
+POSTHOOK: Lineage: t4.c_int EXPRESSION [(t1)t1.FieldSchema(name:c_int, type:int, comment:null), (t1)t1.FieldSchema(name:c_int, type:int, comment:null), (t2)t2.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: t4.dt EXPRESSION [(t1)t1.FieldSchema(name:dt, type:string, comment:null), (t1)t1.FieldSchema(name:dt, type:string, comment:null), (t2)t2.FieldSchema(name:dt, type:string, comment:null), ]
+POSTHOOK: Lineage: t4.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), (t2)t2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t4.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:string, comment:null), (t1)t1.FieldSchema(name:value, type:string, comment:null), (t2)t2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW `view3` AS select `t4`.`key`,`t4`.`value`,`t4`.`c_int`,`t4`.`c_float`,`t4`.`c_boolean`,`t4`.`dt` from `t4` union all select `t1`.`key`,`t1`.`value`,`t1`.`c_int`,`t1`.`c_float`,`t1`.`c_boolean`,`t1`.`dt` from `t1`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view3
+POSTHOOK: query: CREATE VIEW `view3` AS select `t4`.`key`,`t4`.`value`,`t4`.`c_int`,`t4`.`c_float`,`t4`.`c_boolean`,`t4`.`dt` from `t4` union all select `t1`.`key`,`t1`.`value`,`t1`.`c_int`,`t1`.`c_float`,`t1`.`c_boolean`,`t1`.`dt` from `t1`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view3
+POSTHOOK: Lineage: view3.c_boolean EXPRESSION [(t4)t4.FieldSchema(name:c_boolean, type:boolean, comment:null), (t1)t1.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
+POSTHOOK: Lineage: view3.c_float EXPRESSION [(t4)t4.FieldSchema(name:c_float, type:float, comment:null), (t1)t1.FieldSchema(name:c_float, type:float, comment:null), ]
+POSTHOOK: Lineage: view3.c_int EXPRESSION [(t4)t4.FieldSchema(name:c_int, type:int, comment:null), (t1)t1.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: view3.dt EXPRESSION [(t4)t4.FieldSchema(name:dt, type:string, comment:null), (t1)t1.FieldSchema(name:dt, type:string, comment:null), ]
+POSTHOOK: Lineage: view3.key EXPRESSION [(t4)t4.FieldSchema(name:key, type:string, comment:null), (t1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: view3.value EXPRESSION [(t4)t4.FieldSchema(name:value, type:string, comment:null), (t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain
+select count(0) from view2 v2 join view3 v3 on v2.dt=v3.dt
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(0) from view2 v2 join view3 v3 on v2.dt=v3.dt
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 5 <- Union 2 (CONTAINS)
+        Map 6 <- Union 7 (CONTAINS)
+        Map 8 <- Union 7 (CONTAINS)
+        Reducer 3 <- Union 2 (SIMPLE_EDGE), Union 7 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  filterExpr: dt is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: dt (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: t3
+                  filterExpr: dt is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: dt (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: t4
+                  filterExpr: dt is not null (type: boolean)
+                  Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: dt is not null (type: boolean)
+                    Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: dt (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                          Dynamic Partitioning Event Operator
+                            Target column: dt (string)
+                            Target Input: t2
+                            Partition key expr: dt
+                            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 1
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                          Dynamic Partitioning Event Operator
+                            Target column: dt (string)
+                            Target Input: t3
+                            Partition key expr: dt
+                            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                            Target Vertex: Map 5
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: dt is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: dt (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                        Dynamic Partitioning Event Operator
+                          Target column: dt (string)
+                          Target Input: t2
+                          Partition key expr: dt
+                          Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                          Target Vertex: Map 1
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                        Dynamic Partitioning Event Operator
+                          Target column: dt (string)
+                          Target Input: t3
+                          Partition key expr: dt
+                          Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                          Target Vertex: Map 5
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 2 
+            Vertex: Union 2
+        Union 7 
+            Vertex: Union 7
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(0) from view2 v2 join view3 v3 on v2.dt=v3.dt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@dt=2018
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@dt=2018
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t3@dt=2018
+PREHOOK: Input: default@t4
+PREHOOK: Input: default@view2
+PREHOOK: Input: default@view3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(0) from view2 v2 join view3 v3 on v2.dt=v3.dt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@dt=2018
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@dt=2018
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t3@dt=2018
+POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@view2
+POSTHOOK: Input: default@view3
+#### A masked pattern was here ####
+12
