@@ -1,5 +1,6 @@
 set hive.fetch.task.conversion=more;
-
+SET hive.ctas.external.tables=true;
+SET hive.external.table.purge.default = true;
 
 drop table tstz1_n0;
 

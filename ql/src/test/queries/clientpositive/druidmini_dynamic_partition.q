@@ -1,5 +1,6 @@
 SET hive.vectorized.execution.enabled=false;
 SET hive.ctas.external.tables=true;
+SET hive.external.table.purge.default = true;
 CREATE EXTERNAL TABLE druid_partitioned_table_0
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (

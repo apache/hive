@@ -1,5 +1,6 @@
 --! qt:dataset:alltypesorc
 SET hive.ctas.external.tables=true;
+
 SET hive.vectorized.execution.enabled=false;
 CREATE EXTERNAL TABLE druid_table_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'

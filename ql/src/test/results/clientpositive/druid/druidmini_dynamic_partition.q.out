@@ -165,6 +165,7 @@ STAGE PLANS:
             druid.query.granularity MINUTE
             druid.segment.granularity HOUR
             druid.segment.targetShardsPerGranularity 6
+            external.table.purge true
           isExternal: true
 
   Stage: Stage-3

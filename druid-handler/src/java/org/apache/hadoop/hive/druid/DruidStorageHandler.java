@@ -231,13 +231,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       return;
     }
 
-    try {
-      getConnector().createSegmentTable();
-    } catch (Exception e) {
-      LOG.error("Exception while trying to create druid segments table", e);
-      throw new MetaException(e.getMessage());
-    }
-
     // create dataSourceName based on Hive Table name
     dataSourceName = Warehouse.getQualifiedName(table);
     try {
@@ -751,7 +744,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
                     "DataSource name is null !"
             );
 
-    if (deleteData == true) {
+    if (deleteData == true && MetaStoreUtils.isExternalTablePurge(table)) {
       LOG.info("Dropping with purge all the data for data source {}", dataSourceName);
       List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
               .getDataSegmentList(getConnector(), getDruidMetadataStorageTablesConfig(), dataSourceName);

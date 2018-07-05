@@ -1,7 +1,7 @@
 SET hive.vectorized.execution.enabled=false;
 SET hive.explain.user=false;
 SET hive.ctas.external.tables=true;
-
+SET hive.external.table.purge.default = true;
 --SET hive.execution.mode=llap;
 
 DROP TABLE druid_table_with_nulls;
