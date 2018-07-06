@@ -1,6 +1,7 @@
-CREATE TABLE hbase_ppd_keyrange(key int, value string) 
+CREATE EXTERNAL TABLE hbase_ppd_keyrange(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
-WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#binary,cf:string");
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#binary,cf:string")
+TBLPROPERTIES ("external.table.purge" = "true");
 
 INSERT OVERWRITE TABLE hbase_ppd_keyrange 
 SELECT *
