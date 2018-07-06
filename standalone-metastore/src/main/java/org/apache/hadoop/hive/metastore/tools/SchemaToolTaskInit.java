@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline.schematool;
+package org.apache.hadoop.hive.metastore.tools;
 
 import java.io.IOException;
 
@@ -24,12 +24,12 @@ import org.apache.hadoop.hive.metastore.HiveMetaException;
 /**
  * Initialize the metastore schema.
  */
-class HiveSchemaToolTaskInit extends HiveSchemaToolTask {
+class SchemaToolTaskInit extends SchemaToolTask {
   private boolean validate = true;
   private String toVersion;
 
   @Override
-  void setCommandLineArguments(HiveSchemaToolCommandLine cl) {
+  void setCommandLineArguments(SchemaToolCommandLine cl) {
     if (cl.hasOption("initSchemaTo")) {
       this.toVersion = cl.getOptionValue("initSchemaTo");
       this.validate = false;
@@ -59,7 +59,7 @@ class HiveSchemaToolTaskInit extends HiveSchemaToolTask {
     try {
       System.out.println("Initialization script " + initScriptFile);
       if (!schemaTool.isDryRun()) {
-        schemaTool.runBeeLine(initScriptDir, initScriptFile);
+        schemaTool.execSql(initScriptDir, initScriptFile);
         System.out.println("Initialization script completed");
       }
     } catch (IOException e) {

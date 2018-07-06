@@ -43,13 +43,13 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("javax.management.*")
-@PrepareForTest({ HiveSchemaHelper.class, HiveSchemaTool.CommandBuilder.class })
+@PrepareForTest({ HiveSchemaHelper.class, HiveSchemaTool.HiveSchemaToolCommandBuilder.class })
 public class TestHiveSchemaTool {
 
   String scriptFile = System.getProperty("java.io.tmpdir") + File.separator + "someScript.sql";
   @Mock
   private HiveConf hiveConf;
-  private HiveSchemaTool.CommandBuilder builder;
+  private HiveSchemaTool.HiveSchemaToolCommandBuilder builder;
   private String pasword = "reallySimplePassword";
 
   @Before
@@ -66,7 +66,7 @@ public class TestHiveSchemaTool {
     if (!file.exists()) {
       file.createNewFile();
     }
-    builder = new HiveSchemaTool.CommandBuilder(hiveConf, null, null, "testUser", pasword, scriptFile);
+    builder = new HiveSchemaTool.HiveSchemaToolCommandBuilder(hiveConf, null, null, "testUser", pasword, scriptFile);
   }
 
   @After

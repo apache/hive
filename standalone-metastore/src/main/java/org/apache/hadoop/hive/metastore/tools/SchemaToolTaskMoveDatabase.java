@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline.schematool;
+package org.apache.hadoop.hive.metastore.tools;
 
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -30,15 +30,15 @@ import org.slf4j.LoggerFactory;
 /**
  * Print Hive version and schema version.
  */
-class HiveSchemaToolTaskMoveDatabase extends HiveSchemaToolTask {
-  private static final Logger LOG = LoggerFactory.getLogger(HiveSchemaToolTaskMoveDatabase.class.getName());
+class SchemaToolTaskMoveDatabase extends SchemaToolTask {
+  private static final Logger LOG = LoggerFactory.getLogger(SchemaToolTaskMoveDatabase.class.getName());
 
   private String fromCatName;
   private String toCatName;
   private String dbName;
 
   @Override
-  void setCommandLineArguments(HiveSchemaToolCommandLine cl) {
+  void setCommandLineArguments(SchemaToolCommandLine cl) {
     fromCatName = normalizeIdentifier(cl.getOptionValue("fromCatalog"));
     toCatName = normalizeIdentifier(cl.getOptionValue("toCatalog"));
     dbName = normalizeIdentifier(cl.getOptionValue("moveDatabase"));
