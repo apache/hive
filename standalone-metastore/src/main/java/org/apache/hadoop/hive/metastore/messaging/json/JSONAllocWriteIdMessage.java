@@ -19,11 +19,13 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
-import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
-import org.codehaus.jackson.annotate.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON implementation of AllocWriteId

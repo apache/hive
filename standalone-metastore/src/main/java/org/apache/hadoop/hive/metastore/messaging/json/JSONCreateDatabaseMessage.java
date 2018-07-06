@@ -22,7 +22,8 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON Implementation of CreateDatabaseMessage.
@@ -54,6 +55,7 @@ public class JSONCreateDatabaseMessage extends CreateDatabaseMessage {
     checkValid();
   }
 
+  @Override
   public Database getDatabaseObject() throws Exception {
     return (Database) JSONMessageFactory.getTObj(dbJson, Database.class);
   }

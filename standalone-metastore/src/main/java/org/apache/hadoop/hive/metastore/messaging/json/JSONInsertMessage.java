@@ -19,16 +19,16 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * JSON implementation of InsertMessage
@@ -91,7 +91,11 @@ public class JSONInsertMessage extends InsertMessage {
 
   @Override
   public String getTableType() {
-    if (tableType != null) return tableType; else return "";
+    if (tableType != null) {
+      return tableType;
+    } else {
+      return "";
+    }
   }
 
   @Override
