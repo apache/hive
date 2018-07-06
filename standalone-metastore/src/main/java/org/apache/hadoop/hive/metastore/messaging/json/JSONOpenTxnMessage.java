@@ -18,11 +18,13 @@
  */
 
 package org.apache.hadoop.hive.metastore.messaging.json;
-import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
-import org.codehaus.jackson.annotate.JsonProperty;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+
+import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON implementation of OpenTxnMessage
