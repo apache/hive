@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline.schematool;
+package org.apache.hadoop.hive.metastore.tools;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,7 +43,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.NestedScriptParser;
 import org.slf4j.Logger;
@@ -55,11 +54,11 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Print Hive version and schema version.
  */
-class HiveSchemaToolTaskValidate extends HiveSchemaToolTask {
-  private static final Logger LOG = LoggerFactory.getLogger(HiveSchemaToolTaskValidate.class.getName());
+class SchemaToolTaskValidate extends SchemaToolTask {
+  private static final Logger LOG = LoggerFactory.getLogger(SchemaToolTaskValidate.class.getName());
 
   @Override
-  void setCommandLineArguments(HiveSchemaToolCommandLine cl) {
+  void setCommandLineArguments(SchemaToolCommandLine cl) {
     // do nothing
   }
 
@@ -200,7 +199,7 @@ class HiveSchemaToolTaskValidate extends HiveSchemaToolTask {
     Connection hmsConn = schemaTool.getConnectionToMetastore(false);
 
     LOG.debug("Validating tables in the schema for version " + version);
-    List<String> dbTables = new ArrayList<String>();
+    List<String> dbTables = new ArrayList<>();
     ResultSet rs = null;
     try {
       String schema = null;
@@ -233,8 +232,8 @@ class HiveSchemaToolTaskValidate extends HiveSchemaToolTask {
 
     // parse the schema file to determine the tables that are expected to exist
     // we are using oracle schema because it is simpler to parse, no quotes or backticks etc
-    List<String> schemaTables = new ArrayList<String>();
-    List<String> subScripts   = new ArrayList<String>();
+    List<String> schemaTables = new ArrayList<>();
+    List<String> subScripts   = new ArrayList<>();
 
     String baseDir    = new File(schemaTool.getMetaStoreSchemaInfo().getMetaStoreScriptDir()).getParent();
     String schemaFile = new File(schemaTool.getMetaStoreSchemaInfo().getMetaStoreScriptDir(),
@@ -276,11 +275,11 @@ class HiveSchemaToolTaskValidate extends HiveSchemaToolTask {
       throw new Exception(path + " does not exist. Potentially incorrect version in the metastore VERSION table");
     }
 
-    List<String> subs = new ArrayList<String>();
+    List<String> subs = new ArrayList<>();
     NestedScriptParser sp = HiveSchemaHelper.getDbCommandParser(schemaTool.getDbType(), false);
     Pattern regexp = Pattern.compile("CREATE TABLE(\\s+IF NOT EXISTS)?\\s+(\\S+).*");
 
-    try (BufferedReader reader = new BufferedReader(new FileReader(path));) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
       String line = null;
       while ((line = reader.readLine()) != null) {
         if (sp.isNestedScript(line)) {

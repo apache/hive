@@ -27,10 +27,13 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Random;
 
+import org.apache.commons.dbcp.DelegatingConnection;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.text.StrTokenizer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
@@ -56,6 +59,8 @@ public class TestSchemaToolForMetastore {
   private String testMetastoreDB;
   private PrintStream errStream;
   private PrintStream outStream;
+  private String argsBase;
+  private SchemaToolTaskValidate validator;
 
   @Before
   public void setUp() throws HiveMetaException, IOException {
@@ -64,14 +69,21 @@ public class TestSchemaToolForMetastore {
     System.setProperty(ConfVars.CONNECT_URL_KEY.toString(),
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     conf = MetastoreConf.newMetastoreConf();
-    schemaTool = new MetastoreSchemaTool(
-        System.getProperty("test.tmp.dir", "target/tmp"), conf, "derby");
-    schemaTool.setUserName(MetastoreConf.getVar(schemaTool.getConf(), ConfVars.CONNECTION_USER_NAME));
-    schemaTool.setPassWord(MetastoreConf.getPassword(schemaTool.getConf(), ConfVars.PWD));
+    schemaTool = new MetastoreSchemaTool();
+    schemaTool.init(System.getProperty("test.tmp.dir", "target/tmp"),
+        new String[]{"-dbType", "derby", "--info"}, null, conf);
+    String userName = MetastoreConf.getVar(schemaTool.getConf(), ConfVars.CONNECTION_USER_NAME);
+    String passWord = MetastoreConf.getPassword(schemaTool.getConf(), ConfVars.PWD);
+    schemaTool.setUserName(userName);
+    schemaTool.setPassWord(passWord);
+    argsBase = "-dbType derby -userName " + userName + " -passWord " + passWord + " ";
     System.setProperty("beeLine.system.exit", "true");
     errStream = System.err;
     outStream = System.out;
     conn = schemaTool.getConnectionToMetastore(false);
+
+    validator = new SchemaToolTaskValidate();
+    validator.setHiveSchemaTool(schemaTool);
   }
 
   @After
@@ -87,24 +99,26 @@ public class TestSchemaToolForMetastore {
     }
   }
 
-  // Test the sequence validation functionality
+  /*
+   * Test the sequence validation functionality
+   */
   @Test
   public void testValidateSequences() throws Exception {
-    schemaTool.doInit();
+    execute(new SchemaToolTaskInit(), "-initSchema");
 
     // Test empty database
-    boolean isValid = schemaTool.validateSequences(conn);
+    boolean isValid = validator.validateSequences(conn);
     Assert.assertTrue(isValid);
 
     // Test valid case
     String[] scripts = new String[] {
+        "insert into CTLGS values(99, 'test_cat_1', 'description', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb');",
         "insert into SEQUENCE_TABLE values('org.apache.hadoop.hive.metastore.model.MDatabase', 100);",
-        "insert into CTLGS values(37, 'mycat', 'my description', 'hdfs://tmp');",
-        "insert into DBS values(99, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test', 'mycat');"
+        "insert into DBS values(99, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test', 'test_cat_1');"
     };
     File scriptFile = generateTestScript(scripts);
-    schemaTool.runSqlLine(scriptFile.getPath());
-    isValid = schemaTool.validateSequences(conn);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateSequences(conn);
     Assert.assertTrue(isValid);
 
     // Test invalid case
@@ -112,25 +126,27 @@ public class TestSchemaToolForMetastore {
         "delete from SEQUENCE_TABLE;",
         "delete from DBS;",
         "insert into SEQUENCE_TABLE values('org.apache.hadoop.hive.metastore.model.MDatabase', 100);",
-        "insert into DBS values(102, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test', 'mycat');"
+        "insert into DBS values(102, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test', 'test_cat_1');"
     };
     scriptFile = generateTestScript(scripts);
-    schemaTool.runSqlLine(scriptFile.getPath());
-    isValid = schemaTool.validateSequences(conn);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateSequences(conn);
     Assert.assertFalse(isValid);
   }
 
-  // Test to validate that all tables exist in the HMS metastore.
+  /*
+   * Test to validate that all tables exist in the HMS metastore.
+   */
   @Test
   public void testValidateSchemaTables() throws Exception {
-    schemaTool.doInit("1.2.0");
+    execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
 
-    boolean isValid = schemaTool.validateSchemaTables(conn);
+    boolean isValid = validator.validateSchemaTables(conn);
     Assert.assertTrue(isValid);
 
-    // upgrade from 2.0.0 schema and re-validate
-    schemaTool.doUpgrade("1.2.0");
-    isValid = schemaTool.validateSchemaTables(conn);
+    // upgrade from 1.2.0 schema and re-validate
+    execute(new SchemaToolTaskUpgrade(), "-upgradeSchemaFrom 1.2.0");
+    isValid = validator.validateSchemaTables(conn);
     Assert.assertTrue(isValid);
 
     // Simulate a missing table scenario by renaming a couple of tables
@@ -140,8 +156,8 @@ public class TestSchemaToolForMetastore {
     };
 
     File scriptFile = generateTestScript(scripts);
-    schemaTool.runSqlLine(scriptFile.getPath());
-    isValid = schemaTool.validateSchemaTables(conn);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateSchemaTables(conn);
     Assert.assertFalse(isValid);
 
     // Restored the renamed tables
@@ -151,31 +167,49 @@ public class TestSchemaToolForMetastore {
     };
 
     scriptFile = generateTestScript(scripts);
-    schemaTool.runSqlLine(scriptFile.getPath());
-    isValid = schemaTool.validateSchemaTables(conn);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateSchemaTables(conn);
     Assert.assertTrue(isValid);
-   }
+
+    // Check that an exception from getMetaData() is reported correctly
+    try {
+      // Make a Connection object that will throw an exception
+      BadMetaDataConnection bad = new BadMetaDataConnection(conn);
+      validator.validateSchemaTables(bad);
+      Assert.fail("did not get expected exception");
+    } catch (HiveMetaException hme) {
+      String message = hme.getMessage();
+      Assert.assertTrue("Bad HiveMetaException message :" + message,
+          message.contains("Failed to retrieve schema tables from Hive Metastore DB"));
+      Throwable cause = hme.getCause();
+      Assert.assertNotNull("HiveMetaException did not contain a cause", cause);
+      String causeMessage = cause.getMessage();
+      Assert.assertTrue("Bad SQLException message: " + causeMessage, causeMessage.contains(
+          BadMetaDataConnection.FAILURE_TEXT));
+    }
+  }
+
 
   // Test the validation of incorrect NULL values in the tables
   @Test
   public void testValidateNullValues() throws Exception {
-    schemaTool.doInit();
+    execute(new SchemaToolTaskInit(), "-initSchema");
 
     // Test empty database
-    boolean isValid = schemaTool.validateColumnNullValues(conn);
+    boolean isValid = validator.validateColumnNullValues(conn);
     Assert.assertTrue(isValid);
 
     // Test valid case
     createTestHiveTableSchemas();
-    isValid = schemaTool.validateColumnNullValues(conn);
+    isValid = validator.validateColumnNullValues(conn);
 
     // Test invalid case
     String[] scripts = new String[] {
         "update TBLS set SD_ID=null"
     };
     File scriptFile = generateTestScript(scripts);
-    schemaTool.runSqlLine(scriptFile.getPath());
-    isValid = schemaTool.validateColumnNullValues(conn);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateColumnNullValues(conn);
     Assert.assertFalse(isValid);
   }
 
@@ -183,7 +217,7 @@ public class TestSchemaToolForMetastore {
   @Test
   public void testSchemaInitDryRun() throws Exception {
     schemaTool.setDryRun(true);
-    schemaTool.doInit("3.0.0");
+    execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
     schemaTool.setDryRun(false);
     try {
       schemaTool.verifySchemaVersion();
@@ -197,10 +231,10 @@ public class TestSchemaToolForMetastore {
   // Test dryrun of schema upgrade
   @Test
   public void testSchemaUpgradeDryRun() throws Exception {
-    schemaTool.doInit("1.2.0");
+    execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
 
     schemaTool.setDryRun(true);
-    schemaTool.doUpgrade("1.2.0");
+    execute(new SchemaToolTaskUpgrade(), "-upgradeSchemaFrom 1.2.0");
     schemaTool.setDryRun(false);
     try {
       schemaTool.verifySchemaVersion();
@@ -218,8 +252,7 @@ public class TestSchemaToolForMetastore {
   public void testSchemaInit() throws Exception {
     IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(conf,
         System.getProperty("test.tmp.dir", "target/tmp"), "derby");
-    LOG.info("Starting testSchemaInit");
-    schemaTool.doInit(metastoreSchemaInfo.getHiveSchemaVersion());
+    execute(new SchemaToolTaskInit(), "-initSchemaTo " + metastoreSchemaInfo.getHiveSchemaVersion());
     schemaTool.verifySchemaVersion();
   }
 
@@ -227,35 +260,35 @@ public class TestSchemaToolForMetastore {
   * Test validation for schema versions
   */
   @Test
- public void testValidateSchemaVersions() throws Exception {
-   schemaTool.doInit();
-   boolean isValid = schemaTool.validateSchemaVersions();
-   // Test an invalid case with multiple versions
-   String[] scripts = new String[] {
-       "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
-   };
-   File scriptFile = generateTestScript(scripts);
-   schemaTool.runSqlLine(scriptFile.getPath());
-   isValid = schemaTool.validateSchemaVersions();
-   Assert.assertFalse(isValid);
+  public void testValidateSchemaVersions() throws Exception {
+    execute(new SchemaToolTaskInit(), "-initSchema");
+    boolean isValid = validator.validateSchemaVersions();
+    // Test an invalid case with multiple versions
+    String[] scripts = new String[] {
+        "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
+    };
+    File scriptFile = generateTestScript(scripts);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateSchemaVersions();
+    Assert.assertFalse(isValid);
 
-   scripts = new String[] {
-       "delete from VERSION where VER_ID = 100"
-   };
-   scriptFile = generateTestScript(scripts);
-   schemaTool.runSqlLine(scriptFile.getPath());
-   isValid = schemaTool.validateSchemaVersions();
-   Assert.assertTrue(isValid);
+    scripts = new String[] {
+        "delete from VERSION where VER_ID = 100"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateSchemaVersions();
+    Assert.assertTrue(isValid);
 
-   // Test an invalid case without version
-   scripts = new String[] {
-       "delete from VERSION"
-   };
-   scriptFile = generateTestScript(scripts);
-   schemaTool.runSqlLine(scriptFile.getPath());
-   isValid = schemaTool.validateSchemaVersions();
-   Assert.assertFalse(isValid);
- }
+    // Test an invalid case without version
+    scripts = new String[] {
+        "delete from VERSION"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateSchemaVersions();
+    Assert.assertFalse(isValid);
+  }
 
   /**
    * Test schema upgrade
@@ -264,7 +297,7 @@ public class TestSchemaToolForMetastore {
   public void testSchemaUpgrade() throws Exception {
     boolean foundException = false;
     // Initialize 1.2.0 schema
-    schemaTool.doInit("1.2.0");
+    execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
     // verify that driver fails due to older version schema
     try {
       schemaTool.verifySchemaVersion();
@@ -298,17 +331,7 @@ public class TestSchemaToolForMetastore {
     System.setOut(outPrintStream);
 
     // Upgrade schema from 0.7.0 to latest
-    Exception caught = null;
-    try {
-      schemaTool.doUpgrade("1.2.0");
-    } catch (Exception e) {
-      caught = e;
-    }
-
-    LOG.info("stdout is " + stdout.toString());
-    LOG.info("stderr is " + stderr.toString());
-
-    if (caught != null) Assert.fail(caught.getMessage());
+    execute(new SchemaToolTaskUpgrade(), "-upgradeSchemaFrom 1.2.0");
 
     // Verify that the schemaTool ran pre-upgrade scripts and ignored errors
     Assert.assertTrue(stderr.toString().contains(invalidPreUpgradeScript));
@@ -327,38 +350,38 @@ public class TestSchemaToolForMetastore {
    */
   @Test
   public void testValidateLocations() throws Exception {
-    schemaTool.doInit();
+    execute(new SchemaToolTaskInit(), "-initSchema");
     URI defaultRoot = new URI("hdfs://myhost.com:8020");
     URI defaultRoot2 = new URI("s3://myhost2.com:8888");
     //check empty DB
-    boolean isValid = schemaTool.validateLocations(conn, null);
+    boolean isValid = validator.validateLocations(conn, null);
     Assert.assertTrue(isValid);
-    isValid = schemaTool.validateLocations(conn, new URI[] {defaultRoot,defaultRoot2});
+    isValid = validator.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
     Assert.assertTrue(isValid);
 
- // Test valid case
+    // Test valid case
     String[] scripts = new String[] {
-         "insert into CTLGS values (1, 'mycat', 'mydescription', 'hdfs://myhost.com:8020/user/hive/warehouse');",
-         "insert into DBS values(2, 'my db', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb', 'mydb', 'public', 'role', 'mycat');",
-         "insert into DBS values(7, 'db with bad port', 'hdfs://myhost.com:8020/', 'haDB', 'public', 'role', 'mycat');",
-         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (1,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
-         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (2,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/admin/2015_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
-         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (3,null,'org.apache.hadoop.mapred.TextInputFormat','N','N',null,-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
-         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (4000,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
-         "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT,IS_REWRITE_ENABLED) values (2 ,1435255431,2,0 ,'hive',0,1,'mytal','MANAGED_TABLE',NULL,NULL,'n');",
-         "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT,IS_REWRITE_ENABLED) values (3 ,1435255431,2,0 ,'hive',0,3,'myView','VIRTUAL_VIEW','select a.col1,a.col2 from foo','select * from foo','n');",
-         "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT,IS_REWRITE_ENABLED) values (4012 ,1435255431,7,0 ,'hive',0,4000,'mytal4012','MANAGED_TABLE',NULL,NULL,'n');",
-         "insert into PARTITIONS(PART_ID,CREATE_TIME,LAST_ACCESS_TIME, PART_NAME,SD_ID,TBL_ID) values(1, 1441402388,0, 'd1=1/d2=1',2,2);",
-         "insert into SKEWED_STRING_LIST values(1);",
-         "insert into SKEWED_STRING_LIST values(2);",
-         "insert into SKEWED_COL_VALUE_LOC_MAP values(1,1,'hdfs://myhost.com:8020/user/hive/warehouse/mytal/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/');",
-         "insert into SKEWED_COL_VALUE_LOC_MAP values(2,2,'s3://myhost.com:8020/user/hive/warehouse/mytal/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/');"
-       };
+        "insert into CTLGS values(3, 'test_cat_2', 'description', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb');",
+        "insert into DBS values(2, 'my db', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb', 'mydb', 'public', 'role', 'test_cat_2');",
+        "insert into DBS values(7, 'db with bad port', 'hdfs://myhost.com:8020/', 'haDB', 'public', 'role', 'test_cat_2');",
+        "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (1,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
+        "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (2,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/admin/2015_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
+        "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (3,null,'org.apache.hadoop.mapred.TextInputFormat','N','N',null,-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
+        "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (4000,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
+        "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT,IS_REWRITE_ENABLED) values (2 ,1435255431,2,0 ,'hive',0,1,'mytal','MANAGED_TABLE',NULL,NULL,'n');",
+        "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT,IS_REWRITE_ENABLED) values (3 ,1435255431,2,0 ,'hive',0,3,'myView','VIRTUAL_VIEW','select a.col1,a.col2 from foo','select * from foo','n');",
+        "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT,IS_REWRITE_ENABLED) values (4012 ,1435255431,7,0 ,'hive',0,4000,'mytal4012','MANAGED_TABLE',NULL,NULL,'n');",
+        "insert into PARTITIONS(PART_ID,CREATE_TIME,LAST_ACCESS_TIME, PART_NAME,SD_ID,TBL_ID) values(1, 1441402388,0, 'd1=1/d2=1',2,2);",
+        "insert into SKEWED_STRING_LIST values(1);",
+        "insert into SKEWED_STRING_LIST values(2);",
+        "insert into SKEWED_COL_VALUE_LOC_MAP values(1,1,'hdfs://myhost.com:8020/user/hive/warehouse/mytal/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/');",
+        "insert into SKEWED_COL_VALUE_LOC_MAP values(2,2,'s3://myhost.com:8020/user/hive/warehouse/mytal/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/');"
+    };
     File scriptFile = generateTestScript(scripts);
-    schemaTool.runSqlLine(scriptFile.getPath());
-    isValid = schemaTool.validateLocations(conn, null);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateLocations(conn, null);
     Assert.assertTrue(isValid);
-    isValid = schemaTool.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
+    isValid = validator.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
     Assert.assertTrue(isValid);
     scripts = new String[] {
         "delete from SKEWED_COL_VALUE_LOC_MAP;",
@@ -367,10 +390,10 @@ public class TestSchemaToolForMetastore {
         "delete from TBLS;",
         "delete from SDS;",
         "delete from DBS;",
-        "insert into DBS values(2, 'my db', '/user/hive/warehouse/mydb', 'mydb', 'public', 'role', 'mycat');",
-        "insert into DBS values(4, 'my db2', 'hdfs://myhost.com:8020', '', 'public', 'role', 'mycat');",
-        "insert into DBS values(6, 'db with bad port', 'hdfs://myhost.com:8020:', 'zDB', 'public', 'role', 'mycat');",
-        "insert into DBS values(7, 'db with bad port', 'hdfs://mynameservice.com/', 'haDB', 'public', 'role', 'mycat');",
+        "insert into DBS values(2, 'my db', '/user/hive/warehouse/mydb', 'mydb', 'public', 'role', 'test_cat_2');",
+        "insert into DBS values(4, 'my db2', 'hdfs://myhost.com:8020', '', 'public', 'role', 'test_cat_2');",
+        "insert into DBS values(6, 'db with bad port', 'hdfs://myhost.com:8020:', 'zDB', 'public', 'role', 'test_cat_2');",
+        "insert into DBS values(7, 'db with bad port', 'hdfs://mynameservice.com/', 'haDB', 'public', 'role', 'test_cat_2');",
         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (1,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://yourhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (2,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','file:///user/admin/2015_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
         "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT,IS_REWRITE_ENABLED) values (2 ,1435255431,2,0 ,'hive',0,1,'mytal','MANAGED_TABLE',NULL,NULL,'n');",
@@ -398,23 +421,23 @@ public class TestSchemaToolForMetastore {
         "insert into SKEWED_COL_VALUE_LOC_MAP values(2,2,'file:///user/admin/warehouse/mytal/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/');"
     };
     scriptFile = generateTestScript(scripts);
-    schemaTool.runSqlLine(scriptFile.getPath());
-    isValid = schemaTool.validateLocations(conn, null);
+    schemaTool.execSql(scriptFile.getPath());
+    isValid = validator.validateLocations(conn, null);
     Assert.assertFalse(isValid);
-    isValid = schemaTool.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
+    isValid = validator.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
     Assert.assertFalse(isValid);
   }
 
   @Test
   public void testHiveMetastoreDbPropertiesTable() throws HiveMetaException, IOException {
-    schemaTool.doInit("3.0.0");
+    execute(new SchemaToolTaskInit(), "-initSchemaTo 3.0.0");
     validateMetastoreDbPropertiesTable();
   }
 
   @Test
   public void testMetastoreDbPropertiesAfterUpgrade() throws HiveMetaException, IOException {
-    schemaTool.doInit("1.2.0");
-    schemaTool.doUpgrade();
+    execute(new SchemaToolTaskInit(), "-initSchemaTo 1.2.0");
+    execute(new SchemaToolTaskUpgrade(), "-upgradeSchema");
     validateMetastoreDbPropertiesTable();
   }
 
@@ -432,7 +455,7 @@ public class TestSchemaToolForMetastore {
   }
 
   private void validateMetastoreDbPropertiesTable() throws HiveMetaException, IOException {
-    boolean isValid = schemaTool.validateSchemaTables(conn);
+    boolean isValid = (boolean) validator.validateSchemaTables(conn);
     Assert.assertTrue(isValid);
     // adding same property key twice should throw unique key constraint violation exception
     String[] scripts = new String[] {
@@ -441,12 +464,13 @@ public class TestSchemaToolForMetastore {
     File scriptFile = generateTestScript(scripts);
     Exception ex = null;
     try {
-      schemaTool.runSqlLine(scriptFile.getPath());
+      schemaTool.execSql(scriptFile.getPath());
     } catch (Exception iox) {
       ex = iox;
     }
     Assert.assertTrue(ex != null && ex instanceof IOException);
   }
+
   /**
    * Write out a dummy pre-upgrade script with given SQL statement.
    */
@@ -476,6 +500,35 @@ public class TestSchemaToolForMetastore {
           "insert into PARTITIONS(PART_ID,CREATE_TIME,LAST_ACCESS_TIME, PART_NAME,SD_ID,TBL_ID) values(1, 1441402388,0, 'd1=1/d2=1',2,2);"
         };
      File scriptFile = generateTestScript(scripts);
-     schemaTool.runSqlLine(scriptFile.getPath());
+     schemaTool.execSql(scriptFile.getPath());
+  }
+
+  /**
+   * A mock Connection class that throws an exception out of getMetaData().
+   */
+  class BadMetaDataConnection extends DelegatingConnection {
+    static final String FAILURE_TEXT = "fault injected";
+
+    BadMetaDataConnection(Connection connection) {
+      super(connection);
+    }
+
+    @Override
+    public DatabaseMetaData getMetaData() throws SQLException {
+      throw new SQLException(FAILURE_TEXT);
+    }
+  }
+
+  private void execute(SchemaToolTask task, String taskArgs) throws HiveMetaException {
+    try {
+      StrTokenizer tokenizer = new StrTokenizer(argsBase + taskArgs, ' ', '\"');
+      SchemaToolCommandLine cl = new SchemaToolCommandLine(tokenizer.getTokenArray(), null);
+      task.setCommandLineArguments(cl);
+    } catch (Exception e) {
+      throw new IllegalStateException("Could not parse comman line \n" + argsBase + taskArgs, e);
+    }
+
+    task.setHiveSchemaTool(schemaTool);
+    task.execute();
   }
 }
