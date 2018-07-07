@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE druid_table
+PREHOOK: query: CREATE EXTERNAL TABLE druid_table
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -18,7 +18,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@druid_table
-POSTHOOK: query: CREATE TABLE druid_table
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_table
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -776,7 +776,7 @@ POSTHOOK: Lineage: test_extract_from_string_base_table.date_c SCRIPT []
 POSTHOOK: Lineage: test_extract_from_string_base_table.metric_c SCRIPT []
 POSTHOOK: Lineage: test_extract_from_string_base_table.timecolumn SCRIPT []
 POSTHOOK: Lineage: test_extract_from_string_base_table.timestamp_c SCRIPT []
-PREHOOK: query: CREATE TABLE druid_test_extract_from_string_table
+PREHOOK: query: CREATE EXTERNAL TABLE druid_test_extract_from_string_table
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 AS select
@@ -786,7 +786,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@test_extract_from_string_base_table
 PREHOOK: Output: database:default
 PREHOOK: Output: default@druid_test_extract_from_string_table
-POSTHOOK: query: CREATE TABLE druid_test_extract_from_string_table
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_test_extract_from_string_table
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 AS select

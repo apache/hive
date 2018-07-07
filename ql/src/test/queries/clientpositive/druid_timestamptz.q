@@ -1,9 +1,10 @@
 set hive.fetch.task.conversion=more;
-
+SET hive.ctas.external.tables=true;
+SET hive.external.table.purge.default = true;
 
 drop table tstz1_n0;
 
-create table tstz1_n0(`__time` timestamp with local time zone, n string, v integer)
+create external table tstz1_n0(`__time` timestamp with local time zone, n string, v integer)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR");
 
