@@ -29534,6 +29534,16 @@ void ISchema::__set_description(const std::string& val) {
 __isset.description = true;
 }
 
+void ISchema::__set_timestamp(const int64_t val) {
+  this->timestamp = val;
+__isset.timestamp = true;
+}
+
+void ISchema::__set_schemaId(const int64_t val) {
+  this->schemaId = val;
+__isset.schemaId = true;
+}
+
 uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -29633,6 +29643,22 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->timestamp);
+          this->__isset.timestamp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->schemaId);
+          this->__isset.schemaId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -29688,6 +29714,16 @@ uint32_t ISchema::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeString(this->description);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.timestamp) {
+    xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 10);
+    xfer += oprot->writeI64(this->timestamp);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.schemaId) {
+    xfer += oprot->writeFieldBegin("schemaId", ::apache::thrift::protocol::T_I64, 11);
+    xfer += oprot->writeI64(this->schemaId);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -29704,6 +29740,8 @@ void swap(ISchema &a, ISchema &b) {
   swap(a.canEvolve, b.canEvolve);
   swap(a.schemaGroup, b.schemaGroup);
   swap(a.description, b.description);
+  swap(a.timestamp, b.timestamp);
+  swap(a.schemaId, b.schemaId);
   swap(a.__isset, b.__isset);
 }
 
@@ -29717,6 +29755,8 @@ ISchema::ISchema(const ISchema& other1134) {
   canEvolve = other1134.canEvolve;
   schemaGroup = other1134.schemaGroup;
   description = other1134.description;
+  timestamp = other1134.timestamp;
+  schemaId = other1134.schemaId;
   __isset = other1134.__isset;
 }
 ISchema& ISchema::operator=(const ISchema& other1135) {
@@ -29729,6 +29769,8 @@ ISchema& ISchema::operator=(const ISchema& other1135) {
   canEvolve = other1135.canEvolve;
   schemaGroup = other1135.schemaGroup;
   description = other1135.description;
+  timestamp = other1135.timestamp;
+  schemaId = other1135.schemaId;
   __isset = other1135.__isset;
   return *this;
 }
@@ -29744,6 +29786,8 @@ void ISchema::printTo(std::ostream& out) const {
   out << ", " << "canEvolve=" << to_string(canEvolve);
   out << ", " << "schemaGroup="; (__isset.schemaGroup ? (out << to_string(schemaGroup)) : (out << "<null>"));
   out << ", " << "description="; (__isset.description ? (out << to_string(description)) : (out << "<null>"));
+  out << ", " << "timestamp="; (__isset.timestamp ? (out << to_string(timestamp)) : (out << "<null>"));
+  out << ", " << "schemaId="; (__isset.schemaId ? (out << to_string(schemaId)) : (out << "<null>"));
   out << ")";
 }
 
@@ -29980,57 +30024,62 @@ void AlterISchemaRequest::printTo(std::ostream& out) const {
 }
 
 
-SchemaVersion::~SchemaVersion() throw() {
+ISchemaVersion::~ISchemaVersion() throw() {
 }
 
 
-void SchemaVersion::__set_schema(const ISchemaName& val) {
+void ISchemaVersion::__set_schema(const ISchemaName& val) {
   this->schema = val;
 }
 
-void SchemaVersion::__set_version(const int32_t val) {
+void ISchemaVersion::__set_version(const int32_t val) {
   this->version = val;
 }
 
-void SchemaVersion::__set_createdAt(const int64_t val) {
+void ISchemaVersion::__set_createdAt(const int64_t val) {
   this->createdAt = val;
 }
 
-void SchemaVersion::__set_cols(const std::vector<FieldSchema> & val) {
+void ISchemaVersion::__set_cols(const std::vector<FieldSchema> & val) {
   this->cols = val;
 }
 
-void SchemaVersion::__set_state(const SchemaVersionState::type val) {
+void ISchemaVersion::__set_state(const SchemaVersionState::type val) {
   this->state = val;
 __isset.state = true;
 }
 
-void SchemaVersion::__set_description(const std::string& val) {
+void ISchemaVersion::__set_description(const std::string& val) {
   this->description = val;
 __isset.description = true;
 }
 
-void SchemaVersion::__set_schemaText(const std::string& val) {
+void ISchemaVersion::__set_schemaText(const std::string& val) {
   this->schemaText = val;
 __isset.schemaText = true;
 }
 
-void SchemaVersion::__set_fingerprint(const std::string& val) {
+void ISchemaVersion::__set_fingerprint(const std::string& val) {
   this->fingerprint = val;
 __isset.fingerprint = true;
 }
 
-void SchemaVersion::__set_name(const std::string& val) {
+void ISchemaVersion::__set_name(const std::string& val) {
   this->name = val;
 __isset.name = true;
 }
 
-void SchemaVersion::__set_serDe(const SerDeInfo& val) {
+void ISchemaVersion::__set_serDe(const SerDeInfo& val) {
   this->serDe = val;
 __isset.serDe = true;
 }
 
-uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
+void ISchemaVersion::__set_schemaVersionId(const int64_t val) {
+  this->schemaVersionId = val;
+__isset.schemaVersionId = true;
+}
+
+uint32_t ISchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -30145,6 +30194,14 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->schemaVersionId);
+          this->__isset.schemaVersionId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -30157,10 +30214,10 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t SchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ISchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("SchemaVersion");
+  xfer += oprot->writeStructBegin("ISchemaVersion");
 
   xfer += oprot->writeFieldBegin("schema", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += this->schema.write(oprot);
@@ -30216,12 +30273,17 @@ uint32_t SchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) cons
     xfer += this->serDe.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.schemaVersionId) {
+    xfer += oprot->writeFieldBegin("schemaVersionId", ::apache::thrift::protocol::T_I64, 11);
+    xfer += oprot->writeI64(this->schemaVersionId);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
 }
 
-void swap(SchemaVersion &a, SchemaVersion &b) {
+void swap(ISchemaVersion &a, ISchemaVersion &b) {
   using ::std::swap;
   swap(a.schema, b.schema);
   swap(a.version, b.version);
@@ -30233,10 +30295,11 @@ void swap(SchemaVersion &a, SchemaVersion &b) {
   swap(a.fingerprint, b.fingerprint);
   swap(a.name, b.name);
   swap(a.serDe, b.serDe);
+  swap(a.schemaVersionId, b.schemaVersionId);
   swap(a.__isset, b.__isset);
 }
 
-SchemaVersion::SchemaVersion(const SchemaVersion& other1147) {
+ISchemaVersion::ISchemaVersion(const ISchemaVersion& other1147) {
   schema = other1147.schema;
   version = other1147.version;
   createdAt = other1147.createdAt;
@@ -30247,9 +30310,10 @@ SchemaVersion::SchemaVersion(const SchemaVersion& other1147) {
   fingerprint = other1147.fingerprint;
   name = other1147.name;
   serDe = other1147.serDe;
+  schemaVersionId = other1147.schemaVersionId;
   __isset = other1147.__isset;
 }
-SchemaVersion& SchemaVersion::operator=(const SchemaVersion& other1148) {
+ISchemaVersion& ISchemaVersion::operator=(const ISchemaVersion& other1148) {
   schema = other1148.schema;
   version = other1148.version;
   createdAt = other1148.createdAt;
@@ -30260,12 +30324,13 @@ SchemaVersion& SchemaVersion::operator=(const SchemaVersion& other1148) {
   fingerprint = other1148.fingerprint;
   name = other1148.name;
   serDe = other1148.serDe;
+  schemaVersionId = other1148.schemaVersionId;
   __isset = other1148.__isset;
   return *this;
 }
-void SchemaVersion::printTo(std::ostream& out) const {
+void ISchemaVersion::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "SchemaVersion(";
+  out << "ISchemaVersion(";
   out << "schema=" << to_string(schema);
   out << ", " << "version=" << to_string(version);
   out << ", " << "createdAt=" << to_string(createdAt);
@@ -30276,23 +30341,24 @@ void SchemaVersion::printTo(std::ostream& out) const {
   out << ", " << "fingerprint="; (__isset.fingerprint ? (out << to_string(fingerprint)) : (out << "<null>"));
   out << ", " << "name="; (__isset.name ? (out << to_string(name)) : (out << "<null>"));
   out << ", " << "serDe="; (__isset.serDe ? (out << to_string(serDe)) : (out << "<null>"));
+  out << ", " << "schemaVersionId="; (__isset.schemaVersionId ? (out << to_string(schemaVersionId)) : (out << "<null>"));
   out << ")";
 }
 
 
-SchemaVersionDescriptor::~SchemaVersionDescriptor() throw() {
+ISchemaVersionDescriptor::~ISchemaVersionDescriptor() throw() {
 }
 
 
-void SchemaVersionDescriptor::__set_schema(const ISchemaName& val) {
+void ISchemaVersionDescriptor::__set_schema(const ISchemaName& val) {
   this->schema = val;
 }
 
-void SchemaVersionDescriptor::__set_version(const int32_t val) {
+void ISchemaVersionDescriptor::__set_version(const int32_t val) {
   this->version = val;
 }
 
-uint32_t SchemaVersionDescriptor::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ISchemaVersionDescriptor::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -30341,10 +30407,10 @@ uint32_t SchemaVersionDescriptor::read(::apache::thrift::protocol::TProtocol* ip
   return xfer;
 }
 
-uint32_t SchemaVersionDescriptor::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ISchemaVersionDescriptor::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("SchemaVersionDescriptor");
+  xfer += oprot->writeStructBegin("ISchemaVersionDescriptor");
 
   xfer += oprot->writeFieldBegin("schema", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += this->schema.write(oprot);
@@ -30359,29 +30425,135 @@ uint32_t SchemaVersionDescriptor::write(::apache::thrift::protocol::TProtocol* o
   return xfer;
 }
 
-void swap(SchemaVersionDescriptor &a, SchemaVersionDescriptor &b) {
+void swap(ISchemaVersionDescriptor &a, ISchemaVersionDescriptor &b) {
   using ::std::swap;
   swap(a.schema, b.schema);
   swap(a.version, b.version);
   swap(a.__isset, b.__isset);
 }
 
-SchemaVersionDescriptor::SchemaVersionDescriptor(const SchemaVersionDescriptor& other1149) {
+ISchemaVersionDescriptor::ISchemaVersionDescriptor(const ISchemaVersionDescriptor& other1149) {
   schema = other1149.schema;
   version = other1149.version;
   __isset = other1149.__isset;
 }
-SchemaVersionDescriptor& SchemaVersionDescriptor::operator=(const SchemaVersionDescriptor& other1150) {
+ISchemaVersionDescriptor& ISchemaVersionDescriptor::operator=(const ISchemaVersionDescriptor& other1150) {
   schema = other1150.schema;
   version = other1150.version;
   __isset = other1150.__isset;
   return *this;
 }
-void SchemaVersionDescriptor::printTo(std::ostream& out) const {
+void ISchemaVersionDescriptor::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "SchemaVersionDescriptor(";
+  out << "ISchemaVersionDescriptor(";
   out << "schema=" << to_string(schema);
   out << ", " << "version=" << to_string(version);
+  out << ")";
+}
+
+
+ISchemaVersionFingerprint::~ISchemaVersionFingerprint() throw() {
+}
+
+
+void ISchemaVersionFingerprint::__set_schemaName(const ISchemaName& val) {
+  this->schemaName = val;
+}
+
+void ISchemaVersionFingerprint::__set_fingerPrint(const std::string& val) {
+  this->fingerPrint = val;
+}
+
+uint32_t ISchemaVersionFingerprint::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->schemaName.read(iprot);
+          this->__isset.schemaName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->fingerPrint);
+          this->__isset.fingerPrint = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ISchemaVersionFingerprint::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ISchemaVersionFingerprint");
+
+  xfer += oprot->writeFieldBegin("schemaName", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->schemaName.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("fingerPrint", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->fingerPrint);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ISchemaVersionFingerprint &a, ISchemaVersionFingerprint &b) {
+  using ::std::swap;
+  swap(a.schemaName, b.schemaName);
+  swap(a.fingerPrint, b.fingerPrint);
+  swap(a.__isset, b.__isset);
+}
+
+ISchemaVersionFingerprint::ISchemaVersionFingerprint(const ISchemaVersionFingerprint& other1151) {
+  schemaName = other1151.schemaName;
+  fingerPrint = other1151.fingerPrint;
+  __isset = other1151.__isset;
+}
+ISchemaVersionFingerprint& ISchemaVersionFingerprint::operator=(const ISchemaVersionFingerprint& other1152) {
+  schemaName = other1152.schemaName;
+  fingerPrint = other1152.fingerPrint;
+  __isset = other1152.__isset;
+  return *this;
+}
+void ISchemaVersionFingerprint::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ISchemaVersionFingerprint(";
+  out << "schemaName=" << to_string(schemaName);
+  out << ", " << "fingerPrint=" << to_string(fingerPrint);
   out << ")";
 }
 
@@ -30495,17 +30667,17 @@ void swap(FindSchemasByColsRqst &a, FindSchemasByColsRqst &b) {
   swap(a.__isset, b.__isset);
 }
 
-FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1151) {
-  colName = other1151.colName;
-  colNamespace = other1151.colNamespace;
-  type = other1151.type;
-  __isset = other1151.__isset;
+FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1153) {
+  colName = other1153.colName;
+  colNamespace = other1153.colNamespace;
+  type = other1153.type;
+  __isset = other1153.__isset;
 }
-FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1152) {
-  colName = other1152.colName;
-  colNamespace = other1152.colNamespace;
-  type = other1152.type;
-  __isset = other1152.__isset;
+FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1154) {
+  colName = other1154.colName;
+  colNamespace = other1154.colNamespace;
+  type = other1154.type;
+  __isset = other1154.__isset;
   return *this;
 }
 void FindSchemasByColsRqst::printTo(std::ostream& out) const {
@@ -30522,7 +30694,7 @@ FindSchemasByColsResp::~FindSchemasByColsResp() throw() {
 }
 
 
-void FindSchemasByColsResp::__set_schemaVersions(const std::vector<SchemaVersionDescriptor> & val) {
+void FindSchemasByColsResp::__set_schemaVersions(const std::vector<ISchemaVersionDescriptor> & val) {
   this->schemaVersions = val;
 }
 
@@ -30551,14 +30723,14 @@ uint32_t FindSchemasByColsResp::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->schemaVersions.clear();
-            uint32_t _size1153;
-            ::apache::thrift::protocol::TType _etype1156;
-            xfer += iprot->readListBegin(_etype1156, _size1153);
-            this->schemaVersions.resize(_size1153);
-            uint32_t _i1157;
-            for (_i1157 = 0; _i1157 < _size1153; ++_i1157)
+            uint32_t _size1155;
+            ::apache::thrift::protocol::TType _etype1158;
+            xfer += iprot->readListBegin(_etype1158, _size1155);
+            this->schemaVersions.resize(_size1155);
+            uint32_t _i1159;
+            for (_i1159 = 0; _i1159 < _size1155; ++_i1159)
             {
-              xfer += this->schemaVersions[_i1157].read(iprot);
+              xfer += this->schemaVersions[_i1159].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -30587,10 +30759,10 @@ uint32_t FindSchemasByColsResp::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeFieldBegin("schemaVersions", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->schemaVersions.size()));
-    std::vector<SchemaVersionDescriptor> ::const_iterator _iter1158;
-    for (_iter1158 = this->schemaVersions.begin(); _iter1158 != this->schemaVersions.end(); ++_iter1158)
+    std::vector<ISchemaVersionDescriptor> ::const_iterator _iter1160;
+    for (_iter1160 = this->schemaVersions.begin(); _iter1160 != this->schemaVersions.end(); ++_iter1160)
     {
-      xfer += (*_iter1158).write(oprot);
+      xfer += (*_iter1160).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -30607,13 +30779,13 @@ void swap(FindSchemasByColsResp &a, FindSchemasByColsResp &b) {
   swap(a.__isset, b.__isset);
 }
 
-FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1159) {
-  schemaVersions = other1159.schemaVersions;
-  __isset = other1159.__isset;
+FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1161) {
+  schemaVersions = other1161.schemaVersions;
+  __isset = other1161.__isset;
 }
-FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1160) {
-  schemaVersions = other1160.schemaVersions;
-  __isset = other1160.__isset;
+FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1162) {
+  schemaVersions = other1162.schemaVersions;
+  __isset = other1162.__isset;
   return *this;
 }
 void FindSchemasByColsResp::printTo(std::ostream& out) const {
@@ -30628,7 +30800,7 @@ MapSchemaVersionToSerdeRequest::~MapSchemaVersionToSerdeRequest() throw() {
 }
 
 
-void MapSchemaVersionToSerdeRequest::__set_schemaVersion(const SchemaVersionDescriptor& val) {
+void MapSchemaVersionToSerdeRequest::__set_schemaVersion(const ISchemaVersionDescriptor& val) {
   this->schemaVersion = val;
 }
 
@@ -30710,15 +30882,15 @@ void swap(MapSchemaVersionToSerdeRequest &a, MapSchemaVersionToSerdeRequest &b) 
   swap(a.__isset, b.__isset);
 }
 
-MapSchemaVersionToSerdeRequest::MapSchemaVersionToSerdeRequest(const MapSchemaVersionToSerdeRequest& other1161) {
-  schemaVersion = other1161.schemaVersion;
-  serdeName = other1161.serdeName;
-  __isset = other1161.__isset;
+MapSchemaVersionToSerdeRequest::MapSchemaVersionToSerdeRequest(const MapSchemaVersionToSerdeRequest& other1163) {
+  schemaVersion = other1163.schemaVersion;
+  serdeName = other1163.serdeName;
+  __isset = other1163.__isset;
 }
-MapSchemaVersionToSerdeRequest& MapSchemaVersionToSerdeRequest::operator=(const MapSchemaVersionToSerdeRequest& other1162) {
-  schemaVersion = other1162.schemaVersion;
-  serdeName = other1162.serdeName;
-  __isset = other1162.__isset;
+MapSchemaVersionToSerdeRequest& MapSchemaVersionToSerdeRequest::operator=(const MapSchemaVersionToSerdeRequest& other1164) {
+  schemaVersion = other1164.schemaVersion;
+  serdeName = other1164.serdeName;
+  __isset = other1164.__isset;
   return *this;
 }
 void MapSchemaVersionToSerdeRequest::printTo(std::ostream& out) const {
@@ -30734,7 +30906,7 @@ SetSchemaVersionStateRequest::~SetSchemaVersionStateRequest() throw() {
 }
 
 
-void SetSchemaVersionStateRequest::__set_schemaVersion(const SchemaVersionDescriptor& val) {
+void SetSchemaVersionStateRequest::__set_schemaVersion(const ISchemaVersionDescriptor& val) {
   this->schemaVersion = val;
 }
 
@@ -30773,9 +30945,9 @@ uint32_t SetSchemaVersionStateRequest::read(::apache::thrift::protocol::TProtoco
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1163;
-          xfer += iprot->readI32(ecast1163);
-          this->state = (SchemaVersionState::type)ecast1163;
+          int32_t ecast1165;
+          xfer += iprot->readI32(ecast1165);
+          this->state = (SchemaVersionState::type)ecast1165;
           this->__isset.state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -30818,15 +30990,15 @@ void swap(SetSchemaVersionStateRequest &a, SetSchemaVersionStateRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-SetSchemaVersionStateRequest::SetSchemaVersionStateRequest(const SetSchemaVersionStateRequest& other1164) {
-  schemaVersion = other1164.schemaVersion;
-  state = other1164.state;
-  __isset = other1164.__isset;
+SetSchemaVersionStateRequest::SetSchemaVersionStateRequest(const SetSchemaVersionStateRequest& other1166) {
+  schemaVersion = other1166.schemaVersion;
+  state = other1166.state;
+  __isset = other1166.__isset;
 }
-SetSchemaVersionStateRequest& SetSchemaVersionStateRequest::operator=(const SetSchemaVersionStateRequest& other1165) {
-  schemaVersion = other1165.schemaVersion;
-  state = other1165.state;
-  __isset = other1165.__isset;
+SetSchemaVersionStateRequest& SetSchemaVersionStateRequest::operator=(const SetSchemaVersionStateRequest& other1167) {
+  schemaVersion = other1167.schemaVersion;
+  state = other1167.state;
+  __isset = other1167.__isset;
   return *this;
 }
 void SetSchemaVersionStateRequest::printTo(std::ostream& out) const {
@@ -30907,19 +31079,297 @@ void swap(GetSerdeRequest &a, GetSerdeRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-GetSerdeRequest::GetSerdeRequest(const GetSerdeRequest& other1166) {
-  serdeName = other1166.serdeName;
-  __isset = other1166.__isset;
+GetSerdeRequest::GetSerdeRequest(const GetSerdeRequest& other1168) {
+  serdeName = other1168.serdeName;
+  __isset = other1168.__isset;
 }
-GetSerdeRequest& GetSerdeRequest::operator=(const GetSerdeRequest& other1167) {
-  serdeName = other1167.serdeName;
-  __isset = other1167.__isset;
+GetSerdeRequest& GetSerdeRequest::operator=(const GetSerdeRequest& other1169) {
+  serdeName = other1169.serdeName;
+  __isset = other1169.__isset;
   return *this;
 }
 void GetSerdeRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "GetSerdeRequest(";
   out << "serdeName=" << to_string(serdeName);
+  out << ")";
+}
+
+
+ISchemaBranch::~ISchemaBranch() throw() {
+}
+
+
+void ISchemaBranch::__set_schemaBranchId(const int64_t val) {
+  this->schemaBranchId = val;
+__isset.schemaBranchId = true;
+}
+
+void ISchemaBranch::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void ISchemaBranch::__set_schemaMetadataName(const std::string& val) {
+  this->schemaMetadataName = val;
+}
+
+void ISchemaBranch::__set_description(const std::string& val) {
+  this->description = val;
+__isset.description = true;
+}
+
+void ISchemaBranch::__set_timestamp(const int64_t val) {
+  this->timestamp = val;
+__isset.timestamp = true;
+}
+
+uint32_t ISchemaBranch::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->schemaBranchId);
+          this->__isset.schemaBranchId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->schemaMetadataName);
+          this->__isset.schemaMetadataName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->description);
+          this->__isset.description = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->timestamp);
+          this->__isset.timestamp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ISchemaBranch::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ISchemaBranch");
+
+  if (this->__isset.schemaBranchId) {
+    xfer += oprot->writeFieldBegin("schemaBranchId", ::apache::thrift::protocol::T_I64, 1);
+    xfer += oprot->writeI64(this->schemaBranchId);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("schemaMetadataName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->schemaMetadataName);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.description) {
+    xfer += oprot->writeFieldBegin("description", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->description);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.timestamp) {
+    xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 5);
+    xfer += oprot->writeI64(this->timestamp);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ISchemaBranch &a, ISchemaBranch &b) {
+  using ::std::swap;
+  swap(a.schemaBranchId, b.schemaBranchId);
+  swap(a.name, b.name);
+  swap(a.schemaMetadataName, b.schemaMetadataName);
+  swap(a.description, b.description);
+  swap(a.timestamp, b.timestamp);
+  swap(a.__isset, b.__isset);
+}
+
+ISchemaBranch::ISchemaBranch(const ISchemaBranch& other1170) {
+  schemaBranchId = other1170.schemaBranchId;
+  name = other1170.name;
+  schemaMetadataName = other1170.schemaMetadataName;
+  description = other1170.description;
+  timestamp = other1170.timestamp;
+  __isset = other1170.__isset;
+}
+ISchemaBranch& ISchemaBranch::operator=(const ISchemaBranch& other1171) {
+  schemaBranchId = other1171.schemaBranchId;
+  name = other1171.name;
+  schemaMetadataName = other1171.schemaMetadataName;
+  description = other1171.description;
+  timestamp = other1171.timestamp;
+  __isset = other1171.__isset;
+  return *this;
+}
+void ISchemaBranch::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ISchemaBranch(";
+  out << "schemaBranchId="; (__isset.schemaBranchId ? (out << to_string(schemaBranchId)) : (out << "<null>"));
+  out << ", " << "name=" << to_string(name);
+  out << ", " << "schemaMetadataName=" << to_string(schemaMetadataName);
+  out << ", " << "description="; (__isset.description ? (out << to_string(description)) : (out << "<null>"));
+  out << ", " << "timestamp="; (__isset.timestamp ? (out << to_string(timestamp)) : (out << "<null>"));
+  out << ")";
+}
+
+
+ISchemaBranchToISchemaVersion::~ISchemaBranchToISchemaVersion() throw() {
+}
+
+
+void ISchemaBranchToISchemaVersion::__set_schemaBranchId(const int64_t val) {
+  this->schemaBranchId = val;
+}
+
+void ISchemaBranchToISchemaVersion::__set_schemaVersionId(const int64_t val) {
+  this->schemaVersionId = val;
+}
+
+uint32_t ISchemaBranchToISchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->schemaBranchId);
+          this->__isset.schemaBranchId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->schemaVersionId);
+          this->__isset.schemaVersionId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ISchemaBranchToISchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ISchemaBranchToISchemaVersion");
+
+  xfer += oprot->writeFieldBegin("schemaBranchId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->schemaBranchId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("schemaVersionId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->schemaVersionId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ISchemaBranchToISchemaVersion &a, ISchemaBranchToISchemaVersion &b) {
+  using ::std::swap;
+  swap(a.schemaBranchId, b.schemaBranchId);
+  swap(a.schemaVersionId, b.schemaVersionId);
+  swap(a.__isset, b.__isset);
+}
+
+ISchemaBranchToISchemaVersion::ISchemaBranchToISchemaVersion(const ISchemaBranchToISchemaVersion& other1172) {
+  schemaBranchId = other1172.schemaBranchId;
+  schemaVersionId = other1172.schemaVersionId;
+  __isset = other1172.__isset;
+}
+ISchemaBranchToISchemaVersion& ISchemaBranchToISchemaVersion::operator=(const ISchemaBranchToISchemaVersion& other1173) {
+  schemaBranchId = other1173.schemaBranchId;
+  schemaVersionId = other1173.schemaVersionId;
+  __isset = other1173.__isset;
+  return *this;
+}
+void ISchemaBranchToISchemaVersion::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ISchemaBranchToISchemaVersion(";
+  out << "schemaBranchId=" << to_string(schemaBranchId);
+  out << ", " << "schemaVersionId=" << to_string(schemaVersionId);
   out << ")";
 }
 
@@ -31035,17 +31485,17 @@ void swap(RuntimeStat &a, RuntimeStat &b) {
   swap(a.__isset, b.__isset);
 }
 
-RuntimeStat::RuntimeStat(const RuntimeStat& other1168) {
-  createTime = other1168.createTime;
-  weight = other1168.weight;
-  payload = other1168.payload;
-  __isset = other1168.__isset;
+RuntimeStat::RuntimeStat(const RuntimeStat& other1174) {
+  createTime = other1174.createTime;
+  weight = other1174.weight;
+  payload = other1174.payload;
+  __isset = other1174.__isset;
 }
-RuntimeStat& RuntimeStat::operator=(const RuntimeStat& other1169) {
-  createTime = other1169.createTime;
-  weight = other1169.weight;
-  payload = other1169.payload;
-  __isset = other1169.__isset;
+RuntimeStat& RuntimeStat::operator=(const RuntimeStat& other1175) {
+  createTime = other1175.createTime;
+  weight = other1175.weight;
+  payload = other1175.payload;
+  __isset = other1175.__isset;
   return *this;
 }
 void RuntimeStat::printTo(std::ostream& out) const {
@@ -31149,13 +31599,13 @@ void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b) {
   swap(a.maxCreateTime, b.maxCreateTime);
 }
 
-GetRuntimeStatsRequest::GetRuntimeStatsRequest(const GetRuntimeStatsRequest& other1170) {
-  maxWeight = other1170.maxWeight;
-  maxCreateTime = other1170.maxCreateTime;
+GetRuntimeStatsRequest::GetRuntimeStatsRequest(const GetRuntimeStatsRequest& other1176) {
+  maxWeight = other1176.maxWeight;
+  maxCreateTime = other1176.maxCreateTime;
 }
-GetRuntimeStatsRequest& GetRuntimeStatsRequest::operator=(const GetRuntimeStatsRequest& other1171) {
-  maxWeight = other1171.maxWeight;
-  maxCreateTime = other1171.maxCreateTime;
+GetRuntimeStatsRequest& GetRuntimeStatsRequest::operator=(const GetRuntimeStatsRequest& other1177) {
+  maxWeight = other1177.maxWeight;
+  maxCreateTime = other1177.maxCreateTime;
   return *this;
 }
 void GetRuntimeStatsRequest::printTo(std::ostream& out) const {
@@ -31236,13 +31686,13 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
-MetaException::MetaException(const MetaException& other1172) : TException() {
-  message = other1172.message;
-  __isset = other1172.__isset;
+MetaException::MetaException(const MetaException& other1178) : TException() {
+  message = other1178.message;
+  __isset = other1178.__isset;
 }
-MetaException& MetaException::operator=(const MetaException& other1173) {
-  message = other1173.message;
-  __isset = other1173.__isset;
+MetaException& MetaException::operator=(const MetaException& other1179) {
+  message = other1179.message;
+  __isset = other1179.__isset;
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -31333,13 +31783,13 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownTableException::UnknownTableException(const UnknownTableException& other1174) : TException() {
-  message = other1174.message;
-  __isset = other1174.__isset;
+UnknownTableException::UnknownTableException(const UnknownTableException& other1180) : TException() {
+  message = other1180.message;
+  __isset = other1180.__isset;
 }
-UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1175) {
-  message = other1175.message;
-  __isset = other1175.__isset;
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1181) {
+  message = other1181.message;
+  __isset = other1181.__isset;
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -31430,13 +31880,13 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownDBException::UnknownDBException(const UnknownDBException& other1176) : TException() {
-  message = other1176.message;
-  __isset = other1176.__isset;
+UnknownDBException::UnknownDBException(const UnknownDBException& other1182) : TException() {
+  message = other1182.message;
+  __isset = other1182.__isset;
 }
-UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1177) {
-  message = other1177.message;
-  __isset = other1177.__isset;
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1183) {
+  message = other1183.message;
+  __isset = other1183.__isset;
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -31527,13 +31977,13 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1178) : TException() {
-  message = other1178.message;
-  __isset = other1178.__isset;
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1184) : TException() {
+  message = other1184.message;
+  __isset = other1184.__isset;
 }
-AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1179) {
-  message = other1179.message;
-  __isset = other1179.__isset;
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1185) {
+  message = other1185.message;
+  __isset = other1185.__isset;
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -31624,13 +32074,13 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1180) : TException() {
-  message = other1180.message;
-  __isset = other1180.__isset;
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1186) : TException() {
+  message = other1186.message;
+  __isset = other1186.__isset;
 }
-InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1181) {
-  message = other1181.message;
-  __isset = other1181.__isset;
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1187) {
+  message = other1187.message;
+  __isset = other1187.__isset;
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -31721,13 +32171,13 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1182) : TException() {
-  message = other1182.message;
-  __isset = other1182.__isset;
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1188) : TException() {
+  message = other1188.message;
+  __isset = other1188.__isset;
 }
-UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1183) {
-  message = other1183.message;
-  __isset = other1183.__isset;
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1189) {
+  message = other1189.message;
+  __isset = other1189.__isset;
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -31818,13 +32268,13 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1184) : TException() {
-  message = other1184.message;
-  __isset = other1184.__isset;
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1190) : TException() {
+  message = other1190.message;
+  __isset = other1190.__isset;
 }
-InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1185) {
-  message = other1185.message;
-  __isset = other1185.__isset;
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1191) {
+  message = other1191.message;
+  __isset = other1191.__isset;
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -31915,13 +32365,13 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1186) : TException() {
-  message = other1186.message;
-  __isset = other1186.__isset;
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1192) : TException() {
+  message = other1192.message;
+  __isset = other1192.__isset;
 }
-NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1187) {
-  message = other1187.message;
-  __isset = other1187.__isset;
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1193) {
+  message = other1193.message;
+  __isset = other1193.__isset;
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -32012,13 +32462,13 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1188) : TException() {
-  message = other1188.message;
-  __isset = other1188.__isset;
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1194) : TException() {
+  message = other1194.message;
+  __isset = other1194.__isset;
 }
-InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1189) {
-  message = other1189.message;
-  __isset = other1189.__isset;
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1195) {
+  message = other1195.message;
+  __isset = other1195.__isset;
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -32109,13 +32559,13 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
-ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1190) : TException() {
-  message = other1190.message;
-  __isset = other1190.__isset;
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1196) : TException() {
+  message = other1196.message;
+  __isset = other1196.__isset;
 }
-ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1191) {
-  message = other1191.message;
-  __isset = other1191.__isset;
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1197) {
+  message = other1197.message;
+  __isset = other1197.__isset;
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -32206,13 +32656,13 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidInputException::InvalidInputException(const InvalidInputException& other1192) : TException() {
-  message = other1192.message;
-  __isset = other1192.__isset;
+InvalidInputException::InvalidInputException(const InvalidInputException& other1198) : TException() {
+  message = other1198.message;
+  __isset = other1198.__isset;
 }
-InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1193) {
-  message = other1193.message;
-  __isset = other1193.__isset;
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1199) {
+  message = other1199.message;
+  __isset = other1199.__isset;
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -32303,13 +32753,13 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1194) : TException() {
-  message = other1194.message;
-  __isset = other1194.__isset;
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1200) : TException() {
+  message = other1200.message;
+  __isset = other1200.__isset;
 }
-NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1195) {
-  message = other1195.message;
-  __isset = other1195.__isset;
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1201) {
+  message = other1201.message;
+  __isset = other1201.__isset;
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -32400,13 +32850,13 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1196) : TException() {
-  message = other1196.message;
-  __isset = other1196.__isset;
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1202) : TException() {
+  message = other1202.message;
+  __isset = other1202.__isset;
 }
-TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1197) {
-  message = other1197.message;
-  __isset = other1197.__isset;
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1203) {
+  message = other1203.message;
+  __isset = other1203.__isset;
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -32497,13 +32947,13 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnOpenException::TxnOpenException(const TxnOpenException& other1198) : TException() {
-  message = other1198.message;
-  __isset = other1198.__isset;
+TxnOpenException::TxnOpenException(const TxnOpenException& other1204) : TException() {
+  message = other1204.message;
+  __isset = other1204.__isset;
 }
-TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1199) {
-  message = other1199.message;
-  __isset = other1199.__isset;
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1205) {
+  message = other1205.message;
+  __isset = other1205.__isset;
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -32594,13 +33044,13 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1200) : TException() {
-  message = other1200.message;
-  __isset = other1200.__isset;
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1206) : TException() {
+  message = other1206.message;
+  __isset = other1206.__isset;
 }
-NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1201) {
-  message = other1201.message;
-  __isset = other1201.__isset;
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1207) {
+  message = other1207.message;
+  __isset = other1207.__isset;
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

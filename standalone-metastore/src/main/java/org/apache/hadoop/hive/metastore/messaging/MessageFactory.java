@@ -74,6 +74,8 @@ public abstract class MessageFactory {
   public static final String ABORT_TXN_EVENT = "ABORT_TXN";
   public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
   public static final String ALTER_CATALOG_EVENT = "ALTER_CATALOG";
+  public static final String ADD_SCHEMA_BRANCH_EVENT = "ADD_SCHEMA_BRANCH_EVENT";
+  public static final String MAP_SCHEMA_BRANCH_TO_SCHEMA_VERSION = "MAP_SCHEMA_BRANCH_TO_SCHEMA_VERSION";
 
   private static MessageFactory instance = null;
 

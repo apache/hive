@@ -967,7 +967,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_or_drop_wm_trigger_to_pool_mapping\n");
   }
 
-  void create_ischema(const ISchema& schema) {
+  int64_t create_ischema(const ISchema& schema) {
     // Your implementation goes here
     printf("create_ischema\n");
   }
@@ -977,7 +977,12 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_ischema\n");
   }
 
-  void get_ischema(ISchema& _return, const ISchemaName& name) {
+  void get_ischema_by_name(ISchema& _return, const ISchemaName& name) {
+    // Your implementation goes here
+    printf("get_ischema_by_name\n");
+  }
+
+  void get_ischema(ISchema& _return, const int64_t schemaId) {
     // Your implementation goes here
     printf("get_ischema\n");
   }
@@ -987,27 +992,37 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_ischema\n");
   }
 
-  void add_schema_version(const SchemaVersion& schemaVersion) {
+  int64_t add_schema_version(const ISchemaVersion& schemaVersion) {
     // Your implementation goes here
     printf("add_schema_version\n");
   }
 
-  void get_schema_version(SchemaVersion& _return, const SchemaVersionDescriptor& schemaVersion) {
+  void get_schema_version(ISchemaVersion& _return, const ISchemaVersionDescriptor& schemaVersion) {
     // Your implementation goes here
     printf("get_schema_version\n");
   }
 
-  void get_schema_latest_version(SchemaVersion& _return, const ISchemaName& schemaName) {
+  void get_schema_latest_version(ISchemaVersion& _return, const ISchemaName& schemaName) {
     // Your implementation goes here
     printf("get_schema_latest_version\n");
   }
 
-  void get_schema_all_versions(std::vector<SchemaVersion> & _return, const ISchemaName& schemaName) {
+  void get_schema_version_by_id(ISchemaVersion& _return, const int64_t schemaVersionid) {
+    // Your implementation goes here
+    printf("get_schema_version_by_id\n");
+  }
+
+  void get_schema_versions_by_name_and_fingerprint(std::vector<ISchemaVersion> & _return, const ISchemaVersionFingerprint& schemaVersionFingerprint) {
+    // Your implementation goes here
+    printf("get_schema_versions_by_name_and_fingerprint\n");
+  }
+
+  void get_schema_all_versions(std::vector<ISchemaVersion> & _return, const ISchemaName& schemaName) {
     // Your implementation goes here
     printf("get_schema_all_versions\n");
   }
 
-  void drop_schema_version(const SchemaVersionDescriptor& schemaVersion) {
+  void drop_schema_version(const ISchemaVersionDescriptor& schemaVersion) {
     // Your implementation goes here
     printf("drop_schema_version\n");
   }
@@ -1015,6 +1030,36 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_schemas_by_cols(FindSchemasByColsResp& _return, const FindSchemasByColsRqst& rqst) {
     // Your implementation goes here
     printf("get_schemas_by_cols\n");
+  }
+
+  void add_schema_branch(const ISchemaBranch& schemaBranch) {
+    // Your implementation goes here
+    printf("add_schema_branch\n");
+  }
+
+  void map_schema_branch_to_schema_version(const int64_t schemaBranchId, const int64_t schemaVersionId) {
+    // Your implementation goes here
+    printf("map_schema_branch_to_schema_version\n");
+  }
+
+  void get_schema_branch(ISchemaBranch& _return, const int64_t schemaBranchId) {
+    // Your implementation goes here
+    printf("get_schema_branch\n");
+  }
+
+  void get_schema_branch_by_schema_name(std::vector<ISchemaBranch> & _return, const ISchemaName& schemaName) {
+    // Your implementation goes here
+    printf("get_schema_branch_by_schema_name\n");
+  }
+
+  void get_schema_branch_by_schema_version_id(std::vector<ISchemaBranch> & _return, const int64_t schemaVersionId) {
+    // Your implementation goes here
+    printf("get_schema_branch_by_schema_version_id\n");
+  }
+
+  void get_schema_versions_by_schema_branch_id(std::vector<ISchemaBranchToISchemaVersion> & _return, const int64_t schemaBranchId) {
+    // Your implementation goes here
+    printf("get_schema_versions_by_schema_branch_id\n");
   }
 
   void map_schema_version_to_serde(const MapSchemaVersionToSerdeRequest& rqst) {

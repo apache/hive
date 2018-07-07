@@ -19,10 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.ISchemaName;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.*;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -34,59 +31,6 @@ import java.util.Map;
 
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.RuntimeStat;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
@@ -1522,10 +1466,11 @@ public interface RawStore extends Configurable {
   /**
    * Create a new ISchema.
    * @param schema schema to create
+   * @return schema id
    * @throws AlreadyExistsException there's already a schema with this name
    * @throws MetaException general database exception
    */
-  void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
+  Long createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
       NoSuchObjectException;
 
   /**
@@ -1539,12 +1484,24 @@ public interface RawStore extends Configurable {
   void alterISchema(ISchemaName schemaName, ISchema newSchema) throws NoSuchObjectException, MetaException;
 
   /**
+   * Get an ISchema by Id.
+   * @param schemaId id of the schema
+   * @return ISchema
+   * @throws MetaException general database exception
+   * @throws InvalidObjectException the passed in SchemaVersion object has problems.
+   * @throws NoSuchObjectException no schema with the passed in name exists.
+   * @throws MetaException general database exception
+   */
+  ISchema getISchema(Long schemaId) throws MetaException;
+
+
+  /**
    * Get an ISchema by name.
-   * @param schemaName schema descriptor
+   * @param schemaName name of the schema
    * @return ISchema
    * @throws MetaException general database exception
    */
-  ISchema getISchema(ISchemaName schemaName) throws MetaException;
+  ISchema getISchemaByName(ISchemaName schemaName) throws MetaException;
 
   /**
    * Drop an ISchema.  This does not check whether there are valid versions of the schema in
@@ -1558,13 +1515,14 @@ public interface RawStore extends Configurable {
   /**
    * Create a new version of an existing schema.
    * @param schemaVersion version number
+   * @return return schemaVersion ID
    * @throws AlreadyExistsException a version of the schema with the same version number already
    * exists.
    * @throws InvalidObjectException the passed in SchemaVersion object has problems.
    * @throws NoSuchObjectException no schema with the passed in name exists.
    * @throws MetaException general database exception
    */
-  void addSchemaVersion(SchemaVersion schemaVersion)
+  Long addSchemaVersion(ISchemaVersion schemaVersion)
       throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
 
   /**
@@ -1577,7 +1535,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException no such version of the named schema exists
    * @throws MetaException general database exception
    */
-  void alterSchemaVersion(SchemaVersionDescriptor version, SchemaVersion newVersion)
+  void alterSchemaVersion(ISchemaVersionDescriptor version, ISchemaVersion newVersion)
       throws NoSuchObjectException, MetaException;
 
   /**
@@ -1586,7 +1544,7 @@ public interface RawStore extends Configurable {
    * @return the SchemaVersion
    * @throws MetaException general database exception
    */
-  SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) throws MetaException;
+  ISchemaVersion getSchemaVersion(ISchemaVersionDescriptor version) throws MetaException;
 
   /**
    * Get the latest version of a schema.
@@ -1594,7 +1552,7 @@ public interface RawStore extends Configurable {
    * @return latest version of the schema
    * @throws MetaException general database exception
    */
-  SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException;
+  ISchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException;
 
   /**
    * Get all of the versions of a schema
@@ -1602,7 +1560,26 @@ public interface RawStore extends Configurable {
    * @return all versions of the schema
    * @throws MetaException general database exception
    */
-  List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException;
+  List<ISchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException;
+
+
+  /**
+   * Get a specific schema version.
+   * @param schemaVersionId id of the schema version
+   * @return the SchemaVersion
+   * @throws MetaException general database exception
+   */
+  ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws MetaException;
+
+
+  /**
+   * Get all of the versions of a schema that matches schemaName and fingerPrint
+   * @param schemaVersionFingerprint fingerPrint of the schemaText
+   * @return all the version of the schema
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(ISchemaVersionFingerprint schemaVersionFingerprint) throws MetaException;
 
   /**
    * Find all SchemaVersion objects that match a query.  The query will select all SchemaVersions
@@ -1620,7 +1597,7 @@ public interface RawStore extends Configurable {
    * matching SchemaVersions.
    * @throws MetaException general database exception
    */
-  List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type)
+  List<ISchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type)
       throws MetaException;
 
   /**
@@ -1629,7 +1606,71 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException no such version of the named schema exists
    * @throws MetaException general database exception
    */
-  void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException, MetaException;
+  void dropSchemaVersion(ISchemaVersionDescriptor version) throws NoSuchObjectException, MetaException;
+
+
+  /**
+   * Create a new version of an existing schema.
+   * @param schemaBranch schema branch name and description
+   * @return returns schemaBranch ID
+   * @throws AlreadyExistsException a version of the schema with the same version number already
+   * exists.
+   * @throws InvalidObjectException the passed in SchemaVersion object has problems.
+   * @throws NoSuchObjectException no schema with the passed in name exists.
+   * @throws MetaException general database exception
+   */
+  Long addSchemaBranch(ISchemaBranch schemaBranch)
+          throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
+
+  /**
+   * Maps a existing schemaBranch to another existing schemaVersion
+   * @param schemaBranchId schema branch number
+   * @param schemaVersionId schema version number
+   * @throws AlreadyExistsException a version of the schema with the same version number already
+   * exists.
+   * @throws InvalidObjectException the passed in SchemaVersion object has problems.
+   * @throws NoSuchObjectException no schema with the passed in name exists.
+   * @throws MetaException general database exception
+   */
+  void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId)
+          throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
+
+  /**
+   * Get schema branch by id
+   * @param schemaBranchId schema branch number
+   * @return return ISchemaBranch associated with the branch number
+   * @throws MetaException general database exception
+   */
+  ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException;
+
+
+  /**
+   * Get SchemaBranch by schema name
+   * @param schemaName schema metadata name
+   * @return one or more ISchemaBranch associated with a schema name
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaBranch> getSchemaBranchBySchemaName(ISchemaName schemaName) throws MetaException;
+
+  /**
+   * Get SchemaBranch by schema version id
+   * @param schemaVersionId schema metadata name
+   * @return one or more ISchemaBranch associated with a schema name
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException;
+
+
+  /**
+   * Get SchemaVersions by schema branch id
+   * @param schemaBranchId schema branch id
+   * @return one or more schema versions associated with schema branch name
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException;
 
   /**
    * Get serde information

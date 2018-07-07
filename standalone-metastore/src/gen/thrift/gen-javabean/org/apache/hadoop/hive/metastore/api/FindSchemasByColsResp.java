@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new FindSchemasByColsRespTupleSchemeFactory());
   }
 
-  private List<SchemaVersionDescriptor> schemaVersions; // required
+  private List<ISchemaVersionDescriptor> schemaVersions; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -112,7 +112,7 @@ import org.slf4j.LoggerFactory;
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.SCHEMA_VERSIONS, new org.apache.thrift.meta_data.FieldMetaData("schemaVersions", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SchemaVersionDescriptor.class))));
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ISchemaVersionDescriptor.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FindSchemasByColsResp.class, metaDataMap);
   }
@@ -121,7 +121,7 @@ import org.slf4j.LoggerFactory;
   }
 
   public FindSchemasByColsResp(
-    List<SchemaVersionDescriptor> schemaVersions)
+    List<ISchemaVersionDescriptor> schemaVersions)
   {
     this();
     this.schemaVersions = schemaVersions;
@@ -132,9 +132,9 @@ import org.slf4j.LoggerFactory;
    */
   public FindSchemasByColsResp(FindSchemasByColsResp other) {
     if (other.isSetSchemaVersions()) {
-      List<SchemaVersionDescriptor> __this__schemaVersions = new ArrayList<SchemaVersionDescriptor>(other.schemaVersions.size());
-      for (SchemaVersionDescriptor other_element : other.schemaVersions) {
-        __this__schemaVersions.add(new SchemaVersionDescriptor(other_element));
+      List<ISchemaVersionDescriptor> __this__schemaVersions = new ArrayList<ISchemaVersionDescriptor>(other.schemaVersions.size());
+      for (ISchemaVersionDescriptor other_element : other.schemaVersions) {
+        __this__schemaVersions.add(new ISchemaVersionDescriptor(other_element));
       }
       this.schemaVersions = __this__schemaVersions;
     }
@@ -153,22 +153,22 @@ import org.slf4j.LoggerFactory;
     return (this.schemaVersions == null) ? 0 : this.schemaVersions.size();
   }
 
-  public java.util.Iterator<SchemaVersionDescriptor> getSchemaVersionsIterator() {
+  public java.util.Iterator<ISchemaVersionDescriptor> getSchemaVersionsIterator() {
     return (this.schemaVersions == null) ? null : this.schemaVersions.iterator();
   }
 
-  public void addToSchemaVersions(SchemaVersionDescriptor elem) {
+  public void addToSchemaVersions(ISchemaVersionDescriptor elem) {
     if (this.schemaVersions == null) {
-      this.schemaVersions = new ArrayList<SchemaVersionDescriptor>();
+      this.schemaVersions = new ArrayList<ISchemaVersionDescriptor>();
     }
     this.schemaVersions.add(elem);
   }
 
-  public List<SchemaVersionDescriptor> getSchemaVersions() {
+  public List<ISchemaVersionDescriptor> getSchemaVersions() {
     return this.schemaVersions;
   }
 
-  public void setSchemaVersions(List<SchemaVersionDescriptor> schemaVersions) {
+  public void setSchemaVersions(List<ISchemaVersionDescriptor> schemaVersions) {
     this.schemaVersions = schemaVersions;
   }
 
@@ -193,7 +193,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetSchemaVersions();
       } else {
-        setSchemaVersions((List<SchemaVersionDescriptor>)value);
+        setSchemaVersions((List<ISchemaVersionDescriptor>)value);
       }
       break;
 
@@ -351,11 +351,11 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list920 = iprot.readListBegin();
-                struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list920.size);
-                SchemaVersionDescriptor _elem921;
+                struct.schemaVersions = new ArrayList<ISchemaVersionDescriptor>(_list920.size);
+                ISchemaVersionDescriptor _elem921;
                 for (int _i922 = 0; _i922 < _list920.size; ++_i922)
                 {
-                  _elem921 = new SchemaVersionDescriptor();
+                  _elem921 = new ISchemaVersionDescriptor();
                   _elem921.read(iprot);
                   struct.schemaVersions.add(_elem921);
                 }
@@ -383,7 +383,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(SCHEMA_VERSIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.schemaVersions.size()));
-          for (SchemaVersionDescriptor _iter923 : struct.schemaVersions)
+          for (ISchemaVersionDescriptor _iter923 : struct.schemaVersions)
           {
             _iter923.write(oprot);
           }
@@ -416,7 +416,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetSchemaVersions()) {
         {
           oprot.writeI32(struct.schemaVersions.size());
-          for (SchemaVersionDescriptor _iter924 : struct.schemaVersions)
+          for (ISchemaVersionDescriptor _iter924 : struct.schemaVersions)
           {
             _iter924.write(oprot);
           }
@@ -431,11 +431,11 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list925 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list925.size);
-          SchemaVersionDescriptor _elem926;
+          struct.schemaVersions = new ArrayList<ISchemaVersionDescriptor>(_list925.size);
+          ISchemaVersionDescriptor _elem926;
           for (int _i927 = 0; _i927 < _list925.size; ++_i927)
           {
-            _elem926 = new SchemaVersionDescriptor();
+            _elem926 = new ISchemaVersionDescriptor();
             _elem926.read(iprot);
             struct.schemaVersions.add(_elem926);
           }

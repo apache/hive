@@ -32,8 +32,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
 import org.apache.hadoop.hive.metastore.api.SchemaType;
 import org.apache.hadoop.hive.metastore.api.SchemaValidation;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SerdeType;
@@ -105,7 +105,7 @@ public class TestHiveMetaStoreSchemaMethods {
 
   @Test(expected = NoSuchObjectException.class)
   public void getNonExistentSchema() throws TException {
-    client.getISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "no.such.schema");
+    client.getISchemaByName(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "no.such.schema");
   }
 
   @Test
@@ -128,7 +128,7 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.CREATE_ISCHEMA));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.CREATE_ISCHEMA));
 
-    schema = client.getISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
+    schema = client.getISchemaByName(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.READ_ISCHEMA));
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
@@ -153,7 +153,7 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.ALTER_ISCHEMA));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.ALTER_ISCHEMA));
 
-    schema = client.getISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
+    schema = client.getISchemaByName(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
     Assert.assertEquals(2, (int)preEvents.get(PreEventContext.PreEventType.READ_ISCHEMA));
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
@@ -169,7 +169,7 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.DROP_ISCHEMA));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.DROP_ISCHEMA));
     try {
-      client.getISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
+      client.getISchemaByName(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
       Assert.fail();
     } catch (NoSuchObjectException e) {
       // all good
@@ -206,7 +206,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.createISchema(schema);
 
-    schema = client.getISchema(catName, dbName, schemaName);
+    schema = client.getISchemaByName(catName, dbName, schemaName);
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
     Assert.assertEquals(schemaName, schema.getName());
@@ -227,7 +227,7 @@ public class TestHiveMetaStoreSchemaMethods {
     schema.setDescription(description);
     client.alterISchema(catName, dbName, schemaName, schema);
 
-    schema = client.getISchema(catName, dbName, schemaName);
+    schema = client.getISchemaByName(catName, dbName, schemaName);
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
     Assert.assertEquals(schemaName, schema.getName());
@@ -241,7 +241,7 @@ public class TestHiveMetaStoreSchemaMethods {
 
     client.dropISchema(catName, dbName, schemaName);
     try {
-      client.getISchema(catName, dbName, schemaName);
+      client.getISchemaByName(catName, dbName, schemaName);
       Assert.fail();
     } catch (NoSuchObjectException e) {
       // all good
@@ -297,7 +297,7 @@ public class TestHiveMetaStoreSchemaMethods {
 
   @Test(expected = NoSuchObjectException.class)
   public void createVersionOfNonExistentSchema() throws TException {
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .setSchemaName("noSchemaOfThisNameExists")
         .setVersion(1)
         .addCol("a", ColumnType.STRING_TYPE_NAME)
@@ -325,7 +325,7 @@ public class TestHiveMetaStoreSchemaMethods {
     String serializer = "org.apache.hadoop.hive.metastore.test.Serializer";
     String deserializer = "org.apache.hadoop.hive.metastore.test.Deserializer";
     String serdeDescription = "how do you describe a serde?";
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(version)
         .addCol("a", ColumnType.INT_TYPE_NAME)
@@ -417,7 +417,7 @@ public class TestHiveMetaStoreSchemaMethods {
     String serializer = "org.apache.hadoop.hive.metastore.test.Serializer";
     String deserializer = "org.apache.hadoop.hive.metastore.test.Deserializer";
     String serdeDescription = "how do you describe a serde?";
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(version)
         .addCol("a", ColumnType.INT_TYPE_NAME)
@@ -479,7 +479,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(schemaName)
         .build();
     client.createISchema(schema);
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(1)
         .addCol("a", ColumnType.BIGINT_TYPE_NAME)
@@ -519,10 +519,10 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(ColumnType.TIMESTAMP_TYPE_NAME, cols.get(2).getType());
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.READ_SCHEMA_VERSION));
 
-    List<SchemaVersion> versions = client.getSchemaAllVersions(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
+    List<ISchemaVersion> versions = client.getSchemaAllVersions(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
     Assert.assertEquals(2, (int)preEvents.get(PreEventContext.PreEventType.READ_SCHEMA_VERSION));
     Assert.assertEquals(3, versions.size());
-    versions.sort(Comparator.comparingInt(SchemaVersion::getVersion));
+    versions.sort(Comparator.comparingInt(ISchemaVersion::getVersion));
     Assert.assertEquals(1, versions.get(0).getVersion());
     Assert.assertEquals(1, versions.get(0).getColsSize());
     Assert.assertEquals(ColumnType.BIGINT_TYPE_NAME, versions.get(0).getCols().get(0).getType());
@@ -591,7 +591,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.createISchema(schema);
 
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(1)
         .addCol("a", ColumnType.INT_TYPE_NAME)
@@ -689,7 +689,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.createISchema(schema);
 
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(version)
         .addCol("a", ColumnType.INT_TYPE_NAME)
@@ -725,7 +725,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.createISchema(schema);
 
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(1)
         .addCol("x", ColumnType.BOOLEAN_TYPE_NAME)
@@ -743,7 +743,7 @@ public class TestHiveMetaStoreSchemaMethods {
     client.createISchema(schema);
 
     // Create schema with no serde, then map it
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(1)
         .addCol("x", ColumnType.BOOLEAN_TYPE_NAME)
@@ -801,7 +801,7 @@ public class TestHiveMetaStoreSchemaMethods {
     client.createISchema(schema);
 
     // Create schema with no serde, then map it
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(1)
         .addCol("x", ColumnType.BOOLEAN_TYPE_NAME)
@@ -896,7 +896,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.createISchema(schema);
 
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(1)
         .addCol("a", ColumnType.BINARY_TYPE_NAME)
@@ -944,7 +944,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.createISchema(schema);
 
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .versionOf(schema)
         .setVersion(1)
         .addCol("a", ColumnType.BINARY_TYPE_NAME)
@@ -997,7 +997,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.createISchema(schema2);
 
-    SchemaVersion schemaVersion1_1 = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion1_1 = new SchemaVersionBuilder()
         .versionOf(schema1)
         .setVersion(1)
         .addCol("alpha", ColumnType.BIGINT_TYPE_NAME)
@@ -1005,7 +1005,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.addSchemaVersion(schemaVersion1_1);
 
-    SchemaVersion schemaVersion1_2 = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion1_2 = new SchemaVersionBuilder()
         .versionOf(schema1)
         .setVersion(2)
         .addCol("alpha", ColumnType.BIGINT_TYPE_NAME)
@@ -1014,7 +1014,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.addSchemaVersion(schemaVersion1_2);
 
-    SchemaVersion schemaVersion2_1 = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion2_1 = new SchemaVersionBuilder()
         .versionOf(schema2)
         .setVersion(1)
         .addCol("ALPHA", ColumnType.SMALLINT_TYPE_NAME)
@@ -1022,7 +1022,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.addSchemaVersion(schemaVersion2_1);
 
-    SchemaVersion schemaVersion2_2 = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion2_2 = new SchemaVersionBuilder()
         .versionOf(schema2)
         .setVersion(2)
         .addCol("ALPHA", ColumnType.SMALLINT_TYPE_NAME)
@@ -1053,7 +1053,7 @@ public class TestHiveMetaStoreSchemaMethods {
     rqst.setColName("beta");
     rsp = client.getSchemaByCols(rqst);
     Assert.assertEquals(2, rsp.getSchemaVersionsSize());
-    List<SchemaVersionDescriptor> results = new ArrayList<>(rsp.getSchemaVersions());
+    List<ISchemaVersionDescriptor> results = new ArrayList<>(rsp.getSchemaVersions());
     Collections.sort(results);
     Assert.assertEquals(schemaName1, results.get(0).getSchema().getSchemaName());
     Assert.assertEquals(dbName, results.get(0).getSchema().getDbName());

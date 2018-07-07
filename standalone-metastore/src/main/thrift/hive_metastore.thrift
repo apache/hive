@@ -1477,7 +1477,9 @@ struct ISchema {
   6: SchemaValidation validationLevel,
   7: bool canEvolve,
   8: optional string schemaGroup,
-  9: optional string description
+  9: optional string description,
+  10: optional i64 timestamp,
+  11: optional i64 schemaId
 }
 
 struct ISchemaName {
@@ -1491,7 +1493,7 @@ struct AlterISchemaRequest {
   3: ISchema newSchema
 }
 
-struct SchemaVersion {
+struct ISchemaVersion {
   1:  ISchemaName schema,
   2:  i32 version,
   3:  i64 createdAt,
@@ -1501,12 +1503,18 @@ struct SchemaVersion {
   7:  optional string schemaText,
   8:  optional string fingerprint,
   9:  optional string name,
-  10: optional SerDeInfo serDe
+  10: optional SerDeInfo serDe,
+  11: optional i64 schemaVersionId
 }
 
-struct SchemaVersionDescriptor {
+struct ISchemaVersionDescriptor {
   1: ISchemaName schema,
   2: i32 version
+}
+
+struct ISchemaVersionFingerprint {
+  1: ISchemaName schemaName,
+  2: string fingerPrint
 }
 
 struct FindSchemasByColsRqst {
@@ -1516,21 +1524,34 @@ struct FindSchemasByColsRqst {
 }
 
 struct FindSchemasByColsResp {
-  1: list<SchemaVersionDescriptor> schemaVersions
+  1: list<ISchemaVersionDescriptor> schemaVersions
 }
 
 struct MapSchemaVersionToSerdeRequest {
-  1: SchemaVersionDescriptor schemaVersion,
+  1: ISchemaVersionDescriptor schemaVersion,
   2: string serdeName
 }
 
 struct SetSchemaVersionStateRequest {
-  1: SchemaVersionDescriptor schemaVersion,
+  1: ISchemaVersionDescriptor schemaVersion,
   2: SchemaVersionState state
 }
 
 struct GetSerdeRequest {
   1: string serdeName
+}
+
+struct ISchemaBranch {
+  1: optional i64 schemaBranchId,
+  2: string name,
+  3: string schemaMetadataName,
+  4: optional string description,
+  5: optional i64 timestamp
+}
+
+struct ISchemaBranchToISchemaVersion {
+  1: i64 schemaBranchId,
+  2: i64 schemaVersionId
 }
 
 struct RuntimeStat {
@@ -2170,26 +2191,50 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3, 4:MetaException o4)
 
   // Schema calls
-  void create_ischema(1:ISchema schema) throws(1:AlreadyExistsException o1,
+  i64 create_ischema(1:ISchema schema) throws(1:AlreadyExistsException o1,
         NoSuchObjectException o2, 3:MetaException o3)
   void alter_ischema(1:AlterISchemaRequest rqst)
         throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  ISchema get_ischema(1:ISchemaName name) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  ISchema get_ischema_by_name(1:ISchemaName name) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  ISchema get_ischema(1:i64 schemaId) throws (1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_ischema(1:ISchemaName name)
         throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
 
-  void add_schema_version(1:SchemaVersion schemaVersion)
+  i64 add_schema_version(1:ISchemaVersion schemaVersion)
         throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:MetaException o3)
-  SchemaVersion get_schema_version(1: SchemaVersionDescriptor schemaVersion)
+  ISchemaVersion get_schema_version(1: ISchemaVersionDescriptor schemaVersion)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
-  SchemaVersion get_schema_latest_version(1: ISchemaName schemaName)
+  ISchemaVersion get_schema_latest_version(1: ISchemaName schemaName)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
-  list<SchemaVersion> get_schema_all_versions(1: ISchemaName schemaName)
+  ISchemaVersion get_schema_version_by_id(1:i64 schemaVersionid)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
-  void drop_schema_version(1: SchemaVersionDescriptor schemaVersion)
+  list<ISchemaVersion> get_schema_versions_by_name_and_fingerprint(1:ISchemaVersionFingerprint schemaVersionFingerprint)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<ISchemaVersion> get_schema_all_versions(1: ISchemaName schemaName)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  void drop_schema_version(1: ISchemaVersionDescriptor schemaVersion)
         throws(1:NoSuchObjectException o1, 2:MetaException o2)
   FindSchemasByColsResp get_schemas_by_cols(1: FindSchemasByColsRqst rqst)
         throws(1:MetaException o1)
+
+  void add_schema_branch(1:ISchemaBranch schemaBranch)
+        throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:MetaException o3)
+
+  void map_schema_branch_to_schema_version(1: i64 schemaBranchId, 2: i64 schemaVersionId)
+        throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:MetaException o3)
+
+  ISchemaBranch get_schema_branch(1: i64 schemaBranchId)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<ISchemaBranch> get_schema_branch_by_schema_name(1: ISchemaName schemaName)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<ISchemaBranch> get_schema_branch_by_schema_version_id(1: i64 schemaVersionId)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<ISchemaBranchToISchemaVersion> get_schema_versions_by_schema_branch_id(1: i64 schemaBranchId)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
   // There is no blanket update of SchemaVersion since it is (mostly) immutable.  The only
   // updates are the specific ones to associate a version with a serde and to change its state
   void map_schema_version_to_serde(1: MapSchemaVersionToSerdeRequest rqst)
@@ -2244,4 +2289,3 @@ const string TABLE_IS_TRANSACTIONAL = "transactional",
 const string TABLE_NO_AUTO_COMPACT = "no_auto_compaction",
 const string TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties",
 const string TABLE_BUCKETING_VERSION = "bucketing_version",
-

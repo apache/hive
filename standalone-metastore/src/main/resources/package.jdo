@@ -1301,10 +1301,10 @@
       </index>
     </class>
 
-    <class name="MISchema" identity-type="datastore" table="I_SCHEMA" detachable="true">
-      <datastore-identity>
-        <column name="SCHEMA_ID"/>
-      </datastore-identity>
+    <class name="MISchema" identity-type="application" table="I_SCHEMA" detachable="true">
+      <field name="schemaId" primary-key="true" value-strategy="native">
+        <column name="SCHEMA_ID" jdbc-type="BIGINT" />
+      </field>
       <field name="schemaType">
         <column name="SCHEMA_TYPE" jdbc-type="integer"/>
       </field>
@@ -1331,10 +1331,10 @@
       </field>
     </class>
 
-    <class name="MSchemaVersion" identity-type="datastore" table="SCHEMA_VERSION" detachable="true">
-      <datastore-identity>
-        <column name="SCHEMA_VERSION_ID"/>
-      </datastore-identity>
+    <class name="MSchemaVersion" identity-type="application" table="SCHEMA_VERSION" detachable="true">
+      <field name="schemaVersionId" primary-key="true" value-strategy="native">
+         <column name="SCHEMA_VERSION_ID" jdbc-type="BIGINT" />
+      </field>
       <field name="iSchema">
         <column name="SCHEMA_ID"/>
       </field>
@@ -1365,6 +1365,23 @@
       <field name="serDe">
         <column name="SERDE_ID"/>
       </field>
+    </class>
+    <class name="MSchemaBranch" identity-type="application" table="SCHEMA_BRANCH" detachable="true">
+       <field name="schemaBranchId" primary-key="true" value-strategy="native">
+         <column name="SCHEMA_BRANCH_ID" jdbc-type="BIGINT" />
+       </field>
+       <field name="name">
+         <column name="NAME" jdbc-type="varchar" length="256"/>
+       </field>
+       <field name="schemaMetadataName">
+         <column name="SCHEMA_METADATA_NAME" jdbc-type="varchar" length="256"/>
+       </field>
+       <field name="description">
+         <column name="DESCRIPTION" jdbc-type="varchar" length="4000" allows-null="true"/>
+       </field>
+       <field name="timestamp">
+         <column name="TIMESTAMP" jdbc-type="BIGINT"/>
+       </field>
     </class>
     <class name="MRuntimeStat" identity-type="datastore" table="RUNTIME_STATS" detachable="true">
       <datastore-identity>

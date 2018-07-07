@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new MapSchemaVersionToSerdeRequestTupleSchemeFactory());
   }
 
-  private SchemaVersionDescriptor schemaVersion; // required
+  private ISchemaVersionDescriptor schemaVersion; // required
   private String serdeName; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -116,7 +116,7 @@ import org.slf4j.LoggerFactory;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.SCHEMA_VERSION, new org.apache.thrift.meta_data.FieldMetaData("schemaVersion", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SchemaVersionDescriptor.class)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ISchemaVersionDescriptor.class)));
     tmpMap.put(_Fields.SERDE_NAME, new org.apache.thrift.meta_data.FieldMetaData("serdeName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -127,7 +127,7 @@ import org.slf4j.LoggerFactory;
   }
 
   public MapSchemaVersionToSerdeRequest(
-    SchemaVersionDescriptor schemaVersion,
+    ISchemaVersionDescriptor schemaVersion,
     String serdeName)
   {
     this();
@@ -140,7 +140,7 @@ import org.slf4j.LoggerFactory;
    */
   public MapSchemaVersionToSerdeRequest(MapSchemaVersionToSerdeRequest other) {
     if (other.isSetSchemaVersion()) {
-      this.schemaVersion = new SchemaVersionDescriptor(other.schemaVersion);
+      this.schemaVersion = new ISchemaVersionDescriptor(other.schemaVersion);
     }
     if (other.isSetSerdeName()) {
       this.serdeName = other.serdeName;
@@ -157,11 +157,11 @@ import org.slf4j.LoggerFactory;
     this.serdeName = null;
   }
 
-  public SchemaVersionDescriptor getSchemaVersion() {
+  public ISchemaVersionDescriptor getSchemaVersion() {
     return this.schemaVersion;
   }
 
-  public void setSchemaVersion(SchemaVersionDescriptor schemaVersion) {
+  public void setSchemaVersion(ISchemaVersionDescriptor schemaVersion) {
     this.schemaVersion = schemaVersion;
   }
 
@@ -209,7 +209,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetSchemaVersion();
       } else {
-        setSchemaVersion((SchemaVersionDescriptor)value);
+        setSchemaVersion((ISchemaVersionDescriptor)value);
       }
       break;
 
@@ -413,7 +413,7 @@ import org.slf4j.LoggerFactory;
         switch (schemeField.id) {
           case 1: // SCHEMA_VERSION
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.schemaVersion = new SchemaVersionDescriptor();
+              struct.schemaVersion = new ISchemaVersionDescriptor();
               struct.schemaVersion.read(iprot);
               struct.setSchemaVersionIsSet(true);
             } else { 
@@ -489,7 +489,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.schemaVersion = new SchemaVersionDescriptor();
+        struct.schemaVersion = new ISchemaVersionDescriptor();
         struct.schemaVersion.read(iprot);
         struct.setSchemaVersionIsSet(true);
       }

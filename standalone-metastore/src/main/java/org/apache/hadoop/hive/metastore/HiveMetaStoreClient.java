@@ -3208,11 +3208,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void createISchema(ISchema schema) throws TException {
+  public Long createISchema(ISchema schema) throws TException {
     if (!schema.isSetCatName()) {
       schema.setCatName(getDefaultCatalog(conf));
     }
-    client.create_ischema(schema);
+    return client.create_ischema(schema);
   }
 
   @Override
@@ -3221,8 +3221,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public ISchema getISchema(String catName, String dbName, String name) throws TException {
-    return client.get_ischema(new ISchemaName(catName, dbName, name));
+  public ISchema getISchemaByName(String catName, String dbName, String name) throws TException {
+    return client.get_ischema_by_name(new ISchemaName(catName, dbName, name));
+  }
+
+  @Override
+  public ISchema getISchema(Long schemaId) throws TException {
+    return client.get_ischema(schemaId);
   }
 
   @Override
@@ -3231,31 +3236,43 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void addSchemaVersion(SchemaVersion schemaVersion) throws TException {
+  public Long addSchemaVersion(ISchemaVersion schemaVersion) throws TException {
     if (!schemaVersion.getSchema().isSetCatName()) {
       schemaVersion.getSchema().setCatName(getDefaultCatalog(conf));
     }
-    client.add_schema_version(schemaVersion);
+    return client.add_schema_version(schemaVersion);
   }
 
   @Override
-  public SchemaVersion getSchemaVersion(String catName, String dbName, String schemaName, int version) throws TException {
-    return client.get_schema_version(new SchemaVersionDescriptor(new ISchemaName(catName, dbName, schemaName), version));
+  public ISchemaVersion getSchemaVersion(String catName, String dbName, String schemaName, int version) throws TException {
+    return client.get_schema_version(new ISchemaVersionDescriptor(new ISchemaName(catName, dbName, schemaName), version));
   }
 
   @Override
-  public SchemaVersion getSchemaLatestVersion(String catName, String dbName, String schemaName) throws TException {
+  public ISchemaVersion getSchemaLatestVersion(String catName, String dbName, String schemaName) throws TException {
     return client.get_schema_latest_version(new ISchemaName(catName, dbName, schemaName));
   }
 
   @Override
-  public List<SchemaVersion> getSchemaAllVersions(String catName, String dbName, String schemaName) throws TException {
+  public ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws TException {
+    return client.get_schema_version_by_id(schemaVersionId);
+  }
+
+  @Override
+  public List<ISchemaVersion> getSchemaVersionByNameAndFingerprint(String catName, String dbName, String schemaName,
+                                                                   String fingerPrint) throws TException {
+    ISchemaVersionFingerprint schemaVersionFingerprint = new ISchemaVersionFingerprint(new ISchemaName(catName, dbName, schemaName), fingerPrint);
+    return client.get_schema_versions_by_name_and_fingerprint(schemaVersionFingerprint);
+  }
+
+  @Override
+  public List<ISchemaVersion> getSchemaAllVersions(String catName, String dbName, String schemaName) throws TException {
     return client.get_schema_all_versions(new ISchemaName(catName, dbName, schemaName));
   }
 
   @Override
   public void dropSchemaVersion(String catName, String dbName, String schemaName, int version) throws TException {
-    client.drop_schema_version(new SchemaVersionDescriptor(new ISchemaName(catName, dbName, schemaName), version));
+    client.drop_schema_version(new ISchemaVersionDescriptor(new ISchemaName(catName, dbName, schemaName), version));
   }
 
   @Override
@@ -3267,13 +3284,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void mapSchemaVersionToSerde(String catName, String dbName, String schemaName, int version, String serdeName)
       throws TException {
     client.map_schema_version_to_serde(new MapSchemaVersionToSerdeRequest(
-        new SchemaVersionDescriptor(new ISchemaName(catName, dbName, schemaName), version), serdeName));
+        new ISchemaVersionDescriptor(new ISchemaName(catName, dbName, schemaName), version), serdeName));
   }
 
   @Override
   public void setSchemaVersionState(String catName, String dbName, String schemaName, int version, SchemaVersionState state)
       throws TException {
-    client.set_schema_version_state(new SetSchemaVersionStateRequest(new SchemaVersionDescriptor(
+    client.set_schema_version_state(new SetSchemaVersionStateRequest(new ISchemaVersionDescriptor(
         new ISchemaName(catName, dbName, schemaName), version), state));
   }
 
@@ -3285,6 +3302,36 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public SerDeInfo getSerDe(String serDeName) throws TException {
     return client.get_serde(new GetSerdeRequest(serDeName));
+  }
+
+  @Override
+  public void addSchemaBranch(ISchemaBranch schemaBranch) throws TException {
+    client.add_schema_branch(schemaBranch);
+  }
+
+  @Override
+  public ISchemaBranch getSchemaBranch(Long schemaBranchId) throws TException {
+    return client.get_schema_branch(schemaBranchId);
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaName(String catName, String dbName, String schemaName) throws TException {
+      return client.get_schema_branch_by_schema_name(new ISchemaName(catName, dbName, schemaName));
+  }
+
+  @Override
+  public void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws TException {
+    client.map_schema_branch_to_schema_version(schemaBranchId, schemaVersionId);
+  }
+
+  @Override
+  public List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws TException {
+    return client.get_schema_versions_by_schema_branch_id(schemaBranchId);
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws TException {
+    return client.get_schema_branch_by_schema_version_id(schemaVersionId);
   }
 
   private short shrinkMaxtoShort(int max) {

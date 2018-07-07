@@ -80,67 +80,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
+import org.apache.hadoop.hive.metastore.events.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
-import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
-import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
-import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
-import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
-import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
-import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
-import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
-import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
-import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
-import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
-import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.DropTableEvent;
-import org.apache.hadoop.hive.metastore.events.InsertEvent;
-import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
-import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
-import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
-import org.apache.hadoop.hive.metastore.events.PreAuthorizationCallEvent;
-import org.apache.hadoop.hive.metastore.events.PreCreateCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreCreateISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.PreAddSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
-import org.apache.hadoop.hive.metastore.events.PreEventContext;
-import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadCatalogEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadISchemaEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
-import org.apache.hadoop.hive.metastore.events.PreReadhSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -8115,34 +8058,34 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void create_ischema(ISchema schema) throws TException {
+    public long create_ischema(ISchema schema) throws TException {
       startFunction("create_ischema", ": " + schema.getName());
       boolean success = false;
       Exception ex = null;
       RawStore ms = getMS();
+      long schemaId;
       try {
         firePreEvent(new PreCreateISchemaEvent(this, schema));
         Map<String, String> transactionalListenersResponses = Collections.emptyMap();
         ms.openTransaction();
         try {
-          ms.createISchema(schema);
+          schemaId = ms.createISchema(schema);
 
           if (!transactionalListeners.isEmpty()) {
             transactionalListenersResponses =
-                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                    EventType.CREATE_ISCHEMA, new CreateISchemaEvent(true, this, schema));
+                    MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                            EventType.CREATE_ISCHEMA, new CreateISchemaEvent(true, this, schema));
           }
           success = ms.commitTransaction();
         } finally {
-          if (!success) {
-            ms.rollbackTransaction();
-          }
+          if (!success) ms.rollbackTransaction();
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.CREATE_ISCHEMA,
-                new CreateISchemaEvent(success, this, schema), null,
-                transactionalListenersResponses, ms);
+                    new CreateISchemaEvent(success, this, schema), null,
+                    transactionalListenersResponses, ms);
           }
         }
+        return schemaId;
       } catch (MetaException|AlreadyExistsException e) {
         LOG.error("Caught exception creating schema", e);
         ex = e;
@@ -8152,6 +8095,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+
     @Override
     public void alter_ischema(AlterISchemaRequest rqst) throws TException {
       startFunction("alter_ischema", ": " + rqst);
@@ -8159,7 +8103,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       RawStore ms = getMS();
       try {
-        ISchema oldSchema = ms.getISchema(rqst.getName());
+        ISchema oldSchema = ms.getISchemaByName(rqst.getName());
         if (oldSchema == null) {
           throw new NoSuchObjectException("Could not find schema " + rqst.getName());
         }
@@ -8194,14 +8138,35 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public ISchema get_ischema(ISchemaName schemaName) throws TException {
+    public ISchema get_ischema_by_name(ISchemaName schemaName) throws TException {
       startFunction("get_ischema", ": " + schemaName);
       Exception ex = null;
       ISchema schema = null;
       try {
-        schema = getMS().getISchema(schemaName);
+        schema = getMS().getISchemaByName(schemaName);
         if (schema == null) {
           throw new NoSuchObjectException("No schema named " + schemaName + " exists");
+        }
+        firePreEvent(new PreReadISchemaEvent(this, schema));
+        return schema;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_ischema", schema != null, ex);
+      }
+    }
+
+    @Override
+    public ISchema get_ischema(long schemaId) throws TException {
+      startFunction("get_ischema", ": " + schemaId);
+      Exception ex = null;
+      ISchema schema = null;
+      try {
+        schema = getMS().getISchema(schemaId);
+        if (schema == null) {
+          throw new NoSuchObjectException("No schema with id " + schemaId + " exists");
         }
         firePreEvent(new PreReadISchemaEvent(this, schema));
         return schema;
@@ -8223,13 +8188,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         // look for any valid versions.  This will also throw NoSuchObjectException if the schema
         // itself doesn't exist, which is what we want.
-        SchemaVersion latest = ms.getLatestSchemaVersion(schemaName);
+        ISchemaVersion latest = ms.getLatestSchemaVersion(schemaName);
         if (latest != null) {
           ex = new InvalidOperationException("Schema " + schemaName + " cannot be dropped, it has" +
               " at least one valid version");
           throw (InvalidObjectException)ex;
         }
-        ISchema schema = ms.getISchema(schemaName);
+        ISchema schema = ms.getISchemaByName(schemaName);
         firePreEvent(new PreDropISchemaEvent(this, schema));
         Map<String, String> transactionalListenersResponses = Collections.emptyMap();
         ms.openTransaction();
@@ -8261,21 +8226,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void add_schema_version(SchemaVersion schemaVersion) throws TException {
+    public long add_schema_version(ISchemaVersion schemaVersion) throws TException {
       startFunction("add_schema_version", ": " + schemaVersion);
       boolean success = false;
       Exception ex = null;
       RawStore ms = getMS();
+      long schemaVersionId;
       try {
         // Make sure the referenced schema exists
-        if (ms.getISchema(schemaVersion.getSchema()) == null) {
+        if (ms.getISchemaByName(schemaVersion.getSchema()) == null) {
           throw new NoSuchObjectException("No schema named " + schemaVersion.getSchema());
         }
         firePreEvent(new PreAddSchemaVersionEvent(this, schemaVersion));
         Map<String, String> transactionalListenersResponses = Collections.emptyMap();
         ms.openTransaction();
         try {
-          ms.addSchemaVersion(schemaVersion);
+          schemaVersionId = ms.addSchemaVersion(schemaVersion);
 
           if (!transactionalListeners.isEmpty()) {
             transactionalListenersResponses =
@@ -8293,6 +8259,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 transactionalListenersResponses, ms);
           }
         }
+        return schemaVersionId;
       } catch (MetaException|AlreadyExistsException e) {
         LOG.error("Caught exception adding schema version", e);
         ex = e;
@@ -8303,10 +8270,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public SchemaVersion get_schema_version(SchemaVersionDescriptor version) throws TException {
+    public ISchemaVersion get_schema_version(ISchemaVersionDescriptor version) throws TException {
       startFunction("get_schema_version", ": " + version);
       Exception ex = null;
-      SchemaVersion schemaVersion = null;
+      ISchemaVersion schemaVersion = null;
       try {
         schemaVersion = getMS().getSchemaVersion(version);
         if (schemaVersion == null) {
@@ -8324,10 +8291,32 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public SchemaVersion get_schema_latest_version(ISchemaName schemaName) throws TException {
+    public ISchemaVersion get_schema_version_by_id(long schemaVersionId) throws TException {
+      startFunction("get_schema_version_by_id", ": " + schemaVersionId);
+      Exception ex = null;
+      ISchemaVersion schemaVersion = null;
+      try {
+        schemaVersion = getMS().getSchemaVersionById(schemaVersionId);
+        if (schemaVersion == null) {
+          throw new NoSuchObjectException("No schema  with id " + schemaVersionId
+                  + "exists");
+        }
+        firePreEvent(new PreReadhSchemaVersionEvent(this, Collections.singletonList(schemaVersion)));
+        return schemaVersion;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema version", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_version_by_id", schemaVersion != null, ex);
+      }
+    }
+
+    @Override
+    public ISchemaVersion get_schema_latest_version(ISchemaName schemaName) throws TException {
       startFunction("get_latest_schema_version", ": " + schemaName);
       Exception ex = null;
-      SchemaVersion schemaVersion = null;
+      ISchemaVersion schemaVersion = null;
       try {
         schemaVersion = getMS().getLatestSchemaVersion(schemaName);
         if (schemaVersion == null) {
@@ -8345,10 +8334,32 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public List<SchemaVersion> get_schema_all_versions(ISchemaName schemaName) throws TException {
+    public List<ISchemaVersion> get_schema_versions_by_name_and_fingerprint(ISchemaVersionFingerprint schemaVersionFingerPrint)
+            throws TException {
+      startFunction("get_schema_version_by_name_and_fingerprint", ": " + schemaVersionFingerPrint);
+      Exception ex = null;
+      List<ISchemaVersion> schemaVersions = null;
+      try {
+        schemaVersions = getMS().getSchemaVersionsByNameAndFingerprint(schemaVersionFingerPrint);
+        if (schemaVersions == null) {
+          throw new NoSuchObjectException("No versions of schema with " + schemaVersionFingerPrint + "exist");
+        }
+        firePreEvent(new PreReadhSchemaVersionEvent(this, schemaVersions));
+        return schemaVersions;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting all schema versions", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_versions_by_name_and_fingerprint", schemaVersions != null, ex);
+      }
+    }
+
+    @Override
+    public List<ISchemaVersion> get_schema_all_versions(ISchemaName schemaName) throws TException {
       startFunction("get_all_schema_versions", ": " + schemaName);
       Exception ex = null;
-      List<SchemaVersion> schemaVersions = null;
+      List<ISchemaVersion> schemaVersions = null;
       try {
         schemaVersions = getMS().getAllSchemaVersion(schemaName);
         if (schemaVersions == null) {
@@ -8366,13 +8377,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void drop_schema_version(SchemaVersionDescriptor version) throws TException {
+    public void drop_schema_version(ISchemaVersionDescriptor version) throws TException {
       startFunction("drop_schema_version", ": " + version);
       Exception ex = null;
       boolean success = false;
       RawStore ms = getMS();
       try {
-        SchemaVersion schemaVersion = ms.getSchemaVersion(version);
+        ISchemaVersion schemaVersion = ms.getSchemaVersion(version);
         if (schemaVersion == null) {
           throw new NoSuchObjectException("No schema version " + version);
         }
@@ -8410,14 +8421,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public FindSchemasByColsResp get_schemas_by_cols(FindSchemasByColsRqst rqst) throws TException {
       startFunction("get_schemas_by_cols");
       Exception ex = null;
-      List<SchemaVersion> schemaVersions = Collections.emptyList();
+      List<ISchemaVersion> schemaVersions = Collections.emptyList();
       try {
         schemaVersions = getMS().getSchemaVersionsByColumns(rqst.getColName(),
             rqst.getColNamespace(), rqst.getType());
         firePreEvent(new PreReadhSchemaVersionEvent(this, schemaVersions));
-        final List<SchemaVersionDescriptor> entries = new ArrayList<>(schemaVersions.size());
+        final List<ISchemaVersionDescriptor> entries = new ArrayList<>(schemaVersions.size());
         schemaVersions.forEach(schemaVersion -> entries.add(
-            new SchemaVersionDescriptor(schemaVersion.getSchema(), schemaVersion.getVersion())));
+            new ISchemaVersionDescriptor(schemaVersion.getSchema(), schemaVersion.getVersion())));
         return new FindSchemasByColsResp(entries);
       } catch (MetaException e) {
         LOG.error("Caught exception doing schema version query", e);
@@ -8436,7 +8447,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       RawStore ms = getMS();
       try {
-        SchemaVersion oldSchemaVersion = ms.getSchemaVersion(rqst.getSchemaVersion());
+        ISchemaVersion oldSchemaVersion = ms.getSchemaVersion(rqst.getSchemaVersion());
         if (oldSchemaVersion == null) {
           throw new NoSuchObjectException("No schema version " + rqst.getSchemaVersion());
         }
@@ -8444,7 +8455,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (serde == null) {
           throw new NoSuchObjectException("No SerDe named " + rqst.getSerdeName());
         }
-        SchemaVersion newSchemaVersion = new SchemaVersion(oldSchemaVersion);
+        ISchemaVersion newSchemaVersion = new ISchemaVersion(oldSchemaVersion);
         newSchemaVersion.setSerDe(serde);
         firePreEvent(new PreAlterSchemaVersionEvent(this, oldSchemaVersion, newSchemaVersion));
         Map<String, String> transactionalListenersResponses = Collections.emptyMap();
@@ -8484,11 +8495,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       RawStore ms = getMS();
       try {
-        SchemaVersion oldSchemaVersion = ms.getSchemaVersion(rqst.getSchemaVersion());
+        ISchemaVersion oldSchemaVersion = ms.getSchemaVersion(rqst.getSchemaVersion());
         if (oldSchemaVersion == null) {
           throw new NoSuchObjectException("No schema version " + rqst.getSchemaVersion());
         }
-        SchemaVersion newSchemaVersion = new SchemaVersion(oldSchemaVersion);
+        ISchemaVersion newSchemaVersion = new ISchemaVersion(oldSchemaVersion);
         newSchemaVersion.setState(rqst.getState());
         firePreEvent(new PreAlterSchemaVersionEvent(this, oldSchemaVersion, newSchemaVersion));
         Map<String, String> transactionalListenersResponses = Collections.emptyMap();
@@ -8520,6 +8531,167 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("set_schema_version_state", success, ex);
       }
     }
+
+
+    @Override
+    public void add_schema_branch(ISchemaBranch schemaBranch) throws TException {
+      startFunction("add_schema_branch", ": " + schemaBranch.getName());
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      try {
+        firePreEvent(new PreAddSchemaBranchEvent(this, schemaBranch));
+        Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+        ms.openTransaction();
+        try {
+          ms.addSchemaBranch(schemaBranch);
+
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenersResponses =
+                    MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                            EventType.ADD_SCHEMA_BRANCH, new AddSchemaBranchEvent(true, this, schemaBranch));
+          }
+          success = ms.commitTransaction();
+        } finally {
+          if (!success) ms.rollbackTransaction();
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_SCHEMA_BRANCH,
+                    new AddSchemaBranchEvent(success, this, schemaBranch), null,
+                    transactionalListenersResponses, ms);
+          }
+        }
+      } catch (MetaException|AlreadyExistsException e) {
+        LOG.error("Caught exception creating schema", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("add_schema_branch", success, ex);
+      }
+    }
+
+
+    @Override
+    public void map_schema_branch_to_schema_version(long schemaBranchId, long schemaVersionId)
+            throws TException {
+      startFunction("map_schema_branch_to_schema_version");
+      boolean success = false;
+      Exception ex = null;
+      RawStore ms = getMS();
+      try {
+        firePreEvent(new PreMapSchemaBranchToSchemaVersionEvent(this, schemaBranchId, schemaVersionId));
+        Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+        ms.openTransaction();
+        try {
+          ms.mapSchemaBranchToSchemaVersion(schemaBranchId, schemaVersionId);
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenersResponses =
+                    MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                            EventType.MAP_SCHEMA_BRANCH_TO_SCHEMA_VERSION, new MapSchemaBranchToSchemaVersionEvent(true, this,
+                                    schemaBranchId, schemaVersionId));
+          }
+          success = ms.commitTransaction();
+        } finally {
+          if (!success) ms.rollbackTransaction();
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_SCHEMA_VERSION,
+                    new MapSchemaBranchToSchemaVersionEvent(success, this, schemaBranchId, schemaVersionId), null,
+                    transactionalListenersResponses, ms);
+          }
+        }
+      } catch (MetaException|NoSuchObjectException e) {
+        LOG.error("Caught exception mapping schema branch to schema version", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("map_schema_branch_to_schema_version", success, ex);
+      }
+    }
+
+
+    @Override
+    public ISchemaBranch get_schema_branch(long schemaBranchId) throws TException {
+      startFunction("get_schema_branch", ": " + schemaBranchId);
+      Exception ex = null;
+      ISchemaBranch schemaBranch = null;
+      try {
+        schemaBranch = getMS().getSchemaBranch(schemaBranchId);
+        if (schemaBranch == null) {
+          throw new NoSuchObjectException("No versions of schema " + schemaBranchId + "exist");
+        }
+        firePreEvent(new PreReadhSchemaBranchEvent(this, Collections.singletonList(schemaBranch)));
+        return schemaBranch;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema branch for " + schemaBranchId, e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_branch", schemaBranch != null, ex);
+      }
+    }
+
+    @Override
+    public List<ISchemaBranch> get_schema_branch_by_schema_name(ISchemaName schemaName) throws TException {
+      startFunction("get_schema_branch_by_schema_name", ": " + schemaName);
+      Exception ex = null;
+      List<ISchemaBranch> schemaBranches = null;
+      try {
+        schemaBranches = getMS().getSchemaBranchBySchemaName(schemaName);
+        if (schemaBranches == null) {
+          throw new NoSuchObjectException("No schemaBranches for " + schemaName + "exist");
+        }
+        firePreEvent(new PreReadhSchemaBranchEvent(this, schemaBranches));
+        return schemaBranches;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema branches for schema " + schemaName, e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_branch_by_schema_name", schemaBranches != null, ex);
+      }
+    }
+
+    @Override
+    public List<ISchemaBranch> get_schema_branch_by_schema_version_id(long schemaVersionId) throws TException {
+      startFunction("get_schema_branch_by_schema_version_id", ": " + schemaVersionId);
+      Exception ex = null;
+      List<ISchemaBranch> schemaBranches = null;
+      try {
+        schemaBranches = getMS().getSchemaBranchBySchemaVersionId(schemaVersionId);
+        if (schemaBranches == null) {
+          throw new NoSuchObjectException("No schemaBranches for " + schemaVersionId + "exist");
+        }
+        firePreEvent(new PreReadhSchemaBranchEvent(this, schemaBranches));
+        return schemaBranches;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema branches for " + schemaVersionId, e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_branch_by_schema_name", schemaBranches != null, ex);
+      }
+    }
+
+    @Override
+    public List<ISchemaBranchToISchemaVersion> get_schema_versions_by_schema_branch_id(long schemaBranchId) throws TException {
+      startFunction("get_schema_versions_by_schema_branch_id", ": " + schemaBranchId);
+      Exception ex = null;
+      List<ISchemaBranchToISchemaVersion> schemaBranchToSchemaVersions = null;
+      try {
+        schemaBranchToSchemaVersions = getMS().getSchemaVersionsBySchemaBranchId(schemaBranchId);
+        if (schemaBranchToSchemaVersions == null) {
+          throw new NoSuchObjectException("No schemaVersions for " + schemaBranchId + "exist");
+        }
+        firePreEvent(new PreReadhSchemaBranchToSchemaVersionEvent(this, schemaBranchToSchemaVersions));
+        return schemaBranchToSchemaVersions;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema versions for the schemaBranchId " + schemaBranchId, e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_versions_by_schema_branch_id", schemaBranchToSchemaVersions != null, ex);
+      }
+    }
+
 
     @Override
     public void add_serde(SerDeInfo serde) throws TException {

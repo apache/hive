@@ -100,8 +100,10 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaBranch;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
+import org.apache.hadoop.hive.metastore.api.ISchemaBranchToISchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -3494,12 +3496,13 @@ public interface IMetaStoreClient {
    * Create a new schema.  This is really a schema container, as there will be specific versions
    * of the schema that have columns, etc.
    * @param schema schema to create
+   * @returns schema Id
    * @throws AlreadyExistsException if a schema of this name already exists
    * @throws NoSuchObjectException database references by this schema does not exist
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void createISchema(ISchema schema) throws TException;
+  Long createISchema(ISchema schema) throws TException;
 
   /**
    * Alter an existing schema.
@@ -3523,7 +3526,18 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  ISchema getISchema(String catName, String dbName, String name) throws TException;
+  ISchema getISchemaByName(String catName, String dbName, String name) throws TException;
+
+
+  /**
+   * Fetch a schema.
+   * @param schemaId id of the schema
+   * @return the schema or null if no such schema
+   * @throws NoSuchObjectException no schema matching this name exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  ISchema getISchema(Long schemaId) throws TException;
 
   /**
    * Drop an existing schema.  If there are schema versions of this, this call will fail.
@@ -3540,15 +3554,17 @@ public interface IMetaStoreClient {
   /**
    * Add a new version to an existing schema.
    * @param schemaVersion version object to add
+   * @returns schemaVersion ID
    * @throws AlreadyExistsException a version of this schema with the same version id already exists
    * @throws NoSuchObjectException no schema with this name could be found
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void addSchemaVersion(SchemaVersion schemaVersion) throws TException;
+  Long addSchemaVersion(ISchemaVersion schemaVersion) throws TException;
 
   /**
    * Get a specific version of a schema.
+   * @param catName category Name
    * @param dbName database the schema is in
    * @param schemaName name of the schema
    * @param version version of the schema
@@ -3557,7 +3573,30 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  SchemaVersion getSchemaVersion(String catName, String dbName, String schemaName, int version) throws TException;
+  ISchemaVersion getSchemaVersion(String catName, String dbName, String schemaName, int version) throws TException;
+
+  /**
+   * Get a specific version of a schema.
+   * @param schemaVersionId id of the schemaVersion
+   * @return the schema version or null if no such schema version
+   * @throws NoSuchObjectException no schema matching this name and version exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws TException;
+
+  /**
+   * Get all versions of a schema that matches schemaName and schemaText.
+   * @param catName category Name
+   * @param dbName database the schema is in
+   * @param schemaName name of the schemaName
+   * @param fingerPrint fingerPrint of schemaText
+   * @return the schema version or null if no such schema version
+   * @throws NoSuchObjectException no schema matching this name and version exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<ISchemaVersion> getSchemaVersionByNameAndFingerprint(String catName, String dbName, String schemaName, String fingerPrint) throws TException;
 
   /**
    * Get the latest version of a schema.
@@ -3570,7 +3609,7 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  SchemaVersion getSchemaLatestVersion(String catName, String dbName, String schemaName) throws TException;
+  ISchemaVersion getSchemaLatestVersion(String catName, String dbName, String schemaName) throws TException;
 
   /**
    * Get all the extant versions of a schema.
@@ -3583,7 +3622,7 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  List<SchemaVersion> getSchemaAllVersions(String catName, String dbName, String schemaName) throws TException;
+  List<ISchemaVersion> getSchemaAllVersions(String catName, String dbName, String schemaName) throws TException;
 
   /**
    * Drop a version of a schema.  Given that versions are supposed to be immutable you should
@@ -3658,6 +3697,74 @@ public interface IMetaStoreClient {
    * @throws TException general thrift error
    */
   SerDeInfo getSerDe(String serDeName) throws TException;
+
+  /**
+   * Create a schema branch.
+   * @param schemaBranch to add.
+   * @throws AlreadyExistsException if a schema of this name already exists
+   * @throws NoSuchObjectException database references by this schema does not exist
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void addSchemaBranch(ISchemaBranch schemaBranch) throws TException;
+
+
+  /**
+   * Map a schema version to a branch.
+   * @param schemaBranchId id of the schema branch
+   * @param schemaVersionId if of the schema version
+   * @throws NoSuchObjectException no matching version of the schema could be found or no serdes
+   * of the provided name could be found
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws TException;
+
+
+  /**
+   * Get the SchemaBranch for a given ID.
+   * @param schemaBranchId ID of the schemaBranch
+   * @return SchemaBranch or null if the schemaBranch does not exist
+   * @throws NoSuchObjectException no versions of schema matching this name exist
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  ISchemaBranch getSchemaBranch(Long schemaBranchId) throws TException;
+
+
+  /**
+   * Get the SchemaBranch by name.
+   * @param catName catalog name
+   * @param dbName database the schema is in
+   * @param schemaName name of the schemaMetadata
+   * @return SchemaBranch or null if the schemaBranch does not exist
+   * @throws NoSuchObjectException no versions of schema matching this name exist
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<ISchemaBranch> getSchemaBranchBySchemaName(String catName, String dbName, String schemaName) throws TException;
+
+
+  /**
+   * Get the schema versions by schema branch.
+   * @param schemaBranchId id of schema branch
+   * @return schemaBranchToISchemaVersion or null if the schemaBranch does not exist
+   * @throws NoSuchObjectException no versions of schema matching the schema branch id
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws TException;
+
+
+  /**
+   * Get the schema branch by schema version id.
+   * @param schemaVersionId id of schema version
+   * @return schemaBranch or null if the schemaVersion does not exist
+   * @throws NoSuchObjectException no versions of schema matching the schema branch id
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws TException;
 
   /**
    * Acquire the materialization rebuild lock for a given view. We need to specify the fully

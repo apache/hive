@@ -20,27 +20,27 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class AlterSchemaVersionEvent extends ListenerEvent {
 
-  private final SchemaVersion oldSchemaVersion, newSchemaVersion;
+  private final ISchemaVersion oldSchemaVersion, newSchemaVersion;
 
   public AlterSchemaVersionEvent(boolean status, IHMSHandler handler,
-                                 SchemaVersion oldSchemaVersion,
-                                 SchemaVersion newSchemaVersion) {
+                                 ISchemaVersion oldSchemaVersion,
+                                 ISchemaVersion newSchemaVersion) {
     super(status, handler);
     this.oldSchemaVersion = oldSchemaVersion;
     this.newSchemaVersion = newSchemaVersion;
   }
 
-  public SchemaVersion getOldSchemaVersion() {
+  public ISchemaVersion getOldSchemaVersion() {
     return oldSchemaVersion;
   }
 
-  public SchemaVersion getNewSchemaVersion() {
+  public ISchemaVersion getNewSchemaVersion() {
     return newSchemaVersion;
   }
 }
