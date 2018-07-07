@@ -291,6 +291,16 @@ public class UpgradeTool {
         /* create delta and move each files to it.  HIVE-19750 ensures wer have reserved
          * enough write IDs to do this.*/
         Path deltaDir = new Path(p, AcidUtils.deltaSubdir(ent.getKey(), ent.getKey()));
+        if (execute) {
+          if (!fs.mkdirs(deltaDir)) {
+            String msg = "Failed to create directory " + deltaDir;
+            LOG.error(msg);
+            throw new IllegalStateException(msg);
+          }
+        }
+        // Add to list of FS commands
+        makeDirectoryCommand(deltaDir, pw);
+
         for (Path file : ent.getValue()) {
           Path newFile = new Path(deltaDir, stripCopySuffix(file.getName()));
           LOG.debug("need to rename: " + file + " to " + newFile);
@@ -348,6 +358,16 @@ public class UpgradeTool {
       }
       int wrtieId = fileId / numBuckets + 1;//start with delta_1 (not delta_0)
       Path deltaDir = new Path(p, AcidUtils.deltaSubdir(wrtieId, wrtieId));
+      if (execute) {
+        if (!fs.mkdirs(deltaDir)) {
+          String msg = "Failed to create directory " + deltaDir;
+          LOG.error(msg);
+          throw new IllegalStateException(msg);
+        }
+      }
+      // Add to list of FS commands
+      makeDirectoryCommand(deltaDir, pw);
+
       Path newPath =
           new Path(deltaDir, String.format(AcidUtils.BUCKET_DIGITS, fileId % numBuckets)+ "_0");
       /*we could track reason for rename in RenamePair so that the decision can be made later to
@@ -390,6 +410,9 @@ public class UpgradeTool {
   private static void makeRenameCommand(Path file, Path newFile, PrintWriter pw) {
     //https://hadoop.apache.org/docs/r3.0.0-alpha2/hadoop-project-dist/hadoop-common/FileSystemShell.html#mv
     println(pw, "hadoop fs -mv " + file + " " + newFile + ";");
+  }
+  private static void makeDirectoryCommand(Path dir, PrintWriter pw) {
+    println(pw, "hadoop fs -mkdir " + dir + ";");
   }
 
   private static void println(PrintWriter pw, String msg) {
