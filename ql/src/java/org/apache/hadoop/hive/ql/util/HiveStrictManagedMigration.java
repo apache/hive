@@ -284,7 +284,7 @@ public class HiveStrictManagedMigration {
           try {
             processDatabase(dbName);
           } catch (Exception err) {
-            LOG.error("Error processing database %s", dbName);
+            LOG.error("Error processing database " + dbName, err);
             failuresEncountered = true;
           }
         }
@@ -347,7 +347,7 @@ public class HiveStrictManagedMigration {
       groupName = conf.get("strict.managed.tables.migration.group", null);
     }
     if (runOptions.shouldModifyManagedTablePermissions) {
-      String dirPermsString = conf.get("strict.managed.tables.migration.dir.permissions", "1700");
+      String dirPermsString = conf.get("strict.managed.tables.migration.dir.permissions", "700");
       if (dirPermsString != null) {
         dirPerms = new FsPermission(dirPermsString);
       }
@@ -398,7 +398,7 @@ public class HiveStrictManagedMigration {
       try {
         processTable(dbObj, tableName, modifyDefaultManagedLocation);
       } catch (Exception err) {
-        LOG.error("Error processing table %s", getQualifiedName(dbObj.getName(), tableName));
+        LOG.error("Error processing table " + getQualifiedName(dbObj.getName(), tableName), err);
         failuresEncountered = true;
       }
     }
