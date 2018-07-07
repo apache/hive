@@ -758,8 +758,7 @@ public class MetastoreConf {
             + "The default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EventCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName() + "," +
-        "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
-            MaterializationsRebuildLockCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName(),
+        "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + MetastoreTaskThread.class.getName()),
@@ -767,7 +766,8 @@ public class MetastoreConf {
         AcidHouseKeeperService.class.getName() + "," +
             AcidOpenTxnsCounterService.class.getName() + "," +
             AcidCompactionHistoryService.class.getName() + "," +
-            AcidWriteSetService.class.getName(),
+            AcidWriteSetService.class.getName() + "," +
+            MaterializationsRebuildLockCleanerTask.class.getName(),
         "Command separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + MetastoreTaskThread.class.getName()),
