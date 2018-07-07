@@ -47,6 +47,8 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField CAN_EVOLVE_FIELD_DESC = new org.apache.thrift.protocol.TField("canEvolve", org.apache.thrift.protocol.TType.BOOL, (short)7);
   private static final org.apache.thrift.protocol.TField SCHEMA_GROUP_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaGroup", org.apache.thrift.protocol.TType.STRING, (short)8);
   private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)9);
+  private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)10);
+  private static final org.apache.thrift.protocol.TField SCHEMA_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaId", org.apache.thrift.protocol.TType.I64, (short)11);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -63,6 +65,8 @@ import org.slf4j.LoggerFactory;
   private boolean canEvolve; // required
   private String schemaGroup; // optional
   private String description; // optional
+  private long timestamp; // optional
+  private long schemaId; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -86,7 +90,9 @@ import org.slf4j.LoggerFactory;
     VALIDATION_LEVEL((short)6, "validationLevel"),
     CAN_EVOLVE((short)7, "canEvolve"),
     SCHEMA_GROUP((short)8, "schemaGroup"),
-    DESCRIPTION((short)9, "description");
+    DESCRIPTION((short)9, "description"),
+    TIMESTAMP((short)10, "timestamp"),
+    SCHEMA_ID((short)11, "schemaId");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -119,6 +125,10 @@ import org.slf4j.LoggerFactory;
           return SCHEMA_GROUP;
         case 9: // DESCRIPTION
           return DESCRIPTION;
+        case 10: // TIMESTAMP
+          return TIMESTAMP;
+        case 11: // SCHEMA_ID
+          return SCHEMA_ID;
         default:
           return null;
       }
@@ -160,8 +170,10 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __CANEVOLVE_ISSET_ID = 0;
+  private static final int __TIMESTAMP_ISSET_ID = 1;
+  private static final int __SCHEMAID_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.SCHEMA_GROUP,_Fields.DESCRIPTION};
+  private static final _Fields optionals[] = {_Fields.SCHEMA_GROUP,_Fields.DESCRIPTION,_Fields.TIMESTAMP,_Fields.SCHEMA_ID};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -183,6 +195,10 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DESCRIPTION, new org.apache.thrift.meta_data.FieldMetaData("description", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.SCHEMA_ID, new org.apache.thrift.meta_data.FieldMetaData("schemaId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ISchema.class, metaDataMap);
   }
@@ -240,6 +256,8 @@ import org.slf4j.LoggerFactory;
     if (other.isSetDescription()) {
       this.description = other.description;
     }
+    this.timestamp = other.timestamp;
+    this.schemaId = other.schemaId;
   }
 
   public ISchema deepCopy() {
@@ -258,6 +276,10 @@ import org.slf4j.LoggerFactory;
     this.canEvolve = false;
     this.schemaGroup = null;
     this.description = null;
+    setTimestampIsSet(false);
+    this.timestamp = 0;
+    setSchemaIdIsSet(false);
+    this.schemaId = 0;
   }
 
   /**
@@ -490,6 +512,50 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public long getTimestamp() {
+    return this.timestamp;
+  }
+
+  public void setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
+    setTimestampIsSet(true);
+  }
+
+  public void unsetTimestamp() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TIMESTAMP_ISSET_ID);
+  }
+
+  /** Returns true if field timestamp is set (has been assigned a value) and false otherwise */
+  public boolean isSetTimestamp() {
+    return EncodingUtils.testBit(__isset_bitfield, __TIMESTAMP_ISSET_ID);
+  }
+
+  public void setTimestampIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TIMESTAMP_ISSET_ID, value);
+  }
+
+  public long getSchemaId() {
+    return this.schemaId;
+  }
+
+  public void setSchemaId(long schemaId) {
+    this.schemaId = schemaId;
+    setSchemaIdIsSet(true);
+  }
+
+  public void unsetSchemaId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SCHEMAID_ISSET_ID);
+  }
+
+  /** Returns true if field schemaId is set (has been assigned a value) and false otherwise */
+  public boolean isSetSchemaId() {
+    return EncodingUtils.testBit(__isset_bitfield, __SCHEMAID_ISSET_ID);
+  }
+
+  public void setSchemaIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SCHEMAID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SCHEMA_TYPE:
@@ -564,6 +630,22 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case TIMESTAMP:
+      if (value == null) {
+        unsetTimestamp();
+      } else {
+        setTimestamp((Long)value);
+      }
+      break;
+
+    case SCHEMA_ID:
+      if (value == null) {
+        unsetSchemaId();
+      } else {
+        setSchemaId((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -596,6 +678,12 @@ import org.slf4j.LoggerFactory;
     case DESCRIPTION:
       return getDescription();
 
+    case TIMESTAMP:
+      return getTimestamp();
+
+    case SCHEMA_ID:
+      return getSchemaId();
+
     }
     throw new IllegalStateException();
   }
@@ -625,6 +713,10 @@ import org.slf4j.LoggerFactory;
       return isSetSchemaGroup();
     case DESCRIPTION:
       return isSetDescription();
+    case TIMESTAMP:
+      return isSetTimestamp();
+    case SCHEMA_ID:
+      return isSetSchemaId();
     }
     throw new IllegalStateException();
   }
@@ -723,6 +815,24 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_timestamp = true && this.isSetTimestamp();
+    boolean that_present_timestamp = true && that.isSetTimestamp();
+    if (this_present_timestamp || that_present_timestamp) {
+      if (!(this_present_timestamp && that_present_timestamp))
+        return false;
+      if (this.timestamp != that.timestamp)
+        return false;
+    }
+
+    boolean this_present_schemaId = true && this.isSetSchemaId();
+    boolean that_present_schemaId = true && that.isSetSchemaId();
+    if (this_present_schemaId || that_present_schemaId) {
+      if (!(this_present_schemaId && that_present_schemaId))
+        return false;
+      if (this.schemaId != that.schemaId)
+        return false;
+    }
+
     return true;
   }
 
@@ -774,6 +884,16 @@ import org.slf4j.LoggerFactory;
     list.add(present_description);
     if (present_description)
       list.add(description);
+
+    boolean present_timestamp = true && (isSetTimestamp());
+    list.add(present_timestamp);
+    if (present_timestamp)
+      list.add(timestamp);
+
+    boolean present_schemaId = true && (isSetSchemaId());
+    list.add(present_schemaId);
+    if (present_schemaId)
+      list.add(schemaId);
 
     return list.hashCode();
   }
@@ -876,6 +996,26 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetTimestamp()).compareTo(other.isSetTimestamp());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTimestamp()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestamp, other.timestamp);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSchemaId()).compareTo(other.isSetSchemaId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSchemaId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.schemaId, other.schemaId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -965,6 +1105,18 @@ import org.slf4j.LoggerFactory;
       } else {
         sb.append(this.description);
       }
+      first = false;
+    }
+    if (isSetTimestamp()) {
+      if (!first) sb.append(", ");
+      sb.append("timestamp:");
+      sb.append(this.timestamp);
+      first = false;
+    }
+    if (isSetSchemaId()) {
+      if (!first) sb.append(", ");
+      sb.append("schemaId:");
+      sb.append(this.schemaId);
       first = false;
     }
     sb.append(")");
@@ -1084,6 +1236,22 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 10: // TIMESTAMP
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.timestamp = iprot.readI64();
+              struct.setTimestampIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 11: // SCHEMA_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.schemaId = iprot.readI64();
+              struct.setSchemaIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1144,6 +1312,16 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetTimestamp()) {
+        oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
+        oprot.writeI64(struct.timestamp);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetSchemaId()) {
+        oprot.writeFieldBegin(SCHEMA_ID_FIELD_DESC);
+        oprot.writeI64(struct.schemaId);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1189,7 +1367,13 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetDescription()) {
         optionals.set(8);
       }
-      oprot.writeBitSet(optionals, 9);
+      if (struct.isSetTimestamp()) {
+        optionals.set(9);
+      }
+      if (struct.isSetSchemaId()) {
+        optionals.set(10);
+      }
+      oprot.writeBitSet(optionals, 11);
       if (struct.isSetSchemaType()) {
         oprot.writeI32(struct.schemaType.getValue());
       }
@@ -1217,12 +1401,18 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetDescription()) {
         oprot.writeString(struct.description);
       }
+      if (struct.isSetTimestamp()) {
+        oprot.writeI64(struct.timestamp);
+      }
+      if (struct.isSetSchemaId()) {
+        oprot.writeI64(struct.schemaId);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ISchema struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(9);
+      BitSet incoming = iprot.readBitSet(11);
       if (incoming.get(0)) {
         struct.schemaType = org.apache.hadoop.hive.metastore.api.SchemaType.findByValue(iprot.readI32());
         struct.setSchemaTypeIsSet(true);
@@ -1258,6 +1448,14 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(8)) {
         struct.description = iprot.readString();
         struct.setDescriptionIsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.timestamp = iprot.readI64();
+        struct.setTimestampIsSet(true);
+      }
+      if (incoming.get(10)) {
+        struct.schemaId = iprot.readI64();
+        struct.setSchemaIdIsSet(true);
       }
     }
   }

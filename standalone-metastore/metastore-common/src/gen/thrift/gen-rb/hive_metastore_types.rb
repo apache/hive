@@ -4839,6 +4839,8 @@ class ISchema
   CANEVOLVE = 7
   SCHEMAGROUP = 8
   DESCRIPTION = 9
+  TIMESTAMP = 10
+  SCHEMAID = 11
 
   FIELDS = {
     SCHEMATYPE => {:type => ::Thrift::Types::I32, :name => 'schemaType', :enum_class => ::SchemaType},
@@ -4849,7 +4851,9 @@ class ISchema
     VALIDATIONLEVEL => {:type => ::Thrift::Types::I32, :name => 'validationLevel', :enum_class => ::SchemaValidation},
     CANEVOLVE => {:type => ::Thrift::Types::BOOL, :name => 'canEvolve'},
     SCHEMAGROUP => {:type => ::Thrift::Types::STRING, :name => 'schemaGroup', :optional => true},
-    DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true}
+    DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
+    TIMESTAMP => {:type => ::Thrift::Types::I64, :name => 'timestamp', :optional => true},
+    SCHEMAID => {:type => ::Thrift::Types::I64, :name => 'schemaId', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4907,7 +4911,7 @@ class AlterISchemaRequest
   ::Thrift::Struct.generate_accessors self
 end
 
-class SchemaVersion
+class ISchemaVersion
   include ::Thrift::Struct, ::Thrift::Struct_Union
   SCHEMA = 1
   VERSION = 2
@@ -4919,6 +4923,7 @@ class SchemaVersion
   FINGERPRINT = 8
   NAME = 9
   SERDE = 10
+  SCHEMAVERSIONID = 11
 
   FIELDS = {
     SCHEMA => {:type => ::Thrift::Types::STRUCT, :name => 'schema', :class => ::ISchemaName},
@@ -4930,7 +4935,8 @@ class SchemaVersion
     SCHEMATEXT => {:type => ::Thrift::Types::STRING, :name => 'schemaText', :optional => true},
     FINGERPRINT => {:type => ::Thrift::Types::STRING, :name => 'fingerprint', :optional => true},
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name', :optional => true},
-    SERDE => {:type => ::Thrift::Types::STRUCT, :name => 'serDe', :class => ::SerDeInfo, :optional => true}
+    SERDE => {:type => ::Thrift::Types::STRUCT, :name => 'serDe', :class => ::SerDeInfo, :optional => true},
+    SCHEMAVERSIONID => {:type => ::Thrift::Types::I64, :name => 'schemaVersionId', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4944,7 +4950,7 @@ class SchemaVersion
   ::Thrift::Struct.generate_accessors self
 end
 
-class SchemaVersionDescriptor
+class ISchemaVersionDescriptor
   include ::Thrift::Struct, ::Thrift::Struct_Union
   SCHEMA = 1
   VERSION = 2
@@ -4952,6 +4958,24 @@ class SchemaVersionDescriptor
   FIELDS = {
     SCHEMA => {:type => ::Thrift::Types::STRUCT, :name => 'schema', :class => ::ISchemaName},
     VERSION => {:type => ::Thrift::Types::I32, :name => 'version'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ISchemaVersionFingerprint
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMANAME = 1
+  FINGERPRINT = 2
+
+  FIELDS = {
+    SCHEMANAME => {:type => ::Thrift::Types::STRUCT, :name => 'schemaName', :class => ::ISchemaName},
+    FINGERPRINT => {:type => ::Thrift::Types::STRING, :name => 'fingerPrint'}
   }
 
   def struct_fields; FIELDS; end
@@ -4987,7 +5011,7 @@ class FindSchemasByColsResp
   SCHEMAVERSIONS = 1
 
   FIELDS = {
-    SCHEMAVERSIONS => {:type => ::Thrift::Types::LIST, :name => 'schemaVersions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SchemaVersionDescriptor}}
+    SCHEMAVERSIONS => {:type => ::Thrift::Types::LIST, :name => 'schemaVersions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ISchemaVersionDescriptor}}
   }
 
   def struct_fields; FIELDS; end
@@ -5004,7 +5028,7 @@ class MapSchemaVersionToSerdeRequest
   SERDENAME = 2
 
   FIELDS = {
-    SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::SchemaVersionDescriptor},
+    SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::ISchemaVersionDescriptor},
     SERDENAME => {:type => ::Thrift::Types::STRING, :name => 'serdeName'}
   }
 
@@ -5022,7 +5046,7 @@ class SetSchemaVersionStateRequest
   STATE = 2
 
   FIELDS = {
-    SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::SchemaVersionDescriptor},
+    SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::ISchemaVersionDescriptor},
     STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::SchemaVersionState}
   }
 
@@ -5043,6 +5067,48 @@ class GetSerdeRequest
 
   FIELDS = {
     SERDENAME => {:type => ::Thrift::Types::STRING, :name => 'serdeName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ISchemaBranch
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMABRANCHID = 1
+  NAME = 2
+  SCHEMAMETADATANAME = 3
+  DESCRIPTION = 4
+  TIMESTAMP = 5
+
+  FIELDS = {
+    SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId', :optional => true},
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    SCHEMAMETADATANAME => {:type => ::Thrift::Types::STRING, :name => 'schemaMetadataName'},
+    DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
+    TIMESTAMP => {:type => ::Thrift::Types::I64, :name => 'timestamp', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ISchemaBranchToISchemaVersion
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMABRANCHID = 1
+  SCHEMAVERSIONID = 2
+
+  FIELDS = {
+    SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId'},
+    SCHEMAVERSIONID => {:type => ::Thrift::Types::I64, :name => 'schemaVersionId'}
   }
 
   def struct_fields; FIELDS; end

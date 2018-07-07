@@ -3410,7 +3410,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void createISchema(ISchema schema) throws TException {
+  public Long createISchema(ISchema schema) throws TException {
     throw new UnsupportedOperationException();
   }
 
@@ -3421,7 +3421,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public ISchema getISchema(String catName, String dbName, String name) throws TException {
+  public ISchema getISchemaByName(String catName, String dbName, String name) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public ISchema getISchema(Long schemaId) {
     throw new UnsupportedOperationException();
   }
 
@@ -3431,24 +3436,36 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void addSchemaVersion(SchemaVersion schemaVersion) throws TException {
+  public Long addSchemaVersion(ISchemaVersion schemaVersion) throws TException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public SchemaVersion getSchemaVersion(String catName, String dbName, String schemaName,
+  public ISchemaVersion getSchemaVersion(String catName, String dbName, String schemaName,
                                         int version) throws TException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public SchemaVersion getSchemaLatestVersion(String catName, String dbName,
+  public List<ISchemaVersion> getSchemaVersionByNameAndFingerprint(String catName, String dbName, String schemaName, String fingerPrint)
+          throws MetaException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws MetaException {
+    throw new UnsupportedOperationException();
+  }
+
+
+  @Override
+  public ISchemaVersion getSchemaLatestVersion(String catName, String dbName,
                                               String schemaName) throws TException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<SchemaVersion> getSchemaAllVersions(String catName, String dbName,
+  public List<ISchemaVersion> getSchemaAllVersions(String catName, String dbName,
                                                   String schemaName) throws TException {
     throw new UnsupportedOperationException();
   }
@@ -3474,6 +3491,38 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public void setSchemaVersionState(String catName, String dbName, String schemaName, int version,
                                     SchemaVersionState state) throws TException {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void addSchemaBranch(ISchemaBranch schemaBranch)  throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public  List<ISchemaBranch>  getSchemaBranchBySchemaName(String catName, String dbName, String schemaName) throws MetaException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws AlreadyExistsException,
+          InvalidObjectException, NoSuchObjectException, MetaException {
+    throw new UnsupportedOperationException();
+
   }
 
   @Override

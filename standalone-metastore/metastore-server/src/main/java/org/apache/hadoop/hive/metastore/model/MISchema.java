@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.model;
 
 public class MISchema {
+  private Long schemaId;
   private int schemaType;
   private String name;
   private MDatabase db;
@@ -28,7 +29,7 @@ public class MISchema {
   private String description;
 
   public MISchema(int schemaType, String name, MDatabase db, int compatibility,
-                  int validationLevel, boolean canEvolve, String schemaGroup, String description) {
+                  int validationLevel, boolean canEvolve, String schemaGroup, String description, Long schemaId) {
     this.schemaType = schemaType;
     this.name = name;
     this.db= db;
@@ -37,7 +38,12 @@ public class MISchema {
     this.canEvolve = canEvolve;
     this.schemaGroup = schemaGroup;
     this.description = description;
+    this.schemaId = schemaId;
   }
+
+  public Long getSchemaId() { return schemaId; }
+
+  public void setSchemaId(Long schemaId) { this.schemaId = schemaId; }
 
   public int getSchemaType() {
     return schemaType;

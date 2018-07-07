@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore.client.builder;
 import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
@@ -97,12 +97,12 @@ public class SchemaVersionBuilder extends SerdeAndColsBuilder<SchemaVersionBuild
     return this;
   }
 
-  public SchemaVersion build() throws MetaException {
+  public ISchemaVersion build() throws MetaException {
     if (schemaName == null || version < 0) {
       throw new MetaException("You must provide the schema name, and schema version");
     }
-    SchemaVersion schemaVersion =
-        new SchemaVersion(new ISchemaName(catName, dbName, schemaName), version, createdAt, getCols());
+    ISchemaVersion schemaVersion =
+        new ISchemaVersion(new ISchemaName(catName, dbName, schemaName), version, createdAt, getCols());
     if (state != null) schemaVersion.setState(state);
     if (description != null) schemaVersion.setDescription(description);
     if (schemaText != null) schemaVersion.setSchemaText(schemaText);

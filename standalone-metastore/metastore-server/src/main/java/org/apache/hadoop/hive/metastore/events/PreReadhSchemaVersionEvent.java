@@ -18,19 +18,19 @@
 package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.IHMSHandler;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 
 import java.util.List;
 
 public class PreReadhSchemaVersionEvent extends PreEventContext {
-  private final List<SchemaVersion> schemaVersions;
+  private final List<ISchemaVersion> schemaVersions;
 
-  public PreReadhSchemaVersionEvent(IHMSHandler handler, List<SchemaVersion> schemaVersions) {
+  public PreReadhSchemaVersionEvent(IHMSHandler handler, List<ISchemaVersion> schemaVersions) {
     super(PreEventType.READ_SCHEMA_VERSION, handler);
     this.schemaVersions = schemaVersions;
   }
 
-  public List<SchemaVersion> getSchemaVersions() {
+  public List<ISchemaVersion> getSchemaVersions() {
     return schemaVersions;
   }
 }

@@ -61,7 +61,9 @@ public abstract class EventMessage {
     ABORT_TXN(MessageFactory.ABORT_TXN_EVENT),
     ALLOC_WRITE_ID(MessageFactory.ALLOC_WRITE_ID_EVENT),
     ALTER_CATALOG(MessageFactory.ALTER_CATALOG_EVENT),
-    ACID_WRITE(MessageFactory.ACID_WRITE_EVENT);
+    ACID_WRITE(MessageFactory.ACID_WRITE_EVENT),
+    ADD_SCHEMA_BRANCH(MessageFactory.ADD_SCHEMA_BRANCH_EVENT),
+    MAP_SCHEMA_BRANCH_TO_SCHEMA_VERSION(MessageFactory.MAP_SCHEMA_BRANCH_TO_SCHEMA_VERSION);
 
     private String typeString;
 

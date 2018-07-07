@@ -69,6 +69,7 @@
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-lang3.version>3.2</commons-lang3.version>
     <commons-logging.version>1.1.3</commons-logging.version>
+    <commons-cli.version>1.3.1</commons-cli.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
@@ -77,12 +78,11 @@
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
-    <guava.version>19.0</guava.version>
+    <guava.version>14.0.1</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.9.5</jackson.version>
     <javolution.version>5.5.1</javolution.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.12</junit.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.8.2</log4j2.version>
@@ -92,13 +92,52 @@
     <sqlline.version>1.3.0</sqlline.version>
     <storage-api.version>2.7.0-SNAPSHOT</storage-api.version>
 
+    <!-- Registry Properties -->
+    <flyway.version>4.2.0</flyway.version>
+    <jersey.version>2.22.1</jersey.version>
+    <spring.version>4.3.6.RELEASE</spring.version>
+    <snakeyaml.version>1.15</snakeyaml.version>
+    <jackson.version>2.7.3</jackson.version>
+    <slf4j.version>1.7.12</slf4j.version>
+    <guava.version>18.0</guava.version>
+    <kafka.version>0.10.2.1</kafka.version>
+    <kafkaArtifact>kafka_2.10</kafkaArtifact>
+    <curator.version>2.11.1</curator.version>
+    <avro.version>1.8.2</avro.version>
+    <registry.dropwizard.version>1.0.2</registry.dropwizard.version>
+    <jersey.version>2.22.1</jersey.version>
+    <jersey-media-multipart.version>2.22.1</jersey-media-multipart.version>
+    <jmockit.version>1.19</jmockit.version>
+    <groovy.version>2.4.5</groovy.version>
+    <hbase.version>1.1.2.2.5.0.0-1245</hbase.version>
+    <jsonschemavalidator.version>2.2.6</jsonschemavalidator.version>
+    <kryo.version>2.21</kryo.version>
+    <logback.version>1.1.7</logback.version>
+    <mariadb-java-client.version>1.5.5</mariadb-java-client.version>
+    <calcite.version>1.4.0-incubating</calcite.version>
+    <commons-lang3.version>3.4</commons-lang3.version>
+    <commons-lang.version>2.6</commons-lang.version>
+    <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
+    <maven-surefire.version>2.18.1</maven-surefire.version>
+    <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
+    <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+    <spring.version>4.3.6.RELEASE</spring.version>
+    <postgresql.version>9.4.1212</postgresql.version>
+    <flyway.version>4.2.0</flyway.version>
+    <hikari.version>2.2.5</hikari.version>
+    <h2database.version>1.4.188</h2database.version>
+    <dropwizard.metrics.version>3.1.2</dropwizard.metrics.version>
+    <dropwizard.swagger.version>1.0.0-1</dropwizard.swagger.version>
+    <jetty.version>9.3.19.v20170502</jetty.version>
+    <confluent.version>3.1.1</confluent.version>
+
+
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
     <thrift.args>-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp
       --gen php --gen py --gen rb
     </thrift.args>
-
   </properties>
 
   <dependencyManagement>
@@ -107,6 +146,16 @@
         <groupId>org.apache.orc</groupId>
         <artifactId>orc-core</artifactId>
         <version>${orc.version}</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.hadoop</groupId>
+              <artifactId>hadoop-common</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.apache.hive</groupId>
+              <artifactId>hive-storage-api</artifactId>
+            </exclusion>
+          </exclusions>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -159,6 +208,11 @@
         <version>${dropwizard.version}</version>
       </dependency>
       <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-annotation</artifactId>
+        <version>${dropwizard.metrics.version}</version>
+      </dependency>
+      <dependency>
         <groupId>javolution</groupId>
         <artifactId>javolution</artifactId>
         <version>${javolution.version}</version>
@@ -182,6 +236,37 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-common</artifactId>
         <version>${hadoop.version}</version>
+        <optional>true</optional>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>jsr311-api</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -193,16 +278,61 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-hdfs</artifactId>
         <version>${hadoop.version}</version>
+        <optional>true</optional>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-hdfs-client</artifactId>
         <version>${hadoop.version}</version>
+       <optional>true</optional>
+       <exclusions>
+         <exclusion>
+           <groupId>org.slf4j</groupId>
+           <artifactId>slf4j-log4j12</artifactId>
+         </exclusion>
+         <exclusion>
+           <groupId>commons-logging</groupId>
+           <artifactId>commons-logging</artifactId>
+         </exclusion>
+       </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-mapreduce-client-core</artifactId>
         <version>${hadoop.version}</version>
+        <optional>true</optional>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>jsr311-api</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <!-- This is our one and only Hive dependency.-->
       <dependency>
@@ -266,6 +396,223 @@
         <artifactId>commons-logging</artifactId>
         <version>${commons-logging.version}</version>
       </dependency>
+      <!-- registry dependencies -->
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>${flyway.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-cli</groupId>
+        <artifactId>commons-cli</artifactId>
+        <version>${commons-cli.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-protobuf</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-yaml</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>log4j-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>${kafkaArtifact}</artifactId>
+        <version>${kafka.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-core</artifactId>
+        <version>${registry.dropwizard.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jersey.core</groupId>
+        <artifactId>jersey-client</artifactId>
+        <version>${jersey.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jersey.media</groupId>
+        <artifactId>jersey-media-multipart</artifactId>
+        <version>${jersey-media-multipart.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jersey.media</groupId>
+        <artifactId>jersey-media-json-jackson</artifactId>
+        <version>${jersey.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.fge</groupId>
+        <artifactId>json-schema-validator</artifactId>
+        <version>${jsonschemavalidator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-maven-plugin</artifactId>
+        <version>${flyway.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP-java6</artifactId>
+        <version>${hikari.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro</artifactId>
+        <version>${avro.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.smoketurner</groupId>
+        <artifactId>dropwizard-swagger</artifactId>
+        <version>${dropwizard.swagger.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-http</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-io</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-util</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlets</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlet</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-security</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-xml</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-continuation</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-util-ajax</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>javax.ws.rs-api</artifactId>
+        <version>2.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.toolchain.setuid</groupId>
+        <artifactId>jetty-setuid-java</artifactId>
+        <version>1.0.3</version>
+      </dependency>
+
       <!-- test scope dependencies -->
 
       <dependency>
@@ -299,6 +646,18 @@
         <artifactId>postgresql</artifactId>
         <version>9.3-1102-jdbc41</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.confluent</groupId>
+        <artifactId>kafka-avro-serializer</artifactId>
+        <version>${confluent.version}</version>
+        <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>

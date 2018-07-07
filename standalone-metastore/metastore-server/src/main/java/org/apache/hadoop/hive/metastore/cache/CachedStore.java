@@ -2278,9 +2278,9 @@ public class CachedStore implements RawStore, Configurable {
 
   // TODO - not clear if we should cache these or not.  For now, don't bother
   @Override
-  public void createISchema(ISchema schema)
+  public Long createISchema(ISchema schema)
       throws AlreadyExistsException, NoSuchObjectException, MetaException {
-    rawStore.createISchema(schema);
+    return rawStore.createISchema(schema);
   }
 
   @Override
@@ -2296,8 +2296,13 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public ISchema getISchema(ISchemaName schemaName) throws MetaException {
-    return rawStore.getISchema(schemaName);
+  public ISchema getISchema(Long schemaId) throws MetaException {
+    return rawStore.getISchema(schemaId);
+  }
+
+  @Override
+  public ISchema getISchemaByName(ISchemaName schemaName) throws MetaException {
+    return rawStore.getISchemaByName(schemaName);
   }
 
   @Override
@@ -2306,42 +2311,85 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addSchemaVersion(SchemaVersion schemaVersion) throws
+  public Long addSchemaVersion(ISchemaVersion schemaVersion) throws
       AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException {
-    rawStore.addSchemaVersion(schemaVersion);
+    return rawStore.addSchemaVersion(schemaVersion);
   }
 
   @Override
-  public void alterSchemaVersion(SchemaVersionDescriptor version, SchemaVersion newVersion) throws
+  public void alterSchemaVersion(ISchemaVersionDescriptor version, ISchemaVersion newVersion) throws
       NoSuchObjectException, MetaException {
     rawStore.alterSchemaVersion(version, newVersion);
   }
 
   @Override
-  public SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) throws MetaException {
+  public ISchemaVersion getSchemaVersion(ISchemaVersionDescriptor version) throws MetaException {
     return rawStore.getSchemaVersion(version);
   }
 
   @Override
-  public SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException {
+  public ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws MetaException {
+    return rawStore.getSchemaVersionById(schemaVersionId);
+  }
+
+  @Override
+  public ISchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException {
     return rawStore.getLatestSchemaVersion(schemaName);
   }
 
   @Override
-  public List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException {
+  public List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(ISchemaVersionFingerprint schemaVersionFingerprint)
+          throws MetaException {
+    return rawStore.getSchemaVersionsByNameAndFingerprint(schemaVersionFingerprint);
+  }
+
+  @Override
+  public List<ISchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException {
     return rawStore.getAllSchemaVersion(schemaName);
   }
 
   @Override
-  public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
+  public List<ISchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
                                                         String type) throws MetaException {
     return rawStore.getSchemaVersionsByColumns(colName, colNamespace, type);
   }
 
   @Override
-  public void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException,
+  public List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException {
+    return rawStore.getSchemaVersionsBySchemaBranchId(schemaBranchId);
+  }
+
+  @Override
+  public void dropSchemaVersion(ISchemaVersionDescriptor version) throws NoSuchObjectException,
       MetaException {
     rawStore.dropSchemaVersion(version);
+  }
+
+  @Override
+  public Long addSchemaBranch(ISchemaBranch schemaBranch) throws AlreadyExistsException, InvalidObjectException,
+          NoSuchObjectException, MetaException {
+    return rawStore.addSchemaBranch(schemaBranch);
+  }
+
+  @Override
+  public void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws AlreadyExistsException,
+          InvalidObjectException, NoSuchObjectException, MetaException {
+    rawStore.mapSchemaBranchToSchemaVersion(schemaBranchId, schemaVersionId);
+  }
+
+  @Override
+  public ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException {
+    return rawStore.getSchemaBranch(schemaBranchId);
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaName(ISchemaName schemaName) throws MetaException {
+    return rawStore.getSchemaBranchBySchemaName(schemaName);
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
+    return rawStore.getSchemaBranchBySchemaVersionId(schemaVersionId);
   }
 
   @Override

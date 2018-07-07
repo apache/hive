@@ -1564,10 +1564,11 @@ public interface RawStore extends Configurable {
   /**
    * Create a new ISchema.
    * @param schema schema to create
+   * @return schema id
    * @throws AlreadyExistsException there's already a schema with this name
    * @throws MetaException general database exception
    */
-  void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
+  Long createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
       NoSuchObjectException;
 
   /**
@@ -1581,12 +1582,24 @@ public interface RawStore extends Configurable {
   void alterISchema(ISchemaName schemaName, ISchema newSchema) throws NoSuchObjectException, MetaException;
 
   /**
+   * Get an ISchema by Id.
+   * @param schemaId id of the schema
+   * @return ISchema
+   * @throws MetaException general database exception
+   * @throws InvalidObjectException the passed in SchemaVersion object has problems.
+   * @throws NoSuchObjectException no schema with the passed in name exists.
+   * @throws MetaException general database exception
+   */
+  ISchema getISchema(Long schemaId) throws MetaException;
+
+
+  /**
    * Get an ISchema by name.
-   * @param schemaName schema descriptor
+   * @param schemaName name of the schema
    * @return ISchema
    * @throws MetaException general database exception
    */
-  ISchema getISchema(ISchemaName schemaName) throws MetaException;
+  ISchema getISchemaByName(ISchemaName schemaName) throws MetaException;
 
   /**
    * Drop an ISchema.  This does not check whether there are valid versions of the schema in
@@ -1600,13 +1613,14 @@ public interface RawStore extends Configurable {
   /**
    * Create a new version of an existing schema.
    * @param schemaVersion version number
+   * @return return schemaVersion ID
    * @throws AlreadyExistsException a version of the schema with the same version number already
    * exists.
    * @throws InvalidObjectException the passed in SchemaVersion object has problems.
    * @throws NoSuchObjectException no schema with the passed in name exists.
    * @throws MetaException general database exception
    */
-  void addSchemaVersion(SchemaVersion schemaVersion)
+  Long addSchemaVersion(ISchemaVersion schemaVersion)
       throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
 
   /**
@@ -1619,7 +1633,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException no such version of the named schema exists
    * @throws MetaException general database exception
    */
-  void alterSchemaVersion(SchemaVersionDescriptor version, SchemaVersion newVersion)
+  void alterSchemaVersion(ISchemaVersionDescriptor version, ISchemaVersion newVersion)
       throws NoSuchObjectException, MetaException;
 
   /**
@@ -1628,7 +1642,7 @@ public interface RawStore extends Configurable {
    * @return the SchemaVersion
    * @throws MetaException general database exception
    */
-  SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) throws MetaException;
+  ISchemaVersion getSchemaVersion(ISchemaVersionDescriptor version) throws MetaException;
 
   /**
    * Get the latest version of a schema.
@@ -1636,7 +1650,7 @@ public interface RawStore extends Configurable {
    * @return latest version of the schema
    * @throws MetaException general database exception
    */
-  SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException;
+  ISchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException;
 
   /**
    * Get all of the versions of a schema
@@ -1644,7 +1658,26 @@ public interface RawStore extends Configurable {
    * @return all versions of the schema
    * @throws MetaException general database exception
    */
-  List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException;
+  List<ISchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException;
+
+
+  /**
+   * Get a specific schema version.
+   * @param schemaVersionId id of the schema version
+   * @return the SchemaVersion
+   * @throws MetaException general database exception
+   */
+  ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws MetaException;
+
+
+  /**
+   * Get all of the versions of a schema that matches schemaName and fingerPrint
+   * @param schemaVersionFingerprint fingerPrint of the schemaText
+   * @return all the version of the schema
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(ISchemaVersionFingerprint schemaVersionFingerprint) throws MetaException;
 
   /**
    * Find all SchemaVersion objects that match a query.  The query will select all SchemaVersions
@@ -1662,7 +1695,7 @@ public interface RawStore extends Configurable {
    * matching SchemaVersions.
    * @throws MetaException general database exception
    */
-  List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type)
+  List<ISchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type)
       throws MetaException;
 
   /**
@@ -1671,7 +1704,71 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException no such version of the named schema exists
    * @throws MetaException general database exception
    */
-  void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException, MetaException;
+  void dropSchemaVersion(ISchemaVersionDescriptor version) throws NoSuchObjectException, MetaException;
+
+
+  /**
+   * Create a new version of an existing schema.
+   * @param schemaBranch schema branch name and description
+   * @return returns schemaBranch ID
+   * @throws AlreadyExistsException a version of the schema with the same version number already
+   * exists.
+   * @throws InvalidObjectException the passed in SchemaVersion object has problems.
+   * @throws NoSuchObjectException no schema with the passed in name exists.
+   * @throws MetaException general database exception
+   */
+  Long addSchemaBranch(ISchemaBranch schemaBranch)
+          throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
+
+  /**
+   * Maps a existing schemaBranch to another existing schemaVersion
+   * @param schemaBranchId schema branch number
+   * @param schemaVersionId schema version number
+   * @throws AlreadyExistsException a version of the schema with the same version number already
+   * exists.
+   * @throws InvalidObjectException the passed in SchemaVersion object has problems.
+   * @throws NoSuchObjectException no schema with the passed in name exists.
+   * @throws MetaException general database exception
+   */
+  void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId)
+          throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
+
+  /**
+   * Get schema branch by id
+   * @param schemaBranchId schema branch number
+   * @return return ISchemaBranch associated with the branch number
+   * @throws MetaException general database exception
+   */
+  ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException;
+
+
+  /**
+   * Get SchemaBranch by schema name
+   * @param schemaName schema metadata name
+   * @return one or more ISchemaBranch associated with a schema name
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaBranch> getSchemaBranchBySchemaName(ISchemaName schemaName) throws MetaException;
+
+  /**
+   * Get SchemaBranch by schema version id
+   * @param schemaVersionId schema metadata name
+   * @return one or more ISchemaBranch associated with a schema name
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException;
+
+
+  /**
+   * Get SchemaVersions by schema branch id
+   * @param schemaBranchId schema branch id
+   * @return one or more schema versions associated with schema branch name
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException;
 
   /**
    * Get serde information

@@ -20,20 +20,20 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class PreDropSchemaVersionEvent extends PreEventContext {
 
-  private final SchemaVersion schemaVersion;
+  private final ISchemaVersion schemaVersion;
 
-  public PreDropSchemaVersionEvent(IHMSHandler handler, SchemaVersion schemaVersion) {
+  public PreDropSchemaVersionEvent(IHMSHandler handler, ISchemaVersion schemaVersion) {
     super(PreEventType.DROP_SCHEMA_VERSION, handler);
     this.schemaVersion = schemaVersion;
   }
 
-  public SchemaVersion getSchemaVersion() {
+  public ISchemaVersion getSchemaVersion() {
     return schemaVersion;
   }
 }
