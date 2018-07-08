@@ -3,7 +3,7 @@ set hive.optimize.index.filter=false;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 -- set this to 'decimal_64' after resolving HIVE-19792
 set hive.vectorized.input.format.supports.enabled=none;
-
+-- SORT_QUERY_RESULTS
 drop table float_text;
 create table float_text(f float);
 insert into float_text values(74.72);

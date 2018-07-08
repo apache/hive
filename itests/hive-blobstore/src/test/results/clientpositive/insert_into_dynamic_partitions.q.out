@@ -339,13 +339,13 @@ POSTHOOK: Input: default@table2@country=MEX/state=SON
 POSTHOOK: Input: default@table2@country=USA/state=CA
 POSTHOOK: Input: default@table2@country=USA/state=TX
 #### A masked pattern was here ####
-Peter Mo	87	MEX	SON
-Mirna Cage	37	USA	CA
-Mark Cage	38	USA	CA
+Bill Rose	52	USA	TX
 Jane Doe	22	USA	CA
 John Doe	23	USA	CA
 Maria Full	50	USA	TX
-Bill Rose	52	USA	TX
+Mark Cage	38	USA	CA
+Mirna Cage	37	USA	CA
+Peter Mo	87	MEX	SON
 PREHOOK: query: DROP TABLE table2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2

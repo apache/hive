@@ -1,6 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.llap.memory.oversubscription.max.executors.per.query=0;
-
+-- SORT_QUERY_RESULTS
 set hive.explain.user=true;
 set hive.auto.convert.join=false;
 set hive.optimize.dynamic.partition.hashjoin=false;
