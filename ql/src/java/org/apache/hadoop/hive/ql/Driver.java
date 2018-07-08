@@ -118,6 +118,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
@@ -650,6 +651,10 @@ public class Driver implements IDriver {
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
 
       if (!retrial) {
+        if ((queryState.getHiveOperation() != null)
+                && queryState.getHiveOperation().equals(HiveOperation.REPLDUMP)) {
+          setLastReplIdForDump(queryState.getConf());
+        }
         openTransaction();
         generateValidTxnList();
       }
@@ -894,6 +899,27 @@ public class Driver implements IDriver {
     }
     WmContext wmContext = new WmContext(queryStartTime, queryId);
     ctx.setWmContext(wmContext);
+  }
+
+  /**
+   * Last repl id should be captured before opening txn by current REPL DUMP operation.
+   * This is needed to avoid losing data which are added/modified by concurrent txns when bootstrap
+   * dump in progress.
+   * @param conf Query configurations
+   * @throws Exception
+   */
+  private void setLastReplIdForDump(HiveConf conf) throws Exception {
+    Long lastReplId = conf.getLong(ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY, -1L);
+    if (lastReplId >= 0L) {
+      // If already set, then do nothing
+      return;
+    }
+
+    // Last logged notification event id would be the last repl Id for the current REPl DUMP.
+    Hive hiveDb = Hive.get();
+    lastReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
+    conf.setLong(ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY, lastReplId);
+    LOG.debug("Setting " + ReplicationSemanticAnalyzer.LAST_REPL_ID_KEY + " = " + lastReplId);
   }
 
   private void openTransaction() throws LockException, CommandProcessorResponse {
