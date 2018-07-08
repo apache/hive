@@ -49,8 +49,8 @@ CREATE TABLE MATERIALIZATION_REBUILD_LOCKS (
   PRIMARY KEY(MRL_TXN_ID)
 );
 
-alter table TBLS add (WRITE_ID number DEFAULT 0);
-alter table PARTITIONS add (WRITE_ID number DEFAULT 0);
+alter table TBLS add WRITE_ID number DEFAULT 0 NOT NULL;
+alter table PARTITIONS add WRITE_ID number DEFAULT 0 NOT NULL;
 
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.1.0', VERSION_COMMENT='Hive release version 3.1.0' where VER_ID=1;
