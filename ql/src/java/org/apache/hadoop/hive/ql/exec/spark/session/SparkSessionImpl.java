@@ -214,13 +214,19 @@ public class SparkSessionImpl implements SparkSession {
           return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST,
               sessionId, matchedString.toString());
         } else {
-          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId, Throwables.getRootCause(e).getMessage());
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId,
+                  getRootCause(oe));
         }
       }
       e = e.getCause();
     }
 
-    return new HiveException(oe, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId, Throwables.getRootCause(oe).getMessage());
+    return new HiveException(oe, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId, getRootCause(oe));
+  }
+
+  private String getRootCause(Throwable e) {
+    Throwable rootCause = Throwables.getRootCause(e);
+    return rootCause.getClass().getName() + ": " + rootCause.getMessage();
   }
 
   private boolean matches(String input, String regex, StringBuilder matchedString) {

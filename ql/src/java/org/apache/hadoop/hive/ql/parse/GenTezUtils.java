@@ -219,7 +219,7 @@ public class GenTezUtils {
     roots.addAll(context.eventOperatorSet);
 
     // need to clone the plan.
-    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots, indexForTezUnion);
+    List<Operator<?>> newRoots = SerializationUtilities.cloneOperatorTree(roots);
 
     // we're cloning the operator plan but we're retaining the original work. That means
     // that root operators have to be replaced with the cloned ops. The replacement map
@@ -274,6 +274,15 @@ public class GenTezUtils {
               SemiJoinBranchInfo newSJInfo = new SemiJoinBranchInfo(
                       (TableScanOperator) newRoot, sjInfo.getIsHint());
               rsToSemiJoinBranchInfo.put(rs, newSJInfo);
+            }
+          }
+          // This TableScanOperator could also be part of other events in eventOperatorSet.
+          for(AppMasterEventOperator event: context.eventOperatorSet) {
+            if(event.getConf() instanceof DynamicPruningEventDesc) {
+              TableScanOperator ts = ((DynamicPruningEventDesc) event.getConf()).getTableScan();
+              if(ts.equals(orig)){
+                ((DynamicPruningEventDesc) event.getConf()).setTableScan((TableScanOperator) newRoot);
+              }
             }
           }
         }

@@ -1,0 +1,180 @@
+PREHOOK: query: create table t1 (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+PREHOOK: query: create table t2a  as 
+        select * from t1
+        union all
+        select * from t1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2a
+POSTHOOK: query: create table t2a  as 
+        select * from t1
+        union all
+        select * from t1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2a
+POSTHOOK: Lineage: t2a.a EXPRESSION [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select 2,count(*) from t2a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2a
+#### A masked pattern was here ####
+POSTHOOK: query: select 2,count(*) from t2a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2a
+#### A masked pattern was here ####
+2	2
+PREHOOK: query: create table t2b  as select * from
+(
+        select * from (select * from t1) sq1
+        union all
+        select * from (select * from t1) sq2
+) tt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2b
+POSTHOOK: query: create table t2b  as select * from
+(
+        select * from (select * from t1) sq1
+        union all
+        select * from (select * from t1) sq2
+) tt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2b
+POSTHOOK: Lineage: t2b.a EXPRESSION [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select 2,count(*) from t2b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2b
+#### A masked pattern was here ####
+POSTHOOK: query: select 2,count(*) from t2b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2b
+#### A masked pattern was here ####
+2	2
+PREHOOK: query: drop table if exists t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: drop table if exists t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: drop table if exists t2a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2a
+PREHOOK: Output: default@t2a
+POSTHOOK: query: drop table if exists t2a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2a
+POSTHOOK: Output: default@t2a
+PREHOOK: query: drop table if exists t2b
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2b
+PREHOOK: Output: default@t2b
+POSTHOOK: query: drop table if exists t2b
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2b
+POSTHOOK: Output: default@t2b
+PREHOOK: query: create table t1 (a int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+PREHOOK: query: analyze table t1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table t1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+#### A masked pattern was here ####
+PREHOOK: query: create table t2a stored as orc as
+	select * from t1
+	union all
+	select * from t1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2a
+POSTHOOK: query: create table t2a stored as orc as
+	select * from t1
+	union all
+	select * from t1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2a
+POSTHOOK: Lineage: t2a.a EXPRESSION [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select 2,count(*) from t2a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2a
+#### A masked pattern was here ####
+POSTHOOK: query: select 2,count(*) from t2a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2a
+#### A masked pattern was here ####
+2	2
+PREHOOK: query: create table t2b stored as orc as select * from
+(
+	select * from (select * from t1) sq1
+	union all
+	select * from (select * from t1) sq2
+) tt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2b
+POSTHOOK: query: create table t2b stored as orc as select * from
+(
+	select * from (select * from t1) sq1
+	union all
+	select * from (select * from t1) sq2
+) tt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2b
+POSTHOOK: Lineage: t2b.a EXPRESSION [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: select 2,count(*) from t2b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2b
+#### A masked pattern was here ####
+POSTHOOK: query: select 2,count(*) from t2b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2b
+#### A masked pattern was here ####
+2	2

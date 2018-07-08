@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.metastore.dbinstall;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.MetastoreSchemaTool;
 import org.junit.After;
 import org.junit.Assert;
@@ -45,8 +43,6 @@ public abstract class DbInstallBase {
   protected static final String HIVE_DB = "hivedb";
   private static final String FIRST_VERSION = "1.2.0";
   private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
-
-  private String metastoreHome;
 
   protected abstract String getDockerContainerName();
   protected abstract String getDockerImageName();
@@ -86,7 +82,7 @@ public abstract class DbInstallBase {
       throw new RuntimeException("Container failed to be ready in " + MAX_STARTUP_WAIT/1000 +
           " seconds");
     }
-    MetastoreSchemaTool.homeDir = metastoreHome = System.getProperty("test.tmp.dir", "target/tmp");
+    MetastoreSchemaTool.setHomeDirForTesting();
   }
 
   @After
@@ -145,7 +141,7 @@ public abstract class DbInstallBase {
   }
 
   private int createUser() {
-    return MetastoreSchemaTool.run(buildArray(
+    return new MetastoreSchemaTool().run(buildArray(
         "-createUser",
         "-dbType",
         getDbType(),
@@ -167,7 +163,7 @@ public abstract class DbInstallBase {
   }
 
   private int installLatest() {
-    return MetastoreSchemaTool.run(buildArray(
+    return new MetastoreSchemaTool().run(buildArray(
         "-initSchema",
         "-dbType",
         getDbType(),
@@ -183,7 +179,7 @@ public abstract class DbInstallBase {
   }
 
   private int installAVersion(String version) {
-    return MetastoreSchemaTool.run(buildArray(
+    return new MetastoreSchemaTool().run(buildArray(
         "-initSchemaTo",
         version,
         "-dbType",
@@ -200,7 +196,7 @@ public abstract class DbInstallBase {
   }
 
   private int upgradeToLatest() {
-    return MetastoreSchemaTool.run(buildArray(
+    return new MetastoreSchemaTool().run(buildArray(
         "-upgradeSchema",
         "-dbType",
         getDbType(),
@@ -217,17 +213,6 @@ public abstract class DbInstallBase {
 
   protected String[] buildArray(String... strs) {
     return strs;
-  }
-
-  private String getCurrentVersionMinusOne() throws HiveMetaException {
-    List<String> scripts = MetaStoreSchemaInfoFactory.get(
-        MetastoreConf.newMetastoreConf(), metastoreHome, getDbType()
-    ).getUpgradeScripts(FIRST_VERSION);
-    Assert.assertTrue(scripts.size() > 0);
-    String lastUpgradePath = scripts.get(scripts.size() - 1);
-    String version = lastUpgradePath.split("-")[1];
-    LOG.info("Current version minus 1 is " + version);
-    return version;
   }
 
   @Test

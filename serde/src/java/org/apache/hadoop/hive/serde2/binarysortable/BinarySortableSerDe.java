@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -407,16 +407,16 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
 
       case DATE: {
-        DateWritable d = reuse == null ? new DateWritable()
-            : (DateWritable) reuse;
+        DateWritableV2 d = reuse == null ? new DateWritableV2()
+            : (DateWritableV2) reuse;
         d.set(deserializeInt(buffer, invert));
         return d;
       }
 
       case TIMESTAMP:
-        TimestampWritable t = (reuse == null ? new TimestampWritable() :
-            (TimestampWritable) reuse);
-        byte[] bytes = new byte[TimestampWritable.BINARY_SORTABLE_LENGTH];
+        TimestampWritableV2 t = (reuse == null ? new TimestampWritableV2() :
+            (TimestampWritableV2) reuse);
+        byte[] bytes = new byte[TimestampWritableV2.BINARY_SORTABLE_LENGTH];
 
         for (int i = 0; i < bytes.length; i++) {
           bytes[i] = buffer.read(invert);
@@ -797,7 +797,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
-        TimestampWritable t = toi.getPrimitiveWritableObject(o);
+        TimestampWritableV2 t = toi.getPrimitiveWritableObject(o);
         serializeTimestampWritable(buffer, t, invert);
         return;
       }
@@ -970,7 +970,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     writeByte(buffer, (byte) v, invert);
   }
 
-  public static void serializeTimestampWritable(ByteStream.Output buffer, TimestampWritable t, boolean invert) {
+  public static void serializeTimestampWritable(ByteStream.Output buffer, TimestampWritableV2 t, boolean invert) {
     byte[] data = t.getBinarySortable();
     for (int i = 0; i < data.length; i++) {
       writeByte(buffer, data[i], invert);

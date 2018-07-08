@@ -125,12 +125,9 @@ public class HiveAlterHandler implements AlterHandler {
 
     Table oldt = null;
 
-    List<TransactionalMetaStoreEventListener> transactionalListeners = null;
-    List<MetaStoreEventListener> listeners = null;
+    List<TransactionalMetaStoreEventListener> transactionalListeners = handler.getTransactionalListeners();
+    List<MetaStoreEventListener> listeners = handler.getListeners();
     Map<String, String> txnAlterTableEventResponses = Collections.emptyMap();
-
-    transactionalListeners = handler.getTransactionalListeners();
-    listeners = handler.getListeners();
 
     try {
       boolean rename = false;

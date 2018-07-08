@@ -18,23 +18,23 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.NoMatchingMethodException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -56,8 +56,8 @@ public class GenericUDFOPDTIPlus extends GenericUDFBaseDTI {
   protected transient int dtArgIdx;
   protected transient Converter dtConverter;
 
-  protected transient TimestampWritable timestampResult = new TimestampWritable();
-  protected transient DateWritable dateResult = new DateWritable();
+  protected transient TimestampWritableV2 timestampResult = new TimestampWritableV2();
+  protected transient DateWritableV2 dateResult = new DateWritableV2();
   protected transient HiveIntervalDayTimeWritable intervalDayTimeResult =
       new HiveIntervalDayTimeWritable();
   protected transient HiveIntervalYearMonthWritable intervalYearMonthResult =
@@ -217,7 +217,7 @@ public class GenericUDFOPDTIPlus extends GenericUDFBaseDTI {
     }
   }
 
-  protected DateWritable handleDateResult(Date result) {
+  protected DateWritableV2 handleDateResult(Date result) {
     if (result == null) {
       return null;
     }
@@ -225,7 +225,7 @@ public class GenericUDFOPDTIPlus extends GenericUDFBaseDTI {
     return dateResult;
   }
 
-  protected TimestampWritable handleTimestampResult(Timestamp result) {
+  protected TimestampWritableV2 handleTimestampResult(Timestamp result) {
     if (result == null) {
       return null;
     }

@@ -1,0 +1,1409 @@
+PREHOOK: query: CREATE TABLE l3_clarity__l3_snap_number_2018022300104(l3_snapshot_number bigint)
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
+POSTHOOK: query: CREATE TABLE l3_clarity__l3_snap_number_2018022300104(l3_snapshot_number bigint)
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.mapred.TextInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
+PREHOOK: query: CREATE TABLE l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1(
+  plan_detail_object_id bigint,
+  project_object_id bigint,
+  charge_code_object_id bigint,
+  transclass_object_id bigint,
+  resource_object_id bigint,
+  slice_date varchar(50),
+  split_amount varchar(50),
+  split_units varchar(50),
+  year_key varchar(20),
+  quarter_key varchar(20),
+  month_key varchar(50),
+  week_key varchar(50),
+  date_key varchar(50),
+  fy_year_key varchar(50),
+  fy_quarter_key string,
+  fy_month_key string,
+  supplier_object_id bigint,
+  business_dept_object_id bigint,
+  business_partner_percentage decimal(38,8))
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+POSTHOOK: query: CREATE TABLE l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1(
+  plan_detail_object_id bigint,
+  project_object_id bigint,
+  charge_code_object_id bigint,
+  transclass_object_id bigint,
+  resource_object_id bigint,
+  slice_date varchar(50),
+  split_amount varchar(50),
+  split_units varchar(50),
+  year_key varchar(20),
+  quarter_key varchar(20),
+  month_key varchar(50),
+  week_key varchar(50),
+  date_key varchar(50),
+  fy_year_key varchar(50),
+  fy_quarter_key string,
+  fy_month_key string,
+  supplier_object_id bigint,
+  business_dept_object_id bigint,
+  business_partner_percentage decimal(38,8))
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+PREHOOK: query: CREATE TABLE l3_monthly_dw_dimplan(
+  idp_warehouse_id bigint,
+  idp_audit_id bigint,
+  idp_data_date date,
+  l3_snapshot_number bigint,
+  plan_key bigint,
+  project_key bigint,
+  charge_code_key bigint,
+  transclass_key bigint,
+  resource_key bigint,
+  finplan_detail_object_id bigint,
+  project_object_id bigint,
+  txn_class_object_id bigint,
+  charge_code_object_id bigint,
+  resoruce_object_id bigint,
+  plan_name varchar(1500),
+  plan_code varchar(500),
+  plan_type varchar(50),
+  period_type varchar(50),
+  plan_description varchar(3000),
+  plan_status varchar(50),
+  period_start varchar(50),
+  period_end varchar(50),
+  plan_of_record varchar(1),
+  percentage decimal(32,6),
+  l3_created_date timestamp,
+  bmo_cost_type varchar(30),
+  bmo_fiscal_year varchar(50),
+  clarity_updated_date timestamp,
+  is_latest_snapshot bigint,
+  latest_fiscal_budget_plan bigint,
+  plan_category varchar(70),
+  last_updated_by varchar(250))
+CLUSTERED BY (
+idp_data_date)
+INTO 64 BUCKETS
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@l3_monthly_dw_dimplan
+POSTHOOK: query: CREATE TABLE l3_monthly_dw_dimplan(
+  idp_warehouse_id bigint,
+  idp_audit_id bigint,
+  idp_data_date date,
+  l3_snapshot_number bigint,
+  plan_key bigint,
+  project_key bigint,
+  charge_code_key bigint,
+  transclass_key bigint,
+  resource_key bigint,
+  finplan_detail_object_id bigint,
+  project_object_id bigint,
+  txn_class_object_id bigint,
+  charge_code_object_id bigint,
+  resoruce_object_id bigint,
+  plan_name varchar(1500),
+  plan_code varchar(500),
+  plan_type varchar(50),
+  period_type varchar(50),
+  plan_description varchar(3000),
+  plan_status varchar(50),
+  period_start varchar(50),
+  period_end varchar(50),
+  plan_of_record varchar(1),
+  percentage decimal(32,6),
+  l3_created_date timestamp,
+  bmo_cost_type varchar(30),
+  bmo_fiscal_year varchar(50),
+  clarity_updated_date timestamp,
+  is_latest_snapshot bigint,
+  latest_fiscal_budget_plan bigint,
+  plan_category varchar(70),
+  last_updated_by varchar(250))
+CLUSTERED BY (
+idp_data_date)
+INTO 64 BUCKETS
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@l3_monthly_dw_dimplan
+PREHOOK: query: CREATE TABLE l3_monthly_dw_dimplan_unbucketed(
+  idp_warehouse_id bigint,
+  idp_audit_id bigint,
+  idp_data_date date,
+  l3_snapshot_number bigint,
+  plan_key bigint,
+  project_key bigint,
+  charge_code_key bigint,
+  transclass_key bigint,
+  resource_key bigint,
+  finplan_detail_object_id bigint,
+  project_object_id bigint,
+  txn_class_object_id bigint,
+  charge_code_object_id bigint,
+  resoruce_object_id bigint,
+  plan_name varchar(1500),
+  plan_code varchar(500),
+  plan_type varchar(50),
+  period_type varchar(50),
+  plan_description varchar(3000),
+  plan_status varchar(50),
+  period_start varchar(50),
+  period_end varchar(50),
+  plan_of_record varchar(1),
+  percentage decimal(32,6),
+  l3_created_date timestamp,
+  bmo_cost_type varchar(30),
+  bmo_fiscal_year varchar(50),
+  clarity_updated_date timestamp,
+  is_latest_snapshot bigint,
+  latest_fiscal_budget_plan bigint,
+  plan_category varchar(70),
+  last_updated_by varchar(250))
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@l3_monthly_dw_dimplan_unbucketed
+POSTHOOK: query: CREATE TABLE l3_monthly_dw_dimplan_unbucketed(
+  idp_warehouse_id bigint,
+  idp_audit_id bigint,
+  idp_data_date date,
+  l3_snapshot_number bigint,
+  plan_key bigint,
+  project_key bigint,
+  charge_code_key bigint,
+  transclass_key bigint,
+  resource_key bigint,
+  finplan_detail_object_id bigint,
+  project_object_id bigint,
+  txn_class_object_id bigint,
+  charge_code_object_id bigint,
+  resoruce_object_id bigint,
+  plan_name varchar(1500),
+  plan_code varchar(500),
+  plan_type varchar(50),
+  period_type varchar(50),
+  plan_description varchar(3000),
+  plan_status varchar(50),
+  period_start varchar(50),
+  period_end varchar(50),
+  plan_of_record varchar(1),
+  percentage decimal(32,6),
+  l3_created_date timestamp,
+  bmo_cost_type varchar(30),
+  bmo_fiscal_year varchar(50),
+  clarity_updated_date timestamp,
+  is_latest_snapshot bigint,
+  latest_fiscal_budget_plan bigint,
+  plan_category varchar(70),
+  last_updated_by varchar(250))
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@l3_monthly_dw_dimplan_unbucketed
+PREHOOK: query: CREATE TABLE l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1(
+  project_key bigint,
+  l3_snapshot_number bigint,
+  l3_created_date timestamp,
+  project_object_id bigint,
+  idp_data_date date)
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+POSTHOOK: query: CREATE TABLE l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1(
+  project_key bigint,
+  l3_snapshot_number bigint,
+  l3_created_date timestamp,
+  project_object_id bigint,
+  idp_data_date date)
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+PREHOOK: query: load data local inpath '../../data/files/bucket_pruning/l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1' into table l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+POSTHOOK: query: load data local inpath '../../data/files/bucket_pruning/l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1' into table l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+PREHOOK: query: load data local inpath '../../data/files/bucket_pruning/l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1' into table l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+POSTHOOK: query: load data local inpath '../../data/files/bucket_pruning/l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1' into table l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+PREHOOK: query: load data local inpath '../../data/files/bucket_pruning/l3_clarity__l3_snap_number_2018022300104' into table l3_clarity__l3_snap_number_2018022300104
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
+POSTHOOK: query: load data local inpath '../../data/files/bucket_pruning/l3_clarity__l3_snap_number_2018022300104' into table l3_clarity__l3_snap_number_2018022300104
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
+PREHOOK: query: load data local inpath '../../data/files/bucket_pruning/l3_monthly_dw_dimplan' into table l3_monthly_dw_dimplan_unbucketed
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@l3_monthly_dw_dimplan_unbucketed
+POSTHOOK: query: load data local inpath '../../data/files/bucket_pruning/l3_monthly_dw_dimplan' into table l3_monthly_dw_dimplan_unbucketed
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@l3_monthly_dw_dimplan_unbucketed
+PREHOOK: query: INSERT OVERWRITE TABLE l3_monthly_dw_dimplan select * from l3_monthly_dw_dimplan_unbucketed
+PREHOOK: type: QUERY
+PREHOOK: Input: default@l3_monthly_dw_dimplan_unbucketed
+PREHOOK: Output: default@l3_monthly_dw_dimplan
+POSTHOOK: query: INSERT OVERWRITE TABLE l3_monthly_dw_dimplan select * from l3_monthly_dw_dimplan_unbucketed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l3_monthly_dw_dimplan_unbucketed
+POSTHOOK: Output: default@l3_monthly_dw_dimplan
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.bmo_cost_type SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:bmo_cost_type, type:varchar(30), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.bmo_fiscal_year SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:bmo_fiscal_year, type:varchar(50), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.charge_code_key SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:charge_code_key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.charge_code_object_id SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:charge_code_object_id, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.clarity_updated_date SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:clarity_updated_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.finplan_detail_object_id SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:finplan_detail_object_id, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.idp_audit_id SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:idp_audit_id, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.idp_data_date SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:idp_data_date, type:date, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.idp_warehouse_id SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:idp_warehouse_id, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.is_latest_snapshot SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:is_latest_snapshot, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.l3_created_date SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:l3_created_date, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.l3_snapshot_number SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:l3_snapshot_number, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.last_updated_by SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:last_updated_by, type:varchar(250), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.latest_fiscal_budget_plan SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:latest_fiscal_budget_plan, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.percentage SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:percentage, type:decimal(32,6), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.period_end SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:period_end, type:varchar(50), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.period_start SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:period_start, type:varchar(50), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.period_type SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:period_type, type:varchar(50), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.plan_category SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:plan_category, type:varchar(70), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.plan_code SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:plan_code, type:varchar(500), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.plan_description SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:plan_description, type:varchar(3000), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.plan_key SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:plan_key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.plan_name SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:plan_name, type:varchar(1500), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.plan_of_record SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:plan_of_record, type:varchar(1), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.plan_status SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:plan_status, type:varchar(50), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.plan_type SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:plan_type, type:varchar(50), comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.project_key SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:project_key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.project_object_id SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:project_object_id, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.resoruce_object_id SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:resoruce_object_id, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.resource_key SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:resource_key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.transclass_key SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:transclass_key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: l3_monthly_dw_dimplan.txn_class_object_id SIMPLE [(l3_monthly_dw_dimplan_unbucketed)l3_monthly_dw_dimplan_unbucketed.FieldSchema(name:txn_class_object_id, type:bigint, comment:null), ]
+PREHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+POSTHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+PREHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+#### A masked pattern was here ####
+PREHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+POSTHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+PREHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+PREHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+POSTHOOK: Output: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+#### A masked pattern was here ####
+PREHOOK: query: analyze table l3_clarity__l3_snap_number_2018022300104 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
+PREHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
+POSTHOOK: query: analyze table l3_clarity__l3_snap_number_2018022300104 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
+POSTHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
+PREHOOK: query: analyze table l3_clarity__l3_snap_number_2018022300104 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
+PREHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table l3_clarity__l3_snap_number_2018022300104 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
+POSTHOOK: Output: default@l3_clarity__l3_snap_number_2018022300104
+#### A masked pattern was here ####
+PREHOOK: query: analyze table l3_monthly_dw_dimplan compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@l3_monthly_dw_dimplan
+PREHOOK: Output: default@l3_monthly_dw_dimplan
+POSTHOOK: query: analyze table l3_monthly_dw_dimplan compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l3_monthly_dw_dimplan
+POSTHOOK: Output: default@l3_monthly_dw_dimplan
+PREHOOK: query: analyze table l3_monthly_dw_dimplan compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@l3_monthly_dw_dimplan
+PREHOOK: Output: default@l3_monthly_dw_dimplan
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table l3_monthly_dw_dimplan compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@l3_monthly_dw_dimplan
+POSTHOOK: Output: default@l3_monthly_dw_dimplan
+#### A masked pattern was here ####
+Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
+FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
+l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
+  LEFT OUTER JOIN L3_MONTHLY_DW_DIMPLAN S1
+    ON S1.FINPLAN_DETAIL_OBJECT_ID = DW.PLAN_DETAIL_OBJECT_ID AND S1.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S1.IDP_DATA_DATE = '2017-12-28'
+  LEFT OUTER JOIN l3_clarity__L3_MONTHLY_DW_FACTPLAN_DATAJOIN_1_s2_2018022300104_1 S2
+    ON S2.PROJECT_OBJECT_ID = DW.PROJECT_OBJECT_ID AND S2.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S2.IDP_DATA_DATE = '2017-12-28'
+where DW.PROJECT_OBJECT_ID =7147200
+order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
+limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
+FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
+l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
+  LEFT OUTER JOIN L3_MONTHLY_DW_DIMPLAN S1
+    ON S1.FINPLAN_DETAIL_OBJECT_ID = DW.PLAN_DETAIL_OBJECT_ID AND S1.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S1.IDP_DATA_DATE = '2017-12-28'
+  LEFT OUTER JOIN l3_clarity__L3_MONTHLY_DW_FACTPLAN_DATAJOIN_1_s2_2018022300104_1 S2
+    ON S2.PROJECT_OBJECT_ID = DW.PROJECT_OBJECT_ID AND S2.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S2.IDP_DATA_DATE = '2017-12-28'
+where DW.PROJECT_OBJECT_ID =7147200
+order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
+limit 5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE), Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: dw
+                  filterExpr: (project_object_id = 7147200L) (type: boolean)
+                  Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (project_object_id = 7147200L) (type: boolean)
+                    Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: plan_detail_object_id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 0
+                        value expressions: _col0 (type: bigint)
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
+                    columns.comments 
+                    columns.types bigint:bigint:bigint:bigint:bigint:varchar(50):varchar(50):varchar(50):varchar(20):varchar(20):varchar(50):varchar(50):varchar(50):varchar(50):string:string:bigint:bigint:decimal(38,8)
+#### A masked pattern was here ####
+                    name default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+                    numFiles 1
+                    numRows 15
+                    rawDataSize 16430
+                    serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 { i64 plan_detail_object_id, i64 project_object_id, i64 charge_code_object_id, i64 transclass_object_id, i64 resource_object_id, varchar(50) slice_date, varchar(50) split_amount, varchar(50) split_units, varchar(20) year_key, varchar(20) quarter_key, varchar(50) month_key, varchar(50) week_key, varchar(50) date_key, varchar(50) fy_year_key, string fy_quarter_key, string fy_month_key, i64 supplier_object_id, i64 business_dept_object_id, decimal(38,8) business_partner_percentage}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 3483
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
+                      columns.comments 
+                      columns.types bigint:bigint:bigint:bigint:bigint:varchar(50):varchar(50):varchar(50):varchar(20):varchar(20):varchar(50):varchar(50):varchar(50):varchar(50):string:string:bigint:bigint:decimal(38,8)
+#### A masked pattern was here ####
+                      name default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+                      numFiles 1
+                      numRows 15
+                      rawDataSize 16430
+                      serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 { i64 plan_detail_object_id, i64 project_object_id, i64 charge_code_object_id, i64 transclass_object_id, i64 resource_object_id, varchar(50) slice_date, varchar(50) split_amount, varchar(50) split_units, varchar(20) year_key, varchar(20) quarter_key, varchar(50) month_key, varchar(50) week_key, varchar(50) date_key, varchar(50) fy_year_key, string fy_quarter_key, string fy_month_key, i64 supplier_object_id, i64 business_dept_object_id, decimal(38,8) business_partner_percentage}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      totalSize 3483
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+                  name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+            Truncated Path -> Alias:
+              /l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 [dw]
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: snap
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: l3_snapshot_number (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: 1
+                      value expressions: _col0 (type: bigint)
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: l3_clarity__l3_snap_number_2018022300104
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns l3_snapshot_number
+                    columns.comments 
+                    columns.types bigint
+#### A masked pattern was here ####
+                    name default.l3_clarity__l3_snap_number_2018022300104
+                    numFiles 1
+                    numRows 1
+                    rawDataSize 6
+                    serialization.ddl struct l3_clarity__l3_snap_number_2018022300104 { i64 l3_snapshot_number}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 7
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns l3_snapshot_number
+                      columns.comments 
+                      columns.types bigint
+#### A masked pattern was here ####
+                      name default.l3_clarity__l3_snap_number_2018022300104
+                      numFiles 1
+                      numRows 1
+                      rawDataSize 6
+                      serialization.ddl struct l3_clarity__l3_snap_number_2018022300104 { i64 l3_snapshot_number}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 7
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.l3_clarity__l3_snap_number_2018022300104
+                  name: default.l3_clarity__l3_snap_number_2018022300104
+            Truncated Path -> Alias:
+              /l3_clarity__l3_snap_number_2018022300104 [snap]
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  filterExpr: (idp_data_date = DATE'2017-12-28') (type: boolean)
+                  Statistics: Num rows: 180340 Data size: 14427200 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (idp_data_date = DATE'2017-12-28') (type: boolean)
+                    Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: l3_snapshot_number (type: bigint), plan_key (type: bigint), finplan_detail_object_id (type: bigint)
+                      outputColumnNames: _col1, _col2, _col3
+                      Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: bigint), _col3 (type: bigint)
+                        null sort order: aa
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: bigint), _col3 (type: bigint)
+                        Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 1
+                        value expressions: _col2 (type: bigint)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: l3_monthly_dw_dimplan
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"bmo_cost_type":"true","bmo_fiscal_year":"true","charge_code_key":"true","charge_code_object_id":"true","clarity_updated_date":"true","finplan_detail_object_id":"true","idp_audit_id":"true","idp_data_date":"true","idp_warehouse_id":"true","is_latest_snapshot":"true","l3_created_date":"true","l3_snapshot_number":"true","last_updated_by":"true","latest_fiscal_budget_plan":"true","percentage":"true","period_end":"true","period_start":"true","period_type":"true","plan_category":"true","plan_code":"true","plan_description":"true","plan_key":"true","plan_name":"true","plan_of_record":"true","plan_status":"true","plan_type":"true","project_key":"true","project_object_id":"true","resoruce_object_id":"true","resource_key":"true","transclass_key":"true","txn_class_object_id":"true"}}
+                    bucket_count 64
+                    bucket_field_name idp_data_date
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
+                    columns.comments 
+                    columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
+#### A masked pattern was here ####
+                    name default.l3_monthly_dw_dimplan
+                    numFiles 1
+                    numRows 180340
+                    rawDataSize 269826156
+                    serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 5231448
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"bmo_cost_type":"true","bmo_fiscal_year":"true","charge_code_key":"true","charge_code_object_id":"true","clarity_updated_date":"true","finplan_detail_object_id":"true","idp_audit_id":"true","idp_data_date":"true","idp_warehouse_id":"true","is_latest_snapshot":"true","l3_created_date":"true","l3_snapshot_number":"true","last_updated_by":"true","latest_fiscal_budget_plan":"true","percentage":"true","period_end":"true","period_start":"true","period_type":"true","plan_category":"true","plan_code":"true","plan_description":"true","plan_key":"true","plan_name":"true","plan_of_record":"true","plan_status":"true","plan_type":"true","project_key":"true","project_object_id":"true","resoruce_object_id":"true","resource_key":"true","transclass_key":"true","txn_class_object_id":"true"}}
+                      bucket_count 64
+                      bucket_field_name idp_data_date
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
+                      columns.comments 
+                      columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
+#### A masked pattern was here ####
+                      name default.l3_monthly_dw_dimplan
+                      numFiles 1
+                      numRows 180340
+                      rawDataSize 269826156
+                      serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      totalSize 5231448
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.l3_monthly_dw_dimplan
+                  name: default.l3_monthly_dw_dimplan
+            Truncated Path -> Alias:
+              /l3_monthly_dw_dimplan [s1]
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  filterExpr: ((idp_data_date = DATE'2017-12-28') and (project_object_id = 7147200L)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: ((idp_data_date = DATE'2017-12-28') and (project_object_id = 7147200L)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: project_key (type: bigint), l3_snapshot_number (type: bigint)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: bigint)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: bigint)
+                        Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 1
+                        value expressions: _col0 (type: bigint)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
+                    columns.comments 
+                    columns.types bigint:bigint:timestamp:bigint:date
+#### A masked pattern was here ####
+                    name default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+                    numFiles 1
+                    numRows 1
+                    rawDataSize 120
+                    serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 { i64 project_key, i64 l3_snapshot_number, timestamp l3_created_date, i64 project_object_id, date idp_data_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 677
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
+                      columns.comments 
+                      columns.types bigint:bigint:timestamp:bigint:date
+#### A masked pattern was here ####
+                      name default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+                      numFiles 1
+                      numRows 1
+                      rawDataSize 120
+                      serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 { i64 project_key, i64 l3_snapshot_number, timestamp l3_created_date, i64 project_object_id, date idp_data_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      totalSize 677
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+                  name: default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+            Truncated Path -> Alias:
+              /l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 [s2]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col2
+                Position of Big Table: 0
+                Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                Map Join Operator
+                  condition map:
+                       Left Outer Join 0 to 1
+                  Estimated key counts: Map 5 => 90170
+                  keys:
+                    0 _col2 (type: bigint), _col0 (type: bigint)
+                    1 _col1 (type: bigint), _col3 (type: bigint)
+                  outputColumnNames: _col2, _col5
+                  input vertices:
+                    1 Map 5
+                  Position of Big Table: 0
+                  Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col2 (type: bigint), _col5 (type: bigint)
+                    outputColumnNames: _col0, _col5
+                    Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join 0 to 1
+                      Estimated key counts: Map 6 => 1
+                      keys:
+                        0 _col0 (type: bigint)
+                        1 _col1 (type: bigint)
+                      outputColumnNames: _col5, _col7
+                      input vertices:
+                        1 Map 6
+                      Position of Big Table: 0
+                      Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col5 (type: bigint), _col7 (type: bigint)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: bigint), _col1 (type: bigint)
+                          null sort order: aa
+                          sort order: ++
+                          Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          TopN: 5
+                          TopN Hash Memory Usage: 0.1
+                          auto parallelism: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: bigint), KEY.reducesinkkey1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 5
+                  Statistics: Num rows: 5 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 7147200L (type: bigint), _col0 (type: bigint), _col1 (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+#### A masked pattern was here ####
+                      NumFilesPerFileSink: 1
+                      Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          properties:
+                            columns _col0,_col1,_col2
+                            columns.types bigint:bigint:bigint
+                            escape.delim \
+                            hive.serialization.extend.additional.nesting.levels true
+                            serialization.escape.crlf true
+                            serialization.format 1
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      TotalFiles: 1
+                      GatherStats: false
+                      MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
+FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
+l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
+  LEFT OUTER JOIN L3_MONTHLY_DW_DIMPLAN S1
+    ON S1.FINPLAN_DETAIL_OBJECT_ID = DW.PLAN_DETAIL_OBJECT_ID AND S1.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S1.IDP_DATA_DATE = '2017-12-28'
+  LEFT OUTER JOIN l3_clarity__L3_MONTHLY_DW_FACTPLAN_DATAJOIN_1_s2_2018022300104_1 S2
+    ON S2.PROJECT_OBJECT_ID = DW.PROJECT_OBJECT_ID AND S2.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S2.IDP_DATA_DATE = '2017-12-28'
+where DW.PROJECT_OBJECT_ID =7147200
+order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+PREHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
+PREHOOK: Input: default@l3_monthly_dw_dimplan
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
+FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
+l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
+  LEFT OUTER JOIN L3_MONTHLY_DW_DIMPLAN S1
+    ON S1.FINPLAN_DETAIL_OBJECT_ID = DW.PLAN_DETAIL_OBJECT_ID AND S1.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S1.IDP_DATA_DATE = '2017-12-28'
+  LEFT OUTER JOIN l3_clarity__L3_MONTHLY_DW_FACTPLAN_DATAJOIN_1_s2_2018022300104_1 S2
+    ON S2.PROJECT_OBJECT_ID = DW.PROJECT_OBJECT_ID AND S2.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S2.IDP_DATA_DATE = '2017-12-28'
+where DW.PROJECT_OBJECT_ID =7147200
+order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
+POSTHOOK: Input: default@l3_monthly_dw_dimplan
+#### A masked pattern was here ####
+7147200	NULL	27114
+7147200	NULL	27114
+7147200	NULL	27114
+7147200	NULL	27114
+7147200	NULL	27114
+Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
+FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
+l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
+  LEFT OUTER JOIN L3_MONTHLY_DW_DIMPLAN S1
+    ON S1.FINPLAN_DETAIL_OBJECT_ID = DW.PLAN_DETAIL_OBJECT_ID AND S1.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S1.IDP_DATA_DATE = '2017-12-28'
+  LEFT OUTER JOIN l3_clarity__L3_MONTHLY_DW_FACTPLAN_DATAJOIN_1_s2_2018022300104_1 S2
+    ON S2.PROJECT_OBJECT_ID = DW.PROJECT_OBJECT_ID AND S2.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S2.IDP_DATA_DATE = '2017-12-28'
+where DW.PROJECT_OBJECT_ID =7147200
+order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
+limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
+FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
+l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
+  LEFT OUTER JOIN L3_MONTHLY_DW_DIMPLAN S1
+    ON S1.FINPLAN_DETAIL_OBJECT_ID = DW.PLAN_DETAIL_OBJECT_ID AND S1.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S1.IDP_DATA_DATE = '2017-12-28'
+  LEFT OUTER JOIN l3_clarity__L3_MONTHLY_DW_FACTPLAN_DATAJOIN_1_s2_2018022300104_1 S2
+    ON S2.PROJECT_OBJECT_ID = DW.PROJECT_OBJECT_ID AND S2.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S2.IDP_DATA_DATE = '2017-12-28'
+where DW.PROJECT_OBJECT_ID =7147200
+order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
+limit 5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE), Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: dw
+                  filterExpr: (project_object_id = 7147200L) (type: boolean)
+                  Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (project_object_id = 7147200L) (type: boolean)
+                    Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: plan_detail_object_id (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 0
+                        value expressions: _col0 (type: bigint)
+                        auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
+                    columns.comments 
+                    columns.types bigint:bigint:bigint:bigint:bigint:varchar(50):varchar(50):varchar(50):varchar(20):varchar(20):varchar(50):varchar(50):varchar(50):varchar(50):string:string:bigint:bigint:decimal(38,8)
+#### A masked pattern was here ####
+                    name default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+                    numFiles 1
+                    numRows 15
+                    rawDataSize 16430
+                    serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 { i64 plan_detail_object_id, i64 project_object_id, i64 charge_code_object_id, i64 transclass_object_id, i64 resource_object_id, varchar(50) slice_date, varchar(50) split_amount, varchar(50) split_units, varchar(20) year_key, varchar(20) quarter_key, varchar(50) month_key, varchar(50) week_key, varchar(50) date_key, varchar(50) fy_year_key, string fy_quarter_key, string fy_month_key, i64 supplier_object_id, i64 business_dept_object_id, decimal(38,8) business_partner_percentage}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 3483
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"business_dept_object_id":"true","business_partner_percentage":"true","charge_code_object_id":"true","date_key":"true","fy_month_key":"true","fy_quarter_key":"true","fy_year_key":"true","month_key":"true","plan_detail_object_id":"true","project_object_id":"true","quarter_key":"true","resource_object_id":"true","slice_date":"true","split_amount":"true","split_units":"true","supplier_object_id":"true","transclass_object_id":"true","week_key":"true","year_key":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns plan_detail_object_id,project_object_id,charge_code_object_id,transclass_object_id,resource_object_id,slice_date,split_amount,split_units,year_key,quarter_key,month_key,week_key,date_key,fy_year_key,fy_quarter_key,fy_month_key,supplier_object_id,business_dept_object_id,business_partner_percentage
+                      columns.comments 
+                      columns.types bigint:bigint:bigint:bigint:bigint:varchar(50):varchar(50):varchar(50):varchar(20):varchar(20):varchar(50):varchar(50):varchar(50):varchar(50):string:string:bigint:bigint:decimal(38,8)
+#### A masked pattern was here ####
+                      name default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+                      numFiles 1
+                      numRows 15
+                      rawDataSize 16430
+                      serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 { i64 plan_detail_object_id, i64 project_object_id, i64 charge_code_object_id, i64 transclass_object_id, i64 resource_object_id, varchar(50) slice_date, varchar(50) split_amount, varchar(50) split_units, varchar(20) year_key, varchar(20) quarter_key, varchar(50) month_key, varchar(50) week_key, varchar(50) date_key, varchar(50) fy_year_key, string fy_quarter_key, string fy_month_key, i64 supplier_object_id, i64 business_dept_object_id, decimal(38,8) business_partner_percentage}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      totalSize 3483
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+                  name: default.l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+            Truncated Path -> Alias:
+              /l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1 [dw]
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: snap
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: l3_snapshot_number (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      tag: 1
+                      value expressions: _col0 (type: bigint)
+                      auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: l3_clarity__l3_snap_number_2018022300104
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns l3_snapshot_number
+                    columns.comments 
+                    columns.types bigint
+#### A masked pattern was here ####
+                    name default.l3_clarity__l3_snap_number_2018022300104
+                    numFiles 1
+                    numRows 1
+                    rawDataSize 6
+                    serialization.ddl struct l3_clarity__l3_snap_number_2018022300104 { i64 l3_snapshot_number}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 7
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"l3_snapshot_number":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns l3_snapshot_number
+                      columns.comments 
+                      columns.types bigint
+#### A masked pattern was here ####
+                      name default.l3_clarity__l3_snap_number_2018022300104
+                      numFiles 1
+                      numRows 1
+                      rawDataSize 6
+                      serialization.ddl struct l3_clarity__l3_snap_number_2018022300104 { i64 l3_snapshot_number}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 7
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.l3_clarity__l3_snap_number_2018022300104
+                  name: default.l3_clarity__l3_snap_number_2018022300104
+            Truncated Path -> Alias:
+              /l3_clarity__l3_snap_number_2018022300104 [snap]
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: s1
+                  filterExpr: (idp_data_date = DATE'2017-12-28') (type: boolean)
+                  buckets included: [50,] of 64
+                  Statistics: Num rows: 180340 Data size: 14427200 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (idp_data_date = DATE'2017-12-28') (type: boolean)
+                    Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: l3_snapshot_number (type: bigint), plan_key (type: bigint), finplan_detail_object_id (type: bigint)
+                      outputColumnNames: _col1, _col2, _col3
+                      Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: bigint), _col3 (type: bigint)
+                        null sort order: aa
+                        sort order: ++
+                        Map-reduce partition columns: _col1 (type: bigint), _col3 (type: bigint)
+                        Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 1
+                        value expressions: _col2 (type: bigint)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: l3_monthly_dw_dimplan
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"bmo_cost_type":"true","bmo_fiscal_year":"true","charge_code_key":"true","charge_code_object_id":"true","clarity_updated_date":"true","finplan_detail_object_id":"true","idp_audit_id":"true","idp_data_date":"true","idp_warehouse_id":"true","is_latest_snapshot":"true","l3_created_date":"true","l3_snapshot_number":"true","last_updated_by":"true","latest_fiscal_budget_plan":"true","percentage":"true","period_end":"true","period_start":"true","period_type":"true","plan_category":"true","plan_code":"true","plan_description":"true","plan_key":"true","plan_name":"true","plan_of_record":"true","plan_status":"true","plan_type":"true","project_key":"true","project_object_id":"true","resoruce_object_id":"true","resource_key":"true","transclass_key":"true","txn_class_object_id":"true"}}
+                    bucket_count 64
+                    bucket_field_name idp_data_date
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
+                    columns.comments 
+                    columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
+#### A masked pattern was here ####
+                    name default.l3_monthly_dw_dimplan
+                    numFiles 1
+                    numRows 180340
+                    rawDataSize 269826156
+                    serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 5231448
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"bmo_cost_type":"true","bmo_fiscal_year":"true","charge_code_key":"true","charge_code_object_id":"true","clarity_updated_date":"true","finplan_detail_object_id":"true","idp_audit_id":"true","idp_data_date":"true","idp_warehouse_id":"true","is_latest_snapshot":"true","l3_created_date":"true","l3_snapshot_number":"true","last_updated_by":"true","latest_fiscal_budget_plan":"true","percentage":"true","period_end":"true","period_start":"true","period_type":"true","plan_category":"true","plan_code":"true","plan_description":"true","plan_key":"true","plan_name":"true","plan_of_record":"true","plan_status":"true","plan_type":"true","project_key":"true","project_object_id":"true","resoruce_object_id":"true","resource_key":"true","transclass_key":"true","txn_class_object_id":"true"}}
+                      bucket_count 64
+                      bucket_field_name idp_data_date
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns idp_warehouse_id,idp_audit_id,idp_data_date,l3_snapshot_number,plan_key,project_key,charge_code_key,transclass_key,resource_key,finplan_detail_object_id,project_object_id,txn_class_object_id,charge_code_object_id,resoruce_object_id,plan_name,plan_code,plan_type,period_type,plan_description,plan_status,period_start,period_end,plan_of_record,percentage,l3_created_date,bmo_cost_type,bmo_fiscal_year,clarity_updated_date,is_latest_snapshot,latest_fiscal_budget_plan,plan_category,last_updated_by
+                      columns.comments 
+                      columns.types bigint:bigint:date:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:bigint:varchar(1500):varchar(500):varchar(50):varchar(50):varchar(3000):varchar(50):varchar(50):varchar(50):varchar(1):decimal(32,6):timestamp:varchar(30):varchar(50):timestamp:bigint:bigint:varchar(70):varchar(250)
+#### A masked pattern was here ####
+                      name default.l3_monthly_dw_dimplan
+                      numFiles 1
+                      numRows 180340
+                      rawDataSize 269826156
+                      serialization.ddl struct l3_monthly_dw_dimplan { i64 idp_warehouse_id, i64 idp_audit_id, date idp_data_date, i64 l3_snapshot_number, i64 plan_key, i64 project_key, i64 charge_code_key, i64 transclass_key, i64 resource_key, i64 finplan_detail_object_id, i64 project_object_id, i64 txn_class_object_id, i64 charge_code_object_id, i64 resoruce_object_id, varchar(1500) plan_name, varchar(500) plan_code, varchar(50) plan_type, varchar(50) period_type, varchar(3000) plan_description, varchar(50) plan_status, varchar(50) period_start, varchar(50) period_end, varchar(1) plan_of_record, decimal(32,6) percentage, timestamp l3_created_date, varchar(30) bmo_cost_type, varchar(50) bmo_fiscal_year, timestamp clarity_updated_date, i64 is_latest_snapshot, i64 latest_fiscal_budget_plan, varchar(70) plan_category, varchar(250) last_updated_by}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      totalSize 5231448
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.l3_monthly_dw_dimplan
+                  name: default.l3_monthly_dw_dimplan
+            Truncated Path -> Alias:
+              /l3_monthly_dw_dimplan [s1]
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: s2
+                  filterExpr: ((idp_data_date = DATE'2017-12-28') and (project_object_id = 7147200L)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: ((idp_data_date = DATE'2017-12-28') and (project_object_id = 7147200L)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: project_key (type: bigint), l3_snapshot_number (type: bigint)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: bigint)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: bigint)
+                        Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: 1
+                        value expressions: _col0 (type: bigint)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
+                    columns.comments 
+                    columns.types bigint:bigint:timestamp:bigint:date
+#### A masked pattern was here ####
+                    name default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+                    numFiles 1
+                    numRows 1
+                    rawDataSize 120
+                    serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 { i64 project_key, i64 l3_snapshot_number, timestamp l3_created_date, i64 project_object_id, date idp_data_date}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    totalSize 677
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"idp_data_date":"true","l3_created_date":"true","l3_snapshot_number":"true","project_key":"true","project_object_id":"true"}}
+                      bucket_count -1
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns project_key,l3_snapshot_number,l3_created_date,project_object_id,idp_data_date
+                      columns.comments 
+                      columns.types bigint:bigint:timestamp:bigint:date
+#### A masked pattern was here ####
+                      name default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+                      numFiles 1
+                      numRows 1
+                      rawDataSize 120
+                      serialization.ddl struct l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 { i64 project_key, i64 l3_snapshot_number, timestamp l3_created_date, i64 project_object_id, date idp_data_date}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      totalSize 677
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+                  name: default.l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+            Truncated Path -> Alias:
+              /l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1 [s2]
+        Reducer 2 
+            Execution mode: llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col2
+                Position of Big Table: 0
+                Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                Map Join Operator
+                  condition map:
+                       Left Outer Join 0 to 1
+                  Estimated key counts: Map 5 => 90170
+                  keys:
+                    0 _col2 (type: bigint), _col0 (type: bigint)
+                    1 _col1 (type: bigint), _col3 (type: bigint)
+                  outputColumnNames: _col2, _col5
+                  input vertices:
+                    1 Map 5
+                  Position of Big Table: 0
+                  Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col2 (type: bigint), _col5 (type: bigint)
+                    outputColumnNames: _col0, _col5
+                    Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join 0 to 1
+                      Estimated key counts: Map 6 => 1
+                      keys:
+                        0 _col0 (type: bigint)
+                        1 _col1 (type: bigint)
+                      outputColumnNames: _col5, _col7
+                      input vertices:
+                        1 Map 6
+                      Position of Big Table: 0
+                      Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col5 (type: bigint), _col7 (type: bigint)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: bigint), _col1 (type: bigint)
+                          null sort order: aa
+                          sort order: ++
+                          Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          TopN: 5
+                          TopN Hash Memory Usage: 0.1
+                          auto parallelism: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: bigint), KEY.reducesinkkey1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 15 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 5
+                  Statistics: Num rows: 5 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 7147200L (type: bigint), _col0 (type: bigint), _col1 (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+#### A masked pattern was here ####
+                      NumFilesPerFileSink: 1
+                      Statistics: Num rows: 5 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          properties:
+                            columns _col0,_col1,_col2
+                            columns.types bigint:bigint:bigint
+                            escape.delim \
+                            hive.serialization.extend.additional.nesting.levels true
+                            serialization.escape.crlf true
+                            serialization.format 1
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      TotalFiles: 1
+                      GatherStats: false
+                      MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
+FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
+l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
+  LEFT OUTER JOIN L3_MONTHLY_DW_DIMPLAN S1
+    ON S1.FINPLAN_DETAIL_OBJECT_ID = DW.PLAN_DETAIL_OBJECT_ID AND S1.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S1.IDP_DATA_DATE = '2017-12-28'
+  LEFT OUTER JOIN l3_clarity__L3_MONTHLY_DW_FACTPLAN_DATAJOIN_1_s2_2018022300104_1 S2
+    ON S2.PROJECT_OBJECT_ID = DW.PROJECT_OBJECT_ID AND S2.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S2.IDP_DATA_DATE = '2017-12-28'
+where DW.PROJECT_OBJECT_ID =7147200
+order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+PREHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+PREHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
+PREHOOK: Input: default@l3_monthly_dw_dimplan
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DW.PROJECT_OBJECT_ID, S1.PLAN_KEY as PLAN_KEY, S2.PROJECT_KEY AS PROJECT_KEY
+FROM l3_clarity__L3_SNAP_NUMBER_2018022300104 snap inner join
+l3_clarity__L3_MONTHLY_DW_FACTPLAN_DW_STG_2018022300104_1 DW on 1=1
+  LEFT OUTER JOIN L3_MONTHLY_DW_DIMPLAN S1
+    ON S1.FINPLAN_DETAIL_OBJECT_ID = DW.PLAN_DETAIL_OBJECT_ID AND S1.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S1.IDP_DATA_DATE = '2017-12-28'
+  LEFT OUTER JOIN l3_clarity__L3_MONTHLY_DW_FACTPLAN_DATAJOIN_1_s2_2018022300104_1 S2
+    ON S2.PROJECT_OBJECT_ID = DW.PROJECT_OBJECT_ID AND S2.L3_SNAPSHOT_NUMBER =snap.L3_snapshot_number
+  AND S2.IDP_DATA_DATE = '2017-12-28'
+where DW.PROJECT_OBJECT_ID =7147200
+order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1
+POSTHOOK: Input: default@l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1
+POSTHOOK: Input: default@l3_clarity__l3_snap_number_2018022300104
+POSTHOOK: Input: default@l3_monthly_dw_dimplan
+#### A masked pattern was here ####
+7147200	NULL	27114
+7147200	NULL	27114
+7147200	NULL	27114
+7147200	NULL	27114
+7147200	NULL	27114

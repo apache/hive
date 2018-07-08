@@ -77,6 +77,7 @@ public class WarehouseInstance implements Closeable {
   HiveConf hiveConf;
   MiniDFSCluster miniDFSCluster;
   private HiveMetaStoreClient client;
+  public final Path warehouseRoot;
 
   private static int uniqueIdentifier = 0;
 
@@ -90,7 +91,7 @@ public class WarehouseInstance implements Closeable {
     assert miniDFSCluster.isDataNodeUp();
     DistributedFileSystem fs = miniDFSCluster.getFileSystem();
 
-    Path warehouseRoot = mkDir(fs, "/warehouse" + uniqueIdentifier);
+    warehouseRoot = mkDir(fs, "/warehouse" + uniqueIdentifier);
     if (StringUtils.isNotEmpty(keyNameForEncryptedZone)) {
       fs.createEncryptionZone(warehouseRoot, keyNameForEncryptedZone);
     }
@@ -199,6 +200,10 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
+  public CommandProcessorResponse runCommand(String command) throws Throwable {
+    return driver.run(command);
+  }
+
   WarehouseInstance runFailure(String command) throws Throwable {
     CommandProcessorResponse ret = driver.run(command);
     if (ret.getException() == null) {
@@ -240,6 +245,11 @@ public class WarehouseInstance implements Closeable {
   WarehouseInstance load(String replicatedDbName, String dumpLocation) throws Throwable {
     run("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
     printOutput();
+    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    return this;
+  }
+
+  WarehouseInstance loadWithoutExplain(String replicatedDbName, String dumpLocation) throws Throwable {
     run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
     return this;
   }

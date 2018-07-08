@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 
@@ -38,6 +39,6 @@ public class ConvertDecimal64ToDecimal extends FuncLongToDecimal {
 
   @Override
   protected void func(DecimalColumnVector outV, LongColumnVector inV, int i) {
-    outV.vector[i].deserialize64(inV.vector[i], outV.scale);
+    outV.vector[i].deserialize64(inV.vector[i], ((Decimal64ColumnVector) inV).scale);
   }
 }

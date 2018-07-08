@@ -18,25 +18,27 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFSecondDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFSecondString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFSecondTimestamp;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.DateUtils;
+
+import java.util.Calendar;
+import java.util.TimeZone;
+
 
 /**
  * UDFSecond.
@@ -54,64 +56,82 @@ import org.apache.hive.common.util.DateUtils;
     + "  > SELECT _FUNC_('12:58:59') FROM src LIMIT 1;\n" + "  59")
 @VectorizedExpressions({VectorUDFSecondDate.class, VectorUDFSecondString.class, VectorUDFSecondTimestamp.class})
 @NDV(maxNdv = 60)
-public class UDFSecond extends UDF {
-  private final SimpleDateFormat formatter1 = new SimpleDateFormat(
-      "yyyy-MM-dd HH:mm:ss");
-  private final SimpleDateFormat formatter2 = new SimpleDateFormat("HH:mm:ss");
-  private final Calendar calendar = Calendar.getInstance();
+public class UDFSecond extends GenericUDF {
 
-  private final IntWritable result = new IntWritable();
+  private transient ObjectInspectorConverters.Converter[] converters = new ObjectInspectorConverters.Converter[1];
+  private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[1];
+  private final IntWritable output = new IntWritable();
 
-  public UDFSecond() {
+  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+
+
+  @Override
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+    checkArgsSize(arguments, 1, 1);
+    checkArgPrimitive(arguments, 0);
+    switch (((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory()) {
+      case INTERVAL_DAY_TIME:
+        inputTypes[0] = PrimitiveObjectInspector.PrimitiveCategory.INTERVAL_DAY_TIME;
+        converters[0] = ObjectInspectorConverters.getConverter(
+            arguments[0], PrimitiveObjectInspectorFactory.writableHiveIntervalDayTimeObjectInspector);
+        break;
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+      case DATE:
+      case TIMESTAMP:
+      case TIMESTAMPLOCALTZ:
+      case VOID:
+        obtainTimestampConverter(arguments, 0, inputTypes, converters);
+        break;
+      default:
+        // build error message
+        StringBuilder sb = new StringBuilder();
+        sb.append(getFuncName());
+        sb.append(" does not take ");
+        sb.append(((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory());
+        sb.append(" type");
+        throw new UDFArgumentTypeException(0, sb.toString());
+    }
+
+    ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    return outputOI;
   }
 
-  /**
-   * Get the minute from a date string.
-   *
-   * @param dateString
-   *          the dateString in the format of "yyyy-MM-dd HH:mm:ss" or
-   *          "yyyy-MM-dd".
-   * @return an int from 0 to 59. null if the dateString is not a valid date
-   *         string.
-   */
-  public IntWritable evaluate(Text dateString) {
-
-    if (dateString == null) {
-      return null;
+  @Override
+  public Object evaluate(GenericUDF.DeferredObject[] arguments) throws HiveException {
+    switch (inputTypes[0]) {
+      case INTERVAL_DAY_TIME:
+        HiveIntervalDayTime intervalDayTime = getIntervalDayTimeValue(arguments, 0, inputTypes, converters);
+        if (intervalDayTime == null) {
+          return null;
+        }
+        output.set(intervalDayTime.getSeconds());
+        break;
+      case STRING:
+      case CHAR:
+      case VARCHAR:
+      case DATE:
+      case TIMESTAMP:
+      case TIMESTAMPLOCALTZ:
+      case VOID:
+        Timestamp ts = getTimestampValue(arguments, 0, converters);
+        if (ts == null) {
+          return null;
+        }
+        calendar.setTimeInMillis(ts.toEpochMilli());
+        output.set(calendar.get(Calendar.SECOND));
     }
-
-    try {
-      Date date = null;
-      try {
-        date = formatter1.parse(dateString.toString());
-      } catch (ParseException e) {
-        date = formatter2.parse(dateString.toString());
-      }
-      calendar.setTime(date);
-      result.set(calendar.get(Calendar.SECOND));
-      return result;
-    } catch (ParseException e) {
-      return null;
-    }
+    return output;
   }
 
-  public IntWritable evaluate(TimestampWritable t) {
-    if (t == null) {
-      return null;
-    }
-
-    calendar.setTime(t.getTimestamp());
-    result.set(calendar.get(Calendar.SECOND));
-    return result;
+  @Override
+  protected String getFuncName() {
+    return "second";
   }
 
-  public IntWritable evaluate(HiveIntervalDayTimeWritable i) {
-    if (i == null) {
-      return null;
-    }
-
-    HiveIntervalDayTime idt = i.getHiveIntervalDayTime();
-    result.set(idt.getSeconds());
-    return result;
+  @Override
+  public String getDisplayString(String[] children) {
+    return getStandardDisplayString(getFuncName(), children);
   }
 }

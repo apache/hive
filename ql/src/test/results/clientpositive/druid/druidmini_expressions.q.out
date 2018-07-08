@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE druid_table_n0
+PREHOOK: query: CREATE EXTERNAL TABLE druid_table_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -18,7 +18,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@druid_table_n0
-POSTHOOK: query: CREATE TABLE druid_table_n0
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_table_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -270,6 +270,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    EXTERNAL TRUE
                     bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
@@ -301,6 +302,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                      EXTERNAL TRUE
                       bucket_count -1
                       bucketing_version 2
                       column.name.delimiter ,

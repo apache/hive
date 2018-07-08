@@ -58,6 +58,7 @@ public final class OrcFile extends org.apache.orc.OrcFile {
   public static class ReaderOptions extends org.apache.orc.OrcFile.ReaderOptions {
     public ReaderOptions(Configuration conf) {
       super(conf);
+      useUTCTimestamp(true);
     }
 
     public ReaderOptions filesystem(FileSystem fs) {
@@ -77,6 +78,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     public ReaderOptions orcTail(OrcTail orcTail) {
       super.orcTail(orcTail);
+      return this;
+    }
+
+    public ReaderOptions useUTCTimestamp(boolean value) {
+      super.useUTCTimestamp(value);
       return this;
     }
   }
@@ -104,6 +110,7 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     WriterOptions(Properties tableProperties, Configuration conf) {
       super(tableProperties, conf);
+      useUTCTimestamp(true);
     }
 
    /**
@@ -272,6 +279,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     public WriterOptions physicalWriter(PhysicalWriter writer) {
       super.physicalWriter(writer);
+      return this;
+    }
+
+    public WriterOptions useUTCTimestamp(boolean value) {
+      super.useUTCTimestamp(value);
       return this;
     }
 

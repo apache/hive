@@ -121,6 +121,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         lastReplId = incrementalDump(dumpRoot, dmd, cmRoot);
       }
       prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(lastReplId)), dumpSchema);
+    } catch (RuntimeException e) {
+      LOG.error("failed", e);
+      setException(e);
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
@@ -195,7 +199,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         cmRoot,
         getHive(),
         conf,
-        getNewEventOnlyReplicationSpec(ev.getEventId())
+        getNewEventOnlyReplicationSpec(ev.getEventId()),
+        work.dbNameOrPattern,
+        work.tableNameOrPattern
     );
     EventHandler eventHandler = EventHandlerFactory.handlerFor(ev);
     eventHandler.handle(context);

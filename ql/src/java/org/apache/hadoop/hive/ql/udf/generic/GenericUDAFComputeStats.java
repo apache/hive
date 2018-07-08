@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -1297,7 +1297,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
    * High/low value will be saved in stats DB as long value representing days since epoch.
    */
   public static class GenericUDAFDateStatsEvaluator
-      extends GenericUDAFNumericStatsEvaluator<DateWritable, DateObjectInspector> {
+      extends GenericUDAFNumericStatsEvaluator<DateWritableV2, DateObjectInspector> {
 
     @Override
     protected DateObjectInspector getValueObjectInspector() {
@@ -1319,8 +1319,8 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
       @Override
       protected void update(Object p, PrimitiveObjectInspector inputOI) {
-        // DateWritable is mutable, DateStatsAgg needs its own copy
-        DateWritable v = new DateWritable((DateWritable) inputOI.getPrimitiveWritableObject(p));
+        // DateWritableV2 is mutable, DateStatsAgg needs its own copy
+        DateWritableV2 v = new DateWritableV2((DateWritableV2) inputOI.getPrimitiveWritableObject(p));
 
         //Update min counter if new value is less than min seen so far
         if (min == null || v.compareTo(min) < 0) {
@@ -1338,8 +1338,8 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       protected void updateMin(Object minValue, DateObjectInspector minFieldOI) {
         if ((minValue != null) && (min == null ||
             min.compareTo(minFieldOI.getPrimitiveWritableObject(minValue)) > 0)) {
-          // DateWritable is mutable, DateStatsAgg needs its own copy
-          min = new DateWritable(minFieldOI.getPrimitiveWritableObject(minValue));
+          // DateWritableV2 is mutable, DateStatsAgg needs its own copy
+          min = new DateWritableV2(minFieldOI.getPrimitiveWritableObject(minValue));
         }
       }
 
@@ -1347,8 +1347,8 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       protected void updateMax(Object maxValue, DateObjectInspector maxFieldOI) {
         if ((maxValue != null) && (max == null ||
             max.compareTo(maxFieldOI.getPrimitiveWritableObject(maxValue)) < 0)) {
-          // DateWritable is mutable, DateStatsAgg needs its own copy
-          max = new DateWritable(maxFieldOI.getPrimitiveWritableObject(maxValue));
+          // DateWritableV2 is mutable, DateStatsAgg needs its own copy
+          max = new DateWritableV2(maxFieldOI.getPrimitiveWritableObject(maxValue));
         }
       }
     };

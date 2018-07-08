@@ -91,6 +91,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import org.junit.Assert;
 
 public class TestReplicationScenarios {
 
@@ -454,11 +455,13 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableNuller);
-
-    // The ptned table will not be dumped as getTable will return null
-    run("REPL DUMP " + dbName, driver);
-    ptnedTableNuller.assertInjectionsPerformed(true,true);
-    InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    try {
+      // The ptned table will not be dumped as getTable will return null
+      run("REPL DUMP " + dbName, driver);
+      ptnedTableNuller.assertInjectionsPerformed(true,true);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    }
 
     String replDumpLocn = getResult(0, 0, driver);
     String replDumpId = getResult(0, 1, true, driver);
@@ -519,11 +522,13 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setListPartitionNamesBehaviour(listPartitionNamesNuller);
-
-    // None of the partitions will be dumped as the partitions list was empty
-    run("REPL DUMP " + dbName, driver);
-    listPartitionNamesNuller.assertInjectionsPerformed(true, false);
-    InjectableBehaviourObjectStore.resetListPartitionNamesBehaviour(); // reset the behaviour
+    try {
+      // None of the partitions will be dumped as the partitions list was empty
+      run("REPL DUMP " + dbName, driver);
+      listPartitionNamesNuller.assertInjectionsPerformed(true, false);
+    } finally {
+      InjectableBehaviourObjectStore.resetListPartitionNamesBehaviour(); // reset the behaviour
+    }
 
     String replDumpLocn = getResult(0, 0, driver);
     String replDumpId = getResult(0, 1, true, driver);
@@ -606,12 +611,13 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableRenamer);
-
-    // The intermediate rename would've failed as bootstrap dump in progress
-    bootstrapLoadAndVerify(dbName, replDbName);
-
-    ptnedTableRenamer.assertInjectionsPerformed(true,true);
-    InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    try {
+      // The intermediate rename would've failed as bootstrap dump in progress
+      bootstrapLoadAndVerify(dbName, replDbName);
+      ptnedTableRenamer.assertInjectionsPerformed(true,true);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    }
 
     // The ptned table should be there in both source and target as rename was not successful
     verifyRun("SELECT a from " + dbName + ".ptned WHERE (b=1) ORDER BY a", ptn_data, driver);
@@ -659,7 +665,7 @@ public class TestReplicationScenarios {
               CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
               success = (ret.getException() == null);
               assertTrue(success);
-              LOG.info("Exit new thread success - {}", success);
+              LOG.info("Exit new thread success - {}", success, ret.getException());
             }
           });
           t.start();
@@ -674,11 +680,13 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableRenamer);
-
-    Tuple bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
-
-    ptnedTableRenamer.assertInjectionsPerformed(true,true);
-    InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    Tuple bootstrap = null;
+    try {
+      bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
+      ptnedTableRenamer.assertInjectionsPerformed(true,true);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+    }
 
     incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
     verifyIfTableNotExist(replDbName, "ptned", metaStoreClientMirror);
@@ -852,12 +860,14 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventIdSkipper);
-
-    advanceDumpDir();
-    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    assertTrue(ret.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
-    eventIdSkipper.assertInjectionsPerformed(true,false);
-    InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    try {
+      advanceDumpDir();
+      CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName + " FROM " + replDumpId);
+      assertTrue(ret.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
+      eventIdSkipper.assertInjectionsPerformed(true,false);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    }
   }
 
   @Test
@@ -1371,11 +1381,12 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventTypeValidator);
-
-    incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
-
-    eventTypeValidator.assertInjectionsPerformed(true,false);
-    InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    try {
+      incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
+      eventTypeValidator.assertInjectionsPerformed(true,false);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    }
 
     verifyRun("SELECT a from " + replDbName + ".ptned where (b=1)", ptn_data, driverMirror);
   }
@@ -1430,11 +1441,12 @@ public class TestReplicationScenarios {
       }
     };
     InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(insertEventRepeater);
-
-    incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
-
-    insertEventRepeater.assertInjectionsPerformed(true,false);
-    InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    try {
+      incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
+      insertEventRepeater.assertInjectionsPerformed(true,false);
+    } finally {
+      InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+    }
 
     verifyRun("SELECT a from " + replDbName + ".unptned", unptn_data, driverMirror);
   }
@@ -2832,78 +2844,6 @@ public class TestReplicationScenarios {
     verifyRun("SELECT max(a) from " + replDbName + ".ptned2 where b=1", new String[]{"8"}, driverMirror);
   }
 
-  // TODO: This test should be removed once ACID tables replication is supported.
-  @Test
-  public void testSkipTables() throws Exception {
-    String testName = "skipTables";
-    String dbName = createDB(testName, driver);
-    String replDbName = dbName + "_dupe";
-
-    // TODO: this is wrong; this test sets up dummy txn manager and so it cannot create ACID tables.
-    //       If I change it to use proper txn manager, the setup for some tests hangs.
-    //       This used to work by accident, now this works due a test flag. The test needs to be fixed.
-    // Create table
-    run("CREATE TABLE " + dbName + ".acid_table (key int, value int) PARTITIONED BY (load_date date) " +
-        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
-    run("CREATE TABLE " + dbName + ".mm_table (key int, value int) PARTITIONED BY (load_date date) " +
-        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true'," +
-        " 'transactional_properties'='insert_only')", driver);
-    verifyIfTableExist(dbName, "acid_table", metaStoreClient);
-    verifyIfTableExist(dbName, "mm_table", metaStoreClient);
-
-    // Bootstrap test
-    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
-    String replDumpId = bootstrapDump.lastReplId;
-    verifyIfTableNotExist(replDbName, "acid_table", metaStoreClientMirror);
-    verifyIfTableNotExist(replDbName, "mm_table", metaStoreClientMirror);
-
-    // Test alter table
-    run("ALTER TABLE " + dbName + ".acid_table RENAME TO " + dbName + ".acid_table_rename", driver);
-    verifyIfTableExist(dbName, "acid_table_rename", metaStoreClient);
-
-    // Dummy create table command to mark proper last repl ID after dump
-    run("CREATE TABLE " + dbName + ".dummy (a int)", driver);
-
-    // Perform REPL-DUMP/LOAD
-    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDumpId, replDbName);
-    replDumpId = incrementalDump.lastReplId;
-    verifyIfTableNotExist(replDbName, "acid_table_rename", metaStoreClientMirror);
-
-    // Create another table for incremental repl verification
-    run("CREATE TABLE " + dbName + ".acid_table_incremental (key int, value int) PARTITIONED BY (load_date date) " +
-        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
-    run("CREATE TABLE " + dbName + ".mm_table_incremental (key int, value int) PARTITIONED BY (load_date date) " +
-        "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true'," +
-        " 'transactional_properties'='insert_only')", driver);
-    verifyIfTableExist(dbName, "acid_table_incremental", metaStoreClient);
-    verifyIfTableExist(dbName, "mm_table_incremental", metaStoreClient);
-
-    // Dummy insert into command to mark proper last repl ID after dump
-    run("INSERT INTO " + dbName + ".dummy values(1)", driver);
-
-    // Perform REPL-DUMP/LOAD
-    incrementalDump = incrementalLoadAndVerify(dbName, replDumpId, replDbName);
-    replDumpId = incrementalDump.lastReplId;
-    verifyIfTableNotExist(replDbName, "acid_table_incremental", metaStoreClientMirror);
-    verifyIfTableNotExist(replDbName, "mm_table_incremental", metaStoreClientMirror);
-
-    // Test adding a constraint
-    run("ALTER TABLE " + dbName + ".acid_table_incremental ADD CONSTRAINT key_pk PRIMARY KEY (key) DISABLE NOVALIDATE", driver);
-    try {
-      List<SQLPrimaryKey> pks = metaStoreClient.getPrimaryKeys(new PrimaryKeysRequest(dbName, "acid_table_incremental"));
-      assertEquals(pks.size(), 1);
-    } catch (TException te) {
-      assertNull(te);
-    }
-
-    // Dummy insert into command to mark proper last repl ID after dump
-    run("INSERT INTO " + dbName + ".dummy values(2)", driver);
-
-    // Perform REPL-DUMP/LOAD
-    incrementalLoadAndVerify(dbName, replDumpId, replDbName);
-    verifyIfTableNotExist(replDbName, "acid_table_incremental", metaStoreClientMirror);
-  }
-
   @Test
   public void testDeleteStagingDir() throws IOException {
     String testName = "deleteStagingDir";
@@ -3183,6 +3123,47 @@ public class TestReplicationScenarios {
     assertTrue(ret.getResponseCode() == ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getErrorCode());
     run("drop database " + dbName, true, driver);
     fs.create(path, false);
+  }
+
+  @Test
+  public void testDumpWithTableDirMissing() throws IOException {
+    String dbName = createDB(testName.getMethodName(), driver);
+    run("CREATE TABLE " + dbName + ".normal(a int)", driver);
+    run("INSERT INTO " + dbName + ".normal values (1)", driver);
+
+    Path path = new Path(System.getProperty("test.warehouse.dir", ""));
+    path = new Path(path, dbName.toLowerCase() + ".db");
+    path = new Path(path, "normal");
+    FileSystem fs = path.getFileSystem(hconf);
+    fs.delete(path);
+
+    advanceDumpDir();
+    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName);
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+
+    run("DROP TABLE " + dbName + ".normal", driver);
+    run("drop database " + dbName, true, driver);
+  }
+
+  @Test
+  public void testDumpWithPartitionDirMissing() throws IOException {
+    String dbName = createDB(testName.getMethodName(), driver);
+    run("CREATE TABLE " + dbName + ".normal(a int) PARTITIONED BY (part int)", driver);
+    run("INSERT INTO " + dbName + ".normal partition (part= 124) values (1)", driver);
+
+    Path path = new Path(System.getProperty("test.warehouse.dir",""));
+    path = new Path(path, dbName.toLowerCase()+".db");
+    path = new Path(path, "normal");
+    path = new Path(path, "part=124");
+    FileSystem fs = path.getFileSystem(hconf);
+    fs.delete(path);
+
+    advanceDumpDir();
+    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName);
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+
+    run("DROP TABLE " + dbName + ".normal", driver);
+    run("drop database " + dbName, true, driver);
   }
 
   @Test

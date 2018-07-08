@@ -19,9 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.sql.Date;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,13 +35,14 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.TokenRewriteStream;
+import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
-import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -96,7 +95,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentUser;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -108,9 +107,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * BaseSemanticAnalyzer.
@@ -249,7 +245,7 @@ public abstract class BaseSemanticAnalyzer {
       this.queryState = queryState;
       this.conf = queryState.getConf();
       this.db = db;
-      rootTasks = new ArrayList<Task<? extends Serializable>>();
+      rootTasks = new ArrayList<Task<?>>();
       LOG = LoggerFactory.getLogger(this.getClass().getName());
       console = new LogHelper(LOG);
       idToTableNameMap = new HashMap<String, String>();
@@ -292,7 +288,7 @@ public abstract class BaseSemanticAnalyzer {
     // Implementations may choose to override this
   }
 
-  public List<Task<? extends Serializable>> getRootTasks() {
+  public List<Task<?>> getRootTasks() {
     return rootTasks;
   }
 
@@ -312,7 +308,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected void reset(boolean clearPartsCache) {
-    rootTasks = new ArrayList<Task<? extends Serializable>>();
+    rootTasks = new ArrayList<Task<?>>();
   }
 
   public static String stripIdentifierQuotes(String val) {
@@ -844,7 +840,9 @@ public abstract class BaseSemanticAnalyzer {
   // it throws an error.
   // This method is used to validate check expression since check expression isn't allowed to have subquery
   private static void validateCheckExprAST(ASTNode checkExpr) throws SemanticException {
-    if(checkExpr == null) return;
+    if(checkExpr == null) {
+      return;
+    }
     if(checkExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
       throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Subqueries are not allowed "
                                                                           + "in Check Constraints"));
@@ -2098,14 +2096,19 @@ public abstract class BaseSemanticAnalyzer {
   private static String normalizeDateCol(
       Object colValue, String originalColSpec) throws SemanticException {
     Date value;
-    if (colValue instanceof DateWritable) {
-      value = ((DateWritable) colValue).get(false); // Time doesn't matter.
+    if (colValue instanceof DateWritableV2) {
+      value = ((DateWritableV2) colValue).get(); // Time doesn't matter.
     } else if (colValue instanceof Date) {
       value = (Date) colValue;
     } else {
       throw new SemanticException("Unexpected date type " + colValue.getClass());
     }
-    return MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(value);
+    try {
+      return MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(
+          MetaStoreUtils.PARTITION_DATE_FORMAT.get().parse(value.toString()));
+    } catch (ParseException e) {
+      throw new SemanticException(e);
+    }
   }
 
   protected WriteEntity toWriteEntity(String location) throws SemanticException {
@@ -2239,7 +2242,7 @@ public abstract class BaseSemanticAnalyzer {
     return detail == null ? message.getMsg() : message.getMsg(detail.toString());
   }
 
-  public List<Task<? extends Serializable>> getAllRootTasks() {
+  public List<Task<?>> getAllRootTasks() {
     return rootTasks;
   }
 

@@ -82,6 +82,15 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
     FileSystem fileSystem = path.getFileSystem(hiveConf);
     FileStatus[] fileStatuses =
         fileSystem.listStatus(new Path(dumpDirectory), EximUtil.getDirectoryFilter(fileSystem));
+    if ((fileStatuses == null) || (fileStatuses.length == 0)) {
+      throw new IllegalArgumentException("No data to load in path " + dumpDirectory);
+    }
+    if ((dbNameToLoadIn != null) && (fileStatuses.length > 1)) {
+      throw new IllegalArgumentException(
+              "Multiple dirs in "
+                      + dumpDirectory
+                      + " does not correspond to REPL LOAD expecting to load to a singular destination point.");
+    }
 
     List<FileStatus> dbsToCreate = Arrays.stream(fileStatuses).filter(f -> {
       Path metadataPath = new Path(f.getPath() + Path.SEPARATOR + EximUtil.METADATA_NAME);

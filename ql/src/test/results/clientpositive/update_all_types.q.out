@@ -147,7 +147,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uat
 #### A masked pattern was here ####
 -51	NULL	-1071480828	-1071480828	-1401575336	-51.0	NULL	-51.00	1969-12-31 16:00:08.451	NULL	aw724t8c5558x2xneC624	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA             	true
-1	2	-1070883071	3	4	3.14	6.28	5.99	NULL	2014-09-01	its a beautiful day in the neighbhorhood	a beautiful day for a neighbor	wont you be mine                    	true
+1	2	-1070883071	3	4	3.14	6.28	5.99	2014-09-01 00:00:00	2014-09-01	its a beautiful day in the neighbhorhood	a beautiful day for a neighbor	wont you be mine                    	true
 11	NULL	-1069736047	-1069736047	-453772520	11.0	NULL	11.00	1969-12-31 16:00:02.351	NULL	k17Am8uPHWk02cEf1jet	k17Am8uPHWk02cEf1jet	qrXLLNX1                            	true
 11	NULL	-1072910839	-1072910839	2048385991	11.0	NULL	11.00	1969-12-31 16:00:02.351	NULL	0iqrc5	0iqrc5	KbaDXiN85adbHRx58v                  	false
 11	NULL	-1073279343	-1073279343	-1595604468	11.0	NULL	11.00	1969-12-31 16:00:02.351	NULL	oj1YrV5Wa	oj1YrV5Wa	P76636jJ6qM17d7DIy                  	true
@@ -181,7 +181,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uat
 #### A masked pattern was here ####
 -102	-51	-1071480828	-1071480828	-1401575336	-51.0	-51.0	-51.00	1969-12-31 16:00:08.451	NULL	aw724t8c5558x2xneC624	aw724t8c5558x2xneC624	4uE7l74tESBiKfu7c8wM7GA             	true
-1	2	-1070883071	3	4	3.14	6.28	5.99	NULL	2014-09-01	its a beautiful day in the neighbhorhood	a beautiful day for a neighbor	wont you be mine                    	true
+1	2	-1070883071	3	4	3.14	6.28	5.99	2014-09-01 00:00:00	2014-09-01	its a beautiful day in the neighbhorhood	a beautiful day for a neighbor	wont you be mine                    	true
 11	NULL	-1069736047	-1069736047	-453772520	11.0	NULL	11.00	1969-12-31 16:00:02.351	NULL	k17Am8uPHWk02cEf1jet	k17Am8uPHWk02cEf1jet	qrXLLNX1                            	true
 11	NULL	-1072910839	-1072910839	2048385991	11.0	NULL	11.00	1969-12-31 16:00:02.351	NULL	0iqrc5	0iqrc5	KbaDXiN85adbHRx58v                  	false
 11	NULL	-1073279343	-1073279343	-1595604468	11.0	NULL	11.00	1969-12-31 16:00:02.351	NULL	oj1YrV5Wa	oj1YrV5Wa	P76636jJ6qM17d7DIy                  	true

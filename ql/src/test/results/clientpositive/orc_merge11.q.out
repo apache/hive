@@ -85,7 +85,7 @@ Stripe Statistics:
     Column 2: count: 50000 hasNull: false bytesOnDisk: 55 min: bar max: zebra sum: 249980
     Column 3: count: 50000 hasNull: false bytesOnDisk: 5114 min: 0.8 max: 80.0 sum: 400102.8
     Column 4: count: 50000 hasNull: false bytesOnDisk: 498 min: 0 max: 6 sum: 32
-    Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0
+    Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 File Statistics:
   Column 0: count: 50000 hasNull: false
@@ -93,10 +93,10 @@ File Statistics:
   Column 2: count: 50000 hasNull: false bytesOnDisk: 55 min: bar max: zebra sum: 249980
   Column 3: count: 50000 hasNull: false bytesOnDisk: 5114 min: 0.8 max: 80.0 sum: 400102.8
   Column 4: count: 50000 hasNull: false bytesOnDisk: 498 min: 0 max: 6 sum: 32
-  Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0
+  Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 Stripes:
-  Stripe: offset: 3 data: 5761 rows: 50000 tail: 112 index: 433
+  Stripe: offset: 3 data: 5761 rows: 50000 tail: 99 index: 433
     Stream: column 0 section ROW_INDEX start: 3 length 17
     Stream: column 1 section ROW_INDEX start: 20 length 73
     Stream: column 2 section ROW_INDEX start: 93 length 79
@@ -149,13 +149,13 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 0 max: 0 sum: 0 positions: 274,1328,0,232,304
       Entry 4: count: 10000 hasNull: false min: 0 max: 0 sum: 0 positions: 350,3136,0,312,64
     Row group indices for column 5:
-      Entry 0: count: 10000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,0,0,0,0,0
-      Entry 1: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,194,262,0,76,272
-      Entry 2: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,354,22,0,156,32
-      Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,506,294,0,232,304
-      Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,666,54,0,312,64
+      Entry 0: count: 10000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 positions: 0,0,0,0,0,0
+      Entry 1: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,194,262,0,76,272
+      Entry 2: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,354,22,0,156,32
+      Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
+      Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 6685 bytes
+File length: 6672 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -176,7 +176,7 @@ Stripe Statistics:
     Column 2: count: 50000 hasNull: false bytesOnDisk: 55 min: bar max: zebra sum: 249980
     Column 3: count: 50000 hasNull: false bytesOnDisk: 5114 min: 0.8 max: 80.0 sum: 400102.8
     Column 4: count: 50000 hasNull: false bytesOnDisk: 498 min: 0 max: 6 sum: 32
-    Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0
+    Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 File Statistics:
   Column 0: count: 50000 hasNull: false
@@ -184,10 +184,10 @@ File Statistics:
   Column 2: count: 50000 hasNull: false bytesOnDisk: 55 min: bar max: zebra sum: 249980
   Column 3: count: 50000 hasNull: false bytesOnDisk: 5114 min: 0.8 max: 80.0 sum: 400102.8
   Column 4: count: 50000 hasNull: false bytesOnDisk: 498 min: 0 max: 6 sum: 32
-  Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0
+  Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 Stripes:
-  Stripe: offset: 3 data: 5761 rows: 50000 tail: 112 index: 433
+  Stripe: offset: 3 data: 5761 rows: 50000 tail: 99 index: 433
     Stream: column 0 section ROW_INDEX start: 3 length 17
     Stream: column 1 section ROW_INDEX start: 20 length 73
     Stream: column 2 section ROW_INDEX start: 93 length 79
@@ -240,13 +240,13 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 0 max: 0 sum: 0 positions: 274,1328,0,232,304
       Entry 4: count: 10000 hasNull: false min: 0 max: 0 sum: 0 positions: 350,3136,0,312,64
     Row group indices for column 5:
-      Entry 0: count: 10000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,0,0,0,0,0
-      Entry 1: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,194,262,0,76,272
-      Entry 2: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,354,22,0,156,32
-      Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,506,294,0,232,304
-      Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,666,54,0,312,64
+      Entry 0: count: 10000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 positions: 0,0,0,0,0,0
+      Entry 1: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,194,262,0,76,272
+      Entry 2: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,354,22,0,156,32
+      Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
+      Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 6685 bytes
+File length: 6672 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -288,14 +288,14 @@ Stripe Statistics:
     Column 2: count: 50000 hasNull: false bytesOnDisk: 55 min: bar max: zebra sum: 249980
     Column 3: count: 50000 hasNull: false bytesOnDisk: 5114 min: 0.8 max: 80.0 sum: 400102.8
     Column 4: count: 50000 hasNull: false bytesOnDisk: 498 min: 0 max: 6 sum: 32
-    Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0
+    Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
   Stripe 2:
     Column 0: count: 50000 hasNull: false
     Column 1: count: 50000 hasNull: false bytesOnDisk: 30 min: 2 max: 100 sum: 4999238
     Column 2: count: 50000 hasNull: false bytesOnDisk: 55 min: bar max: zebra sum: 249980
     Column 3: count: 50000 hasNull: false bytesOnDisk: 5114 min: 0.8 max: 80.0 sum: 400102.8
     Column 4: count: 50000 hasNull: false bytesOnDisk: 498 min: 0 max: 6 sum: 32
-    Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0
+    Column 5: count: 50000 hasNull: false bytesOnDisk: 64 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 File Statistics:
   Column 0: count: 100000 hasNull: false
@@ -303,10 +303,10 @@ File Statistics:
   Column 2: count: 100000 hasNull: false bytesOnDisk: 110 min: bar max: zebra sum: 499960
   Column 3: count: 100000 hasNull: false bytesOnDisk: 10228 min: 0.8 max: 80.0 sum: 800205.6
   Column 4: count: 100000 hasNull: false bytesOnDisk: 996 min: 0 max: 6 sum: 64
-  Column 5: count: 100000 hasNull: false bytesOnDisk: 128 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0
+  Column 5: count: 100000 hasNull: false bytesOnDisk: 128 min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0
 
 Stripes:
-  Stripe: offset: 3 data: 5761 rows: 50000 tail: 112 index: 433
+  Stripe: offset: 3 data: 5761 rows: 50000 tail: 99 index: 433
     Stream: column 0 section ROW_INDEX start: 3 length 17
     Stream: column 1 section ROW_INDEX start: 20 length 73
     Stream: column 2 section ROW_INDEX start: 93 length 79
@@ -359,27 +359,27 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 0 max: 0 sum: 0 positions: 274,1328,0,232,304
       Entry 4: count: 10000 hasNull: false min: 0 max: 0 sum: 0 positions: 350,3136,0,312,64
     Row group indices for column 5:
-      Entry 0: count: 10000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,0,0,0,0,0
-      Entry 1: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,194,262,0,76,272
-      Entry 2: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,354,22,0,156,32
-      Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,506,294,0,232,304
-      Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,666,54,0,312,64
-  Stripe: offset: 6309 data: 5761 rows: 50000 tail: 112 index: 433
-    Stream: column 0 section ROW_INDEX start: 6309 length 17
-    Stream: column 1 section ROW_INDEX start: 6326 length 73
-    Stream: column 2 section ROW_INDEX start: 6399 length 79
-    Stream: column 3 section ROW_INDEX start: 6478 length 85
-    Stream: column 4 section ROW_INDEX start: 6563 length 92
-    Stream: column 5 section ROW_INDEX start: 6655 length 87
-    Stream: column 1 section DATA start: 6742 length 30
-    Stream: column 2 section DATA start: 6772 length 24
-    Stream: column 2 section LENGTH start: 6796 length 8
-    Stream: column 2 section DICTIONARY_DATA start: 6804 length 23
-    Stream: column 3 section DATA start: 6827 length 5114
-    Stream: column 4 section DATA start: 11941 length 480
-    Stream: column 4 section SECONDARY start: 12421 length 18
-    Stream: column 5 section DATA start: 12439 length 46
-    Stream: column 5 section SECONDARY start: 12485 length 18
+      Entry 0: count: 10000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 positions: 0,0,0,0,0,0
+      Entry 1: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,194,262,0,76,272
+      Entry 2: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,354,22,0,156,32
+      Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
+      Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
+  Stripe: offset: 6296 data: 5761 rows: 50000 tail: 99 index: 433
+    Stream: column 0 section ROW_INDEX start: 6296 length 17
+    Stream: column 1 section ROW_INDEX start: 6313 length 73
+    Stream: column 2 section ROW_INDEX start: 6386 length 79
+    Stream: column 3 section ROW_INDEX start: 6465 length 85
+    Stream: column 4 section ROW_INDEX start: 6550 length 92
+    Stream: column 5 section ROW_INDEX start: 6642 length 87
+    Stream: column 1 section DATA start: 6729 length 30
+    Stream: column 2 section DATA start: 6759 length 24
+    Stream: column 2 section LENGTH start: 6783 length 8
+    Stream: column 2 section DICTIONARY_DATA start: 6791 length 23
+    Stream: column 3 section DATA start: 6814 length 5114
+    Stream: column 4 section DATA start: 11928 length 480
+    Stream: column 4 section SECONDARY start: 12408 length 18
+    Stream: column 5 section DATA start: 12426 length 46
+    Stream: column 5 section SECONDARY start: 12472 length 18
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DICTIONARY_V2[6]
@@ -417,13 +417,13 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 0 max: 0 sum: 0 positions: 274,1328,0,232,304
       Entry 4: count: 10000 hasNull: false min: 0 max: 0 sum: 0 positions: 350,3136,0,312,64
     Row group indices for column 5:
-      Entry 0: count: 10000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:00:00.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,0,0,0,0,0
-      Entry 1: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,194,262,0,76,272
-      Entry 2: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,354,22,0,156,32
-      Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,506,294,0,232,304
-      Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 min UTC: 1969-12-31 08:04:10.0 max UTC: 1969-12-31 08:04:10.0 positions: 0,666,54,0,312,64
+      Entry 0: count: 10000 hasNull: false min: 1969-12-31 16:00:00.0 max: 1969-12-31 16:04:10.0 positions: 0,0,0,0,0,0
+      Entry 1: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,194,262,0,76,272
+      Entry 2: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,354,22,0,156,32
+      Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
+      Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 13004 bytes
+File length: 12978 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

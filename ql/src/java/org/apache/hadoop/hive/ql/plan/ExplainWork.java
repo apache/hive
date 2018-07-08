@@ -39,8 +39,8 @@ public class ExplainWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private Path resFile;
-  private ArrayList<Task<? extends Serializable>> rootTasks;
-  private Task<? extends Serializable> fetchTask;
+  private ArrayList<Task<?>> rootTasks;
+  private Task<?> fetchTask;
   private HashSet<ReadEntity> inputs;
   private ParseContext pCtx;
 
@@ -57,13 +57,13 @@ public class ExplainWork implements Serializable {
 
   public ExplainWork(Path resFile,
       ParseContext pCtx,
-      List<Task<? extends Serializable>> rootTasks,
-      Task<? extends Serializable> fetchTask,
+      List<Task<?>> rootTasks,
+      Task<?> fetchTask,
       BaseSemanticAnalyzer analyzer,
       ExplainConfiguration config,
       String cboInfo) {
     this.resFile = resFile;
-    this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
+    this.rootTasks = new ArrayList<Task<?>>(rootTasks);
     this.fetchTask = fetchTask;
     this.analyzer = analyzer;
     if (analyzer != null) {
@@ -82,19 +82,19 @@ public class ExplainWork implements Serializable {
     this.resFile = resFile;
   }
 
-  public ArrayList<Task<? extends Serializable>> getRootTasks() {
+  public ArrayList<Task<?>> getRootTasks() {
     return rootTasks;
   }
 
-  public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
+  public void setRootTasks(ArrayList<Task<?>> rootTasks) {
     this.rootTasks = rootTasks;
   }
 
-  public Task<? extends Serializable> getFetchTask() {
+  public Task<?> getFetchTask() {
     return fetchTask;
   }
 
-  public void setFetchTask(Task<? extends Serializable> fetchTask) {
+  public void setFetchTask(Task<?> fetchTask) {
     this.fetchTask = fetchTask;
   }
 

@@ -762,7 +762,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void addNotificationEvent(NotificationEvent event) {
+  public void addNotificationEvent(NotificationEvent event) throws MetaException {
     objectStore.addNotificationEvent(event);
   }
 
@@ -1052,126 +1052,129 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return null;
   }
 
-    @Override
-    public Long createISchema(ISchema schema) throws AlreadyExistsException, MetaException {
-        return null;
-    }
+  @Override
+  public Long createISchema(ISchema schema) throws AlreadyExistsException, MetaException, NoSuchObjectException {
+      return objectStore.createISchema(schema);
+  }
 
-    @Override
-    public void alterISchema(ISchemaName schemaName, ISchema newSchema) throws NoSuchObjectException,
-            MetaException {
+  @Override
+  public void alterISchema(ISchemaName schemaName, ISchema newSchema) throws NoSuchObjectException,
+                                                                             MetaException {
+    objectStore.alterISchema(schemaName, newSchema);
+  }
 
-    }
+  @Override
+  public ISchema getISchema(Long schemaId) throws MetaException {
+      return objectStore.getISchema(schemaId);
+  }
 
-    @Override
-    public ISchema getISchema(Long schemaId) throws MetaException {
-        return null;
-    }
+  @Override
+  public ISchema getISchemaByName(ISchemaName schemaName) throws MetaException {
+      return objectStore.getISchemaByName(schemaName);
+  }
 
-    @Override
-    public ISchema getISchemaByName(ISchemaName schemaName) throws MetaException {
-        return null;
-    }
+  @Override
+  public void dropISchema(ISchemaName schemaName) throws NoSuchObjectException, MetaException {
+      objectStore.dropISchema(schemaName);
+  }
 
-    @Override
-    public void dropISchema(ISchemaName schemaName) throws NoSuchObjectException, MetaException {
+  @Override
+  public Long addSchemaVersion(ISchemaVersion schemaVersion) throws
+      AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException {
+      return objectStore.addSchemaVersion(schemaVersion);
+  }
 
-    }
-
-    @Override
-    public Long addSchemaVersion(ISchemaVersion schemaVersion) throws
-            AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException {
-        return null;
-    }
-
-    @Override
-    public void alterSchemaVersion(ISchemaVersionDescriptor version, ISchemaVersion newVersion) throws
+  @Override
+  public void alterSchemaVersion(ISchemaVersionDescriptor version, ISchemaVersion newVersion) throws
             NoSuchObjectException, MetaException {
+      objectStore.alterSchemaVersion(version, newVersion);
+  }
 
-    }
+  @Override
+  public List<ISchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
+                                                        String type) throws MetaException {
+    return objectStore.getSchemaVersionsByColumns(colName, colNamespace, type);
+  }
 
-    @Override
-    public ISchemaVersion getSchemaVersion(ISchemaVersionDescriptor version) throws MetaException {
-        return null;
-    }
+  @Override
+  public ISchemaVersion getSchemaVersion(ISchemaVersionDescriptor version) throws MetaException {
+    return objectStore.getSchemaVersion(version);
+  }
 
-    @Override
-    public ISchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException {
-        return null;
-    }
+  @Override
+  public ISchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException {
+      return objectStore.getLatestSchemaVersion(schemaName);
+  }
 
-    @Override
-    public ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws MetaException {
-        return null;
-    }
+  @Override
+  public ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws MetaException {
+      return objectStore.getSchemaVersionById(schemaVersionId);
+  }
 
 
-    @Override
-    public List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(ISchemaVersionFingerprint schemaVersionFingerprint)
+  @Override
+  public List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(ISchemaVersionFingerprint schemaVersionFingerprint)
             throws MetaException {
-        return null;
-    }
+      return objectStore.getSchemaVersionsByNameAndFingerprint(schemaVersionFingerprint);
+  }
 
-    @Override
-    public List<ISchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException {
-        return null;
-    }
+  @Override
+  public List<ISchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException {
+      return objectStore.getAllSchemaVersion(schemaName);
+  }
 
-    @Override
-    public List<ISchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
-                                                           String type) throws MetaException {
-        return null;
-    }
 
-    @Override
-    public void dropSchemaVersion(ISchemaVersionDescriptor version) throws NoSuchObjectException,
+  @Override
+  public void dropSchemaVersion(ISchemaVersionDescriptor version) throws NoSuchObjectException,
             MetaException {
+      objectStore.dropSchemaVersion(version);
+  }
 
-    }
+  @Override
+  public Long addSchemaBranch(ISchemaBranch schemaBranch)  throws AlreadyExistsException, InvalidObjectException,
+                                                                  NoSuchObjectException, MetaException {
+      return objectStore.addSchemaBranch(schemaBranch);
+  }
 
-    @Override
-    public Long addSchemaBranch(ISchemaBranch schemaBranch)  throws AlreadyExistsException, InvalidObjectException,
-            NoSuchObjectException, MetaException {
-        return null;
-    }
-
-    @Override
-    public void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws AlreadyExistsException,
+  @Override
+  public void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws AlreadyExistsException,
             InvalidObjectException, NoSuchObjectException, MetaException {
-    }
+      objectStore.mapSchemaBranchToSchemaVersion(schemaBranchId, schemaVersionId);
+  }
 
-    @Override
-    public ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException {
-        return null;
-    }
+  @Override
+  public ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException {
+      return objectStore.getSchemaBranch(schemaBranchId);
+  }
 
-    @Override
-    public  List<ISchemaBranch>  getSchemaBranchBySchemaName(ISchemaName schemaName) throws MetaException {
-        return null;
-    }
+  @Override
+  public  List<ISchemaBranch>  getSchemaBranchBySchemaName(ISchemaName schemaName) throws MetaException {
+      return objectStore.getSchemaBranchBySchemaName(schemaName);
+  }
 
-    @Override
-    public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
-        return null;
-    }
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
+      return objectStore.getSchemaBranchBySchemaVersionId(schemaVersionId);
+  }
 
-    @Override
-    public List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException {
-        return null;
-    }
+  @Override
+  public List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException {
+      return objectStore.getSchemaVersionsBySchemaBranchId(schemaBranchId);
+  }
 
-    @Override
-    public SerDeInfo getSerDeInfo(String serDeName) throws MetaException {
-        return null;
-    }
+  @Override
+  public SerDeInfo getSerDeInfo(String serDeName) throws MetaException, NoSuchObjectException {
+      return objectStore.getSerDeInfo(serDeName);
+  }
 
-    @Override
-    public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
+  @Override
+  public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
+      objectStore.addSerde(serde);
+  }
 
-    }
   @Override
   public void addRuntimeStat(RuntimeStat stat) throws MetaException {
-    objectStore.addRuntimeStat(stat);
+      objectStore.addRuntimeStat(stat);
   }
 
   @Override
@@ -1182,6 +1185,16 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
     return objectStore.deleteRuntimeStats(maxRetainSecs);
+  }
+
+  @Override
+  public void cleanWriteNotificationEvents(int olderThan) {
+    objectStore.cleanWriteNotificationEvents(olderThan);
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
+    return objectStore.getAllWriteEventInfo(txnId, dbName, tableName);
   }
 
   @Override

@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorInBloomFilterColDynamicValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -37,10 +38,8 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.BloomKFilter;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Timestamp;
 
 /**
  * GenericUDF to lookup a value in BloomFilter
@@ -147,13 +146,13 @@ public class GenericUDFInBloomFilter extends GenericUDF {
         int startIdx = vDecimal.toBytes(scratchBuffer);
         return bloomFilter.testBytes(scratchBuffer, startIdx, scratchBuffer.length - startIdx);
       case DATE:
-        DateWritable vDate = ((DateObjectInspector) valObjectInspector).
+        DateWritableV2 vDate = ((DateObjectInspector) valObjectInspector).
                 getPrimitiveWritableObject(arguments[0].get());
         return bloomFilter.testLong(vDate.getDays());
       case TIMESTAMP:
         Timestamp vTimeStamp = ((TimestampObjectInspector) valObjectInspector).
                 getPrimitiveJavaObject(arguments[0].get());
-        return bloomFilter.testLong(vTimeStamp.getTime());
+        return bloomFilter.testLong(vTimeStamp.toEpochMilli());
       case CHAR:
         Text vChar = ((HiveCharObjectInspector) valObjectInspector).
                 getPrimitiveWritableObject(arguments[0].get()).getStrippedValue();

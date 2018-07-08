@@ -21,8 +21,6 @@ package org.apache.hive.hcatalog.pig;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,9 +33,11 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -419,7 +419,7 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
         return new HiveVarchar(varcharVal, vti.getLength());
       case TIMESTAMP:
         DateTime dt = (DateTime)pigObj;
-        return new Timestamp(dt.getMillis());//getMillis() returns UTC time regardless of TZ
+        return Timestamp.ofEpochMilli(dt.getMillis());//toEpochMilli() returns UTC time regardless of TZ
       case DATE:
         /**
          * We ignore any TZ setting on Pig value since java.sql.Date doesn't have it (in any
@@ -437,7 +437,7 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
           for local timezone.  Date.valueOf() also uses local timezone (as does Date(int,int,int).
           Also see PigHCatUtil#extractPigObject() for corresponding read op.  This way a DATETIME from Pig,
           when stored into Hive and read back comes back with the same value.*/
-        return new Date(dateTime.getYear() - 1900, dateTime.getMonthOfYear() - 1, dateTime.getDayOfMonth());
+        return Date.of(dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth());
       default:
         throw new BackendException("Unexpected HCat type " + type + " for value " + pigObj
           + " of class " + pigObj.getClass().getName(), PigHCatUtil.PIG_EXCEPTION_CODE);

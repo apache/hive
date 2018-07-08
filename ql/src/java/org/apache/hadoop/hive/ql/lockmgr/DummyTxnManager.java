@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,10 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   @Override
   public int getStmtIdAndIncrement() {
     return 0;
+  }
+  @Override
+  public int getCurrentStmtId() {
+    return  0;
   }
   @Override
   public long getTableWriteId(String dbName, String tableName) throws LockException {
@@ -220,7 +225,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public void replCommitTxn(String replPolicy, long srcTxnId) throws LockException {
+  public void replCommitTxn(CommitTxnRequest rqst) throws LockException {
     // No-op
   }
 

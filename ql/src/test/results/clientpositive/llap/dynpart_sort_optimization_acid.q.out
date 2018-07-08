@@ -95,19 +95,19 @@ STAGE PLANS:
                 TableScan
                   alias: acid_part
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
-                  Statistics: Num rows: 160 Data size: 61001 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1601 Data size: 150414 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
-                    Statistics: Num rows: 5 Data size: 1906 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 1906 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 5 Data size: 1906 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -116,10 +116,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), 'bar' (type: string), '2008-04-08' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 5 Data size: 1906 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 1906 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -191,7 +191,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_part
                   filterExpr: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
-                  Statistics: Num rows: 159 Data size: 104317 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1601 Data size: 444998 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1355 Basic stats: COMPLETE Column stats: PARTIAL
@@ -383,19 +383,19 @@ STAGE PLANS:
                 TableScan
                   alias: acid_part_sdpo
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08')) (type: boolean)
-                  Statistics: Num rows: 176 Data size: 67063 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1601 Data size: 150414 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
-                    Statistics: Num rows: 5 Data size: 1905 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 1905 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 5 Data size: 1905 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -404,10 +404,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), 'bar' (type: string), '2008-04-08' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 5 Data size: 1905 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 1905 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -479,7 +479,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_part_sdpo
                   filterExpr: ((key = 'foo') and (ds) IN ('2008-04-08')) (type: boolean)
-                  Statistics: Num rows: 171 Data size: 112152 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1601 Data size: 444998 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1355 Basic stats: COMPLETE Column stats: PARTIAL
@@ -680,19 +680,19 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
-                  Statistics: Num rows: 157 Data size: 60527 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1601 Data size: 150414 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
-                    Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -701,10 +701,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), 'bar' (type: string), '2008-04-08' (type: string), 11 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -777,19 +777,19 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
-                  Statistics: Num rows: 1600 Data size: 156727 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 3201 Data size: 313458 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
-                    Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                    Statistics: Num rows: 5 Data size: 455 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), hr (type: int)
                       outputColumnNames: _col0, _col4
-                      Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                      Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                        Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col4 (type: int)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -799,10 +799,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), 'bar' (type: string), '2008-04-08' (type: string), VALUE._col2 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -904,19 +904,19 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part
                   filterExpr: (value = 'bar') (type: boolean)
-                  Statistics: Num rows: 1600 Data size: 451127 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 4200 Data size: 1253037 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
-                    Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                    Statistics: Num rows: 5 Data size: 1375 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), ds (type: string), hr (type: int)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                      Statistics: Num rows: 5 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                        Statistics: Num rows: 5 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col1 (type: string), _col2 (type: int)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -926,10 +926,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                Statistics: Num rows: 5 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 5 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1103,19 +1103,19 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part_sdpo
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
-                  Statistics: Num rows: 157 Data size: 60527 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1601 Data size: 150414 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
-                    Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -1124,10 +1124,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), 'bar' (type: string), '2008-04-08' (type: string), 11 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 5 Data size: 1927 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 5 Data size: 469 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1200,19 +1200,19 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part_sdpo
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
-                  Statistics: Num rows: 1600 Data size: 156727 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 3201 Data size: 313458 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
-                    Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                    Statistics: Num rows: 5 Data size: 455 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), hr (type: int)
                       outputColumnNames: _col0, _col4
-                      Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                      Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: '2008-04-08' (type: string), _col4 (type: int), '_bucket_number' (type: string), _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: ++++
                         Map-reduce partition columns: '2008-04-08' (type: string), _col4 (type: int)
-                        Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                        Statistics: Num rows: 5 Data size: 1740 Basic stats: COMPLETE Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -1221,11 +1221,11 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY._col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 'foo' (type: string), 'bar' (type: string), '2008-04-08' (type: string), KEY._col4 (type: int), KEY.'_bucket_number' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, '_bucket_number'
-                Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                Statistics: Num rows: 5 Data size: 1360 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   Dp Sort State: PARTITION_BUCKET_SORTED
-                  Statistics: Num rows: 5 Data size: 489 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 5 Data size: 1360 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1327,19 +1327,19 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part_sdpo
                   filterExpr: (value = 'bar') (type: boolean)
-                  Statistics: Num rows: 1600 Data size: 451127 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 4952 Data size: 1456618 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (value = 'bar') (type: boolean)
-                    Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                    Statistics: Num rows: 5 Data size: 1375 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), ds (type: string), hr (type: int)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                      Statistics: Num rows: 5 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col2 (type: int), '_bucket_number' (type: string), _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: ++++
                         Map-reduce partition columns: _col1 (type: string), _col2 (type: int)
-                        Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                        Statistics: Num rows: 5 Data size: 1320 Basic stats: COMPLETE Column stats: PARTIAL
             Execution mode: llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -1348,11 +1348,11 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY._col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), KEY._col1 (type: string), KEY._col2 (type: int), KEY.'_bucket_number' (type: string)
                 outputColumnNames: _col0, _col1, _col2, '_bucket_number'
-                Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                Statistics: Num rows: 5 Data size: 1810 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   Dp Sort State: PARTITION_BUCKET_SORTED
-                  Statistics: Num rows: 5 Data size: 1409 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 5 Data size: 1810 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1526,7 +1526,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
-                  Statistics: Num rows: 97 Data size: 82922 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1601 Data size: 599036 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
                     Statistics: Num rows: 5 Data size: 1860 Basic stats: COMPLETE Column stats: PARTIAL
@@ -1625,19 +1625,19 @@ STAGE PLANS:
                 TableScan
                   alias: acid_2l_part_sdpo_no_cp
                   filterExpr: ((key = 'foo') and (ds = '2008-04-08') and (hr >= 11)) (type: boolean)
-                  Statistics: Num rows: 1600 Data size: 598664 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 3201 Data size: 1197516 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (key = 'foo') (type: boolean)
-                    Statistics: Num rows: 5 Data size: 1870 Basic stats: PARTIAL Column stats: PARTIAL
+                    Statistics: Num rows: 5 Data size: 1860 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: string), ds (type: string), hr (type: int)
                       outputColumnNames: _col0, _col1, _col3, _col4
-                      Statistics: Num rows: 5 Data size: 1870 Basic stats: PARTIAL Column stats: PARTIAL
+                      Statistics: Num rows: 5 Data size: 2675 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col3 (type: string), _col4 (type: int), '_bucket_number' (type: string), _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         sort order: ++++
                         Map-reduce partition columns: _col3 (type: string), _col4 (type: int)
-                        Statistics: Num rows: 5 Data size: 1870 Basic stats: PARTIAL Column stats: PARTIAL
+                        Statistics: Num rows: 5 Data size: 2675 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col1 (type: string), 'bar' (type: string)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
@@ -1647,11 +1647,11 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY._col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col1 (type: string), VALUE._col2 (type: string), KEY._col3 (type: string), KEY._col4 (type: int), KEY.'_bucket_number' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, '_bucket_number'
-                Statistics: Num rows: 5 Data size: 1870 Basic stats: PARTIAL Column stats: PARTIAL
+                Statistics: Num rows: 5 Data size: 3165 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   Dp Sort State: PARTITION_BUCKET_SORTED
-                  Statistics: Num rows: 5 Data size: 1870 Basic stats: PARTIAL Column stats: PARTIAL
+                  Statistics: Num rows: 5 Data size: 3165 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat

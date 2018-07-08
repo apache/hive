@@ -22,7 +22,7 @@ import java.sql.Timestamp;
 import java.util.Random;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
+import org.apache.hadoop.hive.serde2.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -86,7 +86,7 @@ public class VectorizedRowGroupGenUtil {
     tcv.noNulls = !nulls;
     tcv.isRepeating = repeating;
 
-    Timestamp repeatingTimestamp = RandomTypeUtil.getRandTimestamp(rand);
+    Timestamp repeatingTimestamp = RandomTypeUtil.getRandTimestamp(rand).toSqlTimestamp();
 
     int nullFrequency = generateNullFrequency(rand);
 
@@ -98,7 +98,7 @@ public class VectorizedRowGroupGenUtil {
       }else {
         tcv.isNull[i] = false;
         if (!repeating) {
-          Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(rand);
+          Timestamp randomTimestamp = RandomTypeUtil.getRandTimestamp(rand).toSqlTimestamp();
           tcv.set(i,  randomTimestamp);
           timestampValues[i] = randomTimestamp;
         } else {

@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -40,15 +40,22 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 
 public class TestVectorGenericDateExpressions {
 
   private Charset utf8 = StandardCharsets.UTF_8;
   private int size = 200;
   private Random random = new Random();
-  private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+  private SimpleDateFormat formatter = getFormatter();
   private List<PrimitiveCategory> dateTimestampStringTypes =
       Arrays.<PrimitiveCategory>asList(PrimitiveCategory.DATE, PrimitiveCategory.TIMESTAMP, PrimitiveCategory.STRING);
+
+  private static SimpleDateFormat getFormatter() {
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return formatter;
+  }
 
   private long newRandom(int i) {
     return random.nextInt(i);
@@ -88,7 +95,7 @@ public class TestVectorGenericDateExpressions {
   }
 
   private Timestamp toTimestamp(long date) {
-    return new Timestamp(DateWritable.daysToMillis((int) date));
+    return new Timestamp(DateWritableV2.daysToMillis((int) date));
   }
 
   private BytesColumnVector toString(LongColumnVector date) {
@@ -107,7 +114,7 @@ public class TestVectorGenericDateExpressions {
   }
 
   private byte[] toString(long date) {
-    String formatted = formatter.format(new Date(DateWritable.daysToMillis((int) date)));
+    String formatted = formatter.format(new Date(DateWritableV2.daysToMillis((int) date)));
     return formatted.getBytes(utf8);
   }
 
@@ -668,7 +675,7 @@ public class TestVectorGenericDateExpressions {
       if (date.isNull[i]) {
         Assert.assertTrue(output.isNull[i]);
       } else {
-        String expected = formatter.format(new Date(DateWritable.daysToMillis((int) date.vector[i])));
+        String expected = formatter.format(new Date(DateWritableV2.daysToMillis((int) date.vector[i])));
         Assert.assertEquals(expected, actual);
       }
     }

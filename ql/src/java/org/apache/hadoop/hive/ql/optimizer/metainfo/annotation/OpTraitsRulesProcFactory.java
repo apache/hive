@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -40,6 +41,8 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionDef;
 
 /*
  * This class populates the following operator traits for the entire operator tree:
@@ -233,7 +236,7 @@ public class OpTraitsRulesProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       GroupByOperator gbyOp = (GroupByOperator)nd;
-      List<String> gbyKeys = new ArrayList<String>();
+      List<String> gbyKeys = new ArrayList<>();
       for (ExprNodeDesc exprDesc : gbyOp.getConf().getKeys()) {
         for (Entry<String, ExprNodeDesc> entry : gbyOp.getColumnExprMap().entrySet()) {
           if (exprDesc.isSame(entry.getValue())) {
@@ -242,7 +245,7 @@ public class OpTraitsRulesProcFactory {
         }
       }
 
-      List<List<String>> listBucketCols = new ArrayList<List<String>>();
+      List<List<String>> listBucketCols = new ArrayList<>();
       int numReduceSinks = 0;
       int bucketingVersion = -1;
       OpTraits parentOpTraits = gbyOp.getParentOperators().get(0).getOpTraits();
@@ -254,6 +257,51 @@ public class OpTraitsRulesProcFactory {
       OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols,
               numReduceSinks, bucketingVersion);
       gbyOp.setOpTraits(opTraits);
+      return null;
+    }
+  }
+
+
+  /*
+   * PTFOperator re-orders the keys just like Group By Operator does.
+   */
+  public static class PTFRule implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+                          Object... nodeOutputs) throws SemanticException {
+      PTFOperator ptfOp = (PTFOperator) nd;
+      List<String> partitionKeys = new ArrayList<>();
+
+      PartitionDef partition = ptfOp.getConf().getFuncDef().getPartition();
+      if (partition != null && partition.getExpressions() != null) {
+        // Go through each expression in PTF window function.
+        // All the expressions must be on columns, else we put empty list.
+        for (PTFExpressionDef expression : partition.getExpressions()) {
+          ExprNodeDesc exprNode = expression.getExprNode();
+          if (!(exprNode instanceof ExprNodeColumnDesc)) {
+            // clear out the list and bail out
+            partitionKeys.clear();
+            break;
+          }
+
+          partitionKeys.add(exprNode.getExprString());
+        }
+      }
+
+      List<List<String>> listBucketCols = new ArrayList<>();
+      int numReduceSinks = 0;
+      int bucketingVersion = -1;
+      OpTraits parentOptraits = ptfOp.getParentOperators().get(0).getOpTraits();
+      if (parentOptraits != null) {
+        numReduceSinks = parentOptraits.getNumReduceSinks();
+        bucketingVersion = parentOptraits.getBucketingVersion();
+      }
+
+      listBucketCols.add(partitionKeys);
+      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols,
+          numReduceSinks, bucketingVersion);
+      ptfOp.setOpTraits(opTraits);
       return null;
     }
   }
@@ -478,6 +526,10 @@ public class OpTraitsRulesProcFactory {
 
   public static NodeProcessor getGroupByRule() {
     return new GroupByRule();
+  }
+
+  public static NodeProcessor getPTFRule() {
+    return new PTFRule();
   }
 
   public static NodeProcessor getJoinRule() {

@@ -767,7 +767,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void addNotificationEvent(NotificationEvent event) {
+  public void addNotificationEvent(NotificationEvent event) throws MetaException {
 
   }
 
@@ -1189,6 +1189,15 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public Map<String, List<String>> getPartitionColsWithStats(String catName,
       String dbName, String tableName) throws MetaException,
       NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public void cleanWriteNotificationEvents(int olderThan) {
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
     return null;
   }
 }

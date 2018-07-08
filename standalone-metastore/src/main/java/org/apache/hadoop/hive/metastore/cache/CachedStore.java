@@ -1968,7 +1968,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addNotificationEvent(NotificationEvent event) {
+  public void addNotificationEvent(NotificationEvent event) throws MetaException {
     rawStore.addNotificationEvent(event);
   }
 
@@ -2402,6 +2402,17 @@ public class CachedStore implements RawStore, Configurable {
 
   public long getCacheUpdateCount() {
     return sharedCache.getUpdateCount();
+  }
+
+  @Override
+  public void cleanWriteNotificationEvents(int olderThan) {
+    rawStore.cleanWriteNotificationEvents(olderThan);
+  }
+
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
+    return rawStore.getAllWriteEventInfo(txnId, dbName, tableName);
   }
 
   static boolean isNotInBlackList(String catName, String dbName, String tblName) {

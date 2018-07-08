@@ -1589,14 +1589,14 @@ public class GenVectorCode extends Task {
       vectorType = "long";
       getPrimitiveMethod = "getDate";
       getValueMethod = "";
-      conversionMethod = "DateWritable.dateToDays";
+      conversionMethod = "DateWritableV2.dateToDays";
       // Special case - Date requires its own specific BetweenDynamicValue class, but derives from FilterLongColumnBetween
       typeName = "Long";
     } else if (operandType.equals("timestamp")) {
       defaultValue = "new Timestamp(0)";
       vectorType = "Timestamp";
       getPrimitiveMethod = "getTimestamp";
-      getValueMethod = "";
+      getValueMethod = ".toSqlTimestamp()";
       conversionMethod = "";
     } else {
       throw new IllegalArgumentException("Type " + operandType + " not supported");
@@ -3159,8 +3159,7 @@ public class GenVectorCode extends Task {
   private String getDTIScalarColumnDisplayBody(String type) {
     if (type.equals("date")) {
       return
-          "Date dt = new Date(0);" +
-          "    dt.setTime(DateWritable.daysToMillis((int) value));\n" +
+          "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
           "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, colNum);";
     } else {
       return
@@ -3171,8 +3170,7 @@ public class GenVectorCode extends Task {
   private String getDTIColumnScalarDisplayBody(String type) {
     if (type.equals("date")) {
       return
-          "Date dt = new Date(0);" +
-          "    dt.setTime(DateWritable.daysToMillis((int) value));\n" +
+          "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
           "    return getColumnParamString(0, colNum) + \", date \" + dt.toString();";
     } else {
       return
@@ -3842,9 +3840,9 @@ public class GenVectorCode extends Task {
     } else if (primitiveType.equals("interval_day_time")) {
       return "HiveIntervalDayTimeWritable";
     } else if (primitiveType.equals("date")) {
-      return "HiveDateWritable";
+      return "DateWritableV2";
     } else if (primitiveType.equals("timestamp")) {
-      return "HiveTimestampWritable";
+      return "TimestampWritable";
     }
     throw new Exception("Unimplemented primitive output writable: " + primitiveType);
   }

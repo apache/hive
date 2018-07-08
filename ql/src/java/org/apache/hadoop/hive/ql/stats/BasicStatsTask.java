@@ -169,7 +169,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         // though we are marking stats as not being accurate.
         if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
           String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
-          updateStats(statsAggregator, parameters, prefix, p.isAcid());
+          updateStats(statsAggregator, parameters, prefix);
         }
       }
 
@@ -206,14 +206,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     }
 
     private void updateStats(StatsAggregator statsAggregator, Map<String, String> parameters,
-        String aggKey, boolean isFullAcid) throws HiveException {
-      for (String statType : StatsSetupConst.statsRequireCompute) {
-        if (isFullAcid && !work.isTargetRewritten()) {
-          // Don't bother with aggregation in this case, it will probably be invalid.
-          parameters.remove(statType);
-          continue;
-        }
-
+        String aggKey) throws HiveException {
+      for (String statType : StatsSetupConst.STATS_REQUIRE_COMPUTE) {
         String value = statsAggregator.aggregateStats(aggKey, statType);
         if (value != null && !value.isEmpty()) {
           long longValue = Long.parseLong(value);
@@ -417,7 +411,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
   private String toString(Map<String, String> parameters) {
     StringBuilder builder = new StringBuilder();
-    for (String statType : StatsSetupConst.supportedStats) {
+    for (String statType : StatsSetupConst.SUPPORTED_STATS) {
       String value = parameters.get(statType);
       if (value != null) {
         if (builder.length() > 0) {

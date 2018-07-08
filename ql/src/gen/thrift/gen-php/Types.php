@@ -118,6 +118,7 @@ final class StageType {
   const REPL_BOOTSTRAP_LOAD = 13;
   const REPL_STATE_LOG = 14;
   const REPL_TXN = 15;
+  const REPL_INCREMENTAL_LOAD = 16;
   static public $__names = array(
     0 => 'CONDITIONAL',
     1 => 'COPY',
@@ -135,6 +136,7 @@ final class StageType {
     13 => 'REPL_BOOTSTRAP_LOAD',
     14 => 'REPL_STATE_LOG',
     15 => 'REPL_TXN',
+    16 => 'REPL_INCREMENTAL_LOAD',
   );
 }
 

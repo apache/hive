@@ -1,0 +1,94 @@
+PREHOOK: query: create table change_allowincompatible_vectorization_false_date (ts date) partitioned by (s string) clustered by (ts) into 32 buckets stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: query: create table change_allowincompatible_vectorization_false_date (ts date) partitioned by (s string) clustered by (ts) into 32 buckets stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date
+PREHOOK: query: alter table change_allowincompatible_vectorization_false_date add partition(s='aaa')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: query: alter table change_allowincompatible_vectorization_false_date add partition(s='aaa')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date@s=aaa
+PREHOOK: query: alter table change_allowincompatible_vectorization_false_date add partition(s='bbb')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: query: alter table change_allowincompatible_vectorization_false_date add partition(s='bbb')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date@s=bbb
+PREHOOK: query: insert into table change_allowincompatible_vectorization_false_date partition (s='aaa') select ctimestamp1 from alltypesorc where ctimestamp1 > '2000-01-01' limit 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@change_allowincompatible_vectorization_false_date@s=aaa
+POSTHOOK: query: insert into table change_allowincompatible_vectorization_false_date partition (s='aaa') select ctimestamp1 from alltypesorc where ctimestamp1 > '2000-01-01' limit 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date@s=aaa
+POSTHOOK: Lineage: change_allowincompatible_vectorization_false_date PARTITION(s=aaa).ts EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+PREHOOK: query: insert into table change_allowincompatible_vectorization_false_date partition (s='bbb') select ctimestamp1 from alltypesorc where ctimestamp1 < '2000-01-01' limit 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@change_allowincompatible_vectorization_false_date@s=bbb
+POSTHOOK: query: insert into table change_allowincompatible_vectorization_false_date partition (s='bbb') select ctimestamp1 from alltypesorc where ctimestamp1 < '2000-01-01' limit 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date@s=bbb
+POSTHOOK: Lineage: change_allowincompatible_vectorization_false_date PARTITION(s=bbb).ts EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+PREHOOK: query: select count(*) from change_allowincompatible_vectorization_false_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@change_allowincompatible_vectorization_false_date
+PREHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
+PREHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=bbb
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from change_allowincompatible_vectorization_false_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
+POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=bbb
+#### A masked pattern was here ####
+50
+PREHOOK: query: alter table change_allowincompatible_vectorization_false_date change column ts ts timestamp
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@change_allowincompatible_vectorization_false_date
+PREHOOK: Output: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: query: alter table change_allowincompatible_vectorization_false_date change column ts ts timestamp
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date
+PREHOOK: query: select count(*) from change_allowincompatible_vectorization_false_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@change_allowincompatible_vectorization_false_date
+PREHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
+PREHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=bbb
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from change_allowincompatible_vectorization_false_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
+POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=bbb
+#### A masked pattern was here ####
+50
+PREHOOK: query: insert into table change_allowincompatible_vectorization_false_date partition (s='aaa') values ('2038-03-22 07:26:48.0')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@change_allowincompatible_vectorization_false_date@s=aaa
+POSTHOOK: query: insert into table change_allowincompatible_vectorization_false_date partition (s='aaa') values ('2038-03-22 07:26:48.0')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@change_allowincompatible_vectorization_false_date@s=aaa
+POSTHOOK: Lineage: change_allowincompatible_vectorization_false_date PARTITION(s=aaa).ts SCRIPT []
+PREHOOK: query: select ts from change_allowincompatible_vectorization_false_date where ts='2038-03-22 07:26:48.0' and s='aaa'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@change_allowincompatible_vectorization_false_date
+PREHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
+#### A masked pattern was here ####
+POSTHOOK: query: select ts from change_allowincompatible_vectorization_false_date where ts='2038-03-22 07:26:48.0' and s='aaa'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date
+POSTHOOK: Input: default@change_allowincompatible_vectorization_false_date@s=aaa
+#### A masked pattern was here ####
+2038-03-22 07:26:48

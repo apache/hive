@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
@@ -81,6 +80,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.*;
+import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
@@ -1481,7 +1481,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // If the table is not external and it might not be in a subdirectory of the database
               // add it's locations to the list of paths to delete
               Path tablePath = null;
-              if (table.getSd().getLocation() != null && !isExternal(table)) {
+              boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, deleteData);
+              if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
                 tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
                 if (!wh.isWritable(tablePath.getParent())) {
                   throw new MetaException("Database metadata not deleted since table: " +
@@ -1497,7 +1498,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               // For each partition in each table, drop the partitions and get a list of
               // partitions' locations which might need to be deleted
               partitionPaths = dropPartitionsAndGetLocations(ms, catName, name, table.getTableName(),
-                  tablePath, deleteData && !isExternal(table));
+                  tablePath, tableDataShouldBeDeleted);
 
               // Drop the table but not its data
               drop_table(MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
@@ -1716,6 +1717,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                    List<SQLCheckConstraint> checkConstraints)
         throws AlreadyExistsException, MetaException,
         InvalidObjectException, NoSuchObjectException {
+      // To preserve backward compatibility throw MetaException in case of null database
+      if (tbl.getDbName() == null) {
+        throw new MetaException("Null database name is not allowed");
+      }
+
       if (!MetaStoreUtils.validateName(tbl.getTableName(), conf)) {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
@@ -2376,7 +2382,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws NoSuchObjectException, MetaException, IOException, InvalidObjectException,
         InvalidInputException {
       boolean success = false;
-      boolean isExternal = false;
+      boolean tableDataShouldBeDeleted = false;
       Path tblPath = null;
       List<Path> partPaths = null;
       Table tbl = null;
@@ -2399,7 +2405,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
 
-        isExternal = isExternal(tbl);
+        tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
         if (tbl.getSd().getLocation() != null) {
           tblPath = new Path(tbl.getSd().getLocation());
           if (!wh.isWritable(tblPath.getParent())) {
@@ -2412,7 +2418,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         // Drop the partitions and get a list of locations which need to be deleted
         partPaths = dropPartitionsAndGetLocations(ms, catName, dbname, name, tblPath,
-            deleteData && !isExternal);
+            tableDataShouldBeDeleted);
 
         // Drop any constraints on the table
         ms.dropConstraint(catName, dbname, name, null, true);
@@ -2434,7 +2440,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (deleteData && !isExternal) {
+        } else if (tableDataShouldBeDeleted) {
           // Data needs deletion. Check if trash may be skipped.
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge, db);
@@ -2452,6 +2458,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return success;
+    }
+
+    private boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
+      if (deleteData && isExternal(tbl)) {
+        // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
+        return isExternalTablePurge(tbl);
+      }
+      return deleteData;
     }
 
     /**
@@ -2602,7 +2616,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (null == props) {
         return;
       }
-      for (String stat : StatsSetupConst.supportedStats) {
+      for (String stat : StatsSetupConst.SUPPORTED_STATS) {
         String statVal = props.get(stat);
         if (statVal != null) {
           //In the case of truncate table, we set the stats to be 0.
@@ -2761,6 +2775,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      */
     private boolean isExternal(Table table) {
       return MetaStoreUtils.isExternalTable(table);
+    }
+
+    private boolean isExternalTablePurge(Table table) {
+      return MetaStoreUtils.isPropertyTrue(table.getParameters(), MetaStoreUtils.EXTERNAL_TABLE_PURGE);
     }
 
     @Override
@@ -3220,102 +3238,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         Set<PartValEqWrapperLite> partsToAdd = new HashSet<>(parts.size());
         List<Partition> partitionsToAdd = new ArrayList<>(parts.size());
+        List<FieldSchema> partitionKeys = tbl.getPartitionKeys();
         for (final Partition part : parts) {
           // Iterate through the partitions and validate them. If one of the partitions is
           // incorrect, an exception will be thrown before the threads which create the partition
           // folders are submitted. This way we can be sure that no partition and no partition
           // folder will be created if the list contains an invalid partition.
-          if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
-            String errorMsg = String.format(
-                "Partition does not belong to target table %s. It belongs to the table %s.%s : %s",
-                TableName.getQualified(catName, dbName, tblName), part.getDbName(),
-                part.getTableName(), part.toString());
-            throw new MetaException(errorMsg);
-          }
-          if (part.getValues() == null || part.getValues().isEmpty()) {
-            throw new MetaException("The partition values cannot be null or empty.");
-          }
-          if (part.getValues().contains(null)) {
-            throw new MetaException("Partition value cannot be null.");
-          }
-
-          boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), ifNotExists);
-          if (!shouldAdd) {
+          if (validatePartition(part, catName, tblName, dbName, partsToAdd, ms, ifNotExists,
+              partitionKeys)) {
+            partitionsToAdd.add(part);
+          } else {
             existingParts.add(part);
-            LOG.info("Not adding partition {} as it already exists", part);
-            continue;
-          }
-
-          if (!partsToAdd.add(new PartValEqWrapperLite(part))) {
-            // Technically, for ifNotExists case, we could insert one and discard the other
-            // because the first one now "exists", but it seems better to report the problem
-            // upstream as such a command doesn't make sense.
-            throw new MetaException("Duplicate partitions in the list: " + part);
-          }
-
-          partitionsToAdd.add(part);
-        }
-
-        final AtomicBoolean failureOccurred = new AtomicBoolean(false);
-        final Table table = tbl;
-        List<Future<Partition>> partFutures = new ArrayList<>(partitionsToAdd.size());
-
-        final UserGroupInformation ugi;
-        try {
-          ugi = UserGroupInformation.getCurrentUser();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-
-        for (final Partition partition : partitionsToAdd) {
-          initializePartitionParameters(table, partition);
-
-          partFutures.add(threadPool.submit(() -> {
-            if (failureOccurred.get()) {
-              return null;
-            }
-            ugi.doAs((PrivilegedExceptionAction<Partition>) () -> {
-              try {
-                boolean madeDir = createLocationForAddedPartition(table, partition);
-                addedPartitions.put(new PartValEqWrapperLite(partition), madeDir);
-                initializeAddedPartition(table, partition, madeDir);
-              } catch (MetaException e) {
-                throw new IOException(e.getMessage(), e);
-              }
-              return null;
-            });
-            return partition;
-          }));
-        }
-
-        String errorMessage = null;
-        for (Future<Partition> partFuture : partFutures) {
-          try {
-            Partition part = partFuture.get();
-            if (part != null && !failureOccurred.get()) {
-              newParts.add(part);
-            }
-          } catch (InterruptedException | ExecutionException e) {
-            // If an exception is thrown in the execution of a task, set the failureOccurred flag to
-            // true. This flag is visible in the tasks and if its value is true, the partition
-            // folders won't be created.
-            // Then iterate through the remaining tasks and wait for them to finish. The tasks which
-            // are started before the flag got set will then finish creating the partition folders.
-            // The tasks which are started after the flag got set, won't create the partition
-            // folders, to avoid unnecessary work.
-            // This way it is sure that all tasks are finished, when entering the finally part where
-            // the partition folders are cleaned up. It won't happen that a task is still running
-            // when cleaning up the folders, so it is sure we won't have leftover folders.
-            // Canceling the other tasks would be also an option but during testing it turned out
-            // that it is not a trustworthy solution to avoid leftover folders.
-            failureOccurred.compareAndSet(false, true);
-            errorMessage = e.getMessage();
           }
         }
 
-        if (failureOccurred.get()) {
-          throw new MetaException(errorMessage);
-        }
+        newParts.addAll(createPartitionFolders(partitionsToAdd, tbl, addedPartitions));
 
         if (!newParts.isEmpty()) {
           ms.addPartitions(catName, dbName, tblName, newParts);
@@ -3334,12 +3271,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-          for (Map.Entry<PartValEqWrapperLite, Boolean> e : addedPartitions.entrySet()) {
-            if (e.getValue()) {
-              // we just created this directory - it's not a case of pre-creation, so we nuke.
-              wh.deleteDir(new Path(e.getKey().location), true, db);
-            }
-          }
+          cleanupPartitionFolders(addedPartitions, db);
 
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
@@ -3365,6 +3297,177 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
       }
+      return newParts;
+    }
+
+    /**
+     * Remove the newly created partition folders. The values in the addedPartitions map indicates
+     * whether or not the location of the partition was newly created. If the value is false, the
+     * partition folder will not be removed.
+     * @param addedPartitions
+     * @throws MetaException
+     * @throws IllegalArgumentException
+     */
+    private void cleanupPartitionFolders(final Map<PartValEqWrapperLite, Boolean> addedPartitions,
+        Database db) throws MetaException, IllegalArgumentException {
+      for (Map.Entry<PartValEqWrapperLite, Boolean> e : addedPartitions.entrySet()) {
+        if (e.getValue()) {
+          // we just created this directory - it's not a case of pre-creation, so we nuke.
+          wh.deleteDir(new Path(e.getKey().location), true, db);
+        }
+      }
+    }
+
+    /**
+     * Validate a partition before creating it. The validation checks
+     * <ul>
+     * <li>if the database and table names set in the partition are not null and they are matching
+     * with the expected values set in the tblName and dbName parameters.</li>
+     * <li>if the partition values are set.</li>
+     * <li>if none of the partition values is null.</li>
+     * <li>if the partition values are matching with the pattern set in the
+     * 'metastore.partition.name.whitelist.pattern' configuration property.</li>
+     * <li>if the partition doesn't already exist. If the partition already exists, an exception
+     * will be thrown if the ifNotExists parameter is false, otherwise it will be just ignored.</li>
+     * <li>if the partsToAdd set doesn't contain the partition. The partsToAdd set contains the
+     * partitions which are already validated. If the set contains the current partition, it means
+     * that the partition is tried to be added multiple times in the same batch. Please note that
+     * the set will be updated with the current partition if the validation was successful.</li>
+     * </ul>
+     * @param part
+     * @param catName
+     * @param tblName
+     * @param dbName
+     * @param partsToAdd
+     * @param ms
+     * @param ifNotExists
+     * @return
+     * @throws MetaException
+     * @throws TException
+     */
+    private boolean validatePartition(final Partition part, final String catName,
+        final String tblName, final String dbName, final Set<PartValEqWrapperLite> partsToAdd,
+        final RawStore ms, final boolean ifNotExists, List<FieldSchema> partitionKeys) throws MetaException, TException {
+
+      if (part.getDbName() == null || part.getTableName() == null) {
+        throw new MetaException("The database and table name must be set in the partition.");
+      }
+
+      if (!part.getTableName().equalsIgnoreCase(tblName)
+          || !part.getDbName().equalsIgnoreCase(dbName)) {
+        String errorMsg = String.format(
+            "Partition does not belong to target table %s. It belongs to the table %s.%s : %s",
+            TableName.getQualified(catName, dbName, tblName), part.getDbName(),
+            part.getTableName(), part.toString());
+        throw new MetaException(errorMsg);
+      }
+
+      if (part.getValues() == null || part.getValues().isEmpty()) {
+        throw new MetaException("The partition values cannot be null or empty.");
+      }
+
+      if (part.getValues().contains(null)) {
+        throw new MetaException("Partition value cannot be null.");
+      }
+
+      boolean shouldAdd = startAddPartition(ms, part, partitionKeys, ifNotExists);
+      if (!shouldAdd) {
+        LOG.info("Not adding partition {} as it already exists", part);
+        return false;
+      }
+
+      if (!partsToAdd.add(new PartValEqWrapperLite(part))) {
+        // Technically, for ifNotExists case, we could insert one and discard the other
+        // because the first one now "exists", but it seems better to report the problem
+        // upstream as such a command doesn't make sense.
+        throw new MetaException("Duplicate partitions in the list: " + part);
+      }
+      return true;
+    }
+
+    /**
+     * Create the location folders for the partitions. For each partition a separate thread will be
+     * started to create the folder. The method will wait until all threads are finished and returns
+     * the partitions whose folders were created successfully. If an error occurs during the
+     * execution of a thread, a MetaException will be thrown.
+     * @param partitionsToAdd
+     * @param table
+     * @param addedPartitions
+     * @return
+     * @throws MetaException
+     */
+    private List<Partition> createPartitionFolders(final List<Partition> partitionsToAdd,
+        final Table table, final Map<PartValEqWrapperLite, Boolean> addedPartitions)
+        throws MetaException {
+
+      final AtomicBoolean failureOccurred = new AtomicBoolean(false);
+      final List<Future<Partition>> partFutures = new ArrayList<>(partitionsToAdd.size());
+      final Map<PartValEqWrapperLite, Boolean> addedParts = new ConcurrentHashMap<>();
+
+      final UserGroupInformation ugi;
+      try {
+        ugi = UserGroupInformation.getCurrentUser();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+
+      for (final Partition partition : partitionsToAdd) {
+        initializePartitionParameters(table, partition);
+
+        partFutures.add(threadPool.submit(() -> {
+          if (failureOccurred.get()) {
+            return null;
+          }
+          ugi.doAs((PrivilegedExceptionAction<Partition>) () -> {
+            try {
+              boolean madeDir = createLocationForAddedPartition(table, partition);
+              addedParts.put(new PartValEqWrapperLite(partition), madeDir);
+              initializeAddedPartition(table, partition, madeDir);
+            } catch (MetaException e) {
+              throw new IOException(e.getMessage(), e);
+            }
+            return null;
+          });
+          return partition;
+        }));
+      }
+
+      List<Partition> newParts = new ArrayList<>(partitionsToAdd.size());
+      String errorMessage = null;
+      for (Future<Partition> partFuture : partFutures) {
+        try {
+          Partition part = partFuture.get();
+          if (part != null && !failureOccurred.get()) {
+            newParts.add(part);
+          }
+        } catch (ExecutionException e) {
+          // If an exception is thrown in the execution of a task, set the failureOccurred flag to
+          // true. This flag is visible in the tasks and if its value is true, the partition
+          // folders won't be created.
+          // Then iterate through the remaining tasks and wait for them to finish. The tasks which
+          // are started before the flag got set will then finish creating the partition folders.
+          // The tasks which are started after the flag got set, won't create the partition
+          // folders, to avoid unnecessary work.
+          // This way it is sure that all tasks are finished, when entering the finally part where
+          // the partition folders are cleaned up. It won't happen that a task is still running
+          // when cleaning up the folders, so it is sure we won't have leftover folders.
+          // Canceling the other tasks would be also an option but during testing it turned out
+          // that it is not a trustworthy solution to avoid leftover folders.
+          failureOccurred.compareAndSet(false, true);
+          errorMessage = e.getMessage();
+        } catch (InterruptedException e) {
+          failureOccurred.compareAndSet(false, true);
+          errorMessage = e.getMessage();
+          // Restore interruption status of the corresponding thread
+          Thread.currentThread().interrupt();
+        }
+      }
+
+      addedPartitions.putAll(addedParts);
+      if (failureOccurred.get()) {
+        throw new MetaException(errorMessage);
+      }
+
       return newParts;
     }
 
@@ -3485,100 +3588,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         firePreEvent(new PreAddPartitionEvent(tbl, partitionSpecProxy, this));
         Set<PartValEqWrapperLite> partsToAdd = new HashSet<>(partitionSpecProxy.size());
         List<Partition> partitionsToAdd = new ArrayList<>(partitionSpecProxy.size());
+        List<FieldSchema> partitionKeys = tbl.getPartitionKeys();
         while (partitionIterator.hasNext()) {
           // Iterate through the partitions and validate them. If one of the partitions is
           // incorrect, an exception will be thrown before the threads which create the partition
           // folders are submitted. This way we can be sure that no partition or partition folder
           // will be created if the list contains an invalid partition.
           final Partition part = partitionIterator.getCurrent();
-
-          if (part.getDbName() == null || part.getTableName() == null) {
-            throw new MetaException("The database and table name must be set in the partition.");
+          if (validatePartition(part, catName, tblName, dbName, partsToAdd, ms, ifNotExists,
+              partitionKeys)) {
+            partitionsToAdd.add(part);
           }
-          if (!part.getTableName().equalsIgnoreCase(tblName) || !part.getDbName().equalsIgnoreCase(dbName)) {
-            String errorMsg = String.format(
-                "Partition does not belong to target table %s.%s. It belongs to the table %s.%s : %s",
-                dbName, tblName, part.getDbName(), part.getTableName(), part.toString());
-            throw new MetaException(errorMsg);
-          }
-          if (part.getValues() == null || part.getValues().isEmpty()) {
-            throw new MetaException("The partition values cannot be null or empty.");
-          }
-
-          boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), ifNotExists);
-          if (!shouldAdd) {
-            LOG.info("Not adding partition {} as it already exists", part);
-            continue;
-          }
-
-          if (!partsToAdd.add(new PartValEqWrapperLite(part))) {
-            // Technically, for ifNotExists case, we could insert one and discard the other
-            // because the first one now "exists", but it seems better to report the problem
-            // upstream as such a command doesn't make sense.
-            throw new MetaException("Duplicate partitions in the list: " + part);
-          }
-
-          partitionsToAdd.add(part);
           partitionIterator.next();
         }
 
-        final AtomicBoolean failureOccurred = new AtomicBoolean(false);
-        List<Future<Partition>> partFutures = new ArrayList<>(partitionsToAdd.size());
-        final Table table = tbl;
-
-        final UserGroupInformation ugi;
-        try {
-          ugi = UserGroupInformation.getCurrentUser();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-
-        for (final Partition partition : partitionsToAdd) {
-          initializePartitionParameters(table, partition);
-
-          partFutures.add(threadPool.submit(() -> {
-            if (failureOccurred.get()) {
-              return null;
-            }
-            ugi.doAs((PrivilegedExceptionAction<Partition>) () -> {
-              try {
-                boolean madeDir = createLocationForAddedPartition(table, partition);
-                addedPartitions.put(new PartValEqWrapperLite(partition), madeDir);
-                initializeAddedPartition(table, partition, madeDir);
-              } catch (MetaException e) {
-                throw new IOException(e.getMessage(), e);
-              }
-              return null;
-            });
-            return partition;
-          }));
-        }
-
-        String errorMessage = null;
-        for (Future<Partition> partFuture : partFutures) {
-          try {
-            partFuture.get();
-          } catch (InterruptedException | ExecutionException e) {
-            // If an exception is thrown in the execution of a task, set the failureOccurred flag to
-            // true. This flag is visible in the tasks and if its value is true, the partition
-            // folders won't be created.
-            // Then iterate through the remaining tasks and wait for them to finish. The tasks which
-            // are started before the flag got set will then finish creating the partition folders.
-            // The tasks which are started after the flag got set, won't create the partition
-            // folders, to avoid unnecessary work.
-            // This way it is sure that all tasks are finished, when entering the finally part where
-            // the partition folders are cleaned up. It won't happen that a task is still running
-            // when cleaning up the folders, so it is sure we won't have leftover folders.
-            // Canceling the other tasks would be also an option but during testing it turned out
-            // that it is not a trustworthy solution to avoid leftover folders.
-            failureOccurred.compareAndSet(false, true);
-            errorMessage = e.getMessage();
-          }
-        }
-
-        if (failureOccurred.get()) {
-          throw new MetaException(errorMessage);
-        }
+        createPartitionFolders(partitionsToAdd, tbl, addedPartitions);
 
         ms.addPartitions(catName, dbName, tblName, partitionSpecProxy, ifNotExists);
 
@@ -3594,12 +3618,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-          for (Map.Entry<PartValEqWrapperLite, Boolean> e : addedPartitions.entrySet()) {
-            if (e.getValue()) {
-              // we just created this directory - it's not a case of pre-creation, so we nuke.
-              wh.deleteDir(new Path(e.getKey().location), true, db);
-            }
-          }
+          cleanupPartitionFolders(addedPartitions, db);
         }
 
         if (!listeners.isEmpty()) {
@@ -4018,7 +4037,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean isArchived = false;
       Path archiveParentDir = null;
       boolean mustPurge = false;
-      boolean isExternalTbl = false;
+      boolean tableDataShouldBeDeleted = false;
       boolean isSourceOfReplication = false;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
 
@@ -4036,7 +4055,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.openTransaction();
         part = ms.getPartition(catName, db_name, tbl_name, part_vals);
         tbl = get_table_core(catName, db_name, tbl_name);
-        isExternalTbl = isExternal(tbl);
+        tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
         firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
         mustPurge = isMustPurge(envContext, tbl);
 
@@ -4074,7 +4093,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData && ((partPath != null) || (archiveParentDir != null))) {
-          if (!isExternalTbl) {
+          if (tableDataShouldBeDeleted) {
             if (mustPurge) {
               LOG.info("dropPartition() will purge " + partPath + " directly, skipping trash.");
             }
@@ -4267,7 +4286,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (deleteData && !isExternal(tbl)) {
+        } else if (checkTableDataShouldBeDeleted(tbl, deleteData)) {
           LOG.info( mustPurge?
                       "dropPartition() will purge partition-directories directly, skipping trash."
                     :  "dropPartition() will move partition-directories to trash-directory.");
@@ -7093,6 +7112,55 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public void commit_txn(CommitTxnRequest rqst) throws TException {
+      // in replication flow, the write notification log table will be updated here.
+      if (rqst.isSetWriteEventInfos()) {
+        long targetTxnId = getTxnHandler().getTargetTxnId(rqst.getReplPolicy(), rqst.getTxnid());
+        if (targetTxnId < 0) {
+          //looks like a retry
+          return;
+        }
+        for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
+          String[] filesAdded = ReplChangeManager.getListFromSeparatedString(writeEventInfo.getFiles());
+          List<String> partitionValue = null;
+          Partition ptnObj = null;
+          String root;
+          Table tbl = getTblObject(writeEventInfo.getDatabase(), writeEventInfo.getTable());
+
+          if (writeEventInfo.getPartition() != null && !writeEventInfo.getPartition().isEmpty()) {
+            partitionValue = Warehouse.getPartValuesFromPartName(writeEventInfo.getPartition());
+            ptnObj = getPartitionObj(writeEventInfo.getDatabase(), writeEventInfo.getTable(), partitionValue, tbl);
+            root = ptnObj.getSd().getLocation();
+          } else {
+            root = tbl.getSd().getLocation();
+          }
+
+          InsertEventRequestData insertData = new InsertEventRequestData();
+          insertData.setReplace(true);
+
+          // The files in the commit txn message during load will have files with path corresponding to source
+          // warehouse. Need to transform them to target warehouse using table or partition object location.
+          for (String file : filesAdded) {
+            String[] decodedPath = ReplChangeManager.decodeFileUri(file);
+            String name = (new Path(decodedPath[0])).getName();
+            Path newPath = FileUtils.getTransformedPath(name, decodedPath[3], root);
+            insertData.addToFilesAdded(newPath.toUri().toString());
+            insertData.addToSubDirectoryList(decodedPath[3]);
+            try {
+              insertData.addToFilesAddedChecksum(ReplChangeManager.checksumFor(newPath, newPath.getFileSystem(conf)));
+            } catch (IOException e) {
+              LOG.error("failed to get checksum for the file " + newPath + " with error: " + e.getMessage());
+              throw new TException(e.getMessage());
+            }
+          }
+
+          WriteNotificationLogRequest wnRqst = new WriteNotificationLogRequest(targetTxnId,
+                  writeEventInfo.getWriteId(), writeEventInfo.getDatabase(), writeEventInfo.getTable(), insertData);
+          if (partitionValue != null) {
+            wnRqst.setPartitionVals(partitionValue);
+          }
+          addTxnWriteNotificationLog(tbl, ptnObj, wnRqst);
+        }
+      }
       getTxnHandler().commitTxn(rqst);
       if (listeners != null && !listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
@@ -7120,6 +7188,42 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                         rqst.getTableName(), this));
       }
       return response;
+    }
+
+    private void addTxnWriteNotificationLog(Table tableObj, Partition ptnObj, WriteNotificationLogRequest rqst)
+            throws MetaException {
+      String partition = ""; //Empty string is an invalid partition name. Can be used for non partitioned table.
+      if (ptnObj != null) {
+        partition = Warehouse.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals());
+      }
+      AcidWriteEvent event = new AcidWriteEvent(partition, tableObj, ptnObj, rqst);
+      getTxnHandler().addWriteNotificationLog(event);
+      if (listeners != null && !listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ACID_WRITE, event);
+      }
+    }
+
+    private Table getTblObject(String db, String table) throws MetaException, NoSuchObjectException {
+      GetTableRequest req = new GetTableRequest(db, table);
+      req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY, ClientCapability.INSERT_ONLY_TABLES)));
+      return get_table_req(req).getTable();
+    }
+
+    private Partition getPartitionObj(String db, String table, List<String> partitionVals, Table tableObj)
+            throws MetaException, NoSuchObjectException {
+      if (tableObj.isSetPartitionKeys() && !tableObj.getPartitionKeys().isEmpty()) {
+        return get_partition(db, table, partitionVals);
+      }
+      return null;
+    }
+
+    @Override
+    public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
+            throws MetaException, NoSuchObjectException {
+      Table tableObj = getTblObject(rqst.getDb(), rqst.getTable());
+      Partition ptnObj = getPartitionObj(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals(), tableObj);
+      addTxnWriteNotificationLog(tableObj, ptnObj, rqst);
+      return new WriteNotificationLogResponse();
     }
 
     @Override
