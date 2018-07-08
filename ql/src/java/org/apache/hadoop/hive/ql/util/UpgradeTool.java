@@ -45,6 +45,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -249,7 +251,8 @@ public class UpgradeTool {
       //Known deltas
       Map<Integer, List<Path>> deltaToFileMap = new HashMap<>();
       FileSystem fs = FileSystem.get(conf);
-      RemoteIterator<LocatedFileStatus> iter = fs.listFiles(p, true);
+      RemoteIteratorWithFilter iter =
+          new RemoteIteratorWithFilter(fs.listFiles(p, true), FileUtils.HIDDEN_FILES_PATH_FILTER);
       Function<Integer, List<Path>> makeList = new Function<Integer, List<Path>>() {//lambda?
         @Override
         public List<Path> apply(Integer aVoid) {
@@ -327,7 +330,8 @@ public class UpgradeTool {
     }
     List<RenamePair> renames = new ArrayList<>();
     FileSystem fs = FileSystem.get(conf);
-    RemoteIterator<LocatedFileStatus> iter = fs.listFiles(p, true);
+    RemoteIteratorWithFilter iter =
+        new RemoteIteratorWithFilter(fs.listFiles(p, true), FileUtils.HIDDEN_FILES_PATH_FILTER);
     /**
      * count some heuristics - bad file is something not in {@link AcidUtils#ORIGINAL_PATTERN} or
      * {@link AcidUtils#ORIGINAL_PATTERN_COPY} format.  This has to be renamed for acid to work.
@@ -440,6 +444,7 @@ public class UpgradeTool {
       return newPath;
     }
   }
+
   /**
    * @param location - path to a partition (or table if not partitioned) dir
    */
