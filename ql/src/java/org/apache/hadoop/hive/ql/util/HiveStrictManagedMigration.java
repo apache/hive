@@ -56,6 +56,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.HiveParser.switchDatabaseStatement_return;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 import org.apache.thrift.TException;
 
@@ -264,6 +266,8 @@ public class HiveStrictManagedMigration {
   private FsPermission dirPerms;
   private FsPermission filePerms;
   private boolean createExternalDirsForDbs;
+  Path curWhRootPath;
+  private HadoopShims.HdfsEncryptionShim encryptionShim;
 
   HiveStrictManagedMigration(RunOptions runOptions) {
     this.runOptions = runOptions;
@@ -271,6 +275,7 @@ public class HiveStrictManagedMigration {
   }
 
   void run() throws Exception {
+    wh = new Warehouse(conf);
     checkOldWarehouseRoot();
     checkExternalWarehouseDir();
     checkOwnerPermsOptions();
@@ -315,8 +320,12 @@ public class HiveStrictManagedMigration {
               runOptions.oldWarehouseRoot);
           runOptions.shouldModifyManagedTableLocation = false;
         } else {
-          FileSystem oldWhRootFs = new Path(runOptions.oldWarehouseRoot).getFileSystem(conf);
-          FileSystem curWhRootFs = new Path(curWarehouseRoot).getFileSystem(conf);
+          Path oldWhRootPath = new Path(runOptions.oldWarehouseRoot);
+          curWhRootPath = new Path(curWarehouseRoot);
+          FileSystem oldWhRootFs = oldWhRootPath.getFileSystem(conf);
+          FileSystem curWhRootFs = curWhRootPath.getFileSystem(conf);
+          oldWhRootPath = oldWhRootFs.makeQualified(oldWhRootPath);
+          curWhRootPath = curWhRootFs.makeQualified(curWhRootPath);
           if (!FileUtils.equalsFileSystem(oldWhRootFs, curWhRootFs)) {
             LOG.info("oldWarehouseRoot {} has a different FS than the current warehouse root {}."
                 + " Disabling shouldModifyManagedTableLocation",
@@ -327,6 +336,13 @@ public class HiveStrictManagedMigration {
               LOG.info("Warehouse is using non-HDFS FileSystem {}. Disabling shouldModifyManagedTableLocation",
                   oldWhRootFs.getUri());
               runOptions.shouldModifyManagedTableLocation = false;
+            } else {
+              encryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(oldWhRootFs, conf);
+              if (!hasEquivalentEncryption(encryptionShim, oldWhRootPath, curWhRootPath)) {
+                LOG.info("oldWarehouseRoot {} and current warehouse root {} have different encryption zones." +
+                    " Disabling shouldModifyManagedTableLocation", oldWhRootPath, curWhRootPath);
+                runOptions.shouldModifyManagedTableLocation = false;
+              }
             }
           }
         }
@@ -334,7 +350,6 @@ public class HiveStrictManagedMigration {
     }
 
     if (runOptions.shouldModifyManagedTableLocation) {
-      wh = new Warehouse(conf);
       Configuration oldWhConf = new Configuration(conf);
       HiveConf.setVar(oldWhConf, HiveConf.ConfVars.METASTOREWAREHOUSE, runOptions.oldWarehouseRoot);
       oldWh = new Warehouse(oldWhConf);
@@ -477,7 +492,12 @@ public class HiveStrictManagedMigration {
       String dbLocation = dbObj.getLocationUri();
       Path oldDefaultDbLocation = oldWh.getDefaultDatabasePath(dbName);
       if (arePathsEqual(conf, dbLocation, oldDefaultDbLocation.toString())) {
-        return true;
+        if (hasEquivalentEncryption(encryptionShim, oldDefaultDbLocation, curWhRootPath)) {
+          return true;
+        } else {
+          LOG.info("{} and {} are on different encryption zones. Will not change database location for {}",
+              oldDefaultDbLocation, curWhRootPath, dbName);
+        }
       }
     } 
     return false;
@@ -491,7 +511,12 @@ public class HiveStrictManagedMigration {
     String tableLocation = tableObj.getSd().getLocation();
     Path oldDefaultTableLocation = oldWh.getDefaultTablePath(dbObj, tableObj.getTableName());
     if (arePathsEqual(conf, tableLocation, oldDefaultTableLocation.toString())) {
-      return true;
+      if (hasEquivalentEncryption(encryptionShim, oldDefaultTableLocation, curWhRootPath)) {
+        return true;
+      } else {
+        LOG.info("{} and {} are on different encryption zones. Will not change table location for {}",
+            oldDefaultTableLocation, curWhRootPath, getQualifiedName(tableObj));
+      }
     }
     return false;
   }
@@ -501,7 +526,15 @@ public class HiveStrictManagedMigration {
     String tableName = tableObj.getTableName();
     String partLocation = partObj.getSd().getLocation();
     Path oldDefaultPartLocation = oldWh.getDefaultPartitionPath(dbObj, tableObj, partSpec);
-    return arePathsEqual(conf, partLocation, oldDefaultPartLocation.toString());
+    if (arePathsEqual(conf, partLocation, oldDefaultPartLocation.toString())) {
+      if (hasEquivalentEncryption(encryptionShim, oldDefaultPartLocation, curWhRootPath)) {
+        return true;
+      } else {
+        LOG.info("{} and {} are on different encryption zones. Will not change partition location",
+            oldDefaultPartLocation, curWhRootPath);
+      }
+    }
+    return false;
   }
 
   void createExternalDbDir(Database dbObj) throws IOException, MetaException {
@@ -1122,5 +1155,16 @@ public class HiveStrictManagedMigration {
       return null;
     }
     return fs.listStatus(path);
+  }
+
+  static boolean hasEquivalentEncryption(HadoopShims.HdfsEncryptionShim encryptionShim,
+      Path path1, Path path2) throws IOException {
+    // Assumes these are both qualified paths are in the same FileSystem
+    if (encryptionShim.isPathEncrypted(path1) || encryptionShim.isPathEncrypted(path2)) {
+      if (!encryptionShim.arePathsOnSameEncryptionZone(path1, path2)) {
+        return false;
+      }
+    }
+    return true;
   }
 }
