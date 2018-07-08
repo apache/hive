@@ -472,7 +472,7 @@ STAGE PLANS:
         Reducer 11 <- Map 10 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (ONE_TO_ONE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 11 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
         Reducer 7 <- Map 6 (SIMPLE_EDGE)
         Reducer 9 <- Map 8 (SIMPLE_EDGE)
