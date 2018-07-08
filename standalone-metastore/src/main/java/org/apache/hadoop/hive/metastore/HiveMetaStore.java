@@ -1261,59 +1261,67 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Map<String, String> transactionalListenersResponses = Collections.emptyMap();
       try {
         firePreEvent(new PreCreateDatabaseEvent(db, this));
-        try {
-          // Since this may be done as random user (if doAs=true) he may not have access
-          // to the managed directory. We run this as an admin user
-          madeManagedDir = UserGroupInformation.getLoginUser().doAs(
-              new PrivilegedExceptionAction<Boolean>() {
-                @Override
-                public Boolean run() throws MetaException {
-                  if (!wh.isDir(dbPath)) {
-                    LOG.info("Creating database path in managed directory " + dbPath);
-                    if (!wh.mkdirs(dbPath)) {
-                      throw new MetaException("Unable to create database managed path " + dbPath +
-                          ", failed to create database " + db.getName());
-                    }
-                    return true;
+
+        if (db.getCatalogName() != null && !db.getCatalogName().
+            equals(Warehouse.DEFAULT_CATALOG_NAME)) {
+          if (!wh.isDir(dbPath)) {
+            LOG.debug("Creating database path " + dbPath);
+            if (!wh.mkdirs(dbPath)) {
+              throw new MetaException("Unable to create database path " + dbPath +
+                  ", failed to create database " + db.getName());
+            }
+            madeManagedDir = true;
+          }
+        } else {
+
+          try {
+            // Since this may be done as random user (if doAs=true) he may not have access
+            // to the managed directory. We run this as an admin user
+            madeManagedDir = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+              @Override public Boolean run() throws MetaException {
+                if (!wh.isDir(dbPath)) {
+                  LOG.info("Creating database path in managed directory " + dbPath);
+                  if (!wh.mkdirs(dbPath)) {
+                    throw new MetaException(
+                        "Unable to create database managed path " + dbPath + ", failed to create database " + db.getName());
+                  }
+                  return true;
+                }
+                return false;
+              }
+            });
+            if (madeManagedDir) {
+              LOG.info("Created database path in managed directory " + dbPath);
+            }
+          } catch (IOException | InterruptedException e) {
+            throw new MetaException(
+                "Unable to create database managed directory " + dbPath + ", failed to create database " + db.getName());
+          }
+          // We only create the external directory the external warehouse directory has been set
+          if (wh.hasExternalWarehouseRoot() && dbExternalPath != null) {
+            try {
+              madeExternalDir = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+                @Override public Boolean run() throws MetaException {
+                  if (!wh.isDir(dbExternalPath)) {
+                    LOG.info("Creating database path in external directory " + dbExternalPath);
+                    return wh.mkdirs(dbExternalPath);
                   }
                   return false;
                 }
               });
-          if (madeManagedDir) {
-            LOG.info("Created database path in managed directory " + dbPath);
-          }
-        } catch (IOException | InterruptedException e) {
-          throw new MetaException("Unable to create database managed directory " + dbPath +
-              ", failed to create database " + db.getName());
-        }
-        // We only create the external directory the external warehouse directory has been set
-        if (wh.hasExternalWarehouseRoot() && dbExternalPath != null) {
-          try {
-            madeExternalDir = UserGroupInformation.getCurrentUser().doAs(
-                new PrivilegedExceptionAction<Boolean>() {
-                  @Override public Boolean run() throws MetaException {
-                    if (!wh.isDir(dbExternalPath)) {
-                      LOG.info("Creating database path in external directory " + dbExternalPath);
-                      return wh.mkdirs(dbExternalPath);
-                    }
-                    return false;
-                  }
-                });
-            if (madeExternalDir) {
-              LOG.info("Created database path in external directory " + dbPath);
-            } else {
-              LOG.warn("Failed to create external path " + dbExternalPath + " for database " + db.getName()
-                  + ". This may result in access not being allowed if the "
-                  + "StorageBasedAuthorizationProvider is enabled ");
+              if (madeExternalDir) {
+                LOG.info("Created database path in external directory " + dbPath);
+              } else {
+                LOG.warn("Failed to create external path " + dbExternalPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
+                    + "StorageBasedAuthorizationProvider is enabled ");
+              }
+            } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+              LOG.warn("Failed to create external path " + dbExternalPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
+                  + "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
             }
-          } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-            LOG.warn("Failed to create external path " + dbExternalPath + " for database " + db.getName()
-                + ". This may result in access not being allowed if the "
-                + "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
+          } else {
+            LOG.info("Database external path won't be created since the external" + "directory is not defined");
           }
-        } else {
-          LOG.info("Database external path won't be created since the external"
-              + "directory is not defined");
         }
 
         ms.openTransaction();
@@ -1331,35 +1339,38 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
 
-          if (madeManagedDir) {
-            try {
-              UserGroupInformation.getLoginUser().doAs(
-                  new PrivilegedExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                      wh.deleteDir(dbPath, true, db);
-                      return null;
+          if (db.getCatalogName() != null && !db.getCatalogName().
+              equals(Warehouse.DEFAULT_CATALOG_NAME)) {
+            if (madeManagedDir) {
+              wh.deleteDir(dbPath, true, db);
+            }
+          } else {
+            if (madeManagedDir) {
+              try {
+                UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Void>() {
+                  @Override public Void run() throws Exception {
+                    wh.deleteDir(dbPath, true, db);
+                    return null;
                   }
                 });
-            } catch (IOException | InterruptedException e) {
-              LOG.error("Couldn't delete managed directory " + dbPath + " after "
-                  + "it was created for database " + db.getName() + " " + e.getMessage());
+              } catch (IOException | InterruptedException e) {
+                LOG.error(
+                    "Couldn't delete managed directory " + dbPath + " after " + "it was created for database " + db.getName() + " " + e.getMessage());
+              }
             }
-          }
 
-          if (madeExternalDir) {
-            try {
-              UserGroupInformation.getCurrentUser().doAs(
-                  new PrivilegedExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                      wh.deleteDir(dbExternalPath, true, db);
-                      return null;
-                    }
-                  });
-            } catch (IOException | InterruptedException e) {
-              LOG.error("Couldn't delete external directory " + dbExternalPath + " after "
-                  + "it was created for database " + db.getName() + " " + e.getMessage());
+            if (madeExternalDir) {
+              try {
+                UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Void>() {
+                  @Override public Void run() throws Exception {
+                    wh.deleteDir(dbExternalPath, true, db);
+                    return null;
+                  }
+                });
+              } catch (IOException | InterruptedException e) {
+                LOG.error("Couldn't delete external directory " + dbExternalPath + " after " + "it was created for database "
+                    + db.getName() + " " + e.getMessage());
+              }
             }
           }
         }
@@ -1665,39 +1676,48 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             deleteTableData(tablePath, false, db);
           }
           // Delete the data in the database
-          try {
-            final Database dbFinal = db;
-            Boolean deleted = UserGroupInformation.getLoginUser().doAs(
-                new PrivilegedExceptionAction<Boolean>() {
-                  @Override
-                  public Boolean run() throws MetaException {
-                    return  wh.deleteDir(new Path(dbFinal.getLocationUri()), true, dbFinal);
-                  }
-                });
-            if (!deleted) {
-              LOG.error("Failed to delete database folder " + db.getLocationUri());
-            }
-          } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-            LOG.error("Might have failed to delete the database folder for database: " + db.getLocationUri()
-                + " " + e.getMessage());
-          }
-          // it is not a terrible thing even if the data is not deleted
 
-          try {
-            final Path externalPath = wh.determineDatabaseExternalPath(db);
-            if (externalPath != null) {
-              Boolean deleted = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
-                @Override public Boolean run() throws IOException, MetaException {
-                  return wh.deleteDirIfEmpty(externalPath);
+          if (db.getCatalogName() != null && !db.getCatalogName().
+              equals(Warehouse.DEFAULT_CATALOG_NAME)) {
+            try {
+              wh.deleteDir(new Path(db.getLocationUri()), true, db);
+            } catch (Exception e) {
+              LOG.error("Failed to delete database directory: " + db.getLocationUri() +
+                  " " + e.getMessage());
+            }
+            // it is not a terrible thing even if the data is not deleted
+          } else {
+            try {
+              final Database dbFinal = db;
+              Boolean deleted = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+                @Override public Boolean run() throws MetaException {
+                  return wh.deleteDir(new Path(dbFinal.getLocationUri()), true, dbFinal);
                 }
               });
               if (!deleted) {
-                LOG.error("Failed to delete database external folder " + externalPath);
+                LOG.error("Failed to delete database folder " + db.getLocationUri());
               }
+            } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+              LOG.error("Might have failed to delete the database folder for database: " + db.getLocationUri() + " " + e
+                  .getMessage());
             }
-          } catch (IOException | InterruptedException e) {
-            LOG.error("Might have failed to delete the database external folder for database: " + db.getName()
-            + " " + e.getMessage());
+
+            try {
+              final Path externalPath = wh.determineDatabaseExternalPath(db);
+              if (externalPath != null) {
+                Boolean deleted = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+                  @Override public Boolean run() throws IOException, MetaException {
+                    return wh.deleteDirIfEmpty(externalPath);
+                  }
+                });
+                if (!deleted) {
+                  LOG.error("Failed to delete database external folder " + externalPath);
+                }
+              }
+            } catch (IOException | InterruptedException e) {
+              LOG.error(
+                  "Might have failed to delete the database external folder for database: " + db.getName() + " " + e.getMessage());
+            }
           }
         }
 
