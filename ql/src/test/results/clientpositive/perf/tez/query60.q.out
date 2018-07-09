@@ -162,7 +162,7 @@ Reducer 15 <- Map 14 (SIMPLE_EDGE), Map 17 (SIMPLE_EDGE)
 Reducer 16 <- Map 22 (SIMPLE_EDGE), Reducer 15 (SIMPLE_EDGE)
 Reducer 18 <- Map 17 (SIMPLE_EDGE), Map 23 (SIMPLE_EDGE)
 Reducer 19 <- Map 22 (SIMPLE_EDGE), Reducer 18 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 13 (ONE_TO_ONE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
 Reducer 20 <- Map 17 (SIMPLE_EDGE), Map 24 (SIMPLE_EDGE)
 Reducer 21 <- Map 22 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 16 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
@@ -215,8 +215,8 @@ Stage-0
                                         predicate:(i_item_id is not null and i_item_sk is not null)
                                         TableScan [TS_0] (rows=462000 width=1436)
                                           default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_item_id"]
-                                <-Reducer 13 [ONE_TO_ONE_EDGE] vectorized
-                                  FORWARD [RS_205]
+                                <-Reducer 13 [SIMPLE_EDGE] vectorized
+                                  SHUFFLE [RS_205]
                                     PartitionCols:_col0
                                     Group By Operator [GBY_204] (rows=115500 width=1436)
                                       Output:["_col0"],keys:KEY._col0

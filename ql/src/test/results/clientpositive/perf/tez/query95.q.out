@@ -64,14 +64,14 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 13 <- Map 12 (SIMPLE_EDGE), Map 18 (SIMPLE_EDGE)
-Reducer 14 <- Map 19 (SIMPLE_EDGE), Reducer 13 (ONE_TO_ONE_EDGE)
+Reducer 14 <- Map 19 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
 Reducer 15 <- Reducer 14 (SIMPLE_EDGE)
 Reducer 16 <- Map 12 (SIMPLE_EDGE), Map 18 (SIMPLE_EDGE)
 Reducer 17 <- Reducer 16 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
 Reducer 3 <- Map 10 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Map 11 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 15 (ONE_TO_ONE_EDGE), Reducer 17 (ONE_TO_ONE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 15 (SIMPLE_EDGE), Reducer 17 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
 Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
@@ -105,8 +105,8 @@ Stage-0
                             Output:["_col0","_col2","_col3"],aggregations:["sum(_col4)","sum(_col5)"],keys:_col3
                             Merge Join Operator [MERGEJOIN_127] (rows=421668645 width=135)
                               Conds:RS_58._col3=RS_154._col0(Inner),RS_58._col3=RS_152._col0(Inner),Output:["_col3","_col4","_col5"]
-                            <-Reducer 15 [ONE_TO_ONE_EDGE] vectorized
-                              FORWARD [RS_152]
+                            <-Reducer 15 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_152]
                                 PartitionCols:_col0
                                 Group By Operator [GBY_151] (rows=87121617 width=135)
                                   Output:["_col0"],keys:KEY._col0
@@ -126,8 +126,8 @@ Stage-0
                                               predicate:wr_order_number is not null
                                               TableScan [TS_38] (rows=14398467 width=92)
                                                 default@web_returns,web_returns,Tbl:COMPLETE,Col:NONE,Output:["wr_order_number"]
-                                      <-Reducer 13 [ONE_TO_ONE_EDGE]
-                                        FORWARD [RS_41]
+                                      <-Reducer 13 [SIMPLE_EDGE]
+                                        SHUFFLE [RS_41]
                                           PartitionCols:_col0
                                           Select Operator [SEL_37] (rows=158402938 width=135)
                                             Output:["_col0"]
@@ -153,8 +153,8 @@ Stage-0
                                                       predicate:ws_order_number is not null
                                                       TableScan [TS_30] (rows=144002668 width=135)
                                                         default@web_sales,ws2,Tbl:COMPLETE,Col:NONE,Output:["ws_warehouse_sk","ws_order_number"]
-                            <-Reducer 17 [ONE_TO_ONE_EDGE] vectorized
-                              FORWARD [RS_154]
+                            <-Reducer 17 [SIMPLE_EDGE] vectorized
+                              SHUFFLE [RS_154]
                                 PartitionCols:_col0
                                 Group By Operator [GBY_153] (rows=79201469 width=135)
                                   Output:["_col0"],keys:KEY._col0

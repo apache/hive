@@ -124,7 +124,7 @@ Reducer 14 <- Map 11 (SIMPLE_EDGE), Map 17 (SIMPLE_EDGE)
 Reducer 15 <- Reducer 14 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
 Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 13 (ONE_TO_ONE_EDGE), Reducer 15 (ONE_TO_ONE_EDGE), Reducer 3 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE), Reducer 15 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 
@@ -182,8 +182,8 @@ Stage-0
                                           predicate:(ss_customer_sk is not null and ss_sold_date_sk is not null)
                                           TableScan [TS_9] (rows=575995635 width=88)
                                             default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_customer_sk"]
-                          <-Reducer 13 [ONE_TO_ONE_EDGE] vectorized
-                            FORWARD [RS_131]
+                          <-Reducer 13 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_131]
                               PartitionCols:_col0
                               Select Operator [SEL_130] (rows=79201469 width=135)
                                 Output:["_col0","_col1"]
@@ -209,8 +209,8 @@ Stage-0
                                               predicate:(ws_bill_customer_sk is not null and ws_sold_date_sk is not null)
                                               TableScan [TS_19] (rows=144002668 width=135)
                                                 default@web_sales,web_sales,Tbl:COMPLETE,Col:NONE,Output:["ws_sold_date_sk","ws_bill_customer_sk"]
-                          <-Reducer 15 [ONE_TO_ONE_EDGE] vectorized
-                            FORWARD [RS_137]
+                          <-Reducer 15 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_137]
                               PartitionCols:_col0
                               Select Operator [SEL_136] (rows=158394413 width=135)
                                 Output:["_col0","_col1"]
