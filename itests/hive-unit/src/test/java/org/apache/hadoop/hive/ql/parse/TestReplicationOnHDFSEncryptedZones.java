@@ -110,7 +110,7 @@ public class TestReplicationOnHDFSEncryptedZones {
     replica
         .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation
                 + "' with('hive.repl.add.raw.reserved.namespace'='true', "
-                + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='')")
+                + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='', 'distcp.options.update'='')")
         .run("use " + replicatedDbName)
         .run("repl status " + replicatedDbName)
         .verifyResult(tuple.lastReplicationId)

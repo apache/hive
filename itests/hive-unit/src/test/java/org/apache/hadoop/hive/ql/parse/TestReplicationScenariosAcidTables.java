@@ -350,6 +350,7 @@ public class TestReplicationScenariosAcidTables {
             .verifyResult(bootStrapDump.lastReplicationId);
   }
 
+  String createdTable = null;
   @Test
   public void testAcidBootstrapReplLoadRetryAfterFailure() throws Throwable {
     WarehouseInstance.Tuple tuple = primary
@@ -367,7 +368,8 @@ public class TestReplicationScenariosAcidTables {
             .run("use " + primaryDbName)
             .dump(primaryDbName, null);
 
-    // Inject a behavior where REPL LOAD failed when try to load table "t2", it fails.
+    // As concurrency is enabled, it is unlikely to verify which table is created first.
+    // Inject a behavior where REPL LOAD failed when try to load table 2nd table, it fails.
     BehaviourInjection<CallerArguments, Boolean> callerVerifier
             = new BehaviourInjection<CallerArguments, Boolean>() {
       @Nullable
@@ -379,8 +381,11 @@ public class TestReplicationScenariosAcidTables {
           return false;
         }
         if (args.tblName != null) {
-          LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
-          return args.tblName.equals("t1");
+          if (createdTable != null) {
+            LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
+            return false;
+          }
+          createdTable = args.tblName;
         }
         return true;
       }
@@ -396,14 +401,13 @@ public class TestReplicationScenariosAcidTables {
             .run("repl status " + replicatedDbName)
             .verifyResult("null")
             .run("show tables")
-            .verifyResults(new String[] { "t1" })
-            .run("select id from t1")
-            .verifyResults(Arrays.asList("1"));
+            .verifyResults(new String[] { createdTable });
 
     // Retry with different dump should fail.
     replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
 
-    // Verify if no create table on t1. Only table t2 should  be created in retry.
+    // Verify if already created table is not created again in this load. Only other table should
+    // be created in retry.
     callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
       @Nullable
       @Override
@@ -415,7 +419,7 @@ public class TestReplicationScenariosAcidTables {
         }
         if (args.tblName != null) {
           LOG.warn("Verifier - Table: " + String.valueOf(args.tblName));
-          return args.tblName.equals("t2");
+          return !args.tblName.equals(createdTable);
         }
         return true;
       }
