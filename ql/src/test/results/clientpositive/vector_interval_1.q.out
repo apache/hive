@@ -152,8 +152,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 str1	_c1	_c2	_c3	_c4
-NULL	1-2	NULL	1 02:03:04.000000000	NULL
 1-2	1-2	1-2	1 02:03:04.000000000	1 02:03:04.000000000
+NULL	1-2	NULL	1 02:03:04.000000000	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -271,8 +271,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 dt	_c1	_c2	_c3	_c4	_c5	_c6
-NULL	2-4	NULL	NULL	0-0	NULL	NULL
 2001-01-01	2-4	2-4	2-4	0-0	0-0	0-0
+NULL	2-4	NULL	NULL	0-0	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -390,8 +390,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 dt	_c1	_c2	_c3	_c4	_c5	_c6
-NULL	2 04:06:08.000000000	NULL	NULL	0 00:00:00.000000000	NULL	NULL
 2001-01-01	2 04:06:08.000000000	2 04:06:08.000000000	2 04:06:08.000000000	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
+NULL	2 04:06:08.000000000	NULL	NULL	0 00:00:00.000000000	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -533,8 +533,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 dt	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9	_c10	_c11	_c12
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 2001-01-01	2002-03-01	2002-03-01	2002-03-01	2002-03-01	1999-11-01	1999-11-01	2001-01-02 02:03:04	2001-01-02 02:03:04	2001-01-02 02:03:04	2001-01-02 02:03:04	2000-12-30 21:56:56	2000-12-30 21:56:56
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   ts,
@@ -676,8 +676,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 ts	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9	_c10	_c11	_c12
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 2001-01-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	1999-11-01 01:02:03	1999-11-01 01:02:03	2001-01-02 03:05:07	2001-01-02 03:05:07	2001-01-02 03:05:07	2001-01-02 03:05:07	2000-12-30 22:58:59	2000-12-30 22:58:59
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   ts,
@@ -783,8 +783,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 ts	_c1	_c2	_c3
-NULL	NULL	NULL	NULL
 2001-01-01 01:02:03	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
+NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -890,8 +890,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 dt	_c1	_c2	_c3
-NULL	NULL	NULL	NULL
 2001-01-01	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
+NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
 select
   dt,
@@ -1009,5 +1009,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 dt	_c1	_c2	_c3	_c4	_c5	_c6
-NULL	NULL	NULL	NULL	NULL	NULL	NULL
 2001-01-01	0 01:02:03.000000000	0 01:02:03.000000000	0 01:02:03.000000000	-0 01:02:03.000000000	-0 01:02:03.000000000	-0 01:02:03.000000000
+NULL	NULL	NULL	NULL	NULL	NULL	NULL

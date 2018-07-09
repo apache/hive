@@ -218,13 +218,14 @@ abcd 	4	abcd	4	3.89	1
 abcde	5	abcde	5	56.23	1
 abcde	5	abcdef	6	90.21	1
 abcde	5	abcdefg	7	6.09	1
+bcdef	5	abcde	5	90.33	1
 bcdef	5	abcdefgh	8	9.44	1
 cdefg	5	B4F3CAFDBE	10	77.54	1
 klmno	5	abcdedef	8	25.42	1
-pqrst	5	abcdede	7	60.12	1
 nopqr	5	abcded	6	49.56	1
 opqrs	5	abcdd	5	80.76	1
 pqrst	5	abc	3	23.23	1
+pqrst	5	abcdede	7	60.12	1
 qrstu	5	b	1	1.01	1
 rstuv	5	abcded	6	5.98	1
 stuvw	5	abcded	6	11.22	1
@@ -232,7 +233,6 @@ tuvwx	5	abcded	6	9.88	1
 uvwzy	5	abcdede	7	4.76	1
 vwxyz	5	abcdede	7	12.83	1
 wxyza	5	abcde	5	73.04	1
-bcdef	5	abcde	5	90.33	1
 PREHOOK: query: explain vectorization expression
 SELECT ctinyint,
   MAX(cint),
@@ -559,13 +559,14 @@ abcd 	4	abcd	4	3.89	1
 abcde	5	abcde	5	56.23	1
 abcde	5	abcdef	6	90.21	1
 abcde	5	abcdefg	7	6.09	1
+bcdef	5	abcde	5	90.33	1
 bcdef	5	abcdefgh	8	9.44	1
 cdefg	5	B4F3CAFDBE	10	77.54	1
 klmno	5	abcdedef	8	25.42	1
-pqrst	5	abcdede	7	60.12	1
 nopqr	5	abcded	6	49.56	1
 opqrs	5	abcdd	5	80.76	1
 pqrst	5	abc	3	23.23	1
+pqrst	5	abcdede	7	60.12	1
 qrstu	5	b	1	1.01	1
 rstuv	5	abcded	6	5.98	1
 stuvw	5	abcded	6	11.22	1
@@ -573,7 +574,6 @@ tuvwx	5	abcded	6	9.88	1
 uvwzy	5	abcdede	7	4.76	1
 vwxyz	5	abcdede	7	12.83	1
 wxyza	5	abcde	5	73.04	1
-bcdef	5	abcde	5	90.33	1
 PREHOOK: query: explain vectorization select max(t), min(t) from parquet_type_nodict
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select max(t), min(t) from parquet_type_nodict
