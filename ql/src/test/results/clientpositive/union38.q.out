@@ -50,8 +50,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union38_test1
 POSTHOOK: Input: default@union38_test1_view
 #### A masked pattern was here ####
-Young	1	Sydney
 Jin	2	Mel
+Young	1	Sydney
 PREHOOK: query: create table union38_test2( name String, id int, address String)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -186,10 +186,10 @@ POSTHOOK: Input: default@union38_test1
 POSTHOOK: Input: default@union38_test2
 POSTHOOK: Input: default@union38_test_view1
 #### A masked pattern was here ####
-Young	1	Sydney
-Jin	2	Mel
 Eun	3	Bri
+Jin	2	Mel
 Kim	4	Ad
+Young	1	Sydney
 PREHOOK: query: create view union38_test_view2 as with union38_tmp_1 as ( select * from union38_test1 ), union38_tmp_2 as (select * from union38_test2 ) select * from union38_tmp_1 union select * from union38_tmp_2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@union38_test1
@@ -248,10 +248,10 @@ POSTHOOK: Input: default@union38_test1
 POSTHOOK: Input: default@union38_test2
 POSTHOOK: Input: default@union38_test_view3
 #### A masked pattern was here ####
-Young	1	Sydney
-Jin	2	Mel
 Eun	3	Bri
+Jin	2	Mel
 Kim	4	Ad
+Young	1	Sydney
 PREHOOK: query: create table union38_test_table1 as with union38_tmp_1 as ( select * from union38_test1 ), union38_tmp_2 as (select * from union38_test2 ) select * from union38_tmp_1 union all select * from union38_tmp_2
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@union38_test1
@@ -275,7 +275,7 @@ POSTHOOK: query: select * from union38_test_table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union38_test_table1
 #### A masked pattern was here ####
-Young	1	Sydney
-Jin	2	Mel
 Eun	3	Bri
+Jin	2	Mel
 Kim	4	Ad
+Young	1	Sydney

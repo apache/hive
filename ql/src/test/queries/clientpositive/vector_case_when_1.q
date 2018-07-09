@@ -1,10 +1,9 @@
+-- SORT_QUERY_RESULTS
 set hive.cli.print.header=true;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 set hive.vectorized.execution.enabled=true;
-
--- SORT_QUERY_RESULTS
 
 CREATE TABLE lineitem_test_txt (L_ORDERKEY      INT,
                                 L_PARTKEY       INT,

@@ -132,6 +132,7 @@ public class TestMetaStoreMetrics {
   @Test
   public void testConnections() throws Exception {
 
+    Thread.sleep(500);  // TODO Evil!  Need to figure out a way to remove this sleep.
     //initial state is one connection
     int initialCount =
         (Integer)Metrics.getRegistry().getGauges().get(MetricsConstants.OPEN_CONNECTIONS).getValue();
