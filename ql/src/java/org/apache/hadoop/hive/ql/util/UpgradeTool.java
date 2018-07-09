@@ -252,7 +252,7 @@ public class UpgradeTool {
       Map<Integer, List<Path>> deltaToFileMap = new HashMap<>();
       FileSystem fs = FileSystem.get(conf);
       RemoteIteratorWithFilter iter =
-          new RemoteIteratorWithFilter(fs.listFiles(p, true), FileUtils.HIDDEN_FILES_PATH_FILTER);
+          new RemoteIteratorWithFilter(fs.listFiles(p, true), RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER);
       Function<Integer, List<Path>> makeList = new Function<Integer, List<Path>>() {//lambda?
         @Override
         public List<Path> apply(Integer aVoid) {
@@ -331,7 +331,7 @@ public class UpgradeTool {
     List<RenamePair> renames = new ArrayList<>();
     FileSystem fs = FileSystem.get(conf);
     RemoteIteratorWithFilter iter =
-        new RemoteIteratorWithFilter(fs.listFiles(p, true), FileUtils.HIDDEN_FILES_PATH_FILTER);
+        new RemoteIteratorWithFilter(fs.listFiles(p, true), RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER);
     /**
      * count some heuristics - bad file is something not in {@link AcidUtils#ORIGINAL_PATTERN} or
      * {@link AcidUtils#ORIGINAL_PATTERN_COPY} format.  This has to be renamed for acid to work.

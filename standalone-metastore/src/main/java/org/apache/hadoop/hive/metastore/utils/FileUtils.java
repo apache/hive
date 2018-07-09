@@ -515,6 +515,23 @@ public class FileUtils {
   }
 
   public static class RemoteIteratorWithFilter implements RemoteIterator<LocatedFileStatus> {
+    /**
+     * This works with {@link RemoteIterator} which (potentially) produces all files recursively
+     * so looking for hidden folders must look at whole path, not just the the last part of it as
+     * would be appropriate w/o recursive listing.
+     */
+    public static final PathFilter HIDDEN_FILES_FULL_PATH_FILTER = new PathFilter() {
+      @Override
+      public boolean accept(Path p) {
+        do {
+          String name = p.getName();
+          if (name.startsWith("_") || name.startsWith(".")) {
+            return false;
+          }
+        } while ((p = p.getParent()) != null);
+        return true;
+      }
+    };
     private final RemoteIterator<LocatedFileStatus> iter;
     private final PathFilter filter;
     private LocatedFileStatus nextFile;

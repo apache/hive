@@ -77,6 +77,8 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into TFlat values(3,4)");//create 0000_0_copy_2
     runStatementOnDriver("insert into TFlat values(4,5)");//create 0000_0_copy_3
     runStatementOnDriver("insert into TFlat values(5,6)");//create 0000_0_copy_4
+    runStatementOnDriver("insert into TFlat values(6,7)");//create 0000_0_copy_5
+
 
     /*
      ├── 000000_0
@@ -84,6 +86,7 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
      ├── 000000_0_copy_2
      ├── 000000_0_copy_3
      └── 000000_0_copy_4
+     └── 000000_0_copy_5
 
      to
 
@@ -94,7 +97,8 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
       ├── 2
       │   └── 000000_0
       └── subdir
-        └── part-0001
+      |  └── part-0001
+      |--.hive-staging_hive_2018-07-04_11-12-18_760_5286422535984490754-1395/000000_0
 
 */
     FileSystem fs = FileSystem.get(hiveConf);
@@ -106,6 +110,9 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
         new Path(getWarehouseDir()  + "/tflat/1/000000_0"));
     fs.rename(new Path(getWarehouseDir() + "/tflat/000000_0_copy_4"),
         new Path(getWarehouseDir()  + "/tflat/2/000000_0"));
+    fs.rename(new Path(getWarehouseDir() + "/tflat/000000_0_copy_5"),
+        new Path(getWarehouseDir()  + "/tflat/.hive-staging_hive_2018-07-04_11-12-18_760_5286422535984490754-1395/000000_0"));
+
     String testQuery0 = "select a, b from TFlat order by a";
     String[][] expected0 = new String[][] {
         {"1\t2",""},

@@ -465,7 +465,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       FileSystem fs = wh.getFs(tablePath);
       //FileSystem fs = FileSystem.get(getConf());
       RemoteIteratorWithFilter iterator =
-          new RemoteIteratorWithFilter(fs.listFiles(tablePath, true), FileUtils.HIDDEN_FILES_PATH_FILTER);
+          new RemoteIteratorWithFilter(fs.listFiles(tablePath, true), RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER);
       while (iterator.hasNext()) {
         LocatedFileStatus fileStatus = iterator.next();
         if (!fileStatus.isFile()) {
