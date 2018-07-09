@@ -12157,45 +12157,46 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    ASTNode finalAST;
+    ASTNode astForMasking;
     if (isCBOExecuted() && needsTransform &&
         (qb.isCTAS() || qb.isView() || qb.isMaterializedView() || qb.isMultiDestQuery())) {
       // If we use CBO and we may apply masking/filtering policies, we create a copy of the ast.
       // The reason is that the generation of the operator tree may modify the initial ast,
       // but if we need to parse for a second time, we would like to parse the unmodified ast.
-      finalAST = (ASTNode) ParseDriver.adaptor.dupTree(ast);
+      astForMasking = (ASTNode) ParseDriver.adaptor.dupTree(ast);
     } else {
-      finalAST = ast;
+      astForMasking = ast;
     }
 
     // 2. Gen OP Tree from resolved Parse Tree
     Operator sinkOp = genOPTree(ast, plannerCtx);
 
+    boolean usesMasking = false;
     if (!unparseTranslator.isEnabled() &&
         (tableMask.isEnabled() && analyzeRewrite == null)) {
       // Here we rewrite the * and also the masking table
-      ASTNode rewrittenAST = rewriteASTWithMaskAndFilter(tableMask, finalAST, ctx.getTokenRewriteStream(),
+      ASTNode rewrittenAST = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
           ctx, db, tabNameToTabObject, ignoredTokens);
-      if (finalAST != rewrittenAST) {
-        finalAST = rewrittenAST;
+      if (astForMasking != rewrittenAST) {
+        usesMasking = true;
         plannerCtx = pcf.create();
         ctx.setSkipTableMasking(true);
         init(true);
         //change the location of position alias process here
-        processPositionAlias(finalAST);
-        genResolvedParseTree(finalAST, plannerCtx);
+        processPositionAlias(rewrittenAST);
+        genResolvedParseTree(rewrittenAST, plannerCtx);
         if (this instanceof CalcitePlanner) {
           ((CalcitePlanner) this).resetCalciteConfiguration();
         }
-        sinkOp = genOPTree(finalAST, plannerCtx);
+        sinkOp = genOPTree(rewrittenAST, plannerCtx);
       }
     }
 
     // Check query results cache
-    // In the case that row or column masking/filtering was required, the cache must be checked
-    // here, after applying the masking/filtering rewrite rules to the AST.
-    if (isCacheEnabled && needsTransform && queryTypeCanUseCache()) {
-      lookupInfo = createLookupInfoForQuery(finalAST);
+    // In the case that row or column masking/filtering was required, we do not support caching.
+    // TODO: Enable caching for queries with masking/filtering
+    if (isCacheEnabled && needsTransform && !usesMasking && queryTypeCanUseCache()) {
+      lookupInfo = createLookupInfoForQuery(ast);
       if (checkResultsCache(lookupInfo)) {
         return;
       }
