@@ -70,6 +70,17 @@ where a.k1 > 20
 )
 subq
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `k1`, `k2`, `k3`, `k4`
+FROM `default`.`dst_union22_delta`
+WHERE `ds` = '1' AND `k0` <= 50
+UNION ALL
+SELECT `t2`.`k1`, `t2`.`k2`, `t4`.`k3`, `t4`.`k4`
+FROM (SELECT `k1`, `k2`, `ds`
+FROM `default`.`dst_union22`
+WHERE `k1` > 20) AS `t2`
+LEFT JOIN (SELECT `k1`, `k3`, `k4`
+FROM `default`.`dst_union22_delta`
+WHERE `ds` = '1' AND `k0` > 50 AND `k1` > 20) AS `t4` ON `t2`.`k1` = `t4`.`k1` AND `t2`.`ds` = '1'
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
   Stage-1 depends on stages: Stage-3

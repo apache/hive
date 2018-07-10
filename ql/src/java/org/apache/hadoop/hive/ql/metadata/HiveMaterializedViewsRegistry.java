@@ -339,13 +339,12 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     // 2. Build RelOptAbstractTable
-    String fullyQualifiedTabName = viewTable.getDbName();
-    if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
-      fullyQualifiedTabName = fullyQualifiedTabName + "." + viewTable.getTableName();
+    List<String> fullyQualifiedTabName = new ArrayList<>();
+    if (viewTable.getDbName() != null && !viewTable.getDbName().isEmpty()) {
+      fullyQualifiedTabName.add(viewTable.getDbName());
     }
-    else {
-      fullyQualifiedTabName = viewTable.getTableName();
-    }
+    fullyQualifiedTabName.add(viewTable.getTableName());
+
     RelNode tableRel;
 
     // 3. Build operator

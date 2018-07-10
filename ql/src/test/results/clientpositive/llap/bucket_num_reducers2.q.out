@@ -12,6 +12,8 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended insert overwrite table test_table_n4
   select * from src
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
