@@ -116,6 +116,14 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
   }
 
   @Test
+  public void testTruncate() throws Exception {
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("create table T(a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(1,2)");
+    runStatementOnDriver("truncate table T");
+  }
+    @Test
   public void testConcatenateMM() throws Exception {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY, true);
     runStatementOnDriver("drop table if exists T");
