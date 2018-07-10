@@ -5,6 +5,12 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
  select * from (select a.key as ak, a.value as av, b.key as bk, b.value as bv from src a join src1 b where a.key = '429' ) c
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST('429' AS STRING) AS `ak`, `t0`.`value` AS `av`, `t1`.`key` AS `bk`, `t1`.`value` AS `bv`
+FROM (SELECT CAST('429' AS STRING) AS `key`, `value`
+FROM `default`.`src`
+WHERE `key` = '429') AS `t0`,
+(SELECT `key`, `value`
+FROM `default`.`src1`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

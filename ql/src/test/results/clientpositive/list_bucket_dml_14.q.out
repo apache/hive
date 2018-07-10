@@ -16,6 +16,8 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 insert overwrite table list_bucketing select * from src
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -287,6 +289,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select key, value from list_bucketing where key = "484"
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, `value`
+FROM `default`.`list_bucketing`
+WHERE `key` = '484'
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

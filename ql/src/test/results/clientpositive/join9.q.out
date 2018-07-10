@@ -14,6 +14,13 @@ POSTHOOK: query: EXPLAIN EXTENDED
 FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1_n39 SELECT src1.key, src2.value where src1.ds = '2008-04-08' and src1.hr = '12'
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t2`.`value`
+FROM (SELECT `key`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('12' AS STRING) AS `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `hr` = '12' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

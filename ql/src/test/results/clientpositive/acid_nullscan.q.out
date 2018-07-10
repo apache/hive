@@ -32,6 +32,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select sum(a) from acid_vectorized_n1 where false
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT SUM(`a`) AS `$f0`
+FROM `default`.`acid_vectorized_n1`
+WHERE FALSE
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

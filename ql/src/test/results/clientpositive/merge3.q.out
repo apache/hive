@@ -57,6 +57,8 @@ POSTHOOK: query: explain extended
 create table merge_src2 as 
 select key, value from merge_src
 POSTHOOK: type: CREATETABLE_AS_SELECT
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`merge_src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -2374,6 +2376,9 @@ insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds from merge_src_part
 where ds is not null
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`merge_src_part`
+WHERE `ds` IS NOT NULL
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5

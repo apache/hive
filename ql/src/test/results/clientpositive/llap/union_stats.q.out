@@ -2,6 +2,11 @@ PREHOOK: query: explain extended create table t as select * from src union all s
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain extended create table t as select * from src union all select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`src`
+UNION ALL
+SELECT `key`, `value`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
