@@ -90,6 +90,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import org.junit.Assert;
 
 public class TestReplicationScenarios {
 
@@ -3182,6 +3183,47 @@ public class TestReplicationScenarios {
     assertTrue(ret.getResponseCode() == ErrorMsg.REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH.getErrorCode());
     run("drop database " + dbName, true, driver);
     fs.create(path, false);
+  }
+
+  @Test
+  public void testDumpWithTableDirMissing() throws IOException {
+    String dbName = createDB(testName.getMethodName(), driver);
+    run("CREATE TABLE " + dbName + ".normal(a int)", driver);
+    run("INSERT INTO " + dbName + ".normal values (1)", driver);
+
+    Path path = new Path(System.getProperty("test.warehouse.dir", ""));
+    path = new Path(path, dbName.toLowerCase() + ".db");
+    path = new Path(path, "normal");
+    FileSystem fs = path.getFileSystem(hconf);
+    fs.delete(path);
+
+    advanceDumpDir();
+    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName);
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+
+    run("DROP TABLE " + dbName + ".normal", driver);
+    run("drop database " + dbName, true, driver);
+  }
+
+  @Test
+  public void testDumpWithPartitionDirMissing() throws IOException {
+    String dbName = createDB(testName.getMethodName(), driver);
+    run("CREATE TABLE " + dbName + ".normal(a int) PARTITIONED BY (part int)", driver);
+    run("INSERT INTO " + dbName + ".normal partition (part= 124) values (1)", driver);
+
+    Path path = new Path(System.getProperty("test.warehouse.dir",""));
+    path = new Path(path, dbName.toLowerCase()+".db");
+    path = new Path(path, "normal");
+    path = new Path(path, "part=124");
+    FileSystem fs = path.getFileSystem(hconf);
+    fs.delete(path);
+
+    advanceDumpDir();
+    CommandProcessorResponse ret = driver.run("REPL DUMP " + dbName);
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.FILE_NOT_FOUND.getErrorCode());
+
+    run("DROP TABLE " + dbName + ".normal", driver);
+    run("drop database " + dbName, true, driver);
   }
 
   @Test

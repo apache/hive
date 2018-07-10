@@ -66,6 +66,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.junit.Assert;
 
 public class TestReplicationScenariosAcrossInstances {
   @Rule
@@ -1096,7 +1099,9 @@ public class TestReplicationScenariosAcrossInstances {
     assertEquals(0, replica.getForeignKeyList(replicatedDbName, "t2").size());
 
     // Retry with different dump should fail.
-    replica.loadFailure(replicatedDbName, tuple2.dumpLocation);
+    CommandProcessorResponse ret = replica.runCommand("REPL LOAD " + replicatedDbName +
+            " FROM '" + tuple2.dumpLocation + "'");
+    Assert.assertEquals(ret.getResponseCode(), ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.getErrorCode());
 
     // Verify if create table is not called on table t1 but called for t2 and t3.
     // Also, allow constraint creation only on t1 and t3. Foreign key creation on t2 fails.
