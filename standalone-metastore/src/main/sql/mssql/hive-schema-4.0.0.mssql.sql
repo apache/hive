@@ -1219,6 +1219,31 @@ CREATE TABLE "SCHEMA_VERSION" (
   unique ("SCHEMA_ID", "VERSION")
 );
 
+CREATE TABLE "SCHEMA_VERSION" (
+  "SCHEMA_VERSION_ID" number primary key,
+  "SCHEMA_ID" number references "I_SCHEMA" ("SCHEMA_ID"),
+  "VERSION" number not null,
+  "CREATED_AT" number not null,
+  "CD_ID" number references "CDS" ("CD_ID"), 
+  "STATE" number not null,
+  "DESCRIPTION" varchar2(4000),
+  "SCHEMA_TEXT" clob,
+  "FINGERPRINT" varchar2(256),
+  "SCHEMA_VERSION_NAME" varchar2(256),
+  "SERDE_ID" number references "SERDES" ("SERDE_ID"), 
+  UNIQUE ("SCHEMA_ID", "VERSION")
+);
+
+CREATE TABLE "SCHEMA_BRANCH" (
+  "SCHEMA_BRANCH_ID"  NUMBER(19, 0) primary key,
+  "NAME"              VARCHAR2(4000)        NOT NULL,
+  "SCHEMA_NAME"    VARCHAR(255)          NOT NULL,
+  "DESCRIPTION"           VARCHAR2(4000),
+  "TIMESTAMP"             NUMBER(19,0),
+  CONSTRAINT schema_branch_fk FOREIGN KEY ("SCHEMA_NAME") REFERENCES "I_SCHEMA" ("NAME") ON DELETE CASCADE,
+  CONSTRAINT schema_branch_uk UNIQUE ("NAME", "SCHEMA_NAME")
+);
+
 CREATE TABLE REPL_TXN_MAP (
   RTM_REPL_POLICY nvarchar(256) NOT NULL,
   RTM_SRC_TXN_ID bigint NOT NULL,

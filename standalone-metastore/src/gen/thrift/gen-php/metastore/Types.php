@@ -30515,10 +30515,10 @@ class FindSchemasByColsResp {
             $xfer += $input->readListBegin($_etype837, $_size834);
             for ($_i838 = 0; $_i838 < $_size834; ++$_i838)
             {
-              $elem818 = null;
-              $elem818 = new \metastore\ISchemaVersionDescriptor();
-              $xfer += $elem818->read($input);
-              $this->schemaVersions []= $elem818;
+              $elem839 = null;
+              $elem839 = new \metastore\ISchemaVersionDescriptor();
+              $xfer += $elem839->read($input);
+              $this->schemaVersions []= $elem839;
             }
             $xfer += $input->readListEnd();
           } else {

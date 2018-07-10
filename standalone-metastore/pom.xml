@@ -132,7 +132,12 @@
     <thrift.args>-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb</thrift.args>
 
   </properties>
-
+  <repositories>
+    <repository>
+      <id>confluent</id>
+      <url>http://packages.confluent.io/maven/</url>
+    </repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>org.apache.orc</groupId>

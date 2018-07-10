@@ -59002,15 +59002,15 @@ class ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
-            $_size1324 = 0;
-            $_etype1327 = 0;
-            $xfer += $input->readListBegin($_etype1327, $_size1324);
-            for ($_i1328 = 0; $_i1328 < $_size1324; ++$_i1328)
+            $_size1345 = 0;
+            $_etype1348 = 0;
+            $xfer += $input->readListBegin($_etype1348, $_size1345);
+            for ($_i1349 = 0; $_i1349 < $_size1345; ++$_i1349)
             {
-              $elem1329 = null;
-              $elem1329 = new \metastore\ISchemaVersion();
-              $xfer += $elem1329->read($input);
-              $this->success []= $elem1329;
+              $elem1350 = null;
+              $elem1350 = new \metastore\ISchemaVersion();
+              $xfer += $elem1350->read($input);
+              $this->success []= $elem1350;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -59054,9 +59054,9 @@ class ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
-          foreach ($this->success as $iter1330)
+          foreach ($this->success as $iter1351)
           {
-            $xfer += $iter1330->write($output);
+            $xfer += $iter1351->write($output);
           }
         }
         $output->writeListEnd();
@@ -59235,15 +59235,15 @@ class ThriftHiveMetastore_get_schema_all_versions_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
-            $_size1331 = 0;
-            $_etype1334 = 0;
-            $xfer += $input->readListBegin($_etype1334, $_size1331);
-            for ($_i1335 = 0; $_i1335 < $_size1331; ++$_i1335)
+            $_size1352 = 0;
+            $_etype1355 = 0;
+            $xfer += $input->readListBegin($_etype1355, $_size1352);
+            for ($_i1356 = 0; $_i1356 < $_size1352; ++$_i1356)
             {
-              $elem1336 = null;
-              $elem1336 = new \metastore\ISchemaVersion();
-              $xfer += $elem1336->read($input);
-              $this->success []= $elem1336;
+              $elem1357 = null;
+              $elem1357 = new \metastore\ISchemaVersion();
+              $xfer += $elem1357->read($input);
+              $this->success []= $elem1357;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -59287,9 +59287,9 @@ class ThriftHiveMetastore_get_schema_all_versions_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
-          foreach ($this->success as $iter1337)
+          foreach ($this->success as $iter1358)
           {
-            $xfer += $iter1337->write($output);
+            $xfer += $iter1358->write($output);
           }
         }
         $output->writeListEnd();
@@ -60472,15 +60472,15 @@ class ThriftHiveMetastore_get_schema_branch_by_schema_name_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
-            $_size1338 = 0;
-            $_etype1341 = 0;
-            $xfer += $input->readListBegin($_etype1341, $_size1338);
-            for ($_i1342 = 0; $_i1342 < $_size1338; ++$_i1342)
+            $_size1359 = 0;
+            $_etype1362 = 0;
+            $xfer += $input->readListBegin($_etype1362, $_size1359);
+            for ($_i1363 = 0; $_i1363 < $_size1359; ++$_i1363)
             {
-              $elem1343 = null;
-              $elem1343 = new \metastore\ISchemaBranch();
-              $xfer += $elem1343->read($input);
-              $this->success []= $elem1343;
+              $elem1364 = null;
+              $elem1364 = new \metastore\ISchemaBranch();
+              $xfer += $elem1364->read($input);
+              $this->success []= $elem1364;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -60524,9 +60524,9 @@ class ThriftHiveMetastore_get_schema_branch_by_schema_name_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
-          foreach ($this->success as $iter1344)
+          foreach ($this->success as $iter1365)
           {
-            $xfer += $iter1344->write($output);
+            $xfer += $iter1365->write($output);
           }
         }
         $output->writeListEnd();
@@ -60700,15 +60700,15 @@ class ThriftHiveMetastore_get_schema_branch_by_schema_version_id_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
-            $_size1345 = 0;
-            $_etype1348 = 0;
-            $xfer += $input->readListBegin($_etype1348, $_size1345);
-            for ($_i1349 = 0; $_i1349 < $_size1345; ++$_i1349)
+            $_size1366 = 0;
+            $_etype1369 = 0;
+            $xfer += $input->readListBegin($_etype1369, $_size1366);
+            for ($_i1370 = 0; $_i1370 < $_size1366; ++$_i1370)
             {
-              $elem1350 = null;
-              $elem1350 = new \metastore\ISchemaBranch();
-              $xfer += $elem1350->read($input);
-              $this->success []= $elem1350;
+              $elem1371 = null;
+              $elem1371 = new \metastore\ISchemaBranch();
+              $xfer += $elem1371->read($input);
+              $this->success []= $elem1371;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -60752,9 +60752,9 @@ class ThriftHiveMetastore_get_schema_branch_by_schema_version_id_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
-          foreach ($this->success as $iter1351)
+          foreach ($this->success as $iter1372)
           {
-            $xfer += $iter1351->write($output);
+            $xfer += $iter1372->write($output);
           }
         }
         $output->writeListEnd();
@@ -60928,15 +60928,15 @@ class ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
-            $_size1352 = 0;
-            $_etype1355 = 0;
-            $xfer += $input->readListBegin($_etype1355, $_size1352);
-            for ($_i1356 = 0; $_i1356 < $_size1352; ++$_i1356)
+            $_size1373 = 0;
+            $_etype1376 = 0;
+            $xfer += $input->readListBegin($_etype1376, $_size1373);
+            for ($_i1377 = 0; $_i1377 < $_size1373; ++$_i1377)
             {
-              $elem1357 = null;
-              $elem1357 = new \metastore\ISchemaBranchToISchemaVersion();
-              $xfer += $elem1357->read($input);
-              $this->success []= $elem1357;
+              $elem1378 = null;
+              $elem1378 = new \metastore\ISchemaBranchToISchemaVersion();
+              $xfer += $elem1378->read($input);
+              $this->success []= $elem1378;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -60980,9 +60980,9 @@ class ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
-          foreach ($this->success as $iter1358)
+          foreach ($this->success as $iter1379)
           {
-            $xfer += $iter1358->write($output);
+            $xfer += $iter1379->write($output);
           }
         }
         $output->writeListEnd();
@@ -62484,15 +62484,15 @@ class ThriftHiveMetastore_get_runtime_stats_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
-            $_size1359 = 0;
-            $_etype1362 = 0;
-            $xfer += $input->readListBegin($_etype1362, $_size1359);
-            for ($_i1363 = 0; $_i1363 < $_size1359; ++$_i1363)
+            $_size1380 = 0;
+            $_etype1383 = 0;
+            $xfer += $input->readListBegin($_etype1383, $_size1380);
+            for ($_i1384 = 0; $_i1384 < $_size1380; ++$_i1384)
             {
-              $elem1364 = null;
-              $elem1364 = new \metastore\RuntimeStat();
-              $xfer += $elem1364->read($input);
-              $this->success []= $elem1364;
+              $elem1385 = null;
+              $elem1385 = new \metastore\RuntimeStat();
+              $xfer += $elem1385->read($input);
+              $this->success []= $elem1385;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -62528,9 +62528,9 @@ class ThriftHiveMetastore_get_runtime_stats_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
-          foreach ($this->success as $iter1365)
+          foreach ($this->success as $iter1386)
           {
-            $xfer += $iter1365->write($output);
+            $xfer += $iter1386->write($output);
           }
         }
         $output->writeListEnd();

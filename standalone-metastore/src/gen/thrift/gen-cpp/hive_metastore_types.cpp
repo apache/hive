@@ -30348,8 +30348,8 @@ ISchema::ISchema(const ISchema& other1158) {
   canEvolve = other1158.canEvolve;
   schemaGroup = other1158.schemaGroup;
   description = other1158.description;
-  timestamp = other1134.timestamp;
-  schemaId = other1134.schemaId;
+  timestamp = other1158.timestamp;
+  schemaId = other1158.schemaId;
   __isset = other1158.__isset;
 }
 ISchema& ISchema::operator=(const ISchema& other1159) {
@@ -30362,8 +30362,8 @@ ISchema& ISchema::operator=(const ISchema& other1159) {
   canEvolve = other1159.canEvolve;
   schemaGroup = other1159.schemaGroup;
   description = other1159.description;
-  timestamp = other1135.timestamp;
-  schemaId = other1135.schemaId;
+  timestamp = other1159.timestamp;
+  schemaId = other1159.schemaId;
   __isset = other1159.__isset;
   return *this;
 }
@@ -30892,32 +30892,32 @@ void swap(ISchemaVersion &a, ISchemaVersion &b) {
   swap(a.__isset, b.__isset);
 }
 
-ISchemaVersion::ISchemaVersion(const ISchemaVersion& other1147) {
-  schema = other1147.schema;
-  version = other1147.version;
-  createdAt = other1147.createdAt;
-  cols = other1147.cols;
-  state = other1147.state;
-  description = other1147.description;
-  schemaText = other1147.schemaText;
-  fingerprint = other1147.fingerprint;
-  name = other1147.name;
-  serDe = other1147.serDe;
-  schemaVersionId = other1147.schemaVersionId;
+ISchemaVersion::ISchemaVersion(const ISchemaVersion& other1171) {
+  schema = other1171.schema;
+  version = other1171.version;
+  createdAt = other1171.createdAt;
+  cols = other1171.cols;
+  state = other1171.state;
+  description = other1171.description;
+  schemaText = other1171.schemaText;
+  fingerprint = other1171.fingerprint;
+  name = other1171.name;
+  serDe = other1171.serDe;
+  schemaVersionId = other1171.schemaVersionId;
   __isset = other1171.__isset;
 }
-ISchemaVersion& ISchemaVersion::operator=(const ISchemaVersion& other1148) {
-  schema = other1148.schema;
-  version = other1148.version;
-  createdAt = other1148.createdAt;
-  cols = other1148.cols;
-  state = other1148.state;
-  description = other1148.description;
-  schemaText = other1148.schemaText;
-  fingerprint = other1148.fingerprint;
-  name = other1148.name;
-  serDe = other1148.serDe;
-  schemaVersionId = other1148.schemaVersionId;
+ISchemaVersion& ISchemaVersion::operator=(const ISchemaVersion& other1172) {
+  schema = other1172.schema;
+  version = other1172.version;
+  createdAt = other1172.createdAt;
+  cols = other1172.cols;
+  state = other1172.state;
+  description = other1172.description;
+  schemaText = other1172.schemaText;
+  fingerprint = other1172.fingerprint;
+  name = other1172.name;
+  serDe = other1172.serDe;
+  schemaVersionId = other1172.schemaVersionId;
   __isset = other1172.__isset;
   return *this;
 }
@@ -31025,15 +31025,15 @@ void swap(ISchemaVersionDescriptor &a, ISchemaVersionDescriptor &b) {
   swap(a.__isset, b.__isset);
 }
 
-ISchemaVersionDescriptor::ISchemaVersionDescriptor(const ISchemaVersionDescriptor& other1149) {
-  schema = other1149.schema;
-  version = other1149.version;
-  __isset = other1149.__isset;
+ISchemaVersionDescriptor::ISchemaVersionDescriptor(const ISchemaVersionDescriptor& other1173) {
+  schema = other1173.schema;
+  version = other1173.version;
+  __isset = other1173.__isset;
 }
-ISchemaVersionDescriptor& ISchemaVersionDescriptor::operator=(const ISchemaVersionDescriptor& other1150) {
-  schema = other1150.schema;
-  version = other1150.version;
-  __isset = other1150.__isset;
+ISchemaVersionDescriptor& ISchemaVersionDescriptor::operator=(const ISchemaVersionDescriptor& other1174) {
+  schema = other1174.schema;
+  version = other1174.version;
+  __isset = other1174.__isset;
   return *this;
 }
 void ISchemaVersionDescriptor::printTo(std::ostream& out) const {
@@ -31131,15 +31131,15 @@ void swap(ISchemaVersionFingerprint &a, ISchemaVersionFingerprint &b) {
   swap(a.__isset, b.__isset);
 }
 
-ISchemaVersionFingerprint::ISchemaVersionFingerprint(const ISchemaVersionFingerprint& other1151) {
-  schemaName = other1151.schemaName;
-  fingerPrint = other1151.fingerPrint;
-  __isset = other1151.__isset;
+ISchemaVersionFingerprint::ISchemaVersionFingerprint(const ISchemaVersionFingerprint& other1175) {
+  schemaName = other1175.schemaName;
+  fingerPrint = other1175.fingerPrint;
+  __isset = other1175.__isset;
 }
-ISchemaVersionFingerprint& ISchemaVersionFingerprint::operator=(const ISchemaVersionFingerprint& other1152) {
-  schemaName = other1152.schemaName;
-  fingerPrint = other1152.fingerPrint;
-  __isset = other1152.__isset;
+ISchemaVersionFingerprint& ISchemaVersionFingerprint::operator=(const ISchemaVersionFingerprint& other1176) {
+  schemaName = other1176.schemaName;
+  fingerPrint = other1176.fingerPrint;
+  __isset = other1176.__isset;
   return *this;
 }
 void ISchemaVersionFingerprint::printTo(std::ostream& out) const {
@@ -31260,17 +31260,17 @@ void swap(FindSchemasByColsRqst &a, FindSchemasByColsRqst &b) {
   swap(a.__isset, b.__isset);
 }
 
-FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1153) {
-  colName = other1153.colName;
-  colNamespace = other1153.colNamespace;
-  type = other1153.type;
-  __isset = other1153.__isset;
+FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1177) {
+  colName = other1177.colName;
+  colNamespace = other1177.colNamespace;
+  type = other1177.type;
+  __isset = other1177.__isset;
 }
-FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1154) {
-  colName = other1154.colName;
-  colNamespace = other1154.colNamespace;
-  type = other1154.type;
-  __isset = other1154.__isset;
+FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1178) {
+  colName = other1178.colName;
+  colNamespace = other1178.colNamespace;
+  type = other1178.type;
+  __isset = other1178.__isset;
   return *this;
 }
 void FindSchemasByColsRqst::printTo(std::ostream& out) const {
@@ -31316,14 +31316,14 @@ uint32_t FindSchemasByColsResp::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->schemaVersions.clear();
-            uint32_t _size1155;
-            ::apache::thrift::protocol::TType _etype1158;
-            xfer += iprot->readListBegin(_etype1158, _size1155);
-            this->schemaVersions.resize(_size1155);
-            uint32_t _i1159;
-            for (_i1159 = 0; _i1159 < _size1155; ++_i1159)
+            uint32_t _size1179;
+            ::apache::thrift::protocol::TType _etype1182;
+            xfer += iprot->readListBegin(_etype1182, _size1179);
+            this->schemaVersions.resize(_size1179);
+            uint32_t _i1183;
+            for (_i1183 = 0; _i1183 < _size1179; ++_i1183)
             {
-              xfer += this->schemaVersions[_i1159].read(iprot);
+              xfer += this->schemaVersions[_i1183].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -31352,10 +31352,10 @@ uint32_t FindSchemasByColsResp::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeFieldBegin("schemaVersions", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->schemaVersions.size()));
-    std::vector<ISchemaVersionDescriptor> ::const_iterator _iter1160;
-    for (_iter1160 = this->schemaVersions.begin(); _iter1160 != this->schemaVersions.end(); ++_iter1160)
+    std::vector<ISchemaVersionDescriptor> ::const_iterator _iter1184;
+    for (_iter1184 = this->schemaVersions.begin(); _iter1184 != this->schemaVersions.end(); ++_iter1184)
     {
-      xfer += (*_iter1160).write(oprot);
+      xfer += (*_iter1184).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -31372,13 +31372,13 @@ void swap(FindSchemasByColsResp &a, FindSchemasByColsResp &b) {
   swap(a.__isset, b.__isset);
 }
 
-FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1161) {
-  schemaVersions = other1161.schemaVersions;
-  __isset = other1161.__isset;
+FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1185) {
+  schemaVersions = other1185.schemaVersions;
+  __isset = other1185.__isset;
 }
-FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1162) {
-  schemaVersions = other1162.schemaVersions;
-  __isset = other1162.__isset;
+FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1186) {
+  schemaVersions = other1186.schemaVersions;
+  __isset = other1186.__isset;
   return *this;
 }
 void FindSchemasByColsResp::printTo(std::ostream& out) const {
@@ -31475,15 +31475,15 @@ void swap(MapSchemaVersionToSerdeRequest &a, MapSchemaVersionToSerdeRequest &b) 
   swap(a.__isset, b.__isset);
 }
 
-MapSchemaVersionToSerdeRequest::MapSchemaVersionToSerdeRequest(const MapSchemaVersionToSerdeRequest& other1163) {
-  schemaVersion = other1163.schemaVersion;
-  serdeName = other1163.serdeName;
-  __isset = other1163.__isset;
+MapSchemaVersionToSerdeRequest::MapSchemaVersionToSerdeRequest(const MapSchemaVersionToSerdeRequest& other1187) {
+  schemaVersion = other1187.schemaVersion;
+  serdeName = other1187.serdeName;
+  __isset = other1187.__isset;
 }
-MapSchemaVersionToSerdeRequest& MapSchemaVersionToSerdeRequest::operator=(const MapSchemaVersionToSerdeRequest& other1164) {
-  schemaVersion = other1164.schemaVersion;
-  serdeName = other1164.serdeName;
-  __isset = other1164.__isset;
+MapSchemaVersionToSerdeRequest& MapSchemaVersionToSerdeRequest::operator=(const MapSchemaVersionToSerdeRequest& other1188) {
+  schemaVersion = other1188.schemaVersion;
+  serdeName = other1188.serdeName;
+  __isset = other1188.__isset;
   return *this;
 }
 void MapSchemaVersionToSerdeRequest::printTo(std::ostream& out) const {
@@ -31538,9 +31538,9 @@ uint32_t SetSchemaVersionStateRequest::read(::apache::thrift::protocol::TProtoco
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1165;
-          xfer += iprot->readI32(ecast1165);
-          this->state = (SchemaVersionState::type)ecast1165;
+          int32_t ecast1189;
+          xfer += iprot->readI32(ecast1189);
+          this->state = (SchemaVersionState::type)ecast1189;
           this->__isset.state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -31583,15 +31583,15 @@ void swap(SetSchemaVersionStateRequest &a, SetSchemaVersionStateRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-SetSchemaVersionStateRequest::SetSchemaVersionStateRequest(const SetSchemaVersionStateRequest& other1166) {
-  schemaVersion = other1166.schemaVersion;
-  state = other1166.state;
-  __isset = other1166.__isset;
+SetSchemaVersionStateRequest::SetSchemaVersionStateRequest(const SetSchemaVersionStateRequest& other1190) {
+  schemaVersion = other1190.schemaVersion;
+  state = other1190.state;
+  __isset = other1190.__isset;
 }
-SetSchemaVersionStateRequest& SetSchemaVersionStateRequest::operator=(const SetSchemaVersionStateRequest& other1167) {
-  schemaVersion = other1167.schemaVersion;
-  state = other1167.state;
-  __isset = other1167.__isset;
+SetSchemaVersionStateRequest& SetSchemaVersionStateRequest::operator=(const SetSchemaVersionStateRequest& other1191) {
+  schemaVersion = other1191.schemaVersion;
+  state = other1191.state;
+  __isset = other1191.__isset;
   return *this;
 }
 void SetSchemaVersionStateRequest::printTo(std::ostream& out) const {
@@ -31672,13 +31672,13 @@ void swap(GetSerdeRequest &a, GetSerdeRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-GetSerdeRequest::GetSerdeRequest(const GetSerdeRequest& other1168) {
-  serdeName = other1168.serdeName;
-  __isset = other1168.__isset;
+GetSerdeRequest::GetSerdeRequest(const GetSerdeRequest& other1192) {
+  serdeName = other1192.serdeName;
+  __isset = other1192.__isset;
 }
-GetSerdeRequest& GetSerdeRequest::operator=(const GetSerdeRequest& other1169) {
-  serdeName = other1169.serdeName;
-  __isset = other1169.__isset;
+GetSerdeRequest& GetSerdeRequest::operator=(const GetSerdeRequest& other1193) {
+  serdeName = other1193.serdeName;
+  __isset = other1193.__isset;
   return *this;
 }
 void GetSerdeRequest::printTo(std::ostream& out) const {
@@ -31832,21 +31832,21 @@ void swap(ISchemaBranch &a, ISchemaBranch &b) {
   swap(a.__isset, b.__isset);
 }
 
-ISchemaBranch::ISchemaBranch(const ISchemaBranch& other1170) {
-  schemaBranchId = other1170.schemaBranchId;
-  name = other1170.name;
-  schemaMetadataName = other1170.schemaMetadataName;
-  description = other1170.description;
-  timestamp = other1170.timestamp;
-  __isset = other1170.__isset;
+ISchemaBranch::ISchemaBranch(const ISchemaBranch& other1194) {
+  schemaBranchId = other1194.schemaBranchId;
+  name = other1194.name;
+  schemaMetadataName = other1194.schemaMetadataName;
+  description = other1194.description;
+  timestamp = other1194.timestamp;
+  __isset = other1194.__isset;
 }
-ISchemaBranch& ISchemaBranch::operator=(const ISchemaBranch& other1171) {
-  schemaBranchId = other1171.schemaBranchId;
-  name = other1171.name;
-  schemaMetadataName = other1171.schemaMetadataName;
-  description = other1171.description;
-  timestamp = other1171.timestamp;
-  __isset = other1171.__isset;
+ISchemaBranch& ISchemaBranch::operator=(const ISchemaBranch& other1195) {
+  schemaBranchId = other1195.schemaBranchId;
+  name = other1195.name;
+  schemaMetadataName = other1195.schemaMetadataName;
+  description = other1195.description;
+  timestamp = other1195.timestamp;
+  __isset = other1195.__isset;
   return *this;
 }
 void ISchemaBranch::printTo(std::ostream& out) const {
@@ -31947,15 +31947,15 @@ void swap(ISchemaBranchToISchemaVersion &a, ISchemaBranchToISchemaVersion &b) {
   swap(a.__isset, b.__isset);
 }
 
-ISchemaBranchToISchemaVersion::ISchemaBranchToISchemaVersion(const ISchemaBranchToISchemaVersion& other1172) {
-  schemaBranchId = other1172.schemaBranchId;
-  schemaVersionId = other1172.schemaVersionId;
-  __isset = other1172.__isset;
+ISchemaBranchToISchemaVersion::ISchemaBranchToISchemaVersion(const ISchemaBranchToISchemaVersion& other1196) {
+  schemaBranchId = other1196.schemaBranchId;
+  schemaVersionId = other1196.schemaVersionId;
+  __isset = other1196.__isset;
 }
-ISchemaBranchToISchemaVersion& ISchemaBranchToISchemaVersion::operator=(const ISchemaBranchToISchemaVersion& other1173) {
-  schemaBranchId = other1173.schemaBranchId;
-  schemaVersionId = other1173.schemaVersionId;
-  __isset = other1173.__isset;
+ISchemaBranchToISchemaVersion& ISchemaBranchToISchemaVersion::operator=(const ISchemaBranchToISchemaVersion& other1197) {
+  schemaBranchId = other1197.schemaBranchId;
+  schemaVersionId = other1197.schemaVersionId;
+  __isset = other1197.__isset;
   return *this;
 }
 void ISchemaBranchToISchemaVersion::printTo(std::ostream& out) const {
@@ -32078,17 +32078,17 @@ void swap(RuntimeStat &a, RuntimeStat &b) {
   swap(a.__isset, b.__isset);
 }
 
-RuntimeStat::RuntimeStat(const RuntimeStat& other1174) {
-  createTime = other1174.createTime;
-  weight = other1174.weight;
-  payload = other1174.payload;
-  __isset = other1174.__isset;
+RuntimeStat::RuntimeStat(const RuntimeStat& other1198) {
+  createTime = other1198.createTime;
+  weight = other1198.weight;
+  payload = other1198.payload;
+  __isset = other1198.__isset;
 }
-RuntimeStat& RuntimeStat::operator=(const RuntimeStat& other1175) {
-  createTime = other1175.createTime;
-  weight = other1175.weight;
-  payload = other1175.payload;
-  __isset = other1175.__isset;
+RuntimeStat& RuntimeStat::operator=(const RuntimeStat& other1199) {
+  createTime = other1199.createTime;
+  weight = other1199.weight;
+  payload = other1199.payload;
+  __isset = other1199.__isset;
   return *this;
 }
 void RuntimeStat::printTo(std::ostream& out) const {
@@ -32192,13 +32192,13 @@ void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b) {
   swap(a.maxCreateTime, b.maxCreateTime);
 }
 
-GetRuntimeStatsRequest::GetRuntimeStatsRequest(const GetRuntimeStatsRequest& other1176) {
-  maxWeight = other1176.maxWeight;
-  maxCreateTime = other1176.maxCreateTime;
+GetRuntimeStatsRequest::GetRuntimeStatsRequest(const GetRuntimeStatsRequest& other1200) {
+  maxWeight = other1200.maxWeight;
+  maxCreateTime = other1200.maxCreateTime;
 }
-GetRuntimeStatsRequest& GetRuntimeStatsRequest::operator=(const GetRuntimeStatsRequest& other1177) {
-  maxWeight = other1177.maxWeight;
-  maxCreateTime = other1177.maxCreateTime;
+GetRuntimeStatsRequest& GetRuntimeStatsRequest::operator=(const GetRuntimeStatsRequest& other1201) {
+  maxWeight = other1201.maxWeight;
+  maxCreateTime = other1201.maxCreateTime;
   return *this;
 }
 void GetRuntimeStatsRequest::printTo(std::ostream& out) const {
@@ -32279,13 +32279,13 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
-MetaException::MetaException(const MetaException& other1178) : TException() {
-  message = other1178.message;
-  __isset = other1178.__isset;
+MetaException::MetaException(const MetaException& other1202) : TException() {
+  message = other1202.message;
+  __isset = other1202.__isset;
 }
-MetaException& MetaException::operator=(const MetaException& other1179) {
-  message = other1179.message;
-  __isset = other1179.__isset;
+MetaException& MetaException::operator=(const MetaException& other1203) {
+  message = other1203.message;
+  __isset = other1203.__isset;
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -32376,13 +32376,13 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownTableException::UnknownTableException(const UnknownTableException& other1180) : TException() {
-  message = other1180.message;
-  __isset = other1180.__isset;
+UnknownTableException::UnknownTableException(const UnknownTableException& other1204) : TException() {
+  message = other1204.message;
+  __isset = other1204.__isset;
 }
-UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1181) {
-  message = other1181.message;
-  __isset = other1181.__isset;
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1205) {
+  message = other1205.message;
+  __isset = other1205.__isset;
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -32473,13 +32473,13 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownDBException::UnknownDBException(const UnknownDBException& other1182) : TException() {
-  message = other1182.message;
-  __isset = other1182.__isset;
+UnknownDBException::UnknownDBException(const UnknownDBException& other1206) : TException() {
+  message = other1206.message;
+  __isset = other1206.__isset;
 }
-UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1183) {
-  message = other1183.message;
-  __isset = other1183.__isset;
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1207) {
+  message = other1207.message;
+  __isset = other1207.__isset;
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -32570,13 +32570,13 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1184) : TException() {
-  message = other1184.message;
-  __isset = other1184.__isset;
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1208) : TException() {
+  message = other1208.message;
+  __isset = other1208.__isset;
 }
-AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1185) {
-  message = other1185.message;
-  __isset = other1185.__isset;
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1209) {
+  message = other1209.message;
+  __isset = other1209.__isset;
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -32667,13 +32667,13 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1186) : TException() {
-  message = other1186.message;
-  __isset = other1186.__isset;
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1210) : TException() {
+  message = other1210.message;
+  __isset = other1210.__isset;
 }
-InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1187) {
-  message = other1187.message;
-  __isset = other1187.__isset;
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1211) {
+  message = other1211.message;
+  __isset = other1211.__isset;
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -32764,13 +32764,13 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1188) : TException() {
-  message = other1188.message;
-  __isset = other1188.__isset;
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1212) : TException() {
+  message = other1212.message;
+  __isset = other1212.__isset;
 }
-UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1189) {
-  message = other1189.message;
-  __isset = other1189.__isset;
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1213) {
+  message = other1213.message;
+  __isset = other1213.__isset;
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -32861,13 +32861,13 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1190) : TException() {
-  message = other1190.message;
-  __isset = other1190.__isset;
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1214) : TException() {
+  message = other1214.message;
+  __isset = other1214.__isset;
 }
-InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1191) {
-  message = other1191.message;
-  __isset = other1191.__isset;
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1215) {
+  message = other1215.message;
+  __isset = other1215.__isset;
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -32958,13 +32958,13 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1192) : TException() {
-  message = other1192.message;
-  __isset = other1192.__isset;
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1216) : TException() {
+  message = other1216.message;
+  __isset = other1216.__isset;
 }
-NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1193) {
-  message = other1193.message;
-  __isset = other1193.__isset;
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1217) {
+  message = other1217.message;
+  __isset = other1217.__isset;
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -33055,13 +33055,13 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1194) : TException() {
-  message = other1194.message;
-  __isset = other1194.__isset;
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1218) : TException() {
+  message = other1218.message;
+  __isset = other1218.__isset;
 }
-InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1195) {
-  message = other1195.message;
-  __isset = other1195.__isset;
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1219) {
+  message = other1219.message;
+  __isset = other1219.__isset;
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -33152,13 +33152,13 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
-ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1196) : TException() {
-  message = other1196.message;
-  __isset = other1196.__isset;
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1220) : TException() {
+  message = other1220.message;
+  __isset = other1220.__isset;
 }
-ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1197) {
-  message = other1197.message;
-  __isset = other1197.__isset;
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1221) {
+  message = other1221.message;
+  __isset = other1221.__isset;
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -33249,13 +33249,13 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidInputException::InvalidInputException(const InvalidInputException& other1198) : TException() {
-  message = other1198.message;
-  __isset = other1198.__isset;
+InvalidInputException::InvalidInputException(const InvalidInputException& other1222) : TException() {
+  message = other1222.message;
+  __isset = other1222.__isset;
 }
-InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1199) {
-  message = other1199.message;
-  __isset = other1199.__isset;
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1223) {
+  message = other1223.message;
+  __isset = other1223.__isset;
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -33346,13 +33346,13 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1200) : TException() {
-  message = other1200.message;
-  __isset = other1200.__isset;
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1224) : TException() {
+  message = other1224.message;
+  __isset = other1224.__isset;
 }
-NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1201) {
-  message = other1201.message;
-  __isset = other1201.__isset;
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1225) {
+  message = other1225.message;
+  __isset = other1225.__isset;
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -33443,13 +33443,13 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1202) : TException() {
-  message = other1202.message;
-  __isset = other1202.__isset;
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1226) : TException() {
+  message = other1226.message;
+  __isset = other1226.__isset;
 }
-TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1203) {
-  message = other1203.message;
-  __isset = other1203.__isset;
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1227) {
+  message = other1227.message;
+  __isset = other1227.__isset;
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -33540,13 +33540,13 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnOpenException::TxnOpenException(const TxnOpenException& other1204) : TException() {
-  message = other1204.message;
-  __isset = other1204.__isset;
+TxnOpenException::TxnOpenException(const TxnOpenException& other1228) : TException() {
+  message = other1228.message;
+  __isset = other1228.__isset;
 }
-TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1205) {
-  message = other1205.message;
-  __isset = other1205.__isset;
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1229) {
+  message = other1229.message;
+  __isset = other1229.__isset;
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -33637,13 +33637,13 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1206) : TException() {
-  message = other1206.message;
-  __isset = other1206.__isset;
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1230) : TException() {
+  message = other1230.message;
+  __isset = other1230.__isset;
 }
-NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1207) {
-  message = other1207.message;
-  __isset = other1207.__isset;
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1231) {
+  message = other1231.message;
+  __isset = other1231.__isset;
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

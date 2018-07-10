@@ -48352,11 +48352,11 @@ class get_schema_versions_by_name_and_fingerprint_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1323, _size1320) = iprot.readListBegin()
-          for _i1324 in xrange(_size1320):
-            _elem1325 = ISchemaVersion()
-            _elem1325.read(iprot)
-            self.success.append(_elem1325)
+          (_etype1344, _size1341) = iprot.readListBegin()
+          for _i1345 in xrange(_size1341):
+            _elem1346 = ISchemaVersion()
+            _elem1346.read(iprot)
+            self.success.append(_elem1346)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -48385,8 +48385,8 @@ class get_schema_versions_by_name_and_fingerprint_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1326 in self.success:
-        iter1326.write(oprot)
+      for iter1347 in self.success:
+        iter1347.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -48519,11 +48519,11 @@ class get_schema_all_versions_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1330, _size1327) = iprot.readListBegin()
-          for _i1331 in xrange(_size1327):
-            _elem1332 = ISchemaVersion()
-            _elem1332.read(iprot)
-            self.success.append(_elem1332)
+          (_etype1351, _size1348) = iprot.readListBegin()
+          for _i1352 in xrange(_size1348):
+            _elem1353 = ISchemaVersion()
+            _elem1353.read(iprot)
+            self.success.append(_elem1353)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -48552,8 +48552,8 @@ class get_schema_all_versions_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1333 in self.success:
-        iter1333.write(oprot)
+      for iter1354 in self.success:
+        iter1354.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -49467,11 +49467,11 @@ class get_schema_branch_by_schema_name_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1337, _size1334) = iprot.readListBegin()
-          for _i1338 in xrange(_size1334):
-            _elem1339 = ISchemaBranch()
-            _elem1339.read(iprot)
-            self.success.append(_elem1339)
+          (_etype1358, _size1355) = iprot.readListBegin()
+          for _i1359 in xrange(_size1355):
+            _elem1360 = ISchemaBranch()
+            _elem1360.read(iprot)
+            self.success.append(_elem1360)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -49500,8 +49500,8 @@ class get_schema_branch_by_schema_name_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1340 in self.success:
-        iter1340.write(oprot)
+      for iter1361 in self.success:
+        iter1361.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -49633,11 +49633,11 @@ class get_schema_branch_by_schema_version_id_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1344, _size1341) = iprot.readListBegin()
-          for _i1345 in xrange(_size1341):
-            _elem1346 = ISchemaBranch()
-            _elem1346.read(iprot)
-            self.success.append(_elem1346)
+          (_etype1365, _size1362) = iprot.readListBegin()
+          for _i1366 in xrange(_size1362):
+            _elem1367 = ISchemaBranch()
+            _elem1367.read(iprot)
+            self.success.append(_elem1367)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -49666,8 +49666,8 @@ class get_schema_branch_by_schema_version_id_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1347 in self.success:
-        iter1347.write(oprot)
+      for iter1368 in self.success:
+        iter1368.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -49799,11 +49799,11 @@ class get_schema_versions_by_schema_branch_id_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1351, _size1348) = iprot.readListBegin()
-          for _i1352 in xrange(_size1348):
-            _elem1353 = ISchemaBranchToISchemaVersion()
-            _elem1353.read(iprot)
-            self.success.append(_elem1353)
+          (_etype1372, _size1369) = iprot.readListBegin()
+          for _i1373 in xrange(_size1369):
+            _elem1374 = ISchemaBranchToISchemaVersion()
+            _elem1374.read(iprot)
+            self.success.append(_elem1374)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -49832,8 +49832,8 @@ class get_schema_versions_by_schema_branch_id_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1354 in self.success:
-        iter1354.write(oprot)
+      for iter1375 in self.success:
+        iter1375.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -51017,11 +51017,11 @@ class get_runtime_stats_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1358, _size1355) = iprot.readListBegin()
-          for _i1359 in xrange(_size1355):
-            _elem1360 = RuntimeStat()
-            _elem1360.read(iprot)
-            self.success.append(_elem1360)
+          (_etype1379, _size1376) = iprot.readListBegin()
+          for _i1380 in xrange(_size1376):
+            _elem1381 = RuntimeStat()
+            _elem1381.read(iprot)
+            self.success.append(_elem1381)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -51044,8 +51044,8 @@ class get_runtime_stats_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1361 in self.success:
-        iter1361.write(oprot)
+      for iter1382 in self.success:
+        iter1382.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:

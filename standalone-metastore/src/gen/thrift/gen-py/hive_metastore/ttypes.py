@@ -21725,11 +21725,11 @@ class FindSchemasByColsResp:
       if fid == 1:
         if ftype == TType.LIST:
           self.schemaVersions = []
-          (_etype812, _size809) = iprot.readListBegin()
-          for _i813 in xrange(_size809):
-            _elem814 = ISchemaVersionDescriptor()
-            _elem814.read(iprot)
-            self.schemaVersions.append(_elem814)
+          (_etype833, _size830) = iprot.readListBegin()
+          for _i834 in xrange(_size830):
+            _elem835 = ISchemaVersionDescriptor()
+            _elem835.read(iprot)
+            self.schemaVersions.append(_elem835)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
