@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline;
+package org.apache.hive.beeline.schematool;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -40,8 +41,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,11 +52,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 public class TestSchemaToolCatalogOps {
-  private static final Logger LOG = LoggerFactory.getLogger(TestSchemaToolCatalogOps.class);
   private static HiveSchemaTool schemaTool;
   private static HiveConf conf;
   private IMetaStoreClient client;
   private static String testMetastoreDB;
+  private static String argsBase;
 
   @BeforeClass
   public static void initDb() throws HiveMetaException, IOException {
@@ -71,10 +70,14 @@ public class TestSchemaToolCatalogOps {
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     schemaTool = new HiveSchemaTool(
         System.getProperty("test.tmp.dir", "target/tmp"), conf, "derby", null);
-    schemaTool.setUserName(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME));
-    schemaTool.setPassWord(MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD));
-    schemaTool.doInit();  // Pre-install the database so all the tables are there.
 
+    String userName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME);
+    String passWord = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
+    schemaTool.setUserName(userName);
+    schemaTool.setPassWord(passWord);
+
+    argsBase = "-dbType derby -userName " + userName + " -passWord " + passWord + " ";
+    execute(new HiveSchemaToolTaskInit(), "-initSchema"); // Pre-install the database so all the tables are there.
   }
 
   @AfterClass
@@ -95,7 +98,9 @@ public class TestSchemaToolCatalogOps {
     String catName = "my_test_catalog";
     String location = "file:///tmp/my_test_catalog";
     String description = "very descriptive";
-    schemaTool.createCatalog(catName, location, description, false);
+    String argsCreate = String.format("-createCatalog %s -catalogLocation \"%s\" -catalogDescription \"%s\"",
+        catName, location, description);
+    execute(new HiveSchemaToolTaskCreateCatalog(), argsCreate);
 
     Catalog cat = client.getCatalog(catName);
     Assert.assertEquals(location, cat.getLocationUri());
@@ -104,7 +109,11 @@ public class TestSchemaToolCatalogOps {
 
   @Test(expected = HiveMetaException.class)
   public void createExistingCatalog() throws HiveMetaException {
-    schemaTool.createCatalog("hive", "somewhere", "", false);
+    String catName = "hive";
+    String location = "somewhere";
+    String argsCreate = String.format("-createCatalog %s -catalogLocation \"%s\"",
+        catName, location);
+    execute(new HiveSchemaToolTaskCreateCatalog(), argsCreate);
   }
 
   @Test
@@ -112,9 +121,14 @@ public class TestSchemaToolCatalogOps {
     String catName = "my_existing_test_catalog";
     String location = "file:///tmp/my_test_catalog";
     String description = "very descriptive";
-    schemaTool.createCatalog(catName, location, description, false);
+    String argsCreate1 = String.format("-createCatalog %s -catalogLocation \"%s\" -catalogDescription \"%s\"",
+        catName, location, description);
+    execute(new HiveSchemaToolTaskCreateCatalog(), argsCreate1);
 
-    schemaTool.createCatalog(catName, location, description, true);
+    String argsCreate2 =
+        String.format("-createCatalog %s -catalogLocation \"%s\" -catalogDescription \"%s\" -ifNotExists",
+        catName, location, description);
+    execute(new HiveSchemaToolTaskCreateCatalog(), argsCreate2);
   }
 
   @Test
@@ -122,23 +136,31 @@ public class TestSchemaToolCatalogOps {
     String catName = "an_alterable_catalog";
     String location = "file:///tmp/an_alterable_catalog";
     String description = "description";
-    schemaTool.createCatalog(catName, location, description, false);
+    String argsCreate = String.format("-createCatalog %s -catalogLocation \"%s\" -catalogDescription \"%s\"",
+        catName, location, description);
+    execute(new HiveSchemaToolTaskCreateCatalog(), argsCreate);
 
     location = "file:///tmp/somewhere_else";
-    schemaTool.alterCatalog(catName, location, null);
+    String argsAlter1 = String.format("-alterCatalog %s -catalogLocation \"%s\"",
+        catName, location);
+    execute(new HiveSchemaToolTaskAlterCatalog(), argsAlter1);
     Catalog cat = client.getCatalog(catName);
     Assert.assertEquals(location, cat.getLocationUri());
     Assert.assertEquals(description, cat.getDescription());
 
     description = "a better description";
-    schemaTool.alterCatalog(catName, null, description);
+    String argsAlter2 = String.format("-alterCatalog %s -catalogDescription \"%s\"",
+        catName, description);
+    execute(new HiveSchemaToolTaskAlterCatalog(), argsAlter2);
     cat = client.getCatalog(catName);
     Assert.assertEquals(location, cat.getLocationUri());
     Assert.assertEquals(description, cat.getDescription());
 
     location = "file:///tmp/a_third_location";
     description = "best description yet";
-    schemaTool.alterCatalog(catName, location, description);
+    String argsAlter3 = String.format("-alterCatalog %s -catalogLocation \"%s\" -catalogDescription \"%s\"",
+        catName, location, description);
+    execute(new HiveSchemaToolTaskAlterCatalog(), argsAlter3);
     cat = client.getCatalog(catName);
     Assert.assertEquals(location, cat.getLocationUri());
     Assert.assertEquals(description, cat.getDescription());
@@ -146,7 +168,12 @@ public class TestSchemaToolCatalogOps {
 
   @Test(expected = HiveMetaException.class)
   public void alterBogusCatalog() throws HiveMetaException {
-    schemaTool.alterCatalog("nosuch", "file:///tmp/somewhere", "whatever");
+    String catName = "nosuch";
+    String location = "file:///tmp/somewhere";
+    String description = "whatever";
+    String argsAlter = String.format("-alterCatalog %s -catalogLocation \"%s\" -catalogDescription \"%s\"",
+        catName, location, description);
+    execute(new HiveSchemaToolTaskAlterCatalog(), argsAlter);
   }
 
   @Test(expected = HiveMetaException.class)
@@ -154,9 +181,12 @@ public class TestSchemaToolCatalogOps {
     String catName = "alter_cat_no_change";
     String location = "file:///tmp/alter_cat_no_change";
     String description = "description";
-    schemaTool.createCatalog(catName, location, description, false);
+    String argsCreate = String.format("-createCatalog %s -catalogLocation \"%s\" -catalogDescription \"%s\"",
+        catName, location, description);
+    execute(new HiveSchemaToolTaskCreateCatalog(), argsCreate);
 
-    schemaTool.alterCatalog(catName, null, null);
+    String argsAlter = String.format("-alterCatalog %s", catName);
+    execute(new HiveSchemaToolTaskAlterCatalog(), argsAlter);
   }
 
   @Test
@@ -195,7 +225,9 @@ public class TestSchemaToolCatalogOps {
         .addValue(partVal)
         .addToTable(client, conf);
 
-    schemaTool.moveDatabase(DEFAULT_CATALOG_NAME, toCatName, dbName);
+    String argsMoveDB = String.format("-moveDatabase %s -fromCatalog %s -toCatalog %s", dbName,
+        DEFAULT_CATALOG_NAME, toCatName);
+    execute(new HiveSchemaToolTaskMoveDatabase(), argsMoveDB);
 
     Database fetchedDb = client.getDatabase(toCatName, dbName);
     Assert.assertNotNull(fetchedDb);
@@ -228,7 +260,9 @@ public class TestSchemaToolCatalogOps {
         .setLocation("file:///tmp")
         .create(client);
     try {
-      schemaTool.moveDatabase(catName, DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
+      String argsMoveDB = String.format("-moveDatabase %s -fromCatalog %s -toCatalog %s",
+          DEFAULT_DATABASE_NAME, catName, DEFAULT_CATALOG_NAME);
+      execute(new HiveSchemaToolTaskMoveDatabase(), argsMoveDB);
       Assert.fail("Attempt to move default database should have failed.");
     } catch (HiveMetaException e) {
       // good
@@ -246,7 +280,9 @@ public class TestSchemaToolCatalogOps {
         .setName(catName)
         .setLocation("file:///tmp")
         .create(client);
-    schemaTool.moveDatabase(catName, DEFAULT_CATALOG_NAME, "nosuch");
+    String argsMoveDB = String.format("-moveDatabase nosuch -fromCatalog %s -toCatalog %s",
+        catName, DEFAULT_CATALOG_NAME);
+    execute(new HiveSchemaToolTaskMoveDatabase(), argsMoveDB);
   }
 
   @Test
@@ -256,7 +292,9 @@ public class TestSchemaToolCatalogOps {
         .setName(dbName)
         .create(client, conf);
     try {
-      schemaTool.moveDatabase(DEFAULT_CATALOG_NAME, "nosuch", dbName);
+      String argsMoveDB = String.format("-moveDatabase %s -fromCatalog %s -toCatalog nosuch",
+          dbName, DEFAULT_CATALOG_NAME);
+      execute(new HiveSchemaToolTaskMoveDatabase(), argsMoveDB);
       Assert.fail("Attempt to move database to non-existent catalog should have failed.");
     } catch (HiveMetaException e) {
       // good
@@ -295,7 +333,9 @@ public class TestSchemaToolCatalogOps {
         .addValue(partVal)
         .addToTable(client, conf);
 
-    schemaTool.moveTable(DEFAULT_CATALOG_NAME, toCatName, DEFAULT_DATABASE_NAME, toDbName, tableName);
+    String argsMoveTable = String.format("-moveTable %s -fromCatalog %s -toCatalog %s -fromDatabase %s -toDatabase %s",
+        tableName, DEFAULT_CATALOG_NAME, toCatName, DEFAULT_DATABASE_NAME, toDbName);
+    execute(new HiveSchemaToolTaskMoveTable(), argsMoveTable);
 
     Table fetchedTable = client.getTable(toCatName, toDbName, tableName);
     Assert.assertNotNull(fetchedTable);
@@ -331,7 +371,9 @@ public class TestSchemaToolCatalogOps {
         .addValue(partVal)
         .addToTable(client, conf);
 
-    schemaTool.moveTable(DEFAULT_CATALOG_NAME, DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, toDbName, tableName);
+    String argsMoveTable = String.format("-moveTable %s -fromCatalog %s -toCatalog %s -fromDatabase %s -toDatabase %s",
+        tableName, DEFAULT_CATALOG_NAME, DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, toDbName);
+    execute(new HiveSchemaToolTaskMoveTable(), argsMoveTable);
 
     Table fetchedTable = client.getTable(DEFAULT_CATALOG_NAME, toDbName, tableName);
     Assert.assertNotNull(fetchedTable);
@@ -368,8 +410,10 @@ public class TestSchemaToolCatalogOps {
         .create(client, conf);
 
     try {
-      schemaTool.moveTable(DEFAULT_CATALOG_NAME, DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME,
-          toDbName, tableName);
+      String argsMoveTable =
+          String.format("-moveTable %s -fromCatalog %s -toCatalog %s -fromDatabase %s -toDatabase %s",
+          tableName, DEFAULT_CATALOG_NAME, DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, toDbName);
+      execute(new HiveSchemaToolTaskMoveTable(), argsMoveTable);
       Assert.fail("Attempt to move table should have failed.");
     } catch (HiveMetaException e) {
       // good
@@ -390,8 +434,10 @@ public class TestSchemaToolCatalogOps {
     new DatabaseBuilder()
         .setName(toDbName)
         .create(client, conf);
-    schemaTool.moveTable(DEFAULT_CATALOG_NAME, DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, toDbName,
-        "nosuch");
+    String argsMoveTable =
+        String.format("-moveTable nosuch -fromCatalog %s -toCatalog %s -fromDatabase %s -toDatabase %s",
+        DEFAULT_CATALOG_NAME, DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, toDbName);
+    execute(new HiveSchemaToolTaskMoveTable(), argsMoveTable);
   }
 
   @Test
@@ -403,8 +449,10 @@ public class TestSchemaToolCatalogOps {
         .create(client, conf);
 
     try {
-      schemaTool.moveTable(DEFAULT_CATALOG_NAME, DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME,
-          "nosuch", tableName);
+      String argsMoveTable =
+          String.format("-moveTable %s -fromCatalog %s -toCatalog %s -fromDatabase %s -toDatabase nosuch",
+          tableName, DEFAULT_CATALOG_NAME, DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
+      execute(new HiveSchemaToolTaskMoveTable(), argsMoveTable);
       Assert.fail("Attempt to move table to non-existent table should have failed.");
     } catch (HiveMetaException e) {
       // good
@@ -413,5 +461,18 @@ public class TestSchemaToolCatalogOps {
     // Make sure nothing really moved
     Set<String> tableNames = new HashSet<>(client.getAllTables(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME));
     Assert.assertTrue(tableNames.contains(tableName.toLowerCase()));
+  }
+
+  private static void execute(HiveSchemaToolTask task, String taskArgs) throws HiveMetaException {
+    try {
+      StrTokenizer tokenizer = new StrTokenizer(argsBase + taskArgs, ' ', '\"');
+      HiveSchemaToolCommandLine cl = new HiveSchemaToolCommandLine(tokenizer.getTokenArray());
+      task.setCommandLineArguments(cl);
+    } catch (Exception e) {
+      throw new IllegalStateException("Could not parse comman line \n" + argsBase + taskArgs, e);
+    }
+
+    task.setHiveSchemaTool(schemaTool);
+    task.execute();
   }
 }
