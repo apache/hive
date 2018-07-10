@@ -312,7 +312,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
      */
     TypeDescription schema = getDesiredRowTypeDescr(conf, false, Integer.MAX_VALUE);
 
-    Reader.Options options = new Reader.Options().range(offset, length);
+    Reader.Options options = new Reader.Options(conf).range(offset, length);
     options.schema(schema);
     boolean isOriginal = isOriginal(file);
     if (schema == null) {
@@ -2042,7 +2042,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
      */
     TypeDescription schema =
         OrcInputFormat.getDesiredRowTypeDescr(conf, true, Integer.MAX_VALUE);
-    Reader.Options readerOptions = new Reader.Options().schema(schema);
+    Reader.Options readerOptions = new Reader.Options(conf).schema(schema);
     // TODO: Convert genIncludedColumns and setSearchArgument to use TypeDescription.
     final List<OrcProto.Type> schemaTypes = OrcUtils.getOrcTypes(schema);
     readerOptions.include(OrcInputFormat.genIncludedColumns(schema, conf));
