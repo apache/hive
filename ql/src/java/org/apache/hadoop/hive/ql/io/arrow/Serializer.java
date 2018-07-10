@@ -62,15 +62,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE;
@@ -87,6 +82,7 @@ import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils.getTypeInfoFr
 
 class Serializer {
   private final int MAX_BUFFERED_ROWS;
+  private final static byte[] EMPTY_BYTES = new byte[0];
 
   // Schema
   private final StructTypeInfo structTypeInfo;
@@ -415,7 +411,31 @@ class Serializer {
             if (hiveVector.isNull[i]) {
               varCharVector.setNull(i);
             } else {
-              varCharVector.setSafe(i, bytesVector.vector[i], bytesVector.start[i], bytesVector.length[i]);
+              byte[] bytes = bytesVector.vector[i];
+              int length = bytesVector.length[i];
+              int start = bytesVector.start[i];
+
+              if (bytes == null) {
+                bytes = EMPTY_BYTES;
+                start = 0;
+                length = 0;
+              }
+
+              // Char padding
+              if (primitiveCategory == PrimitiveObjectInspector.PrimitiveCategory.CHAR) {
+                final CharTypeInfo charTypeInfo = (CharTypeInfo) typeInfo;
+                final int paddedLength = charTypeInfo.getLength();
+                final int paddedStart = 0;
+                final byte[] paddedBytes = new byte[paddedLength];
+
+                System.arraycopy(bytes, start, paddedBytes, paddedStart, length);
+                Arrays.fill(paddedBytes, length, paddedLength, (byte) ' ');
+
+                length = paddedLength;
+                start = paddedStart;
+                bytes = paddedBytes;
+              }
+              varCharVector.setSafe(i, bytes, start, length);
             }
           }
         }

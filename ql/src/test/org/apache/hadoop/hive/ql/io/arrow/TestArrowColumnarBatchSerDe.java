@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.arrow;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.arrow.vector.VarCharVector;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -766,6 +767,32 @@ public class TestArrowColumnarBatchSerDe {
     };
 
     initAndSerializeAndDeserialize(schema, toMap(BINARY_ROWS));
+  }
+
+  @Test
+  public void testPrimitiveCharPadding() throws SerDeException {
+    String[][] schema = {
+        {"char1", "char(10)"},
+    };
+
+    HiveCharWritable[][] rows = new HiveCharWritable[][] {
+        {charW("Hello", 10)}, {charW("world!", 10)}};
+    ArrowColumnarBatchSerDe serDe = new ArrowColumnarBatchSerDe();
+    StructObjectInspector rowOI = initSerDe(serDe, schema);
+
+    ArrowWrapperWritable serialized = null;
+    for (Object[] row : rows) {
+      serialized = serDe.serialize(row, rowOI);
+    }
+    // Pass null to complete a batch
+    if (serialized == null) {
+      serialized = serDe.serialize(null, rowOI);
+    }
+
+    VarCharVector varCharVector = (VarCharVector) serialized.getVectorSchemaRoot().getFieldVectors().get(0);
+    for (int i = 0; i < rows.length; i++) {
+      assertEquals(rows[i][0].getPaddedValue().toString(), new String(varCharVector.get(i)));
+    }
   }
 
   public void testMapDecimal() throws SerDeException {
