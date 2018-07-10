@@ -16,6 +16,9 @@ select key, c, 2 as m from (select key, count(key) as c from src group by key)s2
 )sub
 where m = 1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, COUNT(`key`) AS `c`, 1 AS `m`
+FROM `default`.`src`
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

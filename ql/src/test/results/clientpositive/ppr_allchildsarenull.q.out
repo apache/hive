@@ -16,6 +16,9 @@ SELECT
    THEN 1
    ELSE 0  end ) > 0
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST(`key` AS INTEGER) AS `user_id`, `value`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%')
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -213,6 +216,9 @@ SELECT
    THEN 1
    ELSE 0  end ) > 0
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST(`key` AS INTEGER) AS `user_id`, `value`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND (`value` LIKE 'aaa%' OR `value` LIKE 'vvv%')
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

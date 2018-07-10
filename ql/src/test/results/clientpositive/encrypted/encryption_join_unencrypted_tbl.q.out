@@ -536,6 +536,13 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encrypted_table t2 WH
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM src t1 JOIN encrypted_table t2 WHERE t1.key = t2.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`encrypted_table`
+WHERE `key` IS NOT NULL) AS `t2` ON CAST(`t0`.`key` AS DOUBLE) = CAST(`t2`.`key` AS DOUBLE)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

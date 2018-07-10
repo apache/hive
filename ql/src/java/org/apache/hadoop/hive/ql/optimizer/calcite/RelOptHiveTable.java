@@ -18,19 +18,24 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-import org.apache.calcite.plan.RelOptAbstractTable;
+import org.apache.calcite.linq4j.tree.Expression;
 import org.apache.calcite.plan.RelOptSchema;
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
+import org.apache.calcite.prepare.RelOptTableImpl;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelDistribution;
+import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelFieldCollation.Direction;
 import org.apache.calcite.rel.RelFieldCollation.NullDirection;
@@ -41,6 +46,7 @@ import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.schema.ColumnStrategy;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.IntPair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -76,7 +82,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-public class RelOptHiveTable extends RelOptAbstractTable {
+public class RelOptHiveTable implements RelOptTable {
+
+  //~ Instance fields --------------------------------------------------------
+
+  private final RelOptSchema schema;
+  private final RelDataType rowType;
+  private final List<String> qualifiedTblName;
+  private final String name;
   private final Table                             hiveTblMetadata;
   private final ImmutableList<ColumnInfo>         hiveNonPartitionCols;
   private final ImmutableList<ColumnInfo>         hivePartitionCols;
@@ -97,12 +110,15 @@ public class RelOptHiveTable extends RelOptAbstractTable {
 
   protected static final Logger LOG = LoggerFactory.getLogger(RelOptHiveTable.class.getName());
 
-  public RelOptHiveTable(RelOptSchema calciteSchema, String qualifiedTblName,
+  public RelOptHiveTable(RelOptSchema calciteSchema, List<String> qualifiedTblName,
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
       List<ColumnInfo> hivePartitionCols, List<VirtualColumn> hiveVirtualCols, HiveConf hconf,
       Map<String, PrunedPartitionList> partitionCache, Map<String, ColumnStatsList> colStatsCache,
       AtomicInteger noColsMissingStats) {
-    super(calciteSchema, qualifiedTblName, rowType);
+    this.schema = calciteSchema;
+    this.qualifiedTblName = ImmutableList.copyOf(qualifiedTblName);
+    this.name = this.qualifiedTblName.stream().collect(Collectors.joining("."));
+    this.rowType = rowType;
     this.hiveTblMetadata = hiveTblMetadata;
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
     this.hiveNonPartitionColsMap = HiveCalciteUtil.getColInfoMap(hiveNonPartitionCols, 0);
@@ -116,6 +132,42 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     this.noColsMissingStats = noColsMissingStats;
     this.keys = generateKeys();
     this.referentialConstraints = generateReferentialConstraints();
+  }
+
+  //~ Methods ----------------------------------------------------------------
+
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public List<String> getQualifiedName() {
+    return qualifiedTblName;
+  }
+
+  @Override
+  public RelDataType getRowType() {
+    return rowType;
+  }
+
+  @Override
+  public RelOptSchema getRelOptSchema() {
+    return schema;
+  }
+
+  @Override
+  public Expression getExpression(Class clazz) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public RelOptTable extend(List<RelDataTypeField> extendedFields) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<ColumnStrategy> getColumnStrategies() {
+    return RelOptTableImpl.columnStrategies(this);
   }
 
   public RelOptHiveTable copy(RelDataType newRowType) {
@@ -149,7 +201,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     }
 
     // 3. Build new Table
-    return new RelOptHiveTable(this.schema, this.name, newRowType,
+    return new RelOptHiveTable(this.schema, this.qualifiedTblName, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
         this.hiveConf, this.partitionCache, this.colStatsCache, this.noColsMissingStats);
   }
@@ -236,17 +288,14 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     }
     ImmutableList.Builder<RelReferentialConstraint> builder = ImmutableList.builder();
     for (List<ForeignKeyCol> fkCols : fki.getForeignKeys().values()) {
-      List<String> foreignKeyTableQualifiedName = Lists.newArrayList(name);
+      List<String> foreignKeyTableQualifiedName = qualifiedTblName;
       String parentDatabaseName = fkCols.get(0).parentDatabaseName;
       String parentTableName = fkCols.get(0).parentTableName;
-      String parentFullyQualifiedName;
+      List<String> parentTableQualifiedName = new ArrayList<>();
       if (parentDatabaseName != null && !parentDatabaseName.isEmpty()) {
-        parentFullyQualifiedName = parentDatabaseName + "." + parentTableName;
+        parentTableQualifiedName.add(parentDatabaseName);
       }
-      else {
-        parentFullyQualifiedName = parentTableName;
-      }
-      List<String> parentTableQualifiedName = Lists.newArrayList(parentFullyQualifiedName);
+      parentTableQualifiedName.add(parentTableName);
       Table parentTab = null;
       try {
         // TODO: We have a cache for Table objects in SemanticAnalyzer::getTableObjectByName()
