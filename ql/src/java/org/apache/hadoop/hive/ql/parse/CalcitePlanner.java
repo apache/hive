@@ -33,12 +33,15 @@ import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
+import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.adapter.jdbc.JdbcConvention;
+import org.apache.calcite.adapter.jdbc.JdbcImplementor;
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.adapter.jdbc.JdbcTable;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
+import org.apache.calcite.config.NullCollation;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
@@ -97,7 +100,9 @@ import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.SqlSampleSpec;
 import org.apache.calcite.sql.SqlWindow;
+import org.apache.calcite.sql.dialect.HiveSqlDialect;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.ArraySqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -467,8 +472,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
           } else {
-            // 1. Gen Optimized AST
-            ASTNode newAST = getOptimizedAST();
+            // 0. Gen Optimized Plan
+            final RelNode newPlan = logicalPlan();
+            // 1. Convert Plan to AST
+            ASTNode newAST = getOptimizedAST(newPlan);
 
             // 1.1. Fix up the query for insert/ctas/materialized views
             newAST = fixUpAfterCbo(ast, newAST, cboCtx);
@@ -539,7 +546,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
             LOG.info("CBO Succeeded; optimized logical plan.");
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
+            if (this.ctx.isExplainPlan()) {
+              ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
+              if (explainConfig.isExtended() || explainConfig.isFormatted()) {
+                this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+              }
+            }
             if (LOG.isTraceEnabled()) {
+              LOG.trace(getOptimizedSql(newPlan));
               LOG.trace(newAST.dump());
             }
           }
@@ -1442,13 +1456,57 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   /**
+   * Get SQL rewrite for a Calcite logical plan
+   *
+   * @return Optimized SQL text (or null, if failed)
+   */
+  public String getOptimizedSql(RelNode optimizedOptiqPlan) {
+    SqlDialect dialect = new HiveSqlDialect(SqlDialect.EMPTY_CONTEXT
+        .withDatabaseProduct(SqlDialect.DatabaseProduct.HIVE)
+        .withDatabaseMajorVersion(4) // TODO: should not be hardcoded
+        .withDatabaseMinorVersion(0)
+        .withIdentifierQuoteString("`")
+        .withNullCollation(NullCollation.LOW)) {
+      @Override
+      protected boolean allowsAs() {
+        return true;
+      }
+
+      @Override
+      public boolean supportsCharSet() {
+        return false;
+      }
+    };
+    try {
+      final JdbcImplementor jdbcImplementor =
+          new JdbcImplementor(dialect, (JavaTypeFactory) optimizedOptiqPlan.getCluster()
+              .getTypeFactory());
+      final JdbcImplementor.Result result = jdbcImplementor.visitChild(0, optimizedOptiqPlan);
+      String sql = result.asStatement().toSqlString(dialect).getSql();
+      return sql.replaceAll("VARCHAR\\(2147483647\\)", "STRING");
+    } catch (Exception ex) {
+      LOG.warn("Rel2SQL Rewrite threw error", ex);
+    }
+    return null;
+  }
+
+  /**
    * Get Optimized AST for the given QB tree in the semAnalyzer.
    *
    * @return Optimized operator tree translated in to Hive AST
    * @throws SemanticException
    */
   ASTNode getOptimizedAST() throws SemanticException {
-    RelNode optimizedOptiqPlan = logicalPlan();
+    return getOptimizedAST(logicalPlan());
+  }
+
+  /**
+   * Get Optimized AST for the given QB tree in the semAnalyzer.
+   *
+   * @return Optimized operator tree translated in to Hive AST
+   * @throws SemanticException
+   */
+  ASTNode getOptimizedAST(RelNode optimizedOptiqPlan) throws SemanticException {
     ASTNode optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
             HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
     return optiqOptimizedAST;
@@ -2149,7 +2207,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                       ImmutableList.<RelNode>of(dq.getTableScan()));
                 } else {
                   newScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
-                      (RelOptHiveTable) scan.getTable(), scan.getTable().getQualifiedName().get(0),
+                      (RelOptHiveTable) scan.getTable(), ((RelOptHiveTable) scan.getTable()).getName(),
                       null, false, false);
                 }
                 return newScan;
@@ -2779,13 +2837,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // Build row type from field <type, name>
           RelDataType rowType = TypeConverter.getType(cluster, cIList);
           // Build RelOptAbstractTable
-          String fullyQualifiedTabName = tabMetaData.getDbName();
-          if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
-            fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName();
+          List<String> fullyQualifiedTabName = new ArrayList<>();
+          if (tabMetaData.getDbName() != null && !tabMetaData.getDbName().isEmpty()) {
+            fullyQualifiedTabName.add(tabMetaData.getDbName());
           }
-          else {
-            fullyQualifiedTabName = tabMetaData.getTableName();
-          }
+          fullyQualifiedTabName.add(tabMetaData.getTableName());
 
           if (tableType == TableType.DRUID) {
             // Build Druid query
@@ -2870,13 +2926,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // Build row type from field <type, name>
           RelDataType rowType = inferNotNullableColumns(tabMetaData, TypeConverter.getType(cluster, rr, null));
           // Build RelOptAbstractTable
-          String fullyQualifiedTabName = tabMetaData.getDbName();
-          if (fullyQualifiedTabName != null && !fullyQualifiedTabName.isEmpty()) {
-            fullyQualifiedTabName = fullyQualifiedTabName + "." + tabMetaData.getTableName();
+          List<String> fullyQualifiedTabName = new ArrayList<>();
+          if (tabMetaData.getDbName() != null && !tabMetaData.getDbName().isEmpty()) {
+            fullyQualifiedTabName.add(tabMetaData.getDbName());
           }
-          else {
-            fullyQualifiedTabName = tabMetaData.getTableName();
-          }
+          fullyQualifiedTabName.add(tabMetaData.getTableName());
           RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
               partitionCache, colStatsCache, noColsMissingStats);

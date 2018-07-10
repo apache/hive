@@ -38,6 +38,15 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -329,6 +338,15 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.key2 = b.key2 ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key` IS NOT NULL AND `key2` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key` IS NOT NULL AND `key2` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`key2` = `t2`.`key2`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -597,6 +615,15 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key2 = b.key2 and a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key2` IS NOT NULL AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key2` IS NOT NULL AND `key` IS NOT NULL) AS `t2` ON `t0`.`key2` = `t2`.`key2` AND `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -865,6 +892,15 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1_n4 a JOIN test_table2_n4 b ON a.key = b.key and a.value = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table1_n4`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `key2`, `value`
+FROM `default`.`test_table2_n4`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`value` = `t2`.`value`
+ORDER BY `t0`.`key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

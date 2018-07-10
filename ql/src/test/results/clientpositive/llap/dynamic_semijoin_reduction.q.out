@@ -1537,6 +1537,13 @@ PREHOOK: query: EXPLAIN extended select count(*) from srcpart_date_n7 join srcpa
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN extended select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`srcpart_date_n7`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key1`
+FROM `default`.`srcpart_small_n3`
+WHERE `key1` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

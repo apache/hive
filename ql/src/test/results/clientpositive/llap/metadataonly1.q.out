@@ -10,6 +10,8 @@ PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT MAX(`ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -104,6 +106,8 @@ PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT MAX(`ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -245,6 +249,8 @@ PREHOOK: query: explain extended select count(distinct ds) from TEST1_n12
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(distinct ds) from TEST1_n12
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(DISTINCT `ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -387,6 +393,8 @@ PREHOOK: query: explain extended select count(ds) from TEST1_n12
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(ds) from TEST1_n12
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(`ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -538,6 +546,14 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended 
 select count(*) from TEST1_n12 a2 join (select max(ds) m from TEST1_n12) b on a2.ds=b.m
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `ds`
+FROM `default`.`test1_n12`
+WHERE `ds` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT *
+FROM (SELECT MAX(`ds`) AS `$f0`
+FROM `default`.`test1_n12`) AS `t1`
+WHERE `$f0` IS NOT NULL) AS `t2` ON `t0`.`ds` = `t2`.`$f0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -945,6 +961,9 @@ PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 gro
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `ds`, COUNT(DISTINCT `hr`) AS `$f1`
+FROM `default`.`test2_n8`
+GROUP BY `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1193,6 +1212,9 @@ PREHOOK: query: explain extended select ds, count(hr) from TEST2_n8 group by ds
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds, count(hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `ds`, COUNT(`hr`) AS `$f1`
+FROM `default`.`test2_n8`
+GROUP BY `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1443,6 +1465,8 @@ PREHOOK: query: explain extended select max(ds) from TEST1_n12
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select max(ds) from TEST1_n12
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT MAX(`ds`) AS `$f0`
+FROM `default`.`test1_n12`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1684,6 +1708,9 @@ PREHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 gro
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds, count(distinct hr) from TEST2_n8 group by ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `ds`, COUNT(DISTINCT `hr`) AS `$f1`
+FROM `default`.`test2_n8`
+GROUP BY `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

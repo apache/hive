@@ -26,6 +26,19 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t5`.`key`, `t5`.`value`, `t3`.`$f1` AS `cnt`
+FROM (SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`src`
+WHERE `key` < 20
+GROUP BY `key`
+UNION ALL
+SELECT `key`, COUNT(*) AS `$f1`
+FROM `default`.`src`
+WHERE `key` > 100
+GROUP BY `key`) AS `t3`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`src1`
+WHERE (`key` < 20 OR `key` > 100) AND `key` IS NOT NULL) AS `t5` ON `t3`.`key` = `t5`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-8 depends on stages: Stage-1, Stage-5

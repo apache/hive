@@ -206,7 +206,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         fetchTask,
         sem,
         config,
-        ctx.getCboInfo());
+        ctx.getCboInfo(),
+        ctx.getOptimizedSql());
 
     work.setAppendTaskType(
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));

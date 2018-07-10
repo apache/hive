@@ -87,6 +87,8 @@ PREHOOK: query: EXPLAIN EXTENDED select * from test2_n6
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED select * from test2_n6
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `name`, `age`
+FROM `default`.`test2_n6`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

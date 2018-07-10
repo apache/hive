@@ -28,6 +28,10 @@ PREHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstor
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstore_table SELECT hdfs_table.key GROUP BY hdfs_table.key ORDER BY hdfs_table.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`
+FROM `default`.`hdfs_table`
+GROUP BY `key`
+ORDER BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -299,6 +303,10 @@ PREHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstor
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstore_table SELECT hdfs_table.key GROUP BY hdfs_table.key ORDER BY hdfs_table.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`
+FROM `default`.`hdfs_table`
+GROUP BY `key`
+ORDER BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

@@ -74,6 +74,7 @@ public class QueryPlan implements Serializable {
 
 
   private String queryString;
+  private String optimizedQueryString;
 
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private FetchTask fetchTask;
@@ -739,6 +740,14 @@ public class QueryPlan implements Serializable {
 
   public void setQueryString(String queryString) {
     this.queryString = queryString;
+  }
+
+  public String getOptimizedQueryString() {
+    return this.optimizedQueryString;
+  }
+
+  public void setOptimizedQueryString(String optimizedQueryString) {
+    this.optimizedQueryString = optimizedQueryString;
   }
 
   public org.apache.hadoop.hive.ql.plan.api.Query getQuery() {

@@ -131,6 +131,8 @@ PREHOOK: query: explain extended select state from loc_orc_1d_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state from loc_orc_1d_n1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `state`
+FROM `default`.`loc_orc_1d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -338,6 +340,8 @@ PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `state`, `locid`
+FROM `default`.`loc_orc_1d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -573,6 +577,8 @@ PREHOOK: query: explain extended select state from loc_orc_1d_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state from loc_orc_1d_n1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `state`
+FROM `default`.`loc_orc_1d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -780,6 +786,8 @@ PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `state`, `locid`
+FROM `default`.`loc_orc_1d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1069,6 +1077,8 @@ PREHOOK: query: explain extended select state from loc_orc_2d_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state from loc_orc_2d_n1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `state`
+FROM `default`.`loc_orc_2d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1609,6 +1619,8 @@ PREHOOK: query: explain extended select state,locid from loc_orc_2d_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state,locid from loc_orc_2d_n1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `state`, `locid`
+FROM `default`.`loc_orc_2d_n1`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

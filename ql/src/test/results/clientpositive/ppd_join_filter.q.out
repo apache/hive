@@ -24,6 +24,15 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -360,6 +369,15 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -696,6 +714,15 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
@@ -1030,6 +1057,15 @@ group by key
 ) b
 on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, CAST(MIN(`key`) AS DOUBLE) + CAST(2 AS DOUBLE) AS `k2`, CAST(MIN(`key`) AS DOUBLE) + CAST(3 AS DOUBLE) AS `k3`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL
+GROUP BY `key`
+HAVING CAST(MIN(`key`) AS DOUBLE) + 1 < 5.0) AS `t4` ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2

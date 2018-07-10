@@ -103,6 +103,13 @@ PREHOOK: query: explain extended select count(*) FROM bucket_small_n1 a JOIN buc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small_n1 a JOIN bucket_big_n1 b ON a.key = b.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_small_n1`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_big_n1`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -382,6 +389,13 @@ PREHOOK: query: explain extended select count(*) FROM bucket_big_n1 a JOIN bucke
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n1 a JOIN bucket_small_n1 b ON a.key = b.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_big_n1`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_small_n1`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -661,6 +675,13 @@ PREHOOK: query: explain extended select count(*) FROM bucket_big_n1 a JOIN bucke
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_big_n1 a JOIN bucket_small_n1 b ON a.key = b.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_big_n1`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_small_n1`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

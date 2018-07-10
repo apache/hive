@@ -52,6 +52,10 @@ from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `key` = 2
+ORDER BY `key`, `value`, `ds1`, `ds2`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -232,6 +236,11 @@ from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+FROM (SELECT `key`, `value`, `ds1`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds2` = '2001-04-08' AND (`ds1` = '2000-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `key` = 2)
+ORDER BY `key`, `value`, `ds1`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -362,6 +371,15 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds1` AS `ds11`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds2` = '2001-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -590,6 +608,15 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t4`.`ds21`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds2` AS `ds21`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -869,6 +896,14 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`, `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' OR `ds1` = '2000-04-09') AS `t0`
+INNER JOIN (SELECT `key`, `value`, `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `key` = 1 OR `key` = 2) AS `t2` ON `t0`.`ds1` = '2000-04-08' AND `t2`.`key` = 1 OR `t0`.`ds1` = '2000-04-09' AND `t2`.`key` = 2
+ORDER BY `t2`.`key`, `t2`.`value`, `t0`.`ds1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1725,6 +1760,15 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, `t4`.`ds11`, CAST('2001-04-08' AS STRING) AS `ds21`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds1` AS `ds11`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, `ds1`, CAST('2001-04-08' AS STRING) AS `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds2` = '2001-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1953,6 +1997,15 @@ from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds1`, `t4`.`ds2`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds11`, `t4`.`ds21`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t0`.`ds2`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, `t2`.`ds2` AS `ds21`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds1`, `ds2`
+FROM `default`.`pcr_t1_n1`
+WHERE `ds1` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t2`.`key`, `t2`.`value`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

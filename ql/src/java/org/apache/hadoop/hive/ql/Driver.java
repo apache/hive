@@ -678,7 +678,8 @@ public class Driver implements IDriver {
       schema = getSchema(sem, conf);
       plan = new QueryPlan(queryStr, sem, queryDisplay.getQueryStartTime(), queryId,
           queryState.getHiveOperation(), schema);
-
+      // save the optimized sql for the explain
+      plan.setOptimizedQueryString(ctx.getOptimizedSql());
 
       conf.set("mapreduce.workflow.id", "hive_" + queryId);
       conf.set("mapreduce.workflow.name", queryStr);
@@ -1007,7 +1008,7 @@ public class Driver implements IDriver {
     PrintStream ps = new PrintStream(baos);
     try {
       List<Task<?>> rootTasks = sem.getAllRootTasks();
-      task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, true, true);
+      task.getJSONPlan(ps, rootTasks, sem.getFetchTask(), false, true, true, plan.getOptimizedQueryString());
       ret = baos.toString();
     } catch (Exception e) {
       LOG.warn("Exception generating explain output: " + e, e);
