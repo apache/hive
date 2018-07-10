@@ -58,7 +58,7 @@ public abstract class SkeletonHBaseTest {
    * Allow tests to alter the default MiniCluster configuration.
    * (requires static initializer block as all setup here is static)
    */
-  protected static Configuration testConf = null;
+  protected static Configuration testConf = new Configuration();
 
   protected void createTable(String tableName, String[] families) throws IOException {
     Connection connection = null;
@@ -196,6 +196,8 @@ public abstract class SkeletonHBaseTest {
       if (usageCount++ == 0) {
         ManyMiniCluster.Builder b = ManyMiniCluster.create(new File(testDir));
         if (testConf != null) {
+          testConf.set("hbase.unsafe.stream.capability.enforce", "false");
+          testConf.set("hbase.procedure.store.wal.use.hsync", "false");
           b.hbaseConf(HBaseConfiguration.create(testConf));
         }
         cluster = b.build();
