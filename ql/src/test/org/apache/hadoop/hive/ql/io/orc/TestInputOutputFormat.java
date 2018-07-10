@@ -3899,4 +3899,14 @@ public class TestInputOutputFormat {
     assertEquals(1000, record);
     reader.close();
   }
+
+  public void testCreateOptionsForReader_ReaderOptionConfiguration() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "col1");
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "string");
+
+    conf.set(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), Boolean.TRUE.toString());
+    Reader.Options options = OrcInputFormat.createOptionsForReader(conf);
+    assertTrue(options.getForcePositionalEvolution());
+  }
 }
