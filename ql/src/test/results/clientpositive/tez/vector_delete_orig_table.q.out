@@ -94,8 +94,8 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -160,6 +160,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 12288
+PREHOOK: query: select count(*) from acid_dot where cint < -1070551679
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_dot
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from acid_dot where cint < -1070551679
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_dot
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+8
 PREHOOK: query: delete from acid_dot where cint < -1070551679
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dot
@@ -176,5 +185,5 @@ POSTHOOK: query: select count(*) from acid_dot
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-12192
+12280
 #### A masked pattern was here ####
