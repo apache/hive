@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -42,6 +40,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import junit.framework.TestCase;
 
 public class TestJsonSerDe extends TestCase {
 
@@ -158,17 +158,17 @@ public class TestJsonSerDe extends TestCase {
       Writable s = hrsd.serialize(r, hrsd.getObjectInspector());
       LOG.info("ONE:{}", s);
 
-      Object o1 = hrsd.deserialize(s);
+      HCatRecord o1 = (HCatRecord) hrsd.deserialize(s);
       StringBuilder msg = new StringBuilder();
-      boolean isEqual = HCatDataCheckUtil.recordsEqual(r, (HCatRecord) o1); 
+      boolean isEqual = HCatDataCheckUtil.recordsEqual(r, o1);
       assertTrue(msg.toString(), isEqual);
 
       Writable s2 = jsde.serialize(o1, hrsd.getObjectInspector());
       LOG.info("TWO:{}", s2);
-      Object o2 = jsde.deserialize(s2);
+      HCatRecord o2 = (HCatRecord) jsde.deserialize(s2);
       LOG.info("deserialized TWO : {} ", o2);
       msg.setLength(0);
-      isEqual = HCatDataCheckUtil.recordsEqual(r, (HCatRecord) o2, msg);
+      isEqual = HCatDataCheckUtil.recordsEqual(r, o2, msg);
       assertTrue(msg.toString(), isEqual);
     }
 
