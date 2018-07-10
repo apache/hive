@@ -18,6 +18,7 @@
 
 package org.apache.hive.hcatalog.listener;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -90,7 +91,6 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMNullablePool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.FullTableName;
 import org.apache.thrift.TException;
 
 /**
@@ -1226,13 +1226,13 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
 
   @Override
-  public List<FullTableName> getTableNamesWithStats() throws MetaException,
+  public List<TableName> getTableNamesWithStats() throws MetaException,
       NoSuchObjectException {
     return null;
   }
 
   @Override
-  public List<FullTableName> getAllTableNamesForStats() throws MetaException,
+  public List<TableName> getAllTableNamesForStats() throws MetaException,
       NoSuchObjectException {
     return null;
   }

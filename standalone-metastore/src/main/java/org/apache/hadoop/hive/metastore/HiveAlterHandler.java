@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -151,7 +152,7 @@ public class HiveAlterHandler implements AlterHandler {
       oldt = msdb.getTable(catName, dbname, name);
       if (oldt == null) {
         throw new InvalidOperationException("table " +
-            Warehouse.getCatalogQualifiedTableName(catName, dbname, name) + " doesn't exist");
+            TableName.getQualified(catName, dbname, name) + " doesn't exist");
       }
 
       if (oldt.getPartitionKeysSize() != 0) {
@@ -226,7 +227,7 @@ public class HiveAlterHandler implements AlterHandler {
           try {
             if (destFs.exists(destPath)) {
               throw new InvalidOperationException("New location for this table " +
-                  Warehouse.getCatalogQualifiedTableName(catName, newDbName, newTblName) +
+                  TableName.getQualified(catName, newDbName, newTblName) +
                       " already exists : " + destPath);
             }
             // check that src exists and also checks permissions necessary, rename src to dest
@@ -242,12 +243,12 @@ public class HiveAlterHandler implements AlterHandler {
           }
 
           if (!HiveMetaStore.isRenameAllowed(olddb, db)) {
-            LOG.error("Alter Table operation for " + Warehouse.getCatalogQualifiedTableName(catName, dbname, name) +
-                    "to new table = " + Warehouse.getCatalogQualifiedTableName(catName, newDbName, newTblName) +
+            LOG.error("Alter Table operation for " + TableName.getQualified(catName, dbname, name) +
+                    "to new table = " + TableName.getQualified(catName, newDbName, newTblName) +
                     " failed ");
             throw new MetaException("Alter table not allowed for table " +
-                    Warehouse.getCatalogQualifiedTableName(catName, dbname, name) +
-                    "to new table = " + Warehouse.getCatalogQualifiedTableName(catName, newDbName, newTblName));
+                    TableName.getQualified(catName, dbname, name) +
+                    "to new table = " + TableName.getQualified(catName, newDbName, newTblName));
           }
         }
 
@@ -369,8 +370,7 @@ public class HiveAlterHandler implements AlterHandler {
               + " Check metastore logs for detailed stack." + e.getMessage());
     } finally {
       if (!success) {
-        LOG.error("Failed to alter table " +
-            Warehouse.getCatalogQualifiedTableName(catName, dbname, name));
+        LOG.error("Failed to alter table " + TableName.getQualified(catName, dbname, name));
         msdb.rollbackTransaction();
         if (dataWasMoved) {
           try {
