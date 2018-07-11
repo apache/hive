@@ -12,7 +12,8 @@ explain
 select key, count(*) from masking_test_n7 group by key;
 select key, count(*) from masking_test_n7 group by key;
 
--- This time we should use the cache
+-- It will not use the cache as it is masked
+-- TODO: We should use the cache
 explain
 select key, count(*) from masking_test_n7 group by key;
 select key, count(*) from masking_test_n7 group by key;
