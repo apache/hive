@@ -154,9 +154,13 @@ public class TestVectorizedORCReader {
     VectorizedRowBatch batch = reader.getSchema().createRowBatchV2();
     OrcStruct row = null;
 
+    long lastRowNumber = -1;
     // Check Vectorized ORC reader against ORC row reader
     while (vrr.nextBatch(batch)) {
+      Assert.assertEquals(lastRowNumber + 1, vrr.getRowNumber());
       for (int i = 0; i < batch.size; i++) {
+        Assert.assertEquals(rr.getRowNumber(), vrr.getRowNumber()+i);
+        lastRowNumber = rr.getRowNumber();
         row = (OrcStruct) rr.next(row);
         for (int j = 0; j < batch.cols.length; j++) {
           Object a = (row.getFieldValue(j));
