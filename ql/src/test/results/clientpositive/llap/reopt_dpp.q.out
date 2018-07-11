@@ -1,0 +1,259 @@
+PREHOOK: query: drop table if exists x1_store_sales
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists x1_store_sales
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists x1_date_dim
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists x1_date_dim
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists x1_item
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists x1_item
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table x1_store_sales 
+(
+	ss_item_sk	int
+)
+partitioned by (ss_sold_date_sk int)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x1_store_sales
+POSTHOOK: query: create table x1_store_sales 
+(
+	ss_item_sk	int
+)
+partitioned by (ss_sold_date_sk int)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x1_store_sales
+PREHOOK: query: create table x1_date_dim
+(
+	d_date_sk	int,
+	d_month_seq	int,
+	d_year		int,
+	d_moy		int
+)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x1_date_dim
+POSTHOOK: query: create table x1_date_dim
+(
+	d_date_sk	int,
+	d_month_seq	int,
+	d_year		int,
+	d_moy		int
+)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x1_date_dim
+PREHOOK: query: insert into x1_date_dim values	(1,1,2000,2),
+				(2,2,2001,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x1_date_dim
+POSTHOOK: query: insert into x1_date_dim values	(1,1,2000,2),
+				(2,2,2001,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x1_date_dim
+POSTHOOK: Lineage: x1_date_dim.d_date_sk SCRIPT []
+POSTHOOK: Lineage: x1_date_dim.d_month_seq SCRIPT []
+POSTHOOK: Lineage: x1_date_dim.d_moy SCRIPT []
+POSTHOOK: Lineage: x1_date_dim.d_year SCRIPT []
+PREHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=1) values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x1_store_sales@ss_sold_date_sk=1
+POSTHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=1) values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x1_store_sales@ss_sold_date_sk=1
+POSTHOOK: Lineage: x1_store_sales PARTITION(ss_sold_date_sk=1).ss_item_sk SCRIPT []
+PREHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=2) values (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x1_store_sales@ss_sold_date_sk=2
+POSTHOOK: query: insert into x1_store_sales partition (ss_sold_date_sk=2) values (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x1_store_sales@ss_sold_date_sk=2
+POSTHOOK: Lineage: x1_store_sales PARTITION(ss_sold_date_sk=2).ss_item_sk SCRIPT []
+PREHOOK: query: alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
+'numRows'='123456',
+'rawDataSize'='1234567')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@x1_store_sales
+PREHOOK: Output: default@x1_store_sales@ss_sold_date_sk=1
+POSTHOOK: query: alter table x1_store_sales partition (ss_sold_date_sk=1) update statistics set(
+'numRows'='123456',
+'rawDataSize'='1234567')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@x1_store_sales
+POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
+POSTHOOK: Output: default@x1_store_sales@ss_sold_date_sk=1
+PREHOOK: query: alter table x1_date_dim update statistics set(
+'numRows'='56',
+'rawDataSize'='81449')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@x1_date_dim
+PREHOOK: Output: default@x1_date_dim
+POSTHOOK: query: alter table x1_date_dim update statistics set(
+'numRows'='56',
+'rawDataSize'='81449')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@x1_date_dim
+POSTHOOK: Output: default@x1_date_dim
+PREHOOK: query: explain 
+select   count(*) cnt
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where  
+	1=1
+	and s.ss_sold_date_sk = d.d_date_sk
+	and d.d_year=2000
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select   count(*) cnt
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where  
+	1=1
+	and s.ss_sold_date_sk = d.d_date_sk
+	and d.d_year=2000
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_35]
+        Group By Operator [GBY_34] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+          PARTITION_ONLY_SHUFFLE [RS_33]
+            Group By Operator [GBY_32] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Map Join Operator [MAPJOIN_31] (rows=1728398 width=8)
+                Conds:SEL_30._col0=RS_26._col0(Inner)
+              <-Map 3 [BROADCAST_EDGE] vectorized, llap
+                BROADCAST [RS_26]
+                  PartitionCols:_col0
+                  Select Operator [SEL_25] (rows=28 width=8)
+                    Output:["_col0"]
+                    Filter Operator [FIL_24] (rows=28 width=8)
+                      predicate:((d_year = 2000) and d_date_sk is not null)
+                      TableScan [TS_3] (rows=56 width=8)
+                        default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year"]
+                Dynamic Partitioning Event Operator [EVENT_29] (rows=1 width=8)
+                  Group By Operator [GBY_28] (rows=1 width=8)
+                    Output:["_col0"],keys:_col0
+                    Select Operator [SEL_27] (rows=28 width=8)
+                      Output:["_col0"]
+                       Please refer to the previous Select Operator [SEL_25]
+              <-Select Operator [SEL_30] (rows=123457 width=4)
+                  Output:["_col0"]
+                  TableScan [TS_0] (rows=123457 width=14)
+                    default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE
+
+PREHOOK: query: explain reoptimization
+select   count(*) cnt
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where  
+	1=1
+	and s.ss_sold_date_sk = d.d_date_sk
+	and d.d_year=2000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@x1_date_dim
+PREHOOK: Input: default@x1_store_sales
+PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
+PREHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
+#### A masked pattern was here ####
+POSTHOOK: query: explain reoptimization
+select   count(*) cnt
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where  
+	1=1
+	and s.ss_sold_date_sk = d.d_date_sk
+	and d.d_year=2000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x1_date_dim
+POSTHOOK: Input: default@x1_store_sales
+POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=1
+POSTHOOK: Input: default@x1_store_sales@ss_sold_date_sk=2
+#### A masked pattern was here ####
+PREHOOK: query: explain reoptimization
+select   count(*) cnt
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where  
+	1=1
+	and s.ss_sold_date_sk = d.d_date_sk
+	and d.d_year=2000
+PREHOOK: type: QUERY
+POSTHOOK: query: explain reoptimization
+select   count(*) cnt
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where  
+	1=1
+	and s.ss_sold_date_sk = d.d_date_sk
+	and d.d_year=2000
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_35]
+        Group By Operator [GBY_34] (runtime: rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+          PARTITION_ONLY_SHUFFLE [RS_33]
+            Group By Operator [GBY_32] (runtime: rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Map Join Operator [MAPJOIN_31] (runtime: rows=1 width=8)
+                Conds:SEL_30._col0=RS_26._col0(Inner)
+              <-Map 3 [BROADCAST_EDGE] vectorized, llap
+                BROADCAST [RS_26]
+                  PartitionCols:_col0
+                  Select Operator [SEL_25] (runtime: rows=1 width=8)
+                    Output:["_col0"]
+                    Filter Operator [FIL_24] (runtime: rows=1 width=8)
+                      predicate:((d_year = 2000) and d_date_sk is not null)
+                      TableScan [TS_3] (runtime: rows=2 width=8)
+                        default@x1_date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_year"]
+                Dynamic Partitioning Event Operator [EVENT_29] (runtime: rows=1 width=8)
+                  Group By Operator [GBY_28] (runtime: rows=1 width=8)
+                    Output:["_col0"],keys:_col0
+                    Select Operator [SEL_27] (runtime: rows=1 width=8)
+                      Output:["_col0"]
+                       Please refer to the previous Select Operator [SEL_25]
+              <-Select Operator [SEL_30] (runtime: rows=1 width=4)
+                  Output:["_col0"]
+                  TableScan [TS_0] (rows=123457 width=14)
+                    default@x1_store_sales,s,Tbl:COMPLETE,Col:COMPLETE
+
