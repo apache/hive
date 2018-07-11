@@ -466,8 +466,14 @@ public class StatObjectConverter {
     } else if (colType.equals("date")) {
       DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
       dateStats.setNumNulls(mStatsObj.getNumNulls());
-      dateStats.setHighValue(new Date(mStatsObj.getLongHighValue()));
-      dateStats.setLowValue(new Date(mStatsObj.getLongLowValue()));
+      Long highValue = mStatsObj.getLongHighValue();
+      if (highValue != null) {
+        dateStats.setHighValue(new Date(highValue));
+      }
+      Long lowValue = mStatsObj.getLongLowValue();
+      if (lowValue != null) {
+        dateStats.setLowValue(new Date(lowValue));
+      }
       dateStats.setNumDVs(mStatsObj.getNumDVs());
       dateStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
       colStatsData.setDateStats(dateStats);

@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE druid_partitioned_table_0
+PREHOOK: query: CREATE EXTERNAL TABLE druid_partitioned_table_0
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
         "druid.segment.granularity" = "HOUR",
@@ -22,7 +22,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@druid_partitioned_table_0
-POSTHOOK: query: CREATE TABLE druid_partitioned_table_0
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_partitioned_table_0
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
         "druid.segment.granularity" = "HOUR",
@@ -57,7 +57,7 @@ POSTHOOK: Lineage: druid_partitioned_table_0.csmallint SIMPLE [(alltypesorc)allt
 POSTHOOK: Lineage: druid_partitioned_table_0.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: druid_partitioned_table_0.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
 POSTHOOK: Lineage: druid_partitioned_table_0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: EXPLAIN CREATE TABLE druid_partitioned_table
+PREHOOK: query: EXPLAIN CREATE EXTERNAL TABLE druid_partitioned_table
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
         "druid.segment.granularity" = "HOUR",
@@ -78,7 +78,7 @@ PREHOOK: query: EXPLAIN CREATE TABLE druid_partitioned_table
           cboolean2
           FROM alltypesorc where ctimestamp1 IS NOT NULL
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: EXPLAIN CREATE TABLE druid_partitioned_table
+POSTHOOK: query: EXPLAIN CREATE EXTERNAL TABLE druid_partitioned_table
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
         "druid.segment.granularity" = "HOUR",
@@ -166,6 +166,8 @@ STAGE PLANS:
             druid.query.granularity MINUTE
             druid.segment.granularity HOUR
             druid.segment.targetShardsPerGranularity 6
+            external.table.purge true
+          isExternal: true
 
   Stage: Stage-3
     Stats Work
@@ -177,7 +179,7 @@ STAGE PLANS:
           hdfs directory: true
           destination: hdfs://### HDFS PATH ###
 
-PREHOOK: query: CREATE TABLE druid_partitioned_table
+PREHOOK: query: CREATE EXTERNAL TABLE druid_partitioned_table
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES (
 "druid.segment.granularity" = "HOUR",
@@ -201,7 +203,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@druid_partitioned_table
-POSTHOOK: query: CREATE TABLE druid_partitioned_table
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_partitioned_table
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES (
 "druid.segment.granularity" = "HOUR",
@@ -570,7 +572,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_partitioned_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1408069801800	10992545287
-PREHOOK: query: CREATE TABLE druid_max_size_partition
+PREHOOK: query: CREATE EXTERNAL TABLE druid_max_size_partition
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
         "druid.segment.granularity" = "HOUR",
@@ -593,7 +595,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@druid_max_size_partition
-POSTHOOK: query: CREATE TABLE druid_max_size_partition
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_max_size_partition
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
         "druid.segment.granularity" = "HOUR",

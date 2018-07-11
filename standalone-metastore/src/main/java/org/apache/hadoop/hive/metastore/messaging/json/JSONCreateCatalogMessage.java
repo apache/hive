@@ -18,7 +18,8 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.messaging.CreateCatalogMessage;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class JSONCreateCatalogMessage extends CreateCatalogMessage {
 

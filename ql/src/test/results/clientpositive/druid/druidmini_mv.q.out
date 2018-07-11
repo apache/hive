@@ -89,6 +89,7 @@ bucketing_version	2
 druid.datasource	default.cmv_mat_view_n2
 druid.segment.granularity	HOUR
 numFiles	0
+numFilesErasureCoded	0
 numRows	2
 rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler
@@ -136,6 +137,7 @@ bucketing_version	2
 druid.datasource	default.cmv_mat_view2_n0
 druid.segment.granularity	HOUR
 numFiles	0
+numFilesErasureCoded	0
 numRows	3
 rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler
@@ -515,6 +517,7 @@ druid.datasource	default.cmv_mat_view2_n0
 druid.segment.granularity	HOUR
 #### A masked pattern was here ####
 numFiles	0
+numFilesErasureCoded	0
 numRows	3
 rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler

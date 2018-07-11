@@ -607,10 +607,8 @@ public class SessionState {
   private static void start(SessionState startSs, boolean isAsync, LogHelper console) {
     setCurrentSessionState(startSs);
 
-    synchronized(SessionState.class) {
-      if (!startSs.isStarted.compareAndSet(false, true)) {
-        return;
-      }
+    if (!startSs.isStarted.compareAndSet(false, true)) {
+      return;
     }
 
     if (startSs.hiveHist == null){

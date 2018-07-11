@@ -13049,7 +13049,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.CTAS_PARCOL_COEXISTENCE.getMsg());
           }
         }
-        if (isExt) {
+        if (!conf.getBoolVar(ConfVars.HIVE_CTAS_EXTERNAL_TABLES) && isExt) {
           throw new SemanticException(ErrorMsg.CTAS_EXTTBL_COEXISTENCE.getMsg());
         }
         command_type = CTAS;

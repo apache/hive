@@ -66,6 +66,7 @@ public class MiniHS2 extends AbstractHiveService {
   private static final FsPermission FULL_PERM = new FsPermission((short)00777);
   private static final FsPermission WRITE_ALL_PERM = new FsPermission((short)00733);
   private static final String tmpDir = System.getProperty("test.tmp.dir");
+  private static final int DEFAULT_DATANODE_COUNT = 4;
   private HiveServer2 hiveServer2 = null;
   private final File baseDir;
   private final Path baseFsDir;
@@ -104,6 +105,7 @@ public class MiniHS2 extends AbstractHiveService {
     private boolean isMetastoreSecure;
     private String metastoreServerPrincipal;
     private String metastoreServerKeyTab;
+    private int dataNodes = DEFAULT_DATANODE_COUNT; // default number of datanodes for miniHS2
 
     public Builder() {
     }
@@ -162,6 +164,16 @@ public class MiniHS2 extends AbstractHiveService {
       return this;
     }
 
+    /**
+     * Set the number of datanodes to be used by HS2.
+     * @param count the number of datanodes
+     * @return this Builder
+     */
+    public Builder withDataNodes(int count) {
+      this.dataNodes = count;
+      return this;
+    }
+
     public MiniHS2 build() throws Exception {
       if (miniClusterType == MiniClusterType.MR && useMiniKdc) {
         throw new IOException("Can't create secure miniMr ... yet");
@@ -173,7 +185,7 @@ public class MiniHS2 extends AbstractHiveService {
       }
       return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
           isMetastoreRemote, usePortsFromConf, authType, isHA, cleanupLocalDirOnStartup,
-          isMetastoreSecure, metastoreServerPrincipal, metastoreServerKeyTab);
+          isMetastoreSecure, metastoreServerPrincipal, metastoreServerKeyTab, dataNodes);
     }
   }
 
@@ -212,9 +224,8 @@ public class MiniHS2 extends AbstractHiveService {
   private MiniHS2(HiveConf hiveConf, MiniClusterType miniClusterType, boolean useMiniKdc,
       String serverPrincipal, String serverKeytab, boolean isMetastoreRemote,
       boolean usePortsFromConf, String authType, boolean isHA, boolean cleanupLocalDirOnStartup,
-      boolean isMetastoreSecure,
-      String metastoreServerPrincipal,
-      String metastoreKeyTab) throws Exception {
+      boolean isMetastoreSecure, String metastoreServerPrincipal, String metastoreKeyTab,
+      int dataNodes) throws Exception {
     // Always use localhost for hostname as some tests like SSL CN validation ones
     // are tied to localhost being present in the certificate name
     super(
@@ -242,7 +253,7 @@ public class MiniHS2 extends AbstractHiveService {
 
     if (miniClusterType != MiniClusterType.LOCALFS_ONLY) {
       // Initialize dfs
-      dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, 4, true, null, isHA);
+      dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, dataNodes, true, null, isHA);
       fs = dfs.getFileSystem();
       String uriString = fs.getUri().toString();
 
@@ -334,7 +345,7 @@ public class MiniHS2 extends AbstractHiveService {
       throws Exception {
     this(hiveConf, clusterType, false, null, null,
         false, usePortsFromConf, "KERBEROS", false, true,
-        false, null, null);
+        false, null, null, DEFAULT_DATANODE_COUNT);
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {

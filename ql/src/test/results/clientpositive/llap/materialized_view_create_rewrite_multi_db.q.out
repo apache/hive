@@ -91,6 +91,7 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 bucketing_version	2
 numFiles	1
+numFilesErasureCoded	0
 numRows	2
 rawDataSize	408
 totalSize	457
@@ -124,6 +125,7 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 bucketing_version	2
 numFiles	1
+numFilesErasureCoded	0
 numRows	2
 rawDataSize	232
 totalSize	326

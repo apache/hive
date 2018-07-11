@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline.schematool;
+package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
@@ -23,9 +23,9 @@ import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnecti
 /**
  * Print Hive version and schema version.
  */
-class HiveSchemaToolTaskInfo extends HiveSchemaToolTask {
+class SchemaToolTaskInfo extends SchemaToolTask {
   @Override
-  void setCommandLineArguments(HiveSchemaToolCommandLine cl) {
+  void setCommandLineArguments(SchemaToolCommandLine cl) {
     // do nothing
   }
 

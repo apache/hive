@@ -366,6 +366,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     public long lastAccessTime = 0;
     public long lastUpdateTime = 0;
     public int numOfFiles = 0;
+    int numOfErasureCodedFiles = 0;
   }
 
   // TODO: why is this in text formatter?!!
@@ -415,6 +416,12 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     outStream.write("totalNumberFiles:".getBytes("UTF-8"));
     outStream.write((unknown ? unknownString : "" + fd.numOfFiles).getBytes("UTF-8"));
     outStream.write(terminator);
+
+    if (fd.numOfErasureCodedFiles > 0) {
+      outStream.write("totalNumberErasureCodedFiles:".getBytes("UTF-8"));
+      outStream.write((unknown ? unknownString : "" + fd.numOfErasureCodedFiles).getBytes("UTF-8"));
+      outStream.write(terminator);
+    }
 
     for (int k = 0; k < indent; k++) {
       outStream.write(Utilities.INDENT.getBytes("UTF-8"));
@@ -473,6 +480,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         continue;
       }
       fd.numOfFiles++;
+      if (currentStatus.isErasureCoded()) {
+        fd.numOfErasureCodedFiles++;
+      }
       long fileLen = currentStatus.getLen();
       fd.totalFileSize += fileLen;
       if (fileLen > fd.maxFileSize) {

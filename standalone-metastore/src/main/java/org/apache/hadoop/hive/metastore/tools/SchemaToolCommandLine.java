@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline.schematool;
+package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -32,11 +32,11 @@ import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
 
-class HiveSchemaToolCommandLine {
-  private final Options cmdLineOptions = createOptions();
+public class SchemaToolCommandLine {
+  private final Options cmdLineOptions;
 
   @SuppressWarnings("static-access")
-  private Options createOptions() {
+  private Options createOptions(OptionGroup additionalOptions) {
     Option help = new Option("help", "print this message");
     Option infoOpt = new Option("info", "Show config and schema details");
     Option upgradeOpt = new Option("upgradeSchema", "Schema upgrade");
@@ -67,6 +67,8 @@ class HiveSchemaToolCommandLine {
             "Requires --fromCatalog, --toCatalog, --fromDatabase, and --toDatabase " +
             " parameters as well.")
         .create("moveTable");
+    Option createUserOpt = new Option("createUser", "Create the Hive user, set hiveUser to the db" +
+        " admin user and the hive password to the db admin password with this");
 
     OptionGroup optGroup = new OptionGroup();
     optGroup
@@ -80,7 +82,8 @@ class HiveSchemaToolCommandLine {
       .addOption(createCatalog)
       .addOption(alterCatalog)
       .addOption(moveDatabase)
-      .addOption(moveTable);
+      .addOption(moveTable)
+      .addOption(createUserOpt);
     optGroup.setRequired(true);
 
     Option userNameOpt = OptionBuilder.withArgName("user")
@@ -94,9 +97,23 @@ class HiveSchemaToolCommandLine {
     Option dbTypeOpt = OptionBuilder.withArgName("databaseType")
         .hasArgs().withDescription("Metastore database type").isRequired()
         .create("dbType");
+    Option hiveUserOpt = OptionBuilder
+        .hasArg()
+        .withDescription("Hive user (for use with createUser)")
+        .create("hiveUser");
+    Option hivePasswdOpt = OptionBuilder
+        .hasArg()
+        .withDescription("Hive password (for use with createUser)")
+        .create("hivePassword");
+    Option hiveDbOpt = OptionBuilder
+        .hasArg()
+        .withDescription("Hive database (for use with createUser)")
+        .create("hiveDb");
+    /*
     Option metaDbTypeOpt = OptionBuilder.withArgName("metaDatabaseType")
         .hasArgs().withDescription("Used only if upgrading the system catalog for hive")
         .create("metaDbType");
+        */
     Option urlOpt = OptionBuilder.withArgName("url")
         .hasArgs().withDescription("connection url to the database")
         .create("url");
@@ -148,7 +165,7 @@ class HiveSchemaToolCommandLine {
     options.addOption(help);
     options.addOptionGroup(optGroup);
     options.addOption(dbTypeOpt);
-    options.addOption(metaDbTypeOpt);
+    //options.addOption(metaDbTypeOpt);
     options.addOption(userNameOpt);
     options.addOption(passwdOpt);
     options.addOption(urlOpt);
@@ -164,6 +181,10 @@ class HiveSchemaToolCommandLine {
     options.addOption(toCatalog);
     options.addOption(fromDatabase);
     options.addOption(toDatabase);
+    options.addOption(hiveUserOpt);
+    options.addOption(hivePasswdOpt);
+    options.addOption(hiveDbOpt);
+    if (additionalOptions != null) options.addOptionGroup(additionalOptions);
 
     return options;
   }
@@ -172,7 +193,8 @@ class HiveSchemaToolCommandLine {
   private final String dbType;
   private final String metaDbType;
 
-  HiveSchemaToolCommandLine(String[] args) throws ParseException {
+  public SchemaToolCommandLine(String[] args, OptionGroup additionalOptions) throws ParseException {
+    cmdLineOptions = createOptions(additionalOptions);
     cl = getCommandLine(args);
     if (cl.hasOption("help")) {
       printAndExit(null);
@@ -268,11 +290,11 @@ class HiveSchemaToolCommandLine {
     }
   }
 
-  String getDbType() {
+  public String getDbType() {
     return dbType;
   }
 
-  String getMetaDbType() {
+  public String getMetaDbType() {
     return metaDbType;
   }
 
