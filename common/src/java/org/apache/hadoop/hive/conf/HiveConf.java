@@ -1834,6 +1834,9 @@ public class HiveConf extends Configuration {
     HIVE_SCHEMA_EVOLUTION("hive.exec.schema.evolution", true,
         "Use schema evolution to convert self-describing file format's data to the schema desired by the reader."),
 
+    HIVE_ORC_FORCE_POSITIONAL_SCHEMA_EVOLUTION("orc.force.positional.evolution", true,
+      "Whether to use column position based schema evolution or not (as opposed to column name based evolution)"),
+
     /** Don't use this directly - use AcidUtils! */
     HIVE_TRANSACTIONAL_TABLE_SCAN("hive.transactional.table.scan", false,
         "internal usage only -- do transaction (ACID or insert-only) table scan.", true),
