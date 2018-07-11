@@ -1,0 +1,208 @@
+PREHOOK: query: create table masking_test as select cast(key as int) as key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test
+POSTHOOK: query: create table masking_test as select cast(key as int) as key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test
+POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select * from masking_test
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from masking_test
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: masking_test
+            filterExpr: (((key % 2) = 0) and (key < 10)) (type: boolean)
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int), reverse(value) (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from masking_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from masking_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test
+#### A masked pattern was here ####
+0	0_lav
+4	4_lav
+8	8_lav
+0	0_lav
+0	0_lav
+2	2_lav
+PREHOOK: query: create table new_masking_test_nx as
+select * from masking_test
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@masking_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@new_masking_test_nx
+POSTHOOK: query: create table new_masking_test_nx as
+select * from masking_test
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@masking_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@new_masking_test_nx
+POSTHOOK: Lineage: new_masking_test_nx.key SIMPLE [(masking_test)masking_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: new_masking_test_nx.value EXPRESSION [(masking_test)masking_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from new_masking_test_nx
+PREHOOK: type: QUERY
+PREHOOK: Input: default@new_masking_test_nx
+#### A masked pattern was here ####
+POSTHOOK: query: select * from new_masking_test_nx
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@new_masking_test_nx
+#### A masked pattern was here ####
+0	0_lav
+4	4_lav
+8	8_lav
+0	0_lav
+0	0_lav
+2	2_lav
+PREHOOK: query: create view `masking_test_view` as select key from `masking_test`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@masking_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_view
+POSTHOOK: query: create view `masking_test_view` as select key from `masking_test`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@masking_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_view
+POSTHOOK: Lineage: masking_test_view.key SIMPLE [(masking_test)masking_test.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: explain
+select key from `masking_test_view`
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key from `masking_test_view`
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: masking_test
+            filterExpr: (((key % 2) = 0) and (key < 10) and (key > 6)) (type: boolean)
+            properties:
+              insideView TRUE
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (((key % 2) = 0) and (key < 10) and (key > 6)) (type: boolean)
+              Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key from `masking_test_view`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_view
+#### A masked pattern was here ####
+POSTHOOK: query: select key from `masking_test_view`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_view
+#### A masked pattern was here ####
+4
+PREHOOK: query: create table `my_table_masked` (key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@my_table_masked
+POSTHOOK: query: create table `my_table_masked` (key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@my_table_masked
+PREHOOK: query: insert into `my_table_masked` select key from `masking_test_view`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Output: default@my_table_masked
+POSTHOOK: query: insert into `my_table_masked` select key from `masking_test_view`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Output: default@my_table_masked
+POSTHOOK: Lineage: my_table_masked.key EXPRESSION [(masking_test)masking_test.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from `my_table_masked`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_table_masked
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `my_table_masked`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_table_masked
+#### A masked pattern was here ####
+4
+PREHOOK: query: create table new_masking_test_nx_2 as
+select * from masking_test_view
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_view
+PREHOOK: Output: database:default
+PREHOOK: Output: default@new_masking_test_nx_2
+POSTHOOK: query: create table new_masking_test_nx_2 as
+select * from masking_test_view
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_view
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@new_masking_test_nx_2
+POSTHOOK: Lineage: new_masking_test_nx_2.key EXPRESSION [(masking_test)masking_test.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from new_masking_test_nx_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@new_masking_test_nx_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from new_masking_test_nx_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@new_masking_test_nx_2
+#### A masked pattern was here ####
+4
