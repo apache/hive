@@ -56,10 +56,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import com.google.common.collect.Lists;
+import org.junit.Ignore;
 
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables
  */
+@Ignore("this is ignored as its taking more time. Need to analyze further to reduce the time")
 public class TestReplicationScenariosAcidTables {
   @Rule
   public final TestName testName = new TestName();

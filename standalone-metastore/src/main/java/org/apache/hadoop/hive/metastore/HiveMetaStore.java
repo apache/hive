@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
@@ -2678,7 +2677,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (null == props) {
         return;
       }
-      for (String stat : StatsSetupConst.supportedStats) {
+      for (String stat : StatsSetupConst.SUPPORTED_STATS) {
         String statVal = props.get(stat);
         if (statVal != null) {
           //In the case of truncate table, we set the stats to be 0.
@@ -7317,7 +7316,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private Table getTblObject(String db, String table) throws MetaException, NoSuchObjectException {
       GetTableRequest req = new GetTableRequest(db, table);
-      req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY)));
+      req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY, ClientCapability.INSERT_ONLY_TABLES)));
       return get_table_req(req).getTable();
     }
 

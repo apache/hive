@@ -1,11 +1,12 @@
 SET hive.vectorized.execution.enabled=false;
 SET hive.explain.user=false;
-
+SET hive.ctas.external.tables=true;
+SET hive.external.table.purge.default = true;
 --SET hive.execution.mode=llap;
 
 DROP TABLE druid_table_with_nulls;
 
-CREATE TABLE druid_table_with_nulls
+CREATE EXTERNAL TABLE druid_table_with_nulls
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS

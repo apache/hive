@@ -95,7 +95,6 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.StringJoiner;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -568,6 +567,25 @@ public class MetaStoreUtils {
     return isExternal(params);
   }
 
+  /**
+   * Determines whether an table needs to be purged or not.
+   *
+   * @param table table of interest
+   *
+   * @return true if external table needs to be purged
+   */
+  public static boolean isExternalTablePurge(Table table) {
+    if (table == null) {
+      return false;
+    }
+    Map<String, String> params = table.getParameters();
+    if (params == null) {
+      return false;
+    }
+
+    return isPropertyTrue(params, EXTERNAL_TABLE_PURGE);
+  }
+
   public static boolean isExternal(Map<String, String> tableParams){
     return isPropertyTrue(tableParams, "EXTERNAL");
   }
@@ -628,7 +646,7 @@ public class MetaStoreUtils {
    * @return True if the passed Parameters Map contains values for all "Fast Stats".
    */
   private static boolean containsAllFastStats(Map<String, String> partParams) {
-    for (String stat : StatsSetupConst.fastStats) {
+    for (String stat : StatsSetupConst.FAST_STATS) {
       if (!partParams.containsKey(stat)) {
         return false;
       }
@@ -639,7 +657,7 @@ public class MetaStoreUtils {
   public static boolean isFastStatsSame(Partition oldPart, Partition newPart) {
     // requires to calculate stats if new and old have different fast stats
     if ((oldPart != null) && (oldPart.getParameters() != null)) {
-      for (String stat : StatsSetupConst.fastStats) {
+      for (String stat : StatsSetupConst.FAST_STATS) {
         if (oldPart.getParameters().containsKey(stat)) {
           Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
           Long newStat = Long.parseLong(newPart.getParameters().get(stat));
@@ -720,20 +738,26 @@ public class MetaStoreUtils {
     LOG.trace("Populating quick stats based on {} files", fileStatus.size());
     int numFiles = 0;
     long tableSize = 0L;
+    int numErasureCodedFiles = 0;
     for (FileStatus status : fileStatus) {
       // don't take directories into account for quick stats TODO: wtf?
       if (!status.isDir()) {
         tableSize += status.getLen();
         numFiles += 1;
+        if (status.isErasureCoded()) {
+          numErasureCodedFiles++;
+        }
       }
     }
     params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
+    params.put(StatsSetupConst.NUM_ERASURE_CODED_FILES, Integer.toString(numErasureCodedFiles));
   }
 
   public static void clearQuickStats(Map<String, String> params) {
     params.remove(StatsSetupConst.NUM_FILES);
     params.remove(StatsSetupConst.TOTAL_SIZE);
+    params.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
   }
 
 

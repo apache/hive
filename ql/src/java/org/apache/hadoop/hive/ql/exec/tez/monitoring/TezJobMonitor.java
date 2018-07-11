@@ -166,17 +166,26 @@ public class TezJobMonitor {
           context.checkHeartbeaterLockException();
         }
 
-        status = dagClient.getDAGStatus(EnumSet.of(StatusGetOpts.GET_COUNTERS), checkInterval);
-        TezCounters dagCounters = status.getDAGCounters();
-        vertexProgressMap = status.getVertexProgress();
         wmContext = context.getWmContext();
+        EnumSet<StatusGetOpts> opts = null;
+        if (wmContext != null) {
+          Set<String> desiredCounters = wmContext.getSubscribedCounters();
+          if (desiredCounters != null && !desiredCounters.isEmpty()) {
+            opts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
+          }
+        }
+
+        status = dagClient.getDAGStatus(opts, checkInterval);
+
+        vertexProgressMap = status.getVertexProgress();
         List<String> vertexNames = vertexProgressMap.keySet()
           .stream()
           .map(k -> k.replaceAll(" ", "_"))
           .collect(Collectors.toList());
-        if (dagCounters != null && wmContext != null) {
+        if (wmContext != null) {
           Set<String> desiredCounters = wmContext.getSubscribedCounters();
-          if (desiredCounters != null && !desiredCounters.isEmpty()) {
+          TezCounters dagCounters = status.getDAGCounters();
+          if (dagCounters != null && desiredCounters != null && !desiredCounters.isEmpty()) {
             Map<String, Long> currentCounters = getCounterValues(dagCounters, vertexNames, vertexProgressMap,
               desiredCounters, done);
             if (LOG.isDebugEnabled()) {

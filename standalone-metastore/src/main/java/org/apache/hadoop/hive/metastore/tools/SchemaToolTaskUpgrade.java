@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline.schematool;
+package org.apache.hadoop.hive.metastore.tools;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,11 +27,11 @@ import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnecti
 /**
  * Perform metastore schema upgrade.
  */
-class HiveSchemaToolTaskUpgrade extends HiveSchemaToolTask {
+class SchemaToolTaskUpgrade extends SchemaToolTask {
   private String fromVersion;
 
   @Override
-  void setCommandLineArguments(HiveSchemaToolCommandLine cl) {
+  void setCommandLineArguments(SchemaToolCommandLine cl) {
     if (cl.hasOption("upgradeSchemaFrom")) {
       this.fromVersion = cl.getOptionValue("upgradeSchemaFrom");
     }
@@ -72,7 +72,7 @@ class HiveSchemaToolTaskUpgrade extends HiveSchemaToolTask {
         System.out.println("Upgrade script " + scriptFile);
         if (!schemaTool.isDryRun()) {
           runPreUpgrade(scriptDir, scriptFile);
-          schemaTool.runBeeLine(scriptDir, scriptFile);
+          schemaTool.execSql(scriptDir, scriptFile);
           System.out.println("Completed " + scriptFile);
         }
       }
@@ -102,7 +102,7 @@ class HiveSchemaToolTaskUpgrade extends HiveSchemaToolTask {
       }
 
       try {
-        schemaTool.runBeeLine(scriptDir, preUpgradeScript);
+        schemaTool.execSql(scriptDir, preUpgradeScript);
         System.out.println("Completed " + preUpgradeScript);
       } catch (Exception e) {
         // Ignore the pre-upgrade script errors

@@ -1658,7 +1658,7 @@ public class TestJdbcWithMiniHS2 {
   /**
    * Get Detailed Table Information via jdbc
    */
-  private String getDetailedTableDescription(Statement stmt, String table) throws SQLException {
+  static String getDetailedTableDescription(Statement stmt, String table) throws SQLException {
     String extendedDescription = null;
     try (ResultSet rs = stmt.executeQuery("describe extended " + table)) {
       while (rs.next()) {

@@ -21,8 +21,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 
-import com.google.common.collect.Lists;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -469,7 +467,7 @@ public class CompactorMR {
         HiveStringUtils.escapeHiveCommand(location)).append("' TBLPROPERTIES (");
     // Exclude all standard table properties.
     Set<String> excludes = getHiveMetastoreConstants();
-    excludes.addAll(Lists.newArrayList(StatsSetupConst.TABLE_PARAMS_STATS_KEYS));
+    excludes.addAll(StatsSetupConst.TABLE_PARAMS_STATS_KEYS);
     isFirst = true;
     for (Map.Entry<String, String> e : t.getParameters().entrySet()) {
       if (e.getValue() == null) continue;

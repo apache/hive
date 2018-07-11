@@ -30,7 +30,7 @@ import com.google.common.base.Joiner;
 
 /**
  * Streaming Writer handles utf8 encoded Json (Strict syntax).
- * Uses org.apache.hadoop.hive.serde2.JsonSerDe to process Json input
+ * Uses {@link JsonSerDe} to process Json input
  *
  * NOTE: This record writer is NOT thread-safe. Use one record writer per streaming connection.
  */

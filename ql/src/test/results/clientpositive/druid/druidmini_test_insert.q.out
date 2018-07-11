@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE druid_alltypesorc
+PREHOOK: query: CREATE EXTERNAL TABLE druid_alltypesorc
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -18,7 +18,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@druid_alltypesorc
-POSTHOOK: query: CREATE TABLE druid_alltypesorc
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_alltypesorc
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -194,13 +194,13 @@ POSTHOOK: Output: druid_test_create_then_insert@test_table_n9
 POSTHOOK: Lineage: test_table_n9.num_l SCRIPT []
 POSTHOOK: Lineage: test_table_n9.timecolumn SCRIPT []
 POSTHOOK: Lineage: test_table_n9.userid SCRIPT []
-PREHOOK: query: CREATE TABLE druid_table_n1 (`__time` timestamp with local time zone, `userid` string, `num_l` float)
+PREHOOK: query: CREATE EXTERNAL TABLE druid_table_n1 (`__time` timestamp with local time zone, `userid` string, `num_l` float)
  STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
  TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:druid_test_create_then_insert
 PREHOOK: Output: druid_test_create_then_insert@druid_table_n1
-POSTHOOK: query: CREATE TABLE druid_table_n1 (`__time` timestamp with local time zone, `userid` string, `num_l` float)
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_table_n1 (`__time` timestamp with local time zone, `userid` string, `num_l` float)
  STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
  TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 POSTHOOK: type: CREATETABLE
@@ -335,7 +335,7 @@ POSTHOOK: Output: druid_test_dst@test_base_table
 POSTHOOK: Lineage: test_base_table.num_l SCRIPT []
 POSTHOOK: Lineage: test_base_table.timecolumn SCRIPT []
 POSTHOOK: Lineage: test_base_table.userid SCRIPT []
-PREHOOK: query: CREATE TABLE druid_test_table_n9
+PREHOOK: query: CREATE EXTERNAL TABLE druid_test_table_n9
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 AS
@@ -344,7 +344,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: druid_test_dst@test_base_table
 PREHOOK: Output: database:druid_test_dst
 PREHOOK: Output: druid_test_dst@druid_test_table_n9
-POSTHOOK: query: CREATE TABLE druid_test_table_n9
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_test_table_n9
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "DAY")
 AS

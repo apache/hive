@@ -593,7 +593,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return false;
     }
     boolean statsPresent = false;
-    for (String stat : StatsSetupConst.supportedStats) {
+    for (String stat : StatsSetupConst.SUPPORTED_STATS) {
       String statVal = props.get(stat);
       if (statVal != null && Long.parseLong(statVal) > 0) {
         statsPresent = true;

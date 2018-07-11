@@ -23,7 +23,8 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class JSONAddNotNullConstraintMessage extends AddNotNullConstraintMessage {
   @JsonProperty

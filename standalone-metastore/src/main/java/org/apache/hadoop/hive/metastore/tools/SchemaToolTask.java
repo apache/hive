@@ -15,18 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline.schematool;
+package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 
-abstract class HiveSchemaToolTask {
-  protected HiveSchemaTool schemaTool;
+public abstract class SchemaToolTask {
+  protected MetastoreSchemaTool schemaTool;
 
-  void setHiveSchemaTool(HiveSchemaTool schemaTool) {
+  void setHiveSchemaTool(MetastoreSchemaTool schemaTool) {
     this.schemaTool = schemaTool;
   }
 
-  abstract void setCommandLineArguments(HiveSchemaToolCommandLine cl);
+  abstract void setCommandLineArguments(SchemaToolCommandLine cl);
 
   abstract void execute() throws HiveMetaException;
 }

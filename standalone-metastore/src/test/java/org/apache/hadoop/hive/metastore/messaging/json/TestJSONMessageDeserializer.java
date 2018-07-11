@@ -17,18 +17,19 @@
  */
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.json.JSONException;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.skyscreamer.jsonassert.JSONAssert;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.json.JSONException;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Category(MetastoreUnitTest.class)
 public class TestJSONMessageDeserializer {
@@ -58,19 +59,24 @@ public class TestJSONMessageDeserializer {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o)
+      if (this == o) {
         return true;
-      if (o == null || getClass() != o.getClass())
+      }
+      if (o == null || getClass() != o.getClass()) {
         return false;
+      }
 
       MyClass myClass = (MyClass) o;
 
-      if (a != myClass.a)
+      if (a != myClass.a) {
         return false;
-      if (l != myClass.l)
+      }
+      if (l != myClass.l) {
         return false;
-      if (!map.equals(myClass.map))
+      }
+      if (!map.equals(myClass.map)) {
         return false;
+      }
       return shouldNotSerialize.equals(myClass.shouldNotSerialize);
     }
 

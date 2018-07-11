@@ -1,0 +1,86 @@
+[
+{
+    "t0":"2017-08-1414:45:23.522000",
+    "business_id": "vcNAWiLM4dR7D2nwwJ7nCA",
+    "hours": {
+        "Tuesday": {
+            "close": "17:00",
+            "open": "08:00"
+        },
+        "Friday": {
+            "close": "17:00",
+            "open": "08:00"
+        }
+    },
+    "open": true,
+    "categories": [
+        "Doctors",
+        "Health & Medical"
+    ],
+    "review_count": 9,
+    "name": "Eric Goldberg, MD",
+    "neighborhoods": [],
+    "attributes": {
+        "By Appointment Only": true,
+        "Accepts Credit Cards": true,
+        "Good For Groups": 1
+    },
+    "type": "business"
+}
+,
+{
+    "business_id": "vcNAWiLM4dR7D2nwwJ7nCA",
+    "hours": {
+        "Tuesday": {
+            "close": "17:00",
+            "open": "08:00"
+        },
+        "Friday": {
+            "close": "17:00",
+            "open": "08:00"
+        }
+    },
+    "open": true,
+    "categories": [
+        "Doctors",
+        "Health & Medical"
+    ],
+    "review_count": 9,
+    "name": "Eric Goldberg, MD",
+    "neighborhoods": [],
+    "attributes": {
+        "By Appointment Only": true,
+        "Accepts Credit Cards": true,
+        "Good For Groups": 1
+    },
+    "type": "business"
+}
+,
+{
+    "business_id": "vcNAWiLM4dR7D2nwwJ7nCA",
+    "hours": {
+        "Tuesday": {
+            "close": "17:00",
+            "open": "08:00"
+        },
+        "Friday": {
+            "close": "17:00",
+            "open": "08:00"
+        }
+    },
+    "open": true,
+    "categories": [
+        "Doctors",
+        "Health & Medical"
+    ],
+    "review_count": 9,
+    "name": "Eric Goldberg, MD",
+    "neighborhoods": [],
+    "attributes": {
+        "By Appointment Only": true,
+        "Accepts Credit Cards": true,
+        "Good For Groups": 1
+    },
+    "type": "business"
+}
+]

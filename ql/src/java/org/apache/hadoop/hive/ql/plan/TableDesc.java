@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,7 +126,7 @@ public class TableDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "properties", explainLevels = { Level.EXTENDED })
   public Map getPropertiesExplain() {
-    return HiveStringUtils.getPropertiesExplain(getProperties());
+    return PlanUtils.getPropertiesExplain(getProperties());
   }
 
   public void setProperties(final Properties properties) {

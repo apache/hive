@@ -263,6 +263,8 @@ public class StatsUtils {
       long nr = basicStats.getNumRows();
       List<ColStatistics> colStats = Lists.newArrayList();
 
+      long numErasureCodedFiles = getErasureCodedFiles(table);
+
       if (fetchColStats) {
         // Note: this is currently called from two notable places (w/false for checkTxn)
         //       1) StatsRulesProcFactory.TableScanStatsRule via collectStatistics
@@ -278,7 +280,7 @@ public class StatsUtils {
         long betterDS = getDataSizeFromColumnStats(nr, colStats);
         ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
       }
-      stats = new Statistics(nr, ds);
+      stats = new Statistics(nr, ds, numErasureCodedFiles);
       // infer if any column can be primary key based on column statistics
       inferAndSetPrimaryKey(stats.getNumRows(), colStats);
 
@@ -313,10 +315,14 @@ public class StatsUtils {
       long nr = bbs.getNumRows();
       long ds = bbs.getDataSize();
 
+      List<Long> erasureCodedFiles = getBasicStatForPartitions(table, partList.getNotDeniedPartns(),
+          StatsSetupConst.NUM_ERASURE_CODED_FILES);
+      long numErasureCodedFiles = getSumIgnoreNegatives(erasureCodedFiles);
+
       if (nr == 0) {
         nr=1;
       }
-      stats = new Statistics(nr, ds);
+      stats = new Statistics(nr, ds, numErasureCodedFiles);
       stats.setBasicStatsState(bbs.getState());
       if (nr > 0) {
         // FIXME: this promotion process should be removed later
@@ -1664,6 +1670,14 @@ public class StatsUtils {
   }
 
   /**
+   * Get number of Erasure Coded files for a table
+   * @return count of EC files
+   */
+  public static long getErasureCodedFiles(Table table) {
+    return getBasicStatForTable(table, StatsSetupConst.NUM_ERASURE_CODED_FILES);
+  }
+
+  /**
    * Get basic stats of table
    * @param table
    *          - table
@@ -1790,7 +1804,7 @@ public class StatsUtils {
   }
 
   /**
-   * Get qualified column name from output key column names
+   * Get qualified column name from output key column names.
    * @param keyExprs
    *          - output key names
    * @return list of qualified names
