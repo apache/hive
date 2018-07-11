@@ -153,6 +153,17 @@ public class ParseDriver {
     };
 
     @Override
+    public Object dupTree(Object t, Object parent) {
+      // Overriden to copy start index / end index, that is needed through optimization,
+      // e.g., for masking/filtering
+      ASTNode astNode = (ASTNode) t;
+      ASTNode astNodeCopy = (ASTNode) super.dupTree(t, parent);
+      astNodeCopy.setTokenStartIndex(astNode.getTokenStartIndex());
+      astNodeCopy.setTokenStopIndex(astNode.getTokenStopIndex());
+      return astNodeCopy;
+    }
+
+    @Override
     public Object errorNode(TokenStream input, Token start, Token stop, RecognitionException e) {
       return new ASTErrorNode(input, start, stop, e);
     };
