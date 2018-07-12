@@ -721,6 +721,7 @@ sysFuncNames
     | KW_INT
     | KW_BIGINT
     | KW_FLOAT
+    | KW_REAL
     | KW_DOUBLE
     | KW_BOOLEAN
     | KW_STRING
@@ -844,5 +845,5 @@ nonReserved
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.
 sql11ReservedKeywordsUsedAsFunctionName
     :
-    KW_IF | KW_ARRAY | KW_MAP | KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_GROUPING | KW_INT | KW_SMALLINT | KW_TIMESTAMP
+    KW_IF | KW_ARRAY | KW_MAP | KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_REAL | KW_GROUPING | KW_INT | KW_SMALLINT | KW_TIMESTAMP
     ;
