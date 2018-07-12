@@ -25,8 +25,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -64,9 +62,6 @@ import com.google.common.base.Preconditions;
  * with a bucketing inclusion bit-set.
  */
 public class FixedBucketPruningOptimizer extends Transform {
-
-  private static final Log LOG = LogFactory
-      .getLog(FixedBucketPruningOptimizer.class.getName());
 
   private final boolean compat;
 

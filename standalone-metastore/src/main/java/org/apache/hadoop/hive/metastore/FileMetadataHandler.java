@@ -22,12 +22,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The base implementation of a file metadata handler for a specific file type.
@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
  * contains the actual implementation that depends on some stuff in QL (for ORC).
  */
 public abstract class FileMetadataHandler {
-  protected static final Log LOG = LogFactory.getLog(FileMetadataHandler.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(FileMetadataHandler.class);
 
   private Configuration conf;
   private PartitionExpressionProxy expressionProxy;
