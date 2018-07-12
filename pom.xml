@@ -1222,7 +1222,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>enforce-banned-dependencies</id>
+            <id>enforce-banned-dependencies-licenses</id>
             <goals>
               <goal>enforce</goal>
             </goals>
@@ -1233,6 +1233,27 @@
                     <!--LGPL licenced library-->
                     <exclude>com.google.code.findbugs:annotations</exclude>
                   </excludes>
+                  <message>A banned license dependency was found!</message>
+                </bannedDependencies>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-banned-dependencies-logging</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <!-- Move to SLF4J -->
+                    <exclude>commons-logging:commons-logging</exclude>
+                    <exclude>log4j:log4j</exclude>
+                  </excludes>
+                  <searchTransitive>false</searchTransitive>
+                  <message>A banned logging dependency was found!</message>
                 </bannedDependencies>
               </rules>
               <fail>true</fail>

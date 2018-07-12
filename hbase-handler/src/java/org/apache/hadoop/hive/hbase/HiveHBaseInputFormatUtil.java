@@ -24,13 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
 import org.apache.hadoop.hbase.filter.KeyOnlyFilter;
-import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.exec.ExprNodeConstantEvaluator;
@@ -56,13 +54,15 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Util code common between HiveHBaseTableInputFormat and HiveHBaseTableSnapshotInputFormat.
  */
 class HiveHBaseInputFormatUtil {
 
-  private static final Log LOG = LogFactory.getLog(HiveHBaseInputFormatUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveHBaseInputFormatUtil.class);
 
   /**
    * Parse {@code jobConf} to create a {@link Scan} instance.

@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
@@ -45,10 +42,6 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
  * the group batches.
  */
 public abstract class VectorPTFEvaluatorBase {
-
-  private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorPTFEvaluatorBase.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   protected final WindowFrameDef windowFrameDef;
   private final VectorExpression inputVecExpr;
