@@ -1480,7 +1480,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    TruncateTableDesc truncateTblDesc = new TruncateTableDesc(tableName, partSpec, null);
+    TruncateTableDesc truncateTblDesc = new TruncateTableDesc(tableName, partSpec, null, table);
+    if(truncateTblDesc.mayNeedWriteId()) {
+      if(this.ddlDescWithWriteId != null) {
+        throw new IllegalStateException("ddlDescWithWriteId is already set: " + this.ddlDescWithWriteId);
+      }
+      this.ddlDescWithWriteId = truncateTblDesc;
+    }
 
     DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), truncateTblDesc);
     Task<? extends Serializable> truncateTask = TaskFactory.get(ddlWork);
@@ -1759,6 +1765,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), alterTblDesc);
     if (isPotentialMmSwitch) {
+      if(this.ddlDescWithWriteId != null) {
+        throw new IllegalStateException("ddlDescWithWriteId is already set: " + this.ddlDescWithWriteId);
+      }
       this.ddlDescWithWriteId = alterTblDesc;
       ddlWork.setNeedLock(true); // Hmm... why don't many other operations here need locks?
     }

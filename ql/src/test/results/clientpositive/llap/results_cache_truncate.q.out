@@ -1,0 +1,470 @@
+PREHOOK: query: create table rct1_1 (key string, value string) stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rct1_1
+POSTHOOK: query: create table rct1_1 (key string, value string) stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rct1_1
+PREHOOK: query: insert into rct1_1 select * from default.src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rct1_1
+POSTHOOK: query: insert into rct1_1 select * from default.src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rct1_1
+POSTHOOK: Lineage: rct1_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rct1_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+select count(*) from rct1_1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from rct1_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: rct1_1
+                  Statistics: Num rows: 500 Data size: 35250 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 35250 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from rct1_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rct1_1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from rct1_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rct1_1
+#### A masked pattern was here ####
+500
+test.comment="Query on transactional table should use cache"
+PREHOOK: query: explain
+select count(*) from rct1_1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from rct1_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+      Cached Query Result: true
+
+PREHOOK: query: select count(*) from rct1_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rct1_1
+POSTHOOK: query: select count(*) from rct1_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rct1_1
+500
+PREHOOK: query: truncate table rct1_1
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@rct1_1
+POSTHOOK: query: truncate table rct1_1
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@rct1_1
+test.comment="Table truncated - query cache invalidated"
+PREHOOK: query: explain
+select count(*) from rct1_1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from rct1_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: rct1_1
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from rct1_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rct1_1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from rct1_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rct1_1
+#### A masked pattern was here ####
+0
+PREHOOK: query: create table rct1_2 (key string, value string) partitioned by (p1 string) stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rct1_2
+POSTHOOK: query: create table rct1_2 (key string, value string) partitioned by (p1 string) stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rct1_2
+PREHOOK: query: insert into rct1_2 partition (p1='part1') select * from default.src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rct1_2@p1=part1
+POSTHOOK: query: insert into rct1_2 partition (p1='part1') select * from default.src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rct1_2@p1=part1
+POSTHOOK: Lineage: rct1_2 PARTITION(p1=part1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rct1_2 PARTITION(p1=part1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into rct1_2 partition (p1='part2') select * from default.src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rct1_2@p1=part2
+POSTHOOK: query: insert into rct1_2 partition (p1='part2') select * from default.src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rct1_2@p1=part2
+POSTHOOK: Lineage: rct1_2 PARTITION(p1=part2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rct1_2 PARTITION(p1=part2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+select count(*) from rct1_2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from rct1_2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: rct1_2
+                  Statistics: Num rows: 1000 Data size: 78450 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1000 Data size: 78450 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from rct1_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rct1_2
+PREHOOK: Input: default@rct1_2@p1=part1
+PREHOOK: Input: default@rct1_2@p1=part2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from rct1_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rct1_2
+POSTHOOK: Input: default@rct1_2@p1=part1
+POSTHOOK: Input: default@rct1_2@p1=part2
+#### A masked pattern was here ####
+1000
+test.comment="Query on transactional table should use cache"
+PREHOOK: query: explain
+select count(*) from rct1_2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from rct1_2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+      Cached Query Result: true
+
+PREHOOK: query: select count(*) from rct1_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rct1_2
+PREHOOK: Input: default@rct1_2@p1=part1
+PREHOOK: Input: default@rct1_2@p1=part2
+POSTHOOK: query: select count(*) from rct1_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rct1_2
+POSTHOOK: Input: default@rct1_2@p1=part1
+POSTHOOK: Input: default@rct1_2@p1=part2
+1000
+PREHOOK: query: truncate table rct1_2 partition (p1='part1')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@rct1_2@p1=part1
+POSTHOOK: query: truncate table rct1_2 partition (p1='part1')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@rct1_2@p1=part1
+test.comment="Partition truncated - query cache invalidated"
+PREHOOK: query: explain
+select count(*) from rct1_2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from rct1_2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: rct1_2
+                  Statistics: Num rows: 500 Data size: 39200 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 500 Data size: 39200 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from rct1_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rct1_2
+PREHOOK: Input: default@rct1_2@p1=part1
+PREHOOK: Input: default@rct1_2@p1=part2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from rct1_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rct1_2
+POSTHOOK: Input: default@rct1_2@p1=part1
+POSTHOOK: Input: default@rct1_2@p1=part2
+#### A masked pattern was here ####
+500
+PREHOOK: query: truncate table rct1_2
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@rct1_2@p1=part1
+PREHOOK: Output: default@rct1_2@p1=part2
+POSTHOOK: query: truncate table rct1_2
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@rct1_2@p1=part1
+POSTHOOK: Output: default@rct1_2@p1=part2
+test.comment="Table truncated - query cache invalidated"
+PREHOOK: query: explain
+select count(*) from rct1_2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from rct1_2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: rct1_2
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from rct1_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rct1_2
+PREHOOK: Input: default@rct1_2@p1=part1
+PREHOOK: Input: default@rct1_2@p1=part2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from rct1_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rct1_2
+POSTHOOK: Input: default@rct1_2@p1=part1
+POSTHOOK: Input: default@rct1_2@p1=part2
+#### A masked pattern was here ####
+0
