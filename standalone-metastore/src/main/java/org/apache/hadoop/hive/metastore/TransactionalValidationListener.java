@@ -316,10 +316,8 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     }
 
     if ("false".equalsIgnoreCase(transactional)) {
-      // just drop transactional=false.  For backward compatibility in case someone has scripts
-      // with transactional=false
-      LOG.info("'transactional'='false' is no longer a valid property and will be ignored: " +
-        Warehouse.getQualifiedName(newTable));
+      // just drop transactional=false - absence of 'transactional' property is equivalent to
+      // transactional=false
       return;
     }
 
