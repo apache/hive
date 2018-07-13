@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.conf.valcoersion;
 
+import java.io.IOException;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Enforces absolute paths to be used for the java.io.tmpdir system variable.
@@ -32,7 +32,7 @@ import java.io.IOException;
  * @see org.apache.hadoop.hive.conf.SystemVariables
  */
 public class JavaIOTmpdirVariableCoercion extends VariableCoercion {
-  private static final Log LOG = LogFactory.getLog(JavaIOTmpdirVariableCoercion.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JavaIOTmpdirVariableCoercion.class);
   private static final String NAME = "system:java.io.tmpdir";
   private static final FileSystem LOCAL_FILE_SYSTEM = new LocalFileSystem();
 

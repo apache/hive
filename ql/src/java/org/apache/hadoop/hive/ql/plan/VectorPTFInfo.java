@@ -18,10 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * VectorGroupByAggregrationInfo.
@@ -33,8 +31,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * constructors and later during execution.
  */
 public class VectorPTFInfo {
-
-  private static final long serialVersionUID = 1L;
 
   private int[] outputColumnMap;
 

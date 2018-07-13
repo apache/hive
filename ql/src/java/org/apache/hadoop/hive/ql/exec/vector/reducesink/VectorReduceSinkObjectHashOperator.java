@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector.reducesink;
 
 import java.util.Random;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
@@ -32,16 +30,16 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
-import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import org.apache.hive.common.util.Murmur3;
 
 /**
  * This class is the object hash (not Uniform Hash) operator class for native vectorized reduce sink.
@@ -52,7 +50,7 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
 
   private static final long serialVersionUID = 1L;
   private static final String CLASS_NAME = VectorReduceSinkObjectHashOperator.class.getName();
-  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   protected boolean isEmptyBuckets;
   protected int[] reduceSinkBucketColumnMap;

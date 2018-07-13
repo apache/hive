@@ -215,18 +215,14 @@ public class SparkSessionImpl implements SparkSession {
               sessionId, matchedString.toString());
         } else {
           return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId,
-                  getRootCause(oe));
+              Throwables.getRootCause(e).toString());
         }
       }
       e = e.getCause();
     }
 
-    return new HiveException(oe, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId, getRootCause(oe));
-  }
-
-  private String getRootCause(Throwable e) {
-    Throwable rootCause = Throwables.getRootCause(e);
-    return rootCause.getClass().getName() + ": " + rootCause.getMessage();
+    return new HiveException(oe, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId,
+        Throwables.getRootCause(oe).toString());
   }
 
   private boolean matches(String input, String regex, StringBuilder matchedString) {
