@@ -93,6 +93,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
@@ -105,8 +106,10 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.slf4j.Logger;
@@ -210,6 +213,10 @@ public class TezCompiler extends TaskCompiler {
       new SharedWorkOptimizer().transform(procCtx.parseContext);
     }
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
+
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    markOperatorsWithUnstableRuntimeStats(procCtx);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "markOperatorsWithUnstableRuntimeStats");
 
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
@@ -999,6 +1006,71 @@ public class TezCompiler extends TaskCompiler {
                     GroupByOperator.getOperatorName() + "%" +
                     ReduceSinkOperator.getOperatorName() + "%"),
             new SemiJoinRemovalIfNoStatsProc());
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
+    GraphWalker ogw = new PreOrderOnceWalker(disp);
+    ogw.startWalking(topNodes, null);
+  }
+
+  private static class MarkRuntimeStatsAsIncorrect implements NodeProcessor {
+
+    private PlanMapper planMapper;
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+        throws SemanticException {
+      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
+      planMapper = pCtx.getContext().getPlanMapper();
+      if (nd instanceof ReduceSinkOperator) {
+        ReduceSinkOperator rs = (ReduceSinkOperator) nd;
+        SemiJoinBranchInfo sjInfo = pCtx.getRsToSemiJoinBranchInfo().get(rs);
+        if (sjInfo == null) {
+          return null;
+        }
+        walkSubtree(sjInfo.getTsOp());
+      }
+      if (nd instanceof AppMasterEventOperator) {
+        AppMasterEventOperator ame = (AppMasterEventOperator) nd;
+        AppMasterEventDesc c = ame.getConf();
+        if (c instanceof DynamicPruningEventDesc) {
+          DynamicPruningEventDesc dped = (DynamicPruningEventDesc) c;
+          mark(dped.getTableScan());
+        }
+      }
+      return null;
+    }
+
+    private void walkSubtree(Operator<?> root) {
+      Deque<Operator<?>> deque = new LinkedList<>();
+      deque.add(root);
+      while (!deque.isEmpty()) {
+        Operator<?> op = deque.pollLast();
+        mark(op);
+        if (op instanceof ReduceSinkOperator) {
+          // Done with this branch
+        } else {
+          deque.addAll(op.getChildOperators());
+        }
+      }
+    }
+
+    private void mark(Operator<?> op) {
+      planMapper.link(op, new OperatorStats.IncorrectRuntimeStatsMarker());
+    }
+
+  }
+
+  private void markOperatorsWithUnstableRuntimeStats(OptimizeTezProcContext procCtx) throws SemanticException {
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(
+        new RuleRegExp("R1",
+            ReduceSinkOperator.getOperatorName() + "%"),
+        new MarkRuntimeStatsAsIncorrect());
+    opRules.put(
+        new RuleRegExp("R2",
+            AppMasterEventOperator.getOperatorName() + "%"),
+        new MarkRuntimeStatsAsIncorrect());
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());

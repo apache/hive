@@ -28,8 +28,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -54,6 +52,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This optimization will take a Filter expression, and if its predicate contains
@@ -64,7 +64,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  */
 public class PartitionColumnsSeparator extends Transform {
 
-  private static final Log LOG = LogFactory.getLog(PartitionColumnsSeparator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PartitionColumnsSeparator.class);
   private static final String IN_UDF =
     GenericUDFIn.class.getAnnotation(Description.class).name();
   private static final String STRUCT_UDF =

@@ -18,36 +18,31 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-
-import org.apache.hadoop.fs.LocatedFileStatus;
-
-import org.apache.hadoop.fs.RemoteIterator;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
-
-import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class FileMetadataManager {
-  private static final Log LOG = LogFactory.getLog(FileMetadataManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(FileMetadataManager.class);
 
   private final RawStore tlms;
   private final ExecutorService threadPool;

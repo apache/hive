@@ -123,6 +123,7 @@ TOK_INT;
 TOK_BIGINT;
 TOK_BOOLEAN;
 TOK_FLOAT;
+TOK_REAL;
 TOK_DOUBLE;
 TOK_DATE;
 TOK_DATELITERAL;
@@ -517,6 +518,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_INT", "INT");
     xlateMap.put("KW_BIGINT", "BIGINT");
     xlateMap.put("KW_FLOAT", "FLOAT");
+    xlateMap.put("KW_REAL", "REAL");
     xlateMap.put("KW_DOUBLE", "DOUBLE");
     xlateMap.put("KW_PRECISION", "PRECISION");
     xlateMap.put("KW_DATE", "DATE");
@@ -2522,6 +2524,7 @@ primitiveType
     | KW_BIGINT        ->    TOK_BIGINT
     | KW_BOOLEAN       ->    TOK_BOOLEAN
     | KW_FLOAT         ->    TOK_FLOAT
+    | KW_REAL         ->     TOK_FLOAT
     | KW_DOUBLE KW_PRECISION?       ->    TOK_DOUBLE
     | KW_DATE          ->    TOK_DATE
     | KW_DATETIME      ->    TOK_DATETIME
