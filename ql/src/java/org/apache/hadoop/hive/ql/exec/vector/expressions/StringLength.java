@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -25,6 +26,8 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * Calculate the length of the strings in the input column vector, and store
@@ -74,11 +77,18 @@ public class StringLength extends VectorExpression {
     // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
 
+    // We do not need to consider tailing spaces for CHAR type.
+    PrimitiveCategory category = PrimitiveCategory.STRING;
+    if (this.inputTypeInfos != null && this.inputTypeInfos.length != 0) {
+      PrimitiveTypeInfo typeInfo = (PrimitiveTypeInfo) this.inputTypeInfos[0];
+      category = typeInfo.getPrimitiveCategory();
+    }
+
     if (inputColVector.isRepeating) {
       if (inputColVector.noNulls || !inputIsNull[0]) {
         // Set isNull before call in case it changes it mind.
         outputIsNull[0] = false;
-        resultLen[0] = utf8StringLength(vector[0], start[0], length[0]);
+        resultLen[0] = utf8StringLength(vector[0], start[0], length[0], category);
       } else {
         outputIsNull[0] = true;
         outputColVector.noNulls = false;
@@ -97,12 +107,12 @@ public class StringLength extends VectorExpression {
            final int i = sel[j];
            // Set isNull before call in case it changes it mind.
            outputIsNull[i] = false;
-           resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+           resultLen[i] = utf8StringLength(vector[i], start[i], length[i], category);
          }
         } else {
           for(int j = 0; j != n; j++) {
             final int i = sel[j];
-            resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+            resultLen[i] = utf8StringLength(vector[i], start[i], length[i], category);
           }
         }
       } else {
@@ -114,7 +124,7 @@ public class StringLength extends VectorExpression {
           outputColVector.noNulls = true;
         }
         for(int i = 0; i != n; i++) {
-          resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+          resultLen[i] = utf8StringLength(vector[i], start[i], length[i], category);
         }
       }
     } else /* there are nulls in the inputColVector */ {
@@ -127,7 +137,7 @@ public class StringLength extends VectorExpression {
           int i = sel[j];
           outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+            resultLen[i] = utf8StringLength(vector[i], start[i], length[i], category);
           }
         }
         outputColVector.isRepeating = false;
@@ -135,7 +145,7 @@ public class StringLength extends VectorExpression {
         for(int i = 0; i != n; i++) {
           outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+            resultLen[i] = utf8StringLength(vector[i], start[i], length[i], category);
           }
         }
       }
@@ -146,7 +156,7 @@ public class StringLength extends VectorExpression {
    * Return length in characters of UTF8 string in byte array
    * beginning at start that is len bytes long.
    */
-  static long utf8StringLength(byte[] s, int start, int len) {
+  static long utf8StringLength(byte[] s, int start, int len, PrimitiveCategory category) {
     long resultLength = 0;
     for (int i = start; i < start + len; i++) {
 
@@ -158,6 +168,19 @@ public class StringLength extends VectorExpression {
         resultLength++;
       }
     }
+
+    // Adjust length if the column type is CHAR
+    if (category == PrimitiveCategory.CHAR) {
+      String tmp = new String(s, start, len, StandardCharsets.UTF_8);
+      for(int i = tmp.length() - 1; i >= 0; i--) {
+        if (Character.isWhitespace(tmp.charAt(i))) {
+          resultLength--;
+        } else {
+          break;
+        }
+      }
+    }
+
     return resultLength;
   }
 

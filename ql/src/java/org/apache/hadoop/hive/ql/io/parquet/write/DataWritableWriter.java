@@ -453,7 +453,7 @@ public class DataWritableWriter {
 
     @Override
     public void write(Object value) {
-      String v = inspector.getPrimitiveJavaObject(value).getStrippedValue();
+      String v = inspector.getPrimitiveJavaObject(value).getPaddedValue();
       recordConsumer.addBinary(Binary.fromString(v));
     }
   }
