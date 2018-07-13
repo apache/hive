@@ -18,7 +18,7 @@
 #  Used for the internalizing of String instance field assignments in the Thrift generated files  #
 #  FieldSchema.java, Partition.java, SerDeInfo.java, and StorageDescriptor.java.                  #
 #                                                                                                 #
-#  Look in hive/standalone-metastore/pom.xml for the thriftif profile.                            #
+#  Look in hive/standalone-metastore/metastore-common/pom.xml for the thriftif profile.           #
 #  Usage: thriftif profile automatically refers to this file.                                     #
 #                                                                                                 #
 ###################################################################################################
