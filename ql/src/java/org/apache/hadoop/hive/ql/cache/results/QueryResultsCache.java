@@ -213,9 +213,9 @@ public final class QueryResultsCache {
     }
 
     public String toString() {
-      return "CacheEntry query: [" + getQueryInfo().getLookupInfo().getQueryText()
-          + "], status: " + status + ", location: " + cachedResultsPath
-          + ", size: " + size;
+      return String.format("CacheEntry#%s query: [ %s ], status: %s, location: %s, size: %d",
+          System.identityHashCode(this), getQueryInfo().getLookupInfo().getQueryText(), status,
+          cachedResultsPath, size);
     }
 
     public boolean addReader() {
@@ -297,7 +297,7 @@ public final class QueryResultsCache {
      *         false if the status changes from PENDING to INVALID
      */
     public boolean waitForValidStatus() {
-      LOG.info("Waiting on pending cacheEntry");
+      LOG.info("Waiting on pending cacheEntry: {}", this);
       long timeout = 1000;
 
       long startTime = System.nanoTime();
