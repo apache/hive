@@ -36,6 +36,8 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1834,7 +1836,7 @@ public class QTestUtil {
       if (zooKeeperCluster == null) {
         //create temp dir
         String tmpBaseDir =  System.getProperty(TEST_TMP_DIR_PROPERTY);
-        File tmpDir = Utilities.createTempDir(tmpBaseDir);
+        File tmpDir = Files.createTempDirectory(Paths.get(tmpBaseDir), "tmp_").toFile();
 
         zooKeeperCluster = new MiniZooKeeperCluster();
         zkPort = zooKeeperCluster.startup(tmpDir);
