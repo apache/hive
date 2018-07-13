@@ -552,7 +552,9 @@ public class HiveStreamingConnection implements StreamingConnection {
       getMSC().close();
       getHeatbeatMSC().close();
     }
-    LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
+    }
   }
 
   @Override
