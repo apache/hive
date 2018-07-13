@@ -13,29 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-THISSERVICE=metastore
+THISSERVICE=schemaTool
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
-metastore() {
-  echo "$(timestamp): Starting Metastore Server"
-  CLASS=org.apache.hadoop.hive.metastore.HiveMetaStore
+schemaTool() {
+  METASTORE_OPTS=''
+  CLASS=org.apache.hadoop.hive.metastore.tools.MetastoreSchemaTool
   if $cygwin; then
     METASTORE_LIB=`cygpath -w "$METASTORE_LIB"`
   fi
-  JAR=${METASTORE_LIB}/hive-standalone-metastore-*.jar
+  JAR=${METASTORE_LIB}/hive-standalone-metastore-common-*.jar
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
-
-  export HADOOP_CLIENT_OPTS=" -Dproc_metastore $HADOOP_CLIENT_OPTS "
-  export HADOOP_OPTS="$METASTORE_HADOOP_OPTS $HADOOP_OPTS"
   exec $HADOOP jar $JAR $CLASS "$@"
 }
 
-metastore_help() {
-  metastore -h
-}
-
-timestamp()
-{
- date +"%Y-%m-%d %T"
+schemaTool_help () {
+  schemaTool -h
 }
