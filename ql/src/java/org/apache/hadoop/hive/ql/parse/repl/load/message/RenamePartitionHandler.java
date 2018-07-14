@@ -60,7 +60,7 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
     }
 
     RenamePartitionDesc renamePtnDesc = new RenamePartitionDesc(
-            tableName, oldPartSpec, newPartSpec, context.eventOnlyReplicationSpec());
+            tableName, oldPartSpec, newPartSpec, context.eventOnlyReplicationSpec(), null);
     Task<DDLWork> renamePtnTask = TaskFactory.get(
         new DDLWork(readEntitySet, writeEntitySet, renamePtnDesc), context.hiveConf);
     context.log.debug("Added rename ptn task : {}:{}->{}",

@@ -278,6 +278,18 @@ struct GrantRevokePrivilegeResponse {
   1: optional bool success;
 }
 
+struct TruncateTableRequest {
+  1: required string dbName,
+  2: required string tableName,
+  3: optional list<string> partNames,
+  4: optional i64 txnId=-1,
+  5: optional i64 writeId=-1,
+  6: optional string validWriteIdList
+}
+
+struct TruncateTableResponse {
+}
+
 struct Role {
   1: string roleName,
   2: i32 createTime,
@@ -571,9 +583,7 @@ struct ColumnStatisticsDesc {
 struct ColumnStatistics {
 1: required ColumnStatisticsDesc statsDesc,
 2: required list<ColumnStatisticsObj> statsObj,
-3: optional i64 txnId=-1,            // transaction id of the query that sends this structure TODO## needed?
-4: optional string validWriteIdList, // valid write id list for the table for which this struct is being sent
-5: optional bool isStatsCompliant // Are the stats isolation-level-compliant with the
+3: optional bool isStatsCompliant // Are the stats isolation-level-compliant with the
                                                       // the calling query?
 }
 
@@ -589,6 +599,10 @@ struct SetPartitionsStatsRequest {
 3: optional i64 txnId=-1,   // transaction id of the query that sends this structure
 4: optional i64 writeId=-1,         // writeId for the current query that updates the stats
 5: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+}
+
+struct SetPartitionsStatsResponse {
+1: required bool result;
 }
 
 // schema of the table/query results etc.
@@ -1598,16 +1612,32 @@ struct GetRuntimeStatsRequest {
 }
 
 struct AlterPartitionsRequest {
-  1: required string dbName,
-  2: required string tableName,
-  3: required list<Partition> partitions,
-  4: required EnvironmentContext environmentContext,
-  5: optional i64 txnId=-1,
-  6: optional i64 writeId=-1,
-  7: optional string validWriteIdList
+  1: optional string catName,
+  2: required string dbName,
+  3: required string tableName,
+  4: required list<Partition> partitions,
+  5: optional EnvironmentContext environmentContext,
+  6: optional i64 txnId=-1,
+  7: optional i64 writeId=-1,
+  8: optional string validWriteIdList
 }
 
 struct AlterPartitionsResponse {
+}
+
+struct AlterTableRequest {
+  1: optional string catName,
+  2: required string dbName,
+  3: required string tableName,
+  4: required Table table,
+  5: optional EnvironmentContext environmentContext,
+  6: optional i64 txnId=-1,
+  7: optional i64 writeId=-1,
+  8: optional string validWriteIdList
+// TODO: also add cascade here, out of envCtx
+}
+
+struct AlterTableResponse {
 }
 
 // Exceptions.
@@ -1754,6 +1784,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void truncate_table(1:string dbName, 2:string tableName, 3:list<string> partNames)
                           throws(1:MetaException o1)
+  TruncateTableResponse truncate_table_req(1:TruncateTableRequest req) throws(1:MetaException o1)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_tables_by_type(1: string db_name, 2: string pattern, 3: string tableType) throws (1: MetaException o1)
   list<string> get_materialized_views_for_rewriting(1: string db_name) throws (1: MetaException o1)
@@ -1819,6 +1850,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // alter table not only applies to future partitions but also cascade to existing partitions
   void alter_table_with_cascade(1:string dbname, 2:string tbl_name, 3:Table new_tbl, 4:bool cascade)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
+  AlterTableResponse alter_table_req(1:AlterTableRequest req)
+      throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+
+
   // the following applies to only tables that have partitions
   // * See notes on DDL_TIME
   Partition add_partition(1:Partition new_part)
@@ -1943,7 +1979,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   void alter_partitions_with_environment_context(1:string db_name, 2:string tbl_name, 3:list<Partition> new_parts, 4:EnvironmentContext environment_context) throws (1:InvalidOperationException o1, 2:MetaException o2)
 
-  AlterPartitionsResponse alter_partitions_with_environment_context_req(1:AlterPartitionsRequest req)
+  AlterPartitionsResponse alter_partitions_req(1:AlterPartitionsRequest req)
       throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   void alter_partition_with_environment_context(1:string db_name,
@@ -2011,6 +2047,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
               2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
   bool update_partition_column_statistics(1:ColumnStatistics stats_obj) throws (1:NoSuchObjectException o1,
               2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+
+  SetPartitionsStatsResponse update_table_column_statistics_req(1:SetPartitionsStatsRequest req) throws (1:NoSuchObjectException o1,
+              2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+  SetPartitionsStatsResponse update_partition_column_statistics_req(1:SetPartitionsStatsRequest req) throws (1:NoSuchObjectException o1,
+              2:InvalidObjectException o2, 3:MetaException o3, 4:InvalidInputException o4)
+
 
   // get APIs return the column statistics corresponding to db_name, tbl_name, [part_name], col_name if
   // such statistics exists. If the required statistics doesn't exist, get APIs throw NoSuchObjectException

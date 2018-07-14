@@ -1448,7 +1448,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (tbl != null
             && TxnUtils.isTransactionalTable(tbl)
             && tbl.getPartitionKeysSize() == 0) {
-          if (isCurrentStatsValidForTheQuery(mtable, txnId, writeIdList)) {
+          if (isCurrentStatsValidForTheQuery(mtable, txnId, writeIdList, false)) {
             tbl.setIsStatsCompliant(true);
           } else {
             tbl.setIsStatsCompliant(false);
@@ -1943,11 +1943,14 @@ public class ObjectStore implements RawStore, Configurable {
 
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
     t.setCatName(mtbl.getDatabase().getCatalogName());
+    t.setWriteId(mtbl.getWriteId());
     return t;
   }
 
   private MTable convertToMTable(Table tbl) throws InvalidObjectException,
       MetaException {
+    // NOTE: we don't set writeId in this method. Write ID is only set after validating the
+    //       existing write ID against the caller's valid list.
     if (tbl == null) {
       return null;
     }
@@ -1986,9 +1989,6 @@ public class ObjectStore implements RawStore, Configurable {
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
         tableType);
-    if (TxnUtils.isTransactionalTable(tbl)) {
-      mtable.setWriteId(tbl.getWriteId());
-    }
     return mtable;
   }
 
@@ -2450,21 +2450,24 @@ public class ObjectStore implements RawStore, Configurable {
           + part_vals.toString());
     }
     part.setValues(part_vals);
+    setPartitionStatsParam(part, table.getParameters(), mpart.getWriteId(), txnId, writeIdList);
+    return part;
+  }
+
+  private void setPartitionStatsParam(Partition part, Map<String, String> tableParams,
+      long partWriteId, long reqTxnId, String reqWriteIdList) throws MetaException {
     // If transactional table partition, check whether the current version partition
     // statistics in the metastore comply with the client query's snapshot isolation.
-    if (writeIdList != null) {
-      if (TxnUtils.isTransactionalTable(table.getParameters())) {
-        if (isCurrentStatsValidForTheQuery(mpart, txnId, writeIdList)) {
-          part.setIsStatsCompliant(true);
-        } else {
-          part.setIsStatsCompliant(false);
-          // Do not make persistent the following state since it is query specific (not global).
-          StatsSetupConst.setBasicStatsState(part.getParameters(), StatsSetupConst.FALSE);
-          LOG.info("Removed COLUMN_STATS_ACCURATE from Partition object's parameters.");
-        }
-      }
+    if (reqWriteIdList == null) return;
+    if (!TxnUtils.isTransactionalTable(tableParams)) return;
+    if (isCurrentStatsValidForTheQuery(part, partWriteId, reqTxnId, reqWriteIdList, false)) {
+      part.setIsStatsCompliant(true);
+    } else {
+      part.setIsStatsCompliant(false);
+      // Do not make persistent the following state since it is query specific (not global).
+      StatsSetupConst.setBasicStatsState(part.getParameters(), StatsSetupConst.FALSE);
+      LOG.info("Removed COLUMN_STATS_ACCURATE from Partition object's parameters.");
     }
-    return part;
   }
 
   /**
@@ -2570,6 +2573,8 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
       throws InvalidObjectException, MetaException {
+    // NOTE: we don't set writeId in this method. Write ID is only set after validating the
+    //       existing write ID against the caller's valid list.
     if (part == null) {
       return null;
     }
@@ -2597,9 +2602,6 @@ public class ObjectStore implements RawStore, Configurable {
         .getPartitionKeys()), part.getValues()), mt, part.getValues(), part
         .getCreateTime(), part.getLastAccessTime(),
         msd, part.getParameters());
-    if (TxnUtils.isTransactionalTable(mt.getParameters())) {
-      mpart.setWriteId(part.getWriteId());
-    }
     return mpart;
   }
 
@@ -2612,6 +2614,7 @@ public class ObjectStore implements RawStore, Configurable {
         mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd()),
         convertMap(mpart.getParameters()));
     p.setCatName(mpart.getTable().getDatabase().getCatalogName());
+    p.setWriteId(mpart.getWriteId());
     return p;
   }
 
@@ -2624,6 +2627,7 @@ public class ObjectStore implements RawStore, Configurable {
         mpart.getCreateTime(), mpart.getLastAccessTime(),
         convertToStorageDescriptor(mpart.getSd(), false), convertMap(mpart.getParameters()));
     p.setCatName(catName);
+    p.setWriteId(mpart.getWriteId());
     return p;
   }
 
@@ -4113,6 +4117,16 @@ public class ObjectStore implements RawStore, Configurable {
       // For now only alter name, owner, parameters, cols, bucketcols are allowed
       oldt.setDatabase(newt.getDatabase());
       oldt.setTableName(normalizeIdentifier(newt.getTableName()));
+      boolean isTxn = TxnUtils.isTransactionalTable(newTable);
+      if (isTxn) {
+        // Transactional table is altered without a txn. Make sure there are no changes to the flag.
+        String errorMsg = verifyStatsChangeCtx(oldt.getParameters(), newTable.getParameters(),
+            newTable.getWriteId(), queryValidWriteIds, false);
+        if (errorMsg != null) {
+          throw new MetaException(errorMsg);
+        }
+      }
+      boolean isToTxn = isTxn && !TxnUtils.isTransactionalTable(oldt.getParameters());
       oldt.setParameters(newt.getParameters());
       oldt.setOwner(newt.getOwner());
       oldt.setOwnerType(newt.getOwnerType());
@@ -4135,13 +4149,16 @@ public class ObjectStore implements RawStore, Configurable {
 
       // If transactional, update MTable to have txnId and the writeIdList
       // for the current Stats updater query.
-      if (TxnUtils.isTransactionalTable(newTable) && queryValidWriteIds != null) {
+      // Don't update for conversion to acid - it doesn't modify stats but passes in qVWIds.
+      // The fact that it doesn't update stats is verified above.
+      if (isTxn && queryValidWriteIds != null && (!isToTxn || newTable.getWriteId() > 0)) {
         // Check concurrent INSERT case and set false to the flag.
-        if (!isCurrentStatsValidForTheQuery(oldt, queryTxnId, queryValidWriteIds)) {
+        if (!isCurrentStatsValidForTheQuery(oldt, queryTxnId, queryValidWriteIds, true)) {
           StatsSetupConst.setBasicStatsState(oldt.getParameters(), StatsSetupConst.FALSE);
           LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table " +
                   dbname + "." + name + ". will be made persistent.");
         }
+        assert newTable.getWriteId() > 0;
         oldt.setWriteId(newTable.getWriteId());
       }
 
@@ -4152,6 +4169,32 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  /**
+   * Verifies that the stats JSON string is unchanged for alter table (txn stats).
+   * @return Error message with the details of the change, or null if the value has not changed.
+   */
+  private static String verifyStatsChangeCtx(Map<String, String> oldP, Map<String, String> newP,
+      long writeId, String validWriteIds, boolean isColStatsChange) {
+    if (validWriteIds != null && writeId > 0) return null; // We have txn context.
+    String oldVal = oldP == null ? null : oldP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+    String newVal = newP == null ? null : newP.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+    // We don't need txn context is that stats state is not being changed.
+    if (StringUtils.isEmpty(oldVal) && StringUtils.isEmpty(newVal)) return null;
+    if (StringUtils.equalsIgnoreCase(oldVal, newVal)) {
+      if (!isColStatsChange) return null; // No change in col stats or parameters => assume no change.
+      // Col stats change while json stays "valid" implies stats change. If the new value is invalid,
+      // then we don't care. This is super ugly and idiotic.
+      // It will all become better when we get rid of JSON and store a flag and write ID per stats.
+      if (!StatsSetupConst.areBasicStatsUptoDate(newP)) return null;
+    }
+    // Some change to the stats state is being made; it can only be made with a write ID.
+    // Note - we could do this:  if (writeId > 0 && (validWriteIds != null || !StatsSetupConst.areBasicStatsUptoDate(newP))) { return null;
+    //       However the only way ID list can be absent is if WriteEntity wasn't generated for the alter, which is a separate bug.
+    return "Cannot change stats state for a transactional table without providing the transactional"
+        + " write state for verification (new write ID " + writeId + ", valid write IDs "
+        + validWriteIds + "; current state " + oldVal + "; new state " + newVal;
   }
 
   @Override
@@ -4210,6 +4253,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
     oldp.setValues(newp.getValues());
     oldp.setPartitionName(newp.getPartitionName());
+    boolean isTxn = TxnUtils.isTransactionalTable(table.getParameters());
+    if (isTxn) {
+      // Transactional table is altered without a txn. Make sure there are no changes to the flag.
+      String errorMsg = verifyStatsChangeCtx(oldp.getParameters(), newPart.getParameters(),
+          newPart.getWriteId(), queryValidWriteIds, false);
+      if (errorMsg != null) {
+        throw new MetaException(errorMsg);
+      }
+    }
     oldp.setParameters(newPart.getParameters());
     if (!TableType.VIRTUAL_VIEW.name().equals(oldp.getTable().getTableType())) {
       copyMSD(newp.getSd(), oldp.getSd());
@@ -4223,15 +4275,16 @@ public class ObjectStore implements RawStore, Configurable {
 
     // If transactional, add/update the MUPdaterTransaction
     // for the current updater query.
-    if (queryValidWriteIds != null && TxnUtils.isTransactionalTable(table.getParameters())) {
+    if (isTxn && queryValidWriteIds != null && newPart.getWriteId() > 0) {
       // Check concurrent INSERT case and set false to the flag.
-      if (!isCurrentStatsValidForTheQuery(oldp, queryTxnId, queryValidWriteIds)) {
+      if (!isCurrentStatsValidForTheQuery(oldp, queryTxnId, queryValidWriteIds, true)) {
         StatsSetupConst.setBasicStatsState(oldp.getParameters(), StatsSetupConst.FALSE);
         LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition " +
                 dbname + "." + name + "." + oldp.getPartitionName() + " will be made persistent.");
       }
       oldp.setWriteId(newPart.getWriteId());
     }
+
     return oldCD;
   }
 
@@ -4239,7 +4292,7 @@ public class ObjectStore implements RawStore, Configurable {
   public void alterPartition(String catName, String dbname, String name, List<String> part_vals,
       Partition newPart, long queryTxnId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
     boolean success = false;
-    Exception e = null;
+    Throwable e = null;
     try {
       openTransaction();
       if (newPart.isSetWriteId()) {
@@ -4250,7 +4303,8 @@ public class ObjectStore implements RawStore, Configurable {
       removeUnusedColumnDescriptor(oldCd);
       // commit the changes
       success = commitTransaction();
-    } catch (Exception exception) {
+    } catch (Throwable exception) {
+      LOG.error("alterPartition failed", exception);
       e = exception;
     } finally {
       if (!success) {
@@ -4295,6 +4349,7 @@ public class ObjectStore implements RawStore, Configurable {
       success = commitTransaction();
     } catch (Exception exception) {
       e = exception;
+      LOG.error("Alter failed", e);
     } finally {
       if (!success) {
         rollbackTransaction();
@@ -8354,7 +8409,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics colStats)
+  public boolean updateTableColumnStatistics(ColumnStatistics colStats,
+      long txnId, String validWriteIds, long writeId)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
 
@@ -8382,14 +8438,30 @@ public class ObjectStore implements RawStore, Configurable {
         // There is no need to add colname again, otherwise we will get duplicate colNames.
       }
 
+      // TODO## ideally the col stats stats should be in colstats, not in the table!
       // Set the table properties
       // No need to check again if it exists.
       String dbname = table.getDbName();
       String name = table.getTableName();
       MTable oldt = getMTable(catName, dbname, name);
-      Map<String, String> parameters = table.getParameters();
-      StatsSetupConst.setColumnStatsState(parameters, colNames);
-      oldt.setParameters(parameters);
+      Map<String, String> newParams = new HashMap<>(table.getParameters());
+      StatsSetupConst.setColumnStatsState(newParams, colNames);
+      boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
+      if (isTxn) {
+        String errorMsg = verifyStatsChangeCtx(
+            oldt.getParameters(), newParams, writeId, validWriteIds, true);
+        if (errorMsg != null) {
+          throw new MetaException(errorMsg);
+        }
+        if (!isCurrentStatsValidForTheQuery(oldt, txnId, validWriteIds, true)) {
+          // Make sure we set the flag to invalid regardless of the current value.
+          StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+          LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table "
+              + dbname + "." + name);
+        }
+        oldt.setWriteId(writeId);
+      }
+      oldt.setParameters(newParams);
 
       committed = commitTransaction();
       return committed;
@@ -8427,8 +8499,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals)
-    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+  public boolean updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals,
+      long txnId, String validWriteIds, long writeId)
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
 
     try {
@@ -8460,9 +8533,26 @@ public class ObjectStore implements RawStore, Configurable {
         writeMPartitionColumnStatistics(table, partition, mStatsObj,
             oldStats.get(statsObj.getColName()));
       }
-      Map<String, String> parameters = mPartition.getParameters();
-      StatsSetupConst.setColumnStatsState(parameters, colNames);
-      mPartition.setParameters(parameters);
+      // TODO## ideally the col stats stats should be in colstats, not in the partition!
+      Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
+      StatsSetupConst.setColumnStatsState(newParams, colNames);
+      boolean isTxn = TxnUtils.isTransactionalTable(table);
+      if (isTxn) {
+        String errorMsg = verifyStatsChangeCtx(
+            mPartition.getParameters(), newParams, writeId, validWriteIds, true);
+        if (errorMsg != null) {
+          throw new MetaException(errorMsg);
+        }
+        if (!isCurrentStatsValidForTheQuery(mPartition, txnId, validWriteIds, true)) {
+          // Make sure we set the flag to invalid regardless of the current value.
+          StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+          LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
+              + statsDesc.getDbName() + "." + statsDesc.getTableName() + "." + statsDesc.getPartName());
+        }
+        mPartition.setWriteId(writeId);
+      }
+
+      mPartition.setParameters(newParams);
       committed = commitTransaction();
       return committed;
     } finally {
@@ -8565,19 +8655,20 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> colNames,
       long txnId,
       String writeIdList) throws MetaException, NoSuchObjectException {
-    Boolean iLL = null;
     // If the current stats in the metastore doesn't comply with
     // the isolation level of the query, set No to the compliance flag.
+    Boolean isCompliant = null;
     if (writeIdList != null) {
       MTable table = this.getMTable(catName, dbName, tableName);
-      iLL = isCurrentStatsValidForTheQuery(table, txnId, writeIdList);
+      isCompliant = !TxnUtils.isTransactionalTable(table.getParameters())
+        || isCurrentStatsValidForTheQuery(table, txnId, writeIdList, false);
     }
-    ColumnStatistics cS = getTableColumnStatisticsInternal(
+    ColumnStatistics stats = getTableColumnStatisticsInternal(
         catName, dbName, tableName, colNames, true, true);
-    if (cS != null && iLL != null) {
-      cS.setIsStatsCompliant(iLL);
+    if (stats != null && isCompliant != null) {
+      stats.setIsStatsCompliant(isCompliant);
     }
-    return cS;
+    return stats;
   }
 
   protected ColumnStatistics getTableColumnStatisticsInternal(
@@ -8634,30 +8725,31 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames, List<String> colNames,
       long txnId, String writeIdList)
       throws MetaException, NoSuchObjectException {
-
-    // If any of the current partition stats in the metastore doesn't comply with
-    // the isolation level of the query, return null.
+    if (partNames == null && partNames.isEmpty()) {
+      LOG.warn("The given partNames does not have any name.");
+      return null;
+    }
+    List<ColumnStatistics> allStats = getPartitionColumnStatisticsInternal(
+        catName, dbName, tableName, partNames, colNames, true, true);
     if (writeIdList != null) {
-      if (partNames == null && partNames.isEmpty()) {
-        LOG.warn("The given partNames does not have any name.");
-        return null;
-      }
-      // TODO## this is not correct; stats updater patch will fix it to return stats for valid partitions,
-      //        and no stats for invalid. Remove this comment when merging that patch.
-      // Loop through the given "partNames" list
-      // checking isolation-level-compliance of each partition column stats.
-      for(String partName : partNames) {
-        MPartition mpart = getMPartition(catName, dbName, tableName, Warehouse.getPartValuesFromPartName(partName));
-        if (!isCurrentStatsValidForTheQuery(mpart, txnId, writeIdList)) {
-          LOG.debug("The current metastore transactional partition column statistics for {}.{}.{} "
-            + "(write ID {}) are not valid for current query ({} {})", dbName, tableName,
-            mpart.getPartitionName(), mpart.getWriteId(), txnId, writeIdList);
-          return Lists.newArrayList();
+      // TODO## this could be improved to get partitions in bulk
+      for (ColumnStatistics cs : allStats) {
+        MPartition mpart = getMPartition(catName, dbName, tableName,
+            Warehouse.getPartValuesFromPartName(cs.getStatsDesc().getPartName()));
+        if (mpart == null
+            || !isCurrentStatsValidForTheQuery(mpart, txnId, writeIdList, false)) {
+          if (mpart != null) {
+            LOG.debug("The current metastore transactional partition column statistics for {}.{}.{} "
+              + "(write ID {}) are not valid for current query ({} {})", dbName, tableName,
+              mpart.getPartitionName(), mpart.getWriteId(), txnId, writeIdList);
+          }
+          cs.setIsStatsCompliant(false);
+        } else {
+          cs.setIsStatsCompliant(true);
         }
       }
     }
-    return getPartitionColumnStatisticsInternal(
-        catName, dbName, tableName, partNames, colNames, true, true);
+    return allStats;
   }
 
   protected List<ColumnStatistics> getPartitionColumnStatisticsInternal(
@@ -8726,7 +8818,7 @@ public class ObjectStore implements RawStore, Configurable {
       // checking isolation-level-compliance of each partition column stats.
       for(String partName : partNames) {
         MPartition mpart = getMPartition(catName, dbName, tblName, Warehouse.getPartValuesFromPartName(partName));
-        if (!isCurrentStatsValidForTheQuery(mpart, txnId, writeIdList)) {
+        if (!isCurrentStatsValidForTheQuery(mpart, txnId, writeIdList, false)) {
           LOG.debug("The current metastore transactional partition column statistics " +
                   "for " + dbName + "." + tblName + "." + mpart.getPartitionName() + " is not valid " +
                   "for the current query.");
@@ -8891,6 +8983,8 @@ public class ObjectStore implements RawStore, Configurable {
         throw new NoSuchObjectException("Table " + tableName
             + "  for which stats deletion is requested doesn't exist");
       }
+      // Note: this does not verify ACID state; called internally when removing cols/etc.
+      //       Also called via an unused metastore API that checks for ACID tables.
       MPartition mPartition = getMPartition(catName, dbName, tableName, partVals);
       if (mPartition == null) {
         throw new NoSuchObjectException("Partition " + partName
@@ -8973,6 +9067,8 @@ public class ObjectStore implements RawStore, Configurable {
             TableName.getQualified(catName, dbName, tableName)
             + "  for which stats deletion is requested doesn't exist");
       }
+      // Note: this does not verify ACID state; called internally when removing cols/etc.
+      //       Also called via an unused metastore API that checks for ACID tables.
       query = pm.newQuery(MTableColumnStatistics.class);
       String filter;
       String parameters;
@@ -12305,10 +12401,10 @@ public class ObjectStore implements RawStore, Configurable {
    * @param queryWriteId           writeId of the query
    * @Precondition   "tbl" should be retrieved from the TBLS table.
    */
-  private boolean isCurrentStatsValidForTheQuery(
-      MTable tbl, long queryTxnId, String queryValidWriteIdList) throws MetaException {
-    return isCurrentStatsValidForTheQuery(tbl.getDatabase().getName(), tbl.getTableName(),
-        tbl.getParameters(), tbl.getWriteId(), queryTxnId, queryValidWriteIdList);
+  private boolean isCurrentStatsValidForTheQuery(MTable tbl, long queryTxnId, String queryValidWriteIdList,
+      boolean isCompleteStatsWriter) throws MetaException {
+    return isCurrentStatsValidForTheQuery(conf, tbl.getDatabase().getName(), tbl.getTableName(),
+        tbl.getParameters(), tbl.getWriteId(), queryTxnId, queryValidWriteIdList, isCompleteStatsWriter);
   }
 
   /**
@@ -12325,30 +12421,39 @@ public class ObjectStore implements RawStore, Configurable {
    * @param queryValidWriteIdList  valid writeId list of the query
    * @Precondition   "part" should be retrieved from the PARTITIONS table.
    */
-  private boolean isCurrentStatsValidForTheQuery(
-      MPartition part, long queryTxnId, String queryValidWriteIdList)
+  private boolean isCurrentStatsValidForTheQuery(MPartition part, long queryTxnId,
+      String queryValidWriteIdList, boolean isCompleteStatsWriter)
       throws MetaException {
-    return isCurrentStatsValidForTheQuery(part.getTable().getDatabase().getName(),
+    return isCurrentStatsValidForTheQuery(conf, part.getTable().getDatabase().getName(),
         part.getTable().getTableName(), part.getParameters(), part.getWriteId(),
-        queryTxnId, queryValidWriteIdList);
+        queryTxnId, queryValidWriteIdList, isCompleteStatsWriter);
   }
 
-  private boolean isCurrentStatsValidForTheQuery(String dbName, String tblName,
-      Map<String, String> statsParams, long statsWriteId, long queryTxnId,
-      String queryValidWriteIdList) throws MetaException {
+  private boolean isCurrentStatsValidForTheQuery(Partition part, long partWriteId, long queryTxnId,
+      String queryValidWriteIdList, boolean isCompleteStatsWriter)
+      throws MetaException {
+    return isCurrentStatsValidForTheQuery(conf, part.getDbName(), part.getTableName(),
+        part.getParameters(), partWriteId, queryTxnId, queryValidWriteIdList, isCompleteStatsWriter);
+  }
+
+  // TODO: move to somewhere else
+  public static boolean isCurrentStatsValidForTheQuery(Configuration conf, String dbName,
+      String tblName, Map<String, String> statsParams, long statsWriteId, long queryTxnId,
+      String queryValidWriteIdList, boolean isCompleteStatsWriter) throws MetaException {
 
     // Note: can be changed to debug/info to verify the calls.
-    LOG.trace("Called with stats write ID {}; query {}, {}; params {}",
-        statsWriteId, queryTxnId, queryValidWriteIdList, statsParams);
-    // if statsWriteIdList is null,
+    // TODO## change this to debug when merging
+    LOG.info("isCurrentStatsValidForTheQuery with stats write ID {}; query {}, {}; writer: {} params {}",
+        statsWriteId, queryTxnId, queryValidWriteIdList, isCompleteStatsWriter, statsParams);
     // return true since the stats does not seem to be transactional.
+    // stats write ID 1; query 2, default.stats_part:1:9223372036854775807::;
     if (statsWriteId < 1) {
       return true;
     }
     // This COLUMN_STATS_ACCURATE(CSA) state checking also includes the case that the stats is
     // written by an aborted transaction but TXNS has no entry for the transaction
-    // after compaction.
-    if (!StatsSetupConst.areBasicStatsUptoDate(statsParams)) {
+    // after compaction. Don't check for a complete stats writer - it may replace invalid stats.
+    if (!isCompleteStatsWriter && !StatsSetupConst.areBasicStatsUptoDate(statsParams)) {
       return false;
     }
 
@@ -12359,12 +12464,22 @@ public class ObjectStore implements RawStore, Configurable {
       return true;
     }
 
-    ValidWriteIdList list4TheQuery = new ValidReaderWriteIdList(queryValidWriteIdList);
-    // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
-    // that means it cannot possibly be a concurrent write. If it's not valid (we are not
-    // allowed to see it), that means it's either concurrent or aborted, same thing for us.
-    if (list4TheQuery.isWriteIdValid(statsWriteId)) {
-      return true;
+    if (queryValidWriteIdList != null) { // Can be null when stats are being reset to invalid.
+      ValidWriteIdList list4TheQuery = new ValidReaderWriteIdList(queryValidWriteIdList);
+      // Just check if the write ID is valid. If it's valid (i.e. we are allowed to see it),
+      // that means it cannot possibly be a concurrent write. If it's not valid (we are not
+      // allowed to see it), that means it's either concurrent or aborted, same thing for us.
+      if (list4TheQuery.isWriteIdValid(statsWriteId)) {
+        return true;
+      }
+      // Updater is also allowed to overwrite stats from aborted txns, as long as they are not concurrent.
+      if (isCompleteStatsWriter && list4TheQuery.isWriteIdAborted(statsWriteId)) {
+        return true;
+      }
+    }
+
+    if (queryTxnId < 1) {
+      return false; // The caller is outside of a txn; no need to check the same-txn case.
     }
 
     // This assumes that all writes within the same txn are sequential and can see each other.

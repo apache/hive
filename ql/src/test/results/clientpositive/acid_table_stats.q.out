@@ -321,7 +321,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	208000              
-	totalSize           	8118                
+	totalSize           	8126                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -368,7 +368,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	416000              
-	totalSize           	8118                
+	totalSize           	8126                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

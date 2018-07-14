@@ -38,13 +38,14 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class AlterPartitionsRequest implements org.apache.thrift.TBase<AlterPartitionsRequest, AlterPartitionsRequest._Fields>, java.io.Serializable, Cloneable, Comparable<AlterPartitionsRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AlterPartitionsRequest");
 
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField PARTITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("partitions", org.apache.thrift.protocol.TType.LIST, (short)3);
-  private static final org.apache.thrift.protocol.TField ENVIRONMENT_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("environmentContext", org.apache.thrift.protocol.TType.STRUCT, (short)4);
-  private static final org.apache.thrift.protocol.TField TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnId", org.apache.thrift.protocol.TType.I64, (short)5);
-  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)6);
-  private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField PARTITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("partitions", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField ENVIRONMENT_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("environmentContext", org.apache.thrift.protocol.TType.STRUCT, (short)5);
+  private static final org.apache.thrift.protocol.TField TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnId", org.apache.thrift.protocol.TType.I64, (short)6);
+  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)7);
+  private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -52,23 +53,25 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new AlterPartitionsRequestTupleSchemeFactory());
   }
 
+  private String catName; // optional
   private String dbName; // required
   private String tableName; // required
   private List<Partition> partitions; // required
-  private EnvironmentContext environmentContext; // required
+  private EnvironmentContext environmentContext; // optional
   private long txnId; // optional
   private long writeId; // optional
   private String validWriteIdList; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    DB_NAME((short)1, "dbName"),
-    TABLE_NAME((short)2, "tableName"),
-    PARTITIONS((short)3, "partitions"),
-    ENVIRONMENT_CONTEXT((short)4, "environmentContext"),
-    TXN_ID((short)5, "txnId"),
-    WRITE_ID((short)6, "writeId"),
-    VALID_WRITE_ID_LIST((short)7, "validWriteIdList");
+    CAT_NAME((short)1, "catName"),
+    DB_NAME((short)2, "dbName"),
+    TABLE_NAME((short)3, "tableName"),
+    PARTITIONS((short)4, "partitions"),
+    ENVIRONMENT_CONTEXT((short)5, "environmentContext"),
+    TXN_ID((short)6, "txnId"),
+    WRITE_ID((short)7, "writeId"),
+    VALID_WRITE_ID_LIST((short)8, "validWriteIdList");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -83,19 +86,21 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // DB_NAME
+        case 1: // CAT_NAME
+          return CAT_NAME;
+        case 2: // DB_NAME
           return DB_NAME;
-        case 2: // TABLE_NAME
+        case 3: // TABLE_NAME
           return TABLE_NAME;
-        case 3: // PARTITIONS
+        case 4: // PARTITIONS
           return PARTITIONS;
-        case 4: // ENVIRONMENT_CONTEXT
+        case 5: // ENVIRONMENT_CONTEXT
           return ENVIRONMENT_CONTEXT;
-        case 5: // TXN_ID
+        case 6: // TXN_ID
           return TXN_ID;
-        case 6: // WRITE_ID
+        case 7: // WRITE_ID
           return WRITE_ID;
-        case 7: // VALID_WRITE_ID_LIST
+        case 8: // VALID_WRITE_ID_LIST
           return VALID_WRITE_ID_LIST;
         default:
           return null;
@@ -140,10 +145,12 @@ import org.slf4j.LoggerFactory;
   private static final int __TXNID_ISSET_ID = 0;
   private static final int __WRITEID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TXN_ID,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.ENVIRONMENT_CONTEXT,_Fields.TXN_ID,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
@@ -151,7 +158,7 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.PARTITIONS, new org.apache.thrift.meta_data.FieldMetaData("partitions", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
-    tmpMap.put(_Fields.ENVIRONMENT_CONTEXT, new org.apache.thrift.meta_data.FieldMetaData("environmentContext", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.ENVIRONMENT_CONTEXT, new org.apache.thrift.meta_data.FieldMetaData("environmentContext", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EnvironmentContext.class)));
     tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
@@ -173,14 +180,12 @@ import org.slf4j.LoggerFactory;
   public AlterPartitionsRequest(
     String dbName,
     String tableName,
-    List<Partition> partitions,
-    EnvironmentContext environmentContext)
+    List<Partition> partitions)
   {
     this();
     this.dbName = dbName;
     this.tableName = tableName;
     this.partitions = partitions;
-    this.environmentContext = environmentContext;
   }
 
   /**
@@ -188,6 +193,9 @@ import org.slf4j.LoggerFactory;
    */
   public AlterPartitionsRequest(AlterPartitionsRequest other) {
     __isset_bitfield = other.__isset_bitfield;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
@@ -217,6 +225,7 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
+    this.catName = null;
     this.dbName = null;
     this.tableName = null;
     this.partitions = null;
@@ -226,6 +235,29 @@ import org.slf4j.LoggerFactory;
     this.writeId = -1L;
 
     this.validWriteIdList = null;
+  }
+
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
   }
 
   public String getDbName() {
@@ -404,6 +436,14 @@ import org.slf4j.LoggerFactory;
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     case DB_NAME:
       if (value == null) {
         unsetDbName();
@@ -465,6 +505,9 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case CAT_NAME:
+      return getCatName();
+
     case DB_NAME:
       return getDbName();
 
@@ -497,6 +540,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
+    case CAT_NAME:
+      return isSetCatName();
     case DB_NAME:
       return isSetDbName();
     case TABLE_NAME:
@@ -527,6 +572,15 @@ import org.slf4j.LoggerFactory;
   public boolean equals(AlterPartitionsRequest that) {
     if (that == null)
       return false;
+
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
 
     boolean this_present_dbName = true && this.isSetDbName();
     boolean that_present_dbName = true && that.isSetDbName();
@@ -598,6 +652,11 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
+
     boolean present_dbName = true && (isSetDbName());
     list.add(present_dbName);
     if (present_dbName)
@@ -644,6 +703,16 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetDbName()).compareTo(other.isSetDbName());
     if (lastComparison != 0) {
       return lastComparison;
@@ -734,6 +803,16 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("AlterPartitionsRequest(");
     boolean first = true;
 
+    if (isSetCatName()) {
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
+    if (!first) sb.append(", ");
     sb.append("dbName:");
     if (this.dbName == null) {
       sb.append("null");
@@ -757,14 +836,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.partitions);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("environmentContext:");
-    if (this.environmentContext == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.environmentContext);
+    if (isSetEnvironmentContext()) {
+      if (!first) sb.append(", ");
+      sb.append("environmentContext:");
+      if (this.environmentContext == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.environmentContext);
+      }
+      first = false;
     }
-    first = false;
     if (isSetTxnId()) {
       if (!first) sb.append(", ");
       sb.append("txnId:");
@@ -803,10 +884,6 @@ import org.slf4j.LoggerFactory;
 
     if (!isSetPartitions()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'partitions' is unset! Struct:" + toString());
-    }
-
-    if (!isSetEnvironmentContext()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'environmentContext' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -851,7 +928,15 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // DB_NAME
+          case 1: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbName = iprot.readString();
               struct.setDbNameIsSet(true);
@@ -859,7 +944,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // TABLE_NAME
+          case 3: // TABLE_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.tableName = iprot.readString();
               struct.setTableNameIsSet(true);
@@ -867,17 +952,17 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // PARTITIONS
+          case 4: // PARTITIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list952 = iprot.readListBegin();
-                struct.partitions = new ArrayList<Partition>(_list952.size);
-                Partition _elem953;
-                for (int _i954 = 0; _i954 < _list952.size; ++_i954)
+                org.apache.thrift.protocol.TList _list960 = iprot.readListBegin();
+                struct.partitions = new ArrayList<Partition>(_list960.size);
+                Partition _elem961;
+                for (int _i962 = 0; _i962 < _list960.size; ++_i962)
                 {
-                  _elem953 = new Partition();
-                  _elem953.read(iprot);
-                  struct.partitions.add(_elem953);
+                  _elem961 = new Partition();
+                  _elem961.read(iprot);
+                  struct.partitions.add(_elem961);
                 }
                 iprot.readListEnd();
               }
@@ -886,7 +971,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // ENVIRONMENT_CONTEXT
+          case 5: // ENVIRONMENT_CONTEXT
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
               struct.environmentContext = new EnvironmentContext();
               struct.environmentContext.read(iprot);
@@ -895,7 +980,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // TXN_ID
+          case 6: // TXN_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.txnId = iprot.readI64();
               struct.setTxnIdIsSet(true);
@@ -903,7 +988,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // WRITE_ID
+          case 7: // WRITE_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.writeId = iprot.readI64();
               struct.setWriteIdIsSet(true);
@@ -911,7 +996,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // VALID_WRITE_ID_LIST
+          case 8: // VALID_WRITE_ID_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.validWriteIdList = iprot.readString();
               struct.setValidWriteIdListIsSet(true);
@@ -932,6 +1017,13 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       if (struct.dbName != null) {
         oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
         oprot.writeString(struct.dbName);
@@ -946,18 +1038,20 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitions.size()));
-          for (Partition _iter955 : struct.partitions)
+          for (Partition _iter963 : struct.partitions)
           {
-            _iter955.write(oprot);
+            _iter963.write(oprot);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
       }
       if (struct.environmentContext != null) {
-        oprot.writeFieldBegin(ENVIRONMENT_CONTEXT_FIELD_DESC);
-        struct.environmentContext.write(oprot);
-        oprot.writeFieldEnd();
+        if (struct.isSetEnvironmentContext()) {
+          oprot.writeFieldBegin(ENVIRONMENT_CONTEXT_FIELD_DESC);
+          struct.environmentContext.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.isSetTxnId()) {
         oprot.writeFieldBegin(TXN_ID_FIELD_DESC);
@@ -997,23 +1091,34 @@ import org.slf4j.LoggerFactory;
       oprot.writeString(struct.tableName);
       {
         oprot.writeI32(struct.partitions.size());
-        for (Partition _iter956 : struct.partitions)
+        for (Partition _iter964 : struct.partitions)
         {
-          _iter956.write(oprot);
+          _iter964.write(oprot);
         }
       }
-      struct.environmentContext.write(oprot);
       BitSet optionals = new BitSet();
-      if (struct.isSetTxnId()) {
+      if (struct.isSetCatName()) {
         optionals.set(0);
       }
-      if (struct.isSetWriteId()) {
+      if (struct.isSetEnvironmentContext()) {
         optionals.set(1);
       }
-      if (struct.isSetValidWriteIdList()) {
+      if (struct.isSetTxnId()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetWriteId()) {
+        optionals.set(3);
+      }
+      if (struct.isSetValidWriteIdList()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
+      if (struct.isSetEnvironmentContext()) {
+        struct.environmentContext.write(oprot);
+      }
       if (struct.isSetTxnId()) {
         oprot.writeI64(struct.txnId);
       }
@@ -1033,30 +1138,36 @@ import org.slf4j.LoggerFactory;
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list957 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.partitions = new ArrayList<Partition>(_list957.size);
-        Partition _elem958;
-        for (int _i959 = 0; _i959 < _list957.size; ++_i959)
+        org.apache.thrift.protocol.TList _list965 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.partitions = new ArrayList<Partition>(_list965.size);
+        Partition _elem966;
+        for (int _i967 = 0; _i967 < _list965.size; ++_i967)
         {
-          _elem958 = new Partition();
-          _elem958.read(iprot);
-          struct.partitions.add(_elem958);
+          _elem966 = new Partition();
+          _elem966.read(iprot);
+          struct.partitions.add(_elem966);
         }
       }
       struct.setPartitionsIsSet(true);
-      struct.environmentContext = new EnvironmentContext();
-      struct.environmentContext.read(iprot);
-      struct.setEnvironmentContextIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.environmentContext = new EnvironmentContext();
+        struct.environmentContext.read(iprot);
+        struct.setEnvironmentContextIsSet(true);
+      }
+      if (incoming.get(2)) {
         struct.txnId = iprot.readI64();
         struct.setTxnIdIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(3)) {
         struct.writeId = iprot.readI64();
         struct.setWriteIdIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(4)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
       }

@@ -623,6 +623,9 @@ public interface IMetaStoreClient {
    */
   void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException;
 
+  void truncateTable(String dbName, String tableName, List<String> partNames,
+      long txnId, String validWriteIds, long writeId) throws TException;
+
   /**
    * Truncate the table/partitions in the DEFAULT database.
    * @param catName catalog name
@@ -1641,10 +1644,14 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually in the RDBMS
    * @throws TException general thrift exception
    */
+  @Deprecated
   void alter_table_with_environmentContext(String databaseName, String tblName, Table table,
       EnvironmentContext environmentContext) throws InvalidOperationException, MetaException,
       TException;
 
+  void alter_table(String catName, String databaseName, String tblName, Table table,
+      EnvironmentContext environmentContext, long txnId, String validWriteIdList)
+          throws InvalidOperationException, MetaException, TException;
   /**
    * Create a new database.
    * @param db database object.  If the catalog name is null it will be assumed to be
@@ -2049,6 +2056,7 @@ public interface IMetaStoreClient {
    * @throws TException
    *           if error in communicating with metastore server
    */
+  @Deprecated
   default void alter_partition(String catName, String dbName, String tblName, Partition newPart)
       throws InvalidOperationException, MetaException, TException {
     alter_partition(catName, dbName, tblName, newPart, null);
@@ -2070,7 +2078,13 @@ public interface IMetaStoreClient {
    * @throws TException
    *           if error in communicating with metastore server
    */
+  @Deprecated
   void alter_partition(String dbName, String tblName, Partition newPart, EnvironmentContext environmentContext)
+      throws InvalidOperationException, MetaException, TException;
+
+
+  void alter_partition(String dbName, String tblName, Partition newPart,
+      EnvironmentContext environmentContext, long txnId, String writeIdList)
       throws InvalidOperationException, MetaException, TException;
 
   /**
@@ -2109,6 +2123,7 @@ public interface IMetaStoreClient {
    * @throws TException
    *           if error in communicating with metastore server
    */
+  @Deprecated
   void alter_partitions(String dbName, String tblName, List<Partition> newParts)
       throws InvalidOperationException, MetaException, TException;
 
@@ -2129,6 +2144,7 @@ public interface IMetaStoreClient {
    * @throws TException
    *           if error in communicating with metastore server
    */
+  @Deprecated
   void alter_partitions(String dbName, String tblName, List<Partition> newParts,
       EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException;
@@ -2154,6 +2170,7 @@ public interface IMetaStoreClient {
    * @throws TException
    *           if error in communicating with metastore server
    */
+  @Deprecated
   default void alter_partitions(String catName, String dbName, String tblName,
                                 List<Partition> newParts)
       throws InvalidOperationException, MetaException, TException {
@@ -3736,5 +3753,4 @@ public interface IMetaStoreClient {
 
   /** Reads runtime statistics. */
   List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException;
-
 }

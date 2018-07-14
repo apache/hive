@@ -455,7 +455,7 @@ public class TestCachedStore {
     stats.setStatsObj(colStatObjs);
 
     // Save to DB
-    objectStore.updateTableColumnStatistics(stats);
+    objectStore.updateTableColumnStatistics(stats, -1, null, -1);
 
     // Prewarm CachedStore
     CachedStore.setCachePrewarmedState(false);
@@ -720,8 +720,8 @@ public class TestCachedStore {
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1);
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2);
+    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, -1, null, -1);
+    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, -1, null, -1);
 
     List<String> colNames = new ArrayList<>();
     colNames.add(colName);
@@ -790,10 +790,10 @@ public class TestCachedStore {
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1);
+    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, -1, null, -1);
 
     longStats.setNumDVs(40);
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2);
+    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, -1, null, -1);
 
     List<String> colNames = new ArrayList<>();
     colNames.add(colName);
@@ -871,7 +871,7 @@ public class TestCachedStore {
     stats.setStatsDesc(statsDesc);
     stats.setStatsObj(colStatObjs);
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1);
+    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, -1, null, -1);
 
     longStats.setNumDVs(40);
     hll = HyperLogLog.builder().build();
@@ -881,7 +881,7 @@ public class TestCachedStore {
     hll.addLong(5);
     longStats.setBitVectors(hll.serialize());
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2);
+    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, -1, null, -1);
 
     List<String> colNames = new ArrayList<>();
     colNames.add(colName);

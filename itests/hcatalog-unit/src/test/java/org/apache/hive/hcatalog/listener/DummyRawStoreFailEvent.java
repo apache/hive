@@ -399,7 +399,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
                               List<List<String>> partValsList, List<Partition> newParts,
                               long writeId, long queryTxnId, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
-    objectStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, writeId, queryTxnId, queryValidWriteIds);
+    if (shouldEventSucceed) {
+      objectStore.alterPartitions(catName, dbName, tblName, partValsList, newParts, writeId, queryTxnId, queryValidWriteIds);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
@@ -422,8 +426,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-                                              List<String> partNames) throws MetaException, NoSuchObjectException {
-    return objectStore.getPartitionsByNames(catName, dbName, tblName, partNames);
+      List<String> partNames)
+          throws MetaException, NoSuchObjectException {
+    return objectStore.getPartitionsByNames(
+        catName, dbName, tblName, partNames);
   }
 
   @Override
@@ -730,18 +736,16 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics statsObj)
-      throws NoSuchObjectException, MetaException, InvalidObjectException,
-      InvalidInputException {
-    return objectStore.updateTableColumnStatistics(statsObj);
+  public boolean updateTableColumnStatistics(ColumnStatistics statsObj, long txnId, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return objectStore.updateTableColumnStatistics(statsObj, txnId, validWriteIds, writeId);
   }
 
   @Override
   public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
-                                                 List<String> partVals)
-      throws NoSuchObjectException, MetaException, InvalidObjectException,
-      InvalidInputException {
-    return objectStore.updatePartitionColumnStatistics(statsObj, partVals);
+      List<String> partVals, long txnId, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return objectStore.updatePartitionColumnStatistics(statsObj, partVals, txnId, validWriteIds, writeId);
   }
 
   @Override
@@ -1305,4 +1309,6 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
       String dbName, String tableName) throws MetaException,
       NoSuchObjectException {
     return null;
-  }}
+  }
+
+}

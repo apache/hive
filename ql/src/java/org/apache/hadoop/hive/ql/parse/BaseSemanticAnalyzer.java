@@ -2297,4 +2297,8 @@ public abstract class BaseSemanticAnalyzer {
   public DDLDescWithWriteId getAcidDdlDesc() {
     return null;
   }
+
+  public WriteEntity getAcidAnalyzeTable() {
+    return null;
+  }
 }

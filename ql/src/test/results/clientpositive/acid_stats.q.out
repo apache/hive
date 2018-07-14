@@ -116,11 +116,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: insert into table stats2  values (1, "bar")
+PREHOOK: query: insert into table stats2  values (2, "bar")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@stats2
-POSTHOOK: query: insert into table stats2  values (1, "bar")
+POSTHOOK: query: insert into table stats2  values (2, "bar")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@stats2
@@ -140,6 +140,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: desc formatted stats2 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats2
+POSTHOOK: query: desc formatted stats2 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats2
+col_name            	key                 	 	 	 	 	 	 	 	 	 	 
+data_type           	int                 	 	 	 	 	 	 	 	 	 	 
+min                 	1                   	 	 	 	 	 	 	 	 	 	 
+max                 	2                   	 	 	 	 	 	 	 	 	 	 
+num_nulls           	0                   	 	 	 	 	 	 	 	 	 	 
+distinct_count      	2                   	 	 	 	 	 	 	 	 	 	 
+avg_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+max_col_len         	                    	 	 	 	 	 	 	 	 	 	 
+num_trues           	                    	 	 	 	 	 	 	 	 	 	 
+num_falses          	                    	 	 	 	 	 	 	 	 	 	 
+bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
+comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table stats2  values (1, "baz")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

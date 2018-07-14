@@ -743,13 +743,15 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics statsObj)
+  public boolean updateTableColumnStatistics(ColumnStatistics statsObj,
+      long txnId, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException {
     return false;
   }
 
   @Override
-  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,List<String> partVals)
+  public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,List<String> partVals,
+      long txnId, String validWriteIds, long writeId)
     throws NoSuchObjectException, MetaException, InvalidObjectException {
     return false;
   }

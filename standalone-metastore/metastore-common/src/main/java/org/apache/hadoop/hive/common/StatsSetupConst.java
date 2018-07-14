@@ -157,10 +157,6 @@ public class StatsSetupConst {
 
   public static final String CASCADE = "CASCADE";
 
-  // TODO: when alter calls are switched to req/resp models, replace these and the above with fields.
-  public static final String TXN_ID = "WRITER_TXN_ID";
-  public static final String VALID_WRITE_IDS = "WRITER_WRITE_ID";
-
   public static final String TRUE = "true";
 
   public static final String FALSE = "false";
@@ -275,10 +271,11 @@ public class StatsSetupConst {
     if (params == null) {
       return false;
     }
+    // TODO: should this also check that the basic flag is valid?
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     return stats.columnStats.containsKey(colName);
   }
-  
+
   public static void clearColumnStatsState(Map<String, String> params) {
     if (params == null) {
       return;
@@ -321,7 +318,7 @@ public class StatsSetupConst {
       setColumnStatsState(params, cols);
     }
   }
-  
+
   private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {
     if (statsAcc == null) {
       return new ColumnStatsAccurate();

@@ -694,18 +694,18 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics statsObj)
+  public boolean updateTableColumnStatistics(ColumnStatistics statsObj, long txnId, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
-    return objectStore.updateTableColumnStatistics(statsObj);
+    return objectStore.updateTableColumnStatistics(statsObj, txnId, validWriteIds, writeId);
   }
 
   @Override
   public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
-      List<String> partVals)
+      List<String> partVals, long txnId, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
-    return objectStore.updatePartitionColumnStatistics(statsObj, partVals);
+    return objectStore.updatePartitionColumnStatistics(statsObj, partVals, txnId, validWriteIds, writeId);
   }
 
   @Override

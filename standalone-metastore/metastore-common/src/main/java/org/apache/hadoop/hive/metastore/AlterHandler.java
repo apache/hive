@@ -61,7 +61,7 @@ public interface AlterHandler extends Configurable {
   default void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
     String name, Table newTable, EnvironmentContext envContext)
       throws InvalidOperationException, MetaException {
-    alterTable(msdb, wh, catName, dbname, name, newTable, envContext, null);
+    alterTable(msdb, wh, catName, dbname, name, newTable, envContext, null, -1, null);
   }
 
   /**
@@ -88,7 +88,8 @@ public interface AlterHandler extends Configurable {
    */
   void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
       String name, Table newTable, EnvironmentContext envContext,
-      IHMSHandler handler) throws InvalidOperationException, MetaException;
+      IHMSHandler handler, long txnId, String writeIdList)
+          throws InvalidOperationException, MetaException;
 
   /**
    * @deprecated As of release 2.2.0.  Replaced by {@link #alterPartition(RawStore, Warehouse, String,
@@ -145,7 +146,7 @@ public interface AlterHandler extends Configurable {
   Partition alterPartition(final RawStore msdb, Warehouse wh, final String catName,
                            final String dbname, final String name, final List<String> part_vals,
                            final Partition new_part, EnvironmentContext environmentContext,
-                           IHMSHandler handler)
+                           IHMSHandler handler, long txnId, String validWriteIds)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
 
   /**

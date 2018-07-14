@@ -410,11 +410,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partition("", TABLE_NAME, partitions.get(3));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionNullDbName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
-    client.alter_partition(null, TABLE_NAME, partitions.get(3));
+    try {
+      client.alter_partition(null, TABLE_NAME, partitions.get(3));
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -424,11 +428,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partition(DB_NAME, "", partitions.get(3));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionNullTblName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
-    client.alter_partition(DB_NAME, null, partitions.get(3));
+    try {
+      client.alter_partition(DB_NAME, null, partitions.get(3));
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test
@@ -536,11 +544,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partition("", TABLE_NAME, partitions.get(3), new EnvironmentContext());
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionWithEnvironmentCtxNullDbName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
-    client.alter_partition(null, TABLE_NAME, partitions.get(3), new EnvironmentContext());
+    try {
+      client.alter_partition(null, TABLE_NAME, partitions.get(3), new EnvironmentContext());
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -550,11 +562,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partition(DB_NAME, "", partitions.get(3), new EnvironmentContext());
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionWithEnvironmentCtxNullTblName() throws Exception {
     createTable4PartColsParts(client);
     List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
-    client.alter_partition(DB_NAME, null, partitions.get(3), new EnvironmentContext());
+    try {
+      client.alter_partition(DB_NAME, null, partitions.get(3), new EnvironmentContext());
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test
@@ -680,11 +696,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partitions("", TABLE_NAME, Lists.newArrayList(part));
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionsNullDbName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions(null, TABLE_NAME, Lists.newArrayList(part));
+    try {
+      client.alter_partitions(null, TABLE_NAME, Lists.newArrayList(part));
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -853,11 +873,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     client.alter_partitions("", TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext());
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAlterPartitionsWithEnvironmentCtxNullDbName() throws Exception {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
-    client.alter_partitions(null, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext());
+    try {
+      client.alter_partitions(null, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext());
+      Assert.fail("Expected exception");
+    } catch (MetaException | TProtocolException ex) {
+    }
   }
 
   @Test(expected = InvalidOperationException.class)

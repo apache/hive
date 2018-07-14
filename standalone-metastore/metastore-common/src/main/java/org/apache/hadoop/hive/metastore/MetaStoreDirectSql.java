@@ -112,6 +112,7 @@ class MetaStoreDirectSql {
 
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreDirectSql.class);
   private final PersistenceManager pm;
+  private final Configuration conf;
   private final String schema;
 
   /**
@@ -146,8 +147,10 @@ class MetaStoreDirectSql {
       SKEWED_COL_VALUE_LOC_MAP, COLUMNS_V2, PARTITION_KEYS, SERDE_PARAMS, PART_COL_STATS, KEY_CONSTRAINTS,
       TAB_COL_STATS, PARTITION_KEY_VALS, PART_PRIVS, PART_COL_PRIVS, SKEWED_STRING_LIST, CDS;
 
+
   public MetaStoreDirectSql(PersistenceManager pm, Configuration conf, String schema) {
     this.pm = pm;
+    this.conf = conf;
     this.schema = schema;
     DatabaseProduct dbType = null;
     try {
@@ -645,8 +648,8 @@ class MetaStoreDirectSql {
     + " " + SERDES + ".\"SERDE_ID\", " + PARTITIONS + ".\"CREATE_TIME\","
     + " " + PARTITIONS + ".\"LAST_ACCESS_TIME\", " + SDS + ".\"INPUT_FORMAT\", " + SDS + ".\"IS_COMPRESSED\","
     + " " + SDS + ".\"IS_STOREDASSUBDIRECTORIES\", " + SDS + ".\"LOCATION\", " + SDS + ".\"NUM_BUCKETS\","
-    + " " + SDS + ".\"OUTPUT_FORMAT\", " + SERDES + ".\"NAME\", " + SERDES + ".\"SLIB\" "
-    + "from " + PARTITIONS + ""
+    + " " + SDS + ".\"OUTPUT_FORMAT\", " + SERDES + ".\"NAME\", " + SERDES + ".\"SLIB\", " + PARTITIONS
+    + ".\"WRITE_ID\"" + " from " + PARTITIONS + ""
     + "  left outer join " + SDS + " on " + PARTITIONS + ".\"SD_ID\" = " + SDS + ".\"SD_ID\" "
     + "  left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = " + SERDES + ".\"SERDE_ID\" "
     + "where \"PART_ID\" in (" + partIds + ") order by \"PART_NAME\" asc";
@@ -697,7 +700,12 @@ class MetaStoreDirectSql {
       part.setTableName(tblName);
       if (fields[4] != null) part.setCreateTime(extractSqlInt(fields[4]));
       if (fields[5] != null) part.setLastAccessTime(extractSqlInt(fields[5]));
+      Long writeId = extractSqlLong(fields[14]);
+      if (writeId != null) {
+        part.setWriteId(writeId);
+      }
       partitions.put(partitionId, part);
+
 
       if (sdId == null) continue; // Probably a view.
       assert serdeId != null;
@@ -747,6 +755,7 @@ class MetaStoreDirectSql {
       serde.setSerializationLib((String)fields[13]);
       serdeSb.append(serdeId).append(",");
       sd.setSerdeInfo(serde);
+
       Deadline.checkTimeout();
     }
     query.closeAll();
@@ -2489,7 +2498,9 @@ class MetaStoreDirectSql {
    */
   private void dropPartitionsByPartitionIds(List<Object> partitionIdList) throws MetaException {
     String queryText;
-
+    if (partitionIdList.isEmpty()) {
+      return;
+    }
     String partitionIds = getIdListForIn(partitionIdList);
 
     // Get the corresponding SD_ID-s, CD_ID-s, SERDE_ID-s
@@ -2570,6 +2581,9 @@ class MetaStoreDirectSql {
    * MetaException
    */
   private void dropStorageDescriptors(List<Object> storageDescriptorIdList) throws MetaException {
+    if (storageDescriptorIdList.isEmpty()) {
+      return;
+    }
     String queryText;
     String sdIds = getIdListForIn(storageDescriptorIdList);
 
@@ -2657,6 +2671,9 @@ class MetaStoreDirectSql {
    */
   private void dropSerdes(List<Object> serdeIdList) throws MetaException {
     String queryText;
+    if (serdeIdList.isEmpty()) {
+      return;
+    }
     String serdeIds = getIdListForIn(serdeIdList);
 
     try {
@@ -2683,6 +2700,9 @@ class MetaStoreDirectSql {
    */
   private void dropDanglingColumnDescriptors(List<Object> columnDescriptorIdList)
       throws MetaException {
+    if (columnDescriptorIdList.isEmpty()) {
+      return;
+    }
     String queryText;
     String colIds = getIdListForIn(columnDescriptorIdList);
 
