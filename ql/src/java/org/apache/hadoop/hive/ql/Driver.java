@@ -2203,10 +2203,11 @@ public class Driver implements IDriver {
         if (plan.hasAcidResourcesInQuery()) {
           txnWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
         }
+        CacheEntry cacheEntry = cacheUsage.getCacheEntry();
         boolean savedToCache = QueryResultsCache.getInstance().setEntryValid(
-            cacheUsage.getCacheEntry(),
+            cacheEntry,
             plan.getFetchTask().getWork());
-        LOG.info("savedToCache: {}", savedToCache);
+        LOG.info("savedToCache: {} ({})", savedToCache, cacheEntry);
         if (savedToCache) {
           useFetchFromCache(cacheUsage.getCacheEntry());
           // setEntryValid() already increments the reader count. Set usedCacheEntry so it gets released.
