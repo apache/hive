@@ -30,9 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.clearspring.analytics.util.Preconditions;
-import javolution.testing.AssertionException;
+import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -63,7 +64,11 @@ import org.apache.hadoop.util.ReflectionUtils;
  * The spark version of DynamicPartitionPruner.
  */
 public class SparkDynamicPartitionPruner {
+
   private static final Logger LOG = LoggerFactory.getLogger(SparkDynamicPartitionPruner.class);
+  private static final String CLASS_NAME = SparkDynamicPartitionPruner.class.getName();
+
+  private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private final Map<String, List<SourceInfo>> sourceInfoMap = new LinkedHashMap<String, List<SourceInfo>>();
   private final BytesWritable writable = new BytesWritable();
 
@@ -74,8 +79,12 @@ public class SparkDynamicPartitionPruner {
       // Nothing to prune for this MapWork
       return;
     }
+    perfLogger.PerfLogBegin(CLASS_NAME,
+            PerfLogger.SPARK_DYNAMICALLY_PRUNE_PARTITIONS + work.getName());
     processFiles(work, jobConf);
     prunePartitions(work);
+    perfLogger.PerfLogBegin(CLASS_NAME,
+            PerfLogger.SPARK_DYNAMICALLY_PRUNE_PARTITIONS + work.getName());
   }
 
   public void initialize(MapWork work, JobConf jobConf) throws SerDeException {
@@ -210,14 +219,11 @@ public class SparkDynamicPartitionPruner {
       Path p = it.next();
       PartitionDesc desc = work.getPathToPartitionInfo().get(p);
       Map<String, String> spec = desc.getPartSpec();
-      if (spec == null) {
-        throw new AssertionException("No partition spec found in dynamic pruning");
-      }
+      Preconditions.checkNotNull(spec, "No partition spec found in dynamic pruning");
 
       String partValueString = spec.get(columnName);
-      if (partValueString == null) {
-        throw new AssertionException("Could not find partition value for column: " + columnName);
-      }
+      Preconditions.checkNotNull(partValueString,
+              "Could not find partition value for column: " + columnName);
 
       Object partValue = converter.convert(partValueString);
       if (LOG.isDebugEnabled()) {
@@ -234,8 +240,7 @@ public class SparkDynamicPartitionPruner {
         LOG.info("Pruning path: " + p);
         it.remove();
         work.removePathToAlias(p);
-        // HIVE-12244 call currently ineffective
-        work.getPartitionDescs().remove(desc);
+        work.removePathToPartitionInfo(p);
       }
     }
   }

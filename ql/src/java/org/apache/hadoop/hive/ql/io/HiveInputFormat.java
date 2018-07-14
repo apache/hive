@@ -432,18 +432,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       } else {
         mrwork = Utilities.getMapWork(job);
       }
-
-      // Prune partitions
-      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
-          && HiveConf.isSparkDPPAny(job)) {
-        SparkDynamicPartitionPruner pruner = new SparkDynamicPartitionPruner();
-        try {
-          pruner.prune(mrwork, job);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-
       pathToPartitionInfo = mrwork.getPathToPartitionInfo();
     }
   }
