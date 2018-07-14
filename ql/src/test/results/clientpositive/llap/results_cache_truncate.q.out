@@ -23,54 +23,12 @@ POSTHOOK: query: explain
 select count(*) from rct1_1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: rct1_1
-                  Statistics: Num rows: 500 Data size: 35250 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 35250 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
@@ -96,17 +54,18 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
-      Cached Query Result: true
 
 PREHOOK: query: select count(*) from rct1_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rct1_1
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from rct1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rct1_1
+#### A masked pattern was here ####
 500
 PREHOOK: query: truncate table rct1_1
 PREHOOK: type: TRUNCATETABLE
@@ -122,54 +81,12 @@ POSTHOOK: query: explain
 select count(*) from rct1_1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: rct1_1
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
@@ -217,68 +134,22 @@ POSTHOOK: query: explain
 select count(*) from rct1_2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: rct1_2
-                  Statistics: Num rows: 1000 Data size: 78450 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 1000 Data size: 78450 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
 PREHOOK: query: select count(*) from rct1_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rct1_2
-PREHOOK: Input: default@rct1_2@p1=part1
-PREHOOK: Input: default@rct1_2@p1=part2
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from rct1_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rct1_2
-POSTHOOK: Input: default@rct1_2@p1=part1
-POSTHOOK: Input: default@rct1_2@p1=part2
 #### A masked pattern was here ####
 1000
 test.comment="Query on transactional table should use cache"
@@ -294,21 +165,18 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
-      Cached Query Result: true
 
 PREHOOK: query: select count(*) from rct1_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rct1_2
-PREHOOK: Input: default@rct1_2@p1=part1
-PREHOOK: Input: default@rct1_2@p1=part2
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from rct1_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rct1_2
-POSTHOOK: Input: default@rct1_2@p1=part1
-POSTHOOK: Input: default@rct1_2@p1=part2
+#### A masked pattern was here ####
 1000
 PREHOOK: query: truncate table rct1_2 partition (p1='part1')
 PREHOOK: type: TRUNCATETABLE
@@ -324,68 +192,22 @@ POSTHOOK: query: explain
 select count(*) from rct1_2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: rct1_2
-                  Statistics: Num rows: 500 Data size: 39200 Basic stats: PARTIAL Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 39200 Basic stats: PARTIAL Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
 PREHOOK: query: select count(*) from rct1_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rct1_2
-PREHOOK: Input: default@rct1_2@p1=part1
-PREHOOK: Input: default@rct1_2@p1=part2
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from rct1_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rct1_2
-POSTHOOK: Input: default@rct1_2@p1=part1
-POSTHOOK: Input: default@rct1_2@p1=part2
 #### A masked pattern was here ####
 500
 PREHOOK: query: truncate table rct1_2
@@ -404,67 +226,21 @@ POSTHOOK: query: explain
 select count(*) from rct1_2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: rct1_2
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 1
       Processor Tree:
         ListSink
 
 PREHOOK: query: select count(*) from rct1_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rct1_2
-PREHOOK: Input: default@rct1_2@p1=part1
-PREHOOK: Input: default@rct1_2@p1=part2
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from rct1_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rct1_2
-POSTHOOK: Input: default@rct1_2@p1=part1
-POSTHOOK: Input: default@rct1_2@p1=part2
 #### A masked pattern was here ####
 0

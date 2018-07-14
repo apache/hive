@@ -72,6 +72,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import java.nio.charset.Charset;
 
 /**
@@ -1648,7 +1649,7 @@ public class AcidUtils {
 
     @Override
     public String toString() {
-      return "[txnId=" + txnId + ", validWriteIdList=" + validWriteIdList + "]";
+      return "[txnId=" + txnId + ", validWriteIdList=" + validWriteIdList + ", writeId=" + writeId + "]";
     }
   }
 
@@ -1661,49 +1662,60 @@ public class AcidUtils {
 
   public static TableSnapshot getTableSnapshot(
       Configuration conf, Table tbl, boolean isStatsUpdater) throws LockException {
+    return getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(), isStatsUpdater);
+  }
+
+  public static TableSnapshot getTableSnapshot(Configuration conf,
+      Table tbl, String dbName, String tblName, boolean isStatsUpdater)
+      throws LockException, AssertionError {
     if (!isTransactionalTable(tbl)) {
       return null;
-    } else {
-      long txnId = -1;
-      long writeId = -1;
-      ValidWriteIdList validWriteIdList = null;
-
-      HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
-
-      if (sessionTxnMgr != null) {
-        txnId = sessionTxnMgr.getCurrentTxnId();
-      }
-      String fullTableName = getFullTableName(tbl.getDbName(), tbl.getTableName());
-      if (txnId > 0 && isTransactionalTable(tbl)) {
-        validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
-        if (isStatsUpdater) {
-          writeId = SessionState.get().getTxnMgr() != null ?
-                  SessionState.get().getTxnMgr().getAllocatedTableWriteId(
-                    tbl.getDbName(), tbl.getTableName()) : -1;
-          if (writeId < 1) {
-            // TODO: this is not ideal... stats updater that doesn't have write ID is currently
-            //       "create table"; writeId would be 0/-1 here. No need to call this w/true.
-            LOG.debug("Stats updater for {}.{} doesn't have a write ID",
-                tbl.getDbName(), tbl.getTableName());
-          }
-        }
-
-
-        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)
-            && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
-          return null;
-        }
-        if (validWriteIdList == null) {
-          validWriteIdList = getTableValidWriteIdListWithTxnList(
-              conf, tbl.getDbName(), tbl.getTableName());
-        }
-        if (validWriteIdList == null) {
-          throw new AssertionError("Cannot find valid write ID list for " + tbl.getTableName());
-        }
-      }
-      return new TableSnapshot(txnId, writeId,
-          validWriteIdList != null ? validWriteIdList.toString() : null);
     }
+    if (dbName == null) {
+      dbName = tbl.getDbName();
+    }
+    if (tblName == null) {
+      tblName = tbl.getTableName();
+    }
+    long txnId = -1;
+    long writeId = -1;
+    ValidWriteIdList validWriteIdList = null;
+
+    HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
+
+    if (sessionTxnMgr != null) {
+      txnId = sessionTxnMgr.getCurrentTxnId();
+    }
+    String fullTableName = getFullTableName(dbName, tblName);
+    if (txnId > 0) {
+      validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
+      if (isStatsUpdater) {
+        writeId = SessionState.get().getTxnMgr() != null ?
+                SessionState.get().getTxnMgr().getAllocatedTableWriteId(
+                  dbName, tblName) : -1;
+        if (writeId < 1) {
+          // TODO: this is not ideal... stats updater that doesn't have write ID is currently
+          //       "create table"; writeId would be 0/-1 here. No need to call this w/true.
+          LOG.debug("Stats updater for {}.{} doesn't have a write ID ({})",
+              dbName, tblName, writeId);
+        }
+      }
+
+
+      if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)
+          && conf.get(ValidTxnList.VALID_TXNS_KEY) == null) {
+        return null;
+      }
+      if (validWriteIdList == null) {
+        validWriteIdList = getTableValidWriteIdListWithTxnList(
+            conf, dbName, tblName);
+      }
+      if (validWriteIdList == null) {
+        throw new AssertionError("Cannot find valid write ID list for " + tblName);
+      }
+    }
+    return new TableSnapshot(txnId, writeId,
+        validWriteIdList != null ? validWriteIdList.toString() : null);
   }
 
   /**

@@ -547,6 +547,7 @@ public class CachedStore implements RawStore, Configurable {
         if (!table.isSetPartitionKeys()) {
           List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
           Deadline.startTimer("getTableColumnStatistics");
+          // TODO## should this take write ID into account? or at least cache write ID to verify?
           ColumnStatistics tableColStats =
               rawStore.getTableColumnStatistics(catName, dbName, tblName, colNames);
           Deadline.stopTimer();
@@ -1598,9 +1599,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics colStats)
+  public boolean updateTableColumnStatistics(ColumnStatistics colStats, long txnId, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean succ = rawStore.updateTableColumnStatistics(colStats);
+    boolean succ = rawStore.updateTableColumnStatistics(colStats, txnId, validWriteIds, writeId);
     if (succ) {
       String catName = colStats.getStatsDesc().isSetCatName() ?
           normalizeIdentifier(colStats.getStatsDesc().getCatName()) :
@@ -1676,9 +1677,10 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals)
+  public boolean updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals,
+      long txnId, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean succ = rawStore.updatePartitionColumnStatistics(colStats, partVals);
+    boolean succ = rawStore.updatePartitionColumnStatistics(colStats, partVals, txnId, validWriteIds, writeId);
     if (succ) {
       String catName = colStats.getStatsDesc().isSetCatName() ?
           normalizeIdentifier(colStats.getStatsDesc().getCatName()) : DEFAULT_CATALOG_NAME;

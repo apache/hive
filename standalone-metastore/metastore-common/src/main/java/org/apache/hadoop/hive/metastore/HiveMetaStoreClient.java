@@ -130,7 +130,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   //copied from ErrorMsg.java
   private static final String REPL_EVENTS_MISSING_IN_METASTORE = "Notification events are missing in the meta store.";
-  
+
   static final protected Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClient.class);
 
   public HiveMetaStoreClient(Configuration conf) throws MetaException {
@@ -404,15 +404,36 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (hook != null) {
       hook.preAlterTable(new_tbl, envContext);
     }
-    client.alter_table_with_environment_context(prependCatalogToDbName(dbname, conf),
-        tbl_name, new_tbl, envContext);
+    AlterTableRequest req = new AlterTableRequest(dbname, tbl_name, new_tbl);
+    req.setCatName(MetaStoreUtils.getDefaultCatalog(conf));
+    req.setEnvironmentContext(envContext);
+    client.alter_table_req(req);
   }
 
   @Override
   public void alter_table(String catName, String dbName, String tblName, Table newTable,
                          EnvironmentContext envContext) throws TException {
-    client.alter_table_with_environment_context(prependCatalogToDbName(catName,
-        dbName, conf), tblName, newTable, envContext);
+    // This never used to call the hook. Why? There's overload madness in metastore...
+    AlterTableRequest req = new AlterTableRequest(dbName, tblName, newTable);
+    req.setCatName(catName);
+    req.setEnvironmentContext(envContext);
+    client.alter_table_req(req);
+  }
+
+  @Override
+  public void alter_table(String catName, String dbName, String tbl_name, Table new_tbl,
+      EnvironmentContext envContext, long txnId, String validWriteIds)
+          throws InvalidOperationException, MetaException, TException {
+    HiveMetaHook hook = getHook(new_tbl);
+    if (hook != null) {
+      hook.preAlterTable(new_tbl, envContext);
+    }
+    AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
+    req.setCatName(catName);
+    req.setTxnId(txnId);
+    req.setValidWriteIdList(validWriteIds);
+    req.setEnvironmentContext(envContext);
+    client.alter_table_req(req);
   }
 
   @Override
@@ -1339,14 +1360,33 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public void truncateTable(String dbName, String tableName, List<String> partNames,
+      long txnId, String validWriteIds, long writeId) throws TException {
+    truncateTableInternal(getDefaultCatalog(conf),
+        dbName, tableName, partNames, txnId, validWriteIds, writeId);
+  }
+
+  @Override
   public void truncateTable(String dbName, String tableName, List<String> partNames) throws TException {
-    truncateTable(getDefaultCatalog(conf), dbName, tableName, partNames);
+    truncateTableInternal(getDefaultCatalog(conf), dbName, tableName, partNames, -1, null, -1);
   }
 
   @Override
   public void truncateTable(String catName, String dbName, String tableName, List<String> partNames)
       throws TException {
-    client.truncate_table(prependCatalogToDbName(catName, dbName, conf), tableName, partNames);
+    truncateTableInternal(catName, dbName, tableName, partNames, -1, null, -1);
+  }
+
+  private void truncateTableInternal(String catName, String dbName, String tableName,
+      List<String> partNames, long txnId, String validWriteIds, long writeId)
+          throws MetaException, TException {
+    TruncateTableRequest req = new TruncateTableRequest(
+        prependCatalogToDbName(catName, dbName, conf), tableName);
+    req.setPartNames(partNames);
+    req.setTxnId(txnId);
+    req.setValidWriteIdList(validWriteIds);
+    req.setWriteId(writeId);
+    client.truncate_table_req(req);
   }
 
   /**
@@ -1870,7 +1910,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void alter_partition(String dbName, String tblName, Partition newPart, EnvironmentContext environmentContext)
+  public void alter_partition(String dbName, String tblName, Partition newPart,
+      EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException {
     alter_partition(getDefaultCatalog(conf), dbName, tblName, newPart, environmentContext);
   }
@@ -1878,10 +1919,25 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void alter_partition(String catName, String dbName, String tblName, Partition newPart,
                               EnvironmentContext environmentContext) throws TException {
-    client.alter_partition_with_environment_context(prependCatalogToDbName(catName, dbName, conf), tblName,
-        newPart, environmentContext);
+    AlterPartitionsRequest req = new AlterPartitionsRequest(dbName, tblName, Lists.newArrayList(newPart));
+    req.setCatName(catName);
+    req.setEnvironmentContext(environmentContext);
+    client.alter_partitions_req(req);
   }
 
+  @Override
+  public void alter_partition(String dbName, String tblName, Partition newPart,
+      EnvironmentContext environmentContext, long txnId, String writeIdList)
+      throws InvalidOperationException, MetaException, TException {
+    AlterPartitionsRequest req = new AlterPartitionsRequest(
+        dbName, tblName, Lists.newArrayList(newPart));
+    req.setEnvironmentContext(environmentContext);
+    req.setTxnId(txnId);
+    req.setValidWriteIdList(writeIdList);
+    client.alter_partitions_req(req);
+  }
+
+  @Deprecated
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts)
       throws TException {
@@ -1901,8 +1957,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                EnvironmentContext environmentContext,
                                long txnId, String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException {
-    //client.alter_partition_with_environment_context(getDefaultCatalog(conf),
-      //  dbName, tblName, newParts, environmentContext);
     alter_partitions(getDefaultCatalog(conf),
         dbName, tblName, newParts, environmentContext, txnId, writeIdList, writeId);
 
@@ -1914,14 +1968,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                                EnvironmentContext environmentContext,
                                long txnId, String writeIdList, long writeId) throws TException {
     AlterPartitionsRequest req = new AlterPartitionsRequest();
-    req.setDbName(prependCatalogToDbName(catName, dbName, conf));
+    req.setCatName(catName);
+    req.setDbName(dbName);
     req.setTableName(tblName);
     req.setPartitions(newParts);
     req.setEnvironmentContext(environmentContext);
     req.setTxnId(txnId);
     req.setValidWriteIdList(writeIdList);
     req.setWriteId(writeId);
-    client.alter_partitions_with_environment_context_req(req);
+    client.alter_partitions_req(req);
   }
 
   @Override
@@ -2005,7 +2060,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (!statsObj.getStatsDesc().isSetCatName()) {
       statsObj.getStatsDesc().setCatName(getDefaultCatalog(conf));
     }
-    return client.update_table_column_statistics(statsObj);
+    // Note: currently this method doesn't set txn properties and thus won't work on txn tables.
+    SetPartitionsStatsRequest req = new SetPartitionsStatsRequest();
+    req.addToColStats(statsObj);
+    req.setNeedMerge(false);
+    return client.update_table_column_statistics_req(req).isResult();
   }
 
   @Override
@@ -2013,7 +2072,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (!statsObj.getStatsDesc().isSetCatName()) {
       statsObj.getStatsDesc().setCatName(getDefaultCatalog(conf));
     }
-    return client.update_partition_column_statistics(statsObj);
+    // Note: currently this method doesn't set txn properties and thus won't work on txn tables.
+    SetPartitionsStatsRequest req = new SetPartitionsStatsRequest();
+    req.addToColStats(statsObj);
+    req.setNeedMerge(false);
+    return client.update_partition_column_statistics_req(req).isResult();
   }
 
   @Override
@@ -3431,5 +3494,4 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setMaxCreateTime(maxCreateTime);
     return client.get_runtime_stats(req);
   }
-
 }

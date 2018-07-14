@@ -559,7 +559,7 @@ public class TestObjectStore {
         ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
         statsObjList.add(partStats);
 
-        objectStore.updatePartitionColumnStatistics(stats, part.getValues());
+        objectStore.updatePartitionColumnStatistics(stats, part.getValues(), -1, null, -1);
       }
     }
     if (withPrivileges) {

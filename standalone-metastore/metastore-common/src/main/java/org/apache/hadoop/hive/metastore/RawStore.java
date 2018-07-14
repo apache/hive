@@ -864,7 +864,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the stats object is invalid
    * @throws InvalidInputException unable to record the stats for the table
    */
-  boolean updateTableColumnStatistics(ColumnStatistics colStats)
+  boolean updateTableColumnStatistics(ColumnStatistics colStats, long txnId, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
   /** Persists the given column statistics object to the metastore
@@ -875,9 +875,10 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS.
    * @throws InvalidObjectException the stats object is invalid
    * @throws InvalidInputException unable to record the stats for the table
+   * @throws TException
    */
   boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
-     List<String> partVals)
+     List<String> partVals, long txnId, String validWriteIds, long writeId)
      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
   /**

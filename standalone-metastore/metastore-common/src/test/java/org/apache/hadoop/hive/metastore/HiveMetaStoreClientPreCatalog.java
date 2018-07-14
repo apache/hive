@@ -1635,13 +1635,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     req.setTableName(tblName);
     req.setPartitions(newParts);
     req.setEnvironmentContext(environmentContext);
-    // TODO: this is ugly... account for ability to pass via EC for the old API.
-    if (environmentContext != null && environmentContext.isSetProperties()
-        && environmentContext.getProperties().containsKey(StatsSetupConst.VALID_WRITE_IDS)) {
-      req.setTxnId(Long.parseLong(environmentContext.getProperties().get(StatsSetupConst.TXN_ID)));
-      req.setValidWriteIdList(environmentContext.getProperties().get(StatsSetupConst.VALID_WRITE_IDS));
-    }
-    client.alter_partitions_with_environment_context_req(req);
+    client.alter_partitions_req(req);
   }
 
   @Override
@@ -1656,7 +1650,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     req.setEnvironmentContext(environmentContext);
     req.setTxnId(txnId);
     req.setValidWriteIdList(writeIdList);
-    client.alter_partitions_with_environment_context_req(req);
+    client.alter_partitions_req(req);
   }
 
   @Override
@@ -3532,4 +3526,24 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     throw new UnsupportedOperationException();
   }
 
+  @Override
+  public void alter_table(String catName, String databaseName, String tblName, Table table,
+      EnvironmentContext environmentContext, long txnId, String validWriteIdList)
+      throws InvalidOperationException, MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void alter_partition(String dbName, String tblName, Partition newPart,
+      EnvironmentContext environmentContext, long txnId, String writeIdList)
+      throws InvalidOperationException, MetaException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void truncateTable(String dbName, String tableName,
+      List<String> partNames, long txnId, String validWriteIds, long writeId)
+      throws TException {
+    throw new UnsupportedOperationException();
+  }
 }

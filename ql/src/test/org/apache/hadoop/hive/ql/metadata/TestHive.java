@@ -325,8 +325,10 @@ public class TestHive extends TestCase {
       tbl.getParameters().put(hive_metastoreConstants.DDL_TIME,
           ft.getParameters().get(hive_metastoreConstants.DDL_TIME));
       // Txn stuff set by metastore
-      if (tbl.getTTable().isSetWriteId()) {
-        ft.getTTable().setWriteId(tbl.getTTable().getWriteId());
+      if (tbl.getTTable().isSetWriteId() != ft.getTTable().isSetWriteId()) {
+        // No need to compare this field.
+        ft.getTTable().setWriteId(0);
+        tbl.getTTable().setWriteId(0);
       }
       assertTrue("Tables  doesn't match: " + tableName + " (" + ft.getTTable()
           + "; " + tbl.getTTable() + ")", ft.getTTable().equals(tbl.getTTable()));

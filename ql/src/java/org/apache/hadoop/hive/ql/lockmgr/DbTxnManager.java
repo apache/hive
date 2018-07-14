@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -569,7 +571,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         break;
       case DDL_SHARED:
         compBuilder.setShared();
-        compBuilder.setOperationType(DataOperationType.NO_TXN);
+        if (!output.isTxnAnalyze()) {
+          // Analyze needs txn components to be present, otherwise an aborted analyze write ID
+          // might be rolled under the watermark by compactor while stats written by it are
+          // still present.
+          compBuilder.setOperationType(DataOperationType.NO_TXN);
+        }
         break;
 
       case UPDATE:

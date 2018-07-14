@@ -3933,14 +3933,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         environmentContext = new EnvironmentContext();
       }
       environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, alterTbl.getOp().name());
-      // Note: in the old default overloads that I've removed, "transactional" was true for tables,
-      //       but false for partitions. Seems to be ok here because we are not updating
-      //       partition-stats-related stuff from this call (alterTable).
       if (allPartitions == null) {
         db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), environmentContext, true);
       } else {
-        db.alterPartitions(
-            Warehouse.getQualifiedName(tbl.getTTable()), allPartitions, environmentContext, false);
+        // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
+        //       For any other updates, we don't want to do txn check on partitions when altering table.
+        boolean isTxn = alterTbl.getPartSpec() != null && alterTbl.getOp() == AlterTableTypes.ADDPROPS;
+        db.alterPartitions(Warehouse.getQualifiedName(tbl.getTTable()), allPartitions, environmentContext, isTxn);
       }
       // Add constraints if necessary
       addConstraints(db, alterTbl);
