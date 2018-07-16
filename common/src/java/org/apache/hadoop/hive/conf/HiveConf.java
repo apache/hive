@@ -4311,6 +4311,12 @@ public class HiveConf extends Configuration {
         "specified (default) then the spark-submit shell script is used to launch the Spark " +
         "app. If " + HIVE_SPARK_LAUNCHER_CLIENT + " is specified then Spark's " +
         "InProcessLauncher is used to programmatically launch the app."),
+    SPARK_SESSION_TIMEOUT("hive.spark.session.timeout", "30m", new TimeValidator(TimeUnit.MINUTES,
+            30L, true, null, true), "Amount of time the Spark Remote Driver should wait for " +
+            " a Spark job to be submitted before shutting down. Minimum value is 30 minutes"),
+    SPARK_SESSION_TIMEOUT_PERIOD("hive.spark.session.timeout.period", "60s",
+            new TimeValidator(TimeUnit.SECONDS, 60L, true, null, true),
+            "How frequently to check for idle Spark sessions. Minimum value is 60 seconds."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_MERGE_NWAY_JOINS("hive.merge.nway.joins", true,
