@@ -362,12 +362,14 @@ public class TestVectorDateDiff {
       Object[][] randomRows, ColumnScalarMode columnScalarMode,
       ObjectInspector rowInspector, Object[] resultObjects) throws Exception {
 
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo " + dateTimeStringTypeInfo1.toString() +
         " dateTimeStringTypeInfo2 " + dateTimeStringTypeInfo2 +
         " dateDiffTestMode ROW_MODE" +
         " columnScalarMode " + columnScalarMode +
         " exprDesc " + exprDesc.toString());
+    */
 
     HiveConf hiveConf = new HiveConf();
     ExprNodeEvaluator evaluator =
