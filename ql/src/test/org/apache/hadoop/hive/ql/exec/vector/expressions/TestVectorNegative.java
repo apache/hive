@@ -330,10 +330,12 @@ public class TestVectorNegative {
       ObjectInspector rowInspector,
       TypeInfo outputTypeInfo, Object[] resultObjects) throws Exception {
 
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " negativeTestMode ROW_MODE" +
         " exprDesc " + exprDesc.toString());
+    */
 
     HiveConf hiveConf = new HiveConf();
     ExprNodeEvaluator evaluator =
@@ -425,10 +427,13 @@ public class TestVectorNegative {
         new TypeInfo[] { outputTypeInfo }, new int[] { vectorExpression.getOutputColumnNum() });
     Object[] scrqtchRow = new Object[1];
 
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " negativeTestMode " + negativeTestMode +
         " vectorExpression " + vectorExpression.toString());
+    */
+
     batchSource.resetBatchIteration();
     int rowIndex = 0;
     while (true) {

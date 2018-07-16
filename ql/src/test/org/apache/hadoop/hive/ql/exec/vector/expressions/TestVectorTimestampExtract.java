@@ -283,10 +283,12 @@ public class TestVectorTimestampExtract {
       Object[][] randomRows, ObjectInspector rowInspector, Object[] resultObjects)
           throws Exception {
 
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo " + dateTimeStringTypeInfo.toString() +
         " timestampExtractTestMode ROW_MODE" +
         " exprDesc " + exprDesc.toString());
+    */
 
     HiveConf hiveConf = new HiveConf();
     ExprNodeEvaluator evaluator =
@@ -392,10 +394,12 @@ public class TestVectorTimestampExtract {
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
 
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo " + dateTimeStringTypeInfo.toString() +
         " timestampExtractTestMode " + timestampExtractTestMode +
         " vectorExpression " + vectorExpression.getClass().getSimpleName());
+    */
 
     VectorRandomRowSource rowSource = batchSource.getRowSource();
     VectorizedRowBatchCtx batchContext =

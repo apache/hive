@@ -326,11 +326,13 @@ public class TestVectorSubStr {
     resultVectorExtractRow.init(new TypeInfo[] { targetTypeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
         " targetTypeInfo " + targetTypeInfo.toString() +
         " subStrTestMode " + subStrTestMode +
         " vectorExpression " + vectorExpression.getClass().getSimpleName());
+    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;

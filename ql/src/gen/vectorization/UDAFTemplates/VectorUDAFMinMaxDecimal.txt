@@ -63,7 +63,7 @@ public class <ClassName> extends VectorAggregateExpression {
         value = new HiveDecimalWritable();
       }
 
-      public void checkValue(HiveDecimalWritable writable, short scale) {
+      public void minmaxValue(HiveDecimalWritable writable, short scale) {
         if (isNull) {
           isNull = false;
           this.value.set(writable);
@@ -144,15 +144,9 @@ public class <ClassName> extends VectorAggregateExpression {
         }
       } else {
         if (inputVector.isRepeating) {
-          if (batch.selectedInUse) {
-            iterateHasNullsRepeatingSelectionWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
-              vector[0], inputVector.scale, batchSize, batch.selected, inputVector.isNull);
-          } else {
-            iterateHasNullsRepeatingWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
-              vector[0], inputVector.scale, batchSize, inputVector.isNull);
-          }
+          iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, aggregrateIndex,
+            vector[0], inputVector.scale, batchSize, inputVector.isNull);
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
@@ -179,14 +173,14 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(value, scale);
+        myagg.minmaxValue(value, scale);
       }
     }
 
     private void iterateNoNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
-      HiveDecimalWritable[] values,
+      HiveDecimalWritable[] vector,
       short scale,
       int[] selection,
       int batchSize) {
@@ -196,14 +190,14 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(values[selection[i]], scale);
+        myagg.minmaxValue(vector[selection[i]], scale);
       }
     }
 
     private void iterateNoNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
-      HiveDecimalWritable[] values,
+      HiveDecimalWritable[] vector,
       short scale,
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
@@ -211,29 +205,8 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(values[i], scale);
+        myagg.minmaxValue(vector[i], scale);
       }
-    }
-
-    private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
-      VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
-      HiveDecimalWritable value,
-      short scale,
-      int batchSize,
-      int[] selection,
-      boolean[] isNull) {
-
-      for (int i=0; i < batchSize; ++i) {
-        if (!isNull[selection[i]]) {
-          Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
-            aggregrateIndex,
-            i);
-          myagg.checkValue(value, scale);
-        }
-      }
-
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
@@ -253,14 +226,14 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(value, scale);
+        myagg.minmaxValue(value, scale);
       }
     }
 
     private void iterateHasNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
-      HiveDecimalWritable[] values,
+      HiveDecimalWritable[] vector,
       short scale,
       int batchSize,
       int[] selection,
@@ -273,7 +246,7 @@ public class <ClassName> extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregrateIndex,
             j);
-          myagg.checkValue(values[i], scale);
+          myagg.minmaxValue(vector[i], scale);
         }
       }
    }
@@ -281,7 +254,7 @@ public class <ClassName> extends VectorAggregateExpression {
     private void iterateHasNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
-      HiveDecimalWritable[] values,
+      HiveDecimalWritable[] vector,
       short scale,
       int batchSize,
       boolean[] isNull) {
@@ -292,7 +265,7 @@ public class <ClassName> extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregrateIndex,
             i);
-          myagg.checkValue(values[i], scale);
+          myagg.minmaxValue(vector[i], scale);
         }
       }
    }
@@ -318,10 +291,8 @@ public class <ClassName> extends VectorAggregateExpression {
         HiveDecimalWritable[] vector = inputVector.vector;
 
         if (inputVector.isRepeating) {
-          if ((inputVector.noNulls || !inputVector.isNull[0]) &&
-            (myagg.isNull || (myagg.value.compareTo(vector[0]) <OperatorSymbol> 0))) {
-            myagg.isNull = false;
-            myagg.value.set(vector[0]);
+          if (inputVector.noNulls || !inputVector.isNull[0]) {
+            myagg.minmaxValue(vector[0], inputVector.scale);
           }
           return;
         }
@@ -353,14 +324,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          HiveDecimalWritable writable = vector[i];
-          if (myagg.isNull) {
-            myagg.isNull = false;
-            myagg.value.set(writable);
-          }
-          else if (myagg.value.compareTo(writable) <OperatorSymbol> 0) {
-            myagg.value.set(writable);
-          }
+          myagg.minmaxValue(vector[i], scale);
         }
       }
     }
@@ -372,16 +336,8 @@ public class <ClassName> extends VectorAggregateExpression {
         int batchSize,
         int[] selected) {
 
-      if (myagg.isNull) {
-        myagg.value.set(vector[selected[0]]);
-        myagg.isNull = false;
-      }
-
       for (int i=0; i< batchSize; ++i) {
-        HiveDecimalWritable writable = vector[selected[i]];
-        if (myagg.value.compareTo(writable) <OperatorSymbol> 0) {
-          myagg.value.set(writable);
-        }
+        myagg.minmaxValue(vector[selected[i]], scale);
       }
     }
 
@@ -394,14 +350,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          HiveDecimalWritable writable = vector[i];
-          if (myagg.isNull) {
-            myagg.value.set(writable);
-            myagg.isNull = false;
-          }
-          else if (myagg.value.compareTo(writable) <OperatorSymbol> 0) {
-            myagg.value.set(writable);
-          }
+          myagg.minmaxValue(vector[i], scale);
         }
       }
     }
@@ -411,16 +360,9 @@ public class <ClassName> extends VectorAggregateExpression {
         HiveDecimalWritable[] vector,
         short scale,
         int batchSize) {
-      if (myagg.isNull) {
-        myagg.value.set(vector[0]);
-        myagg.isNull = false;
-      }
 
       for (int i=0;i<batchSize;++i) {
-        HiveDecimalWritable writable = vector[i];
-        if (myagg.value.compareTo(writable) <OperatorSymbol> 0) {
-          myagg.value.set(writable);
-        }
+        myagg.minmaxValue(vector[i], scale);
       }
     }
 

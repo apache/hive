@@ -370,6 +370,7 @@ public class TestVectorDateAddSub {
       Object[][] randomRows, ColumnScalarMode columnScalarMode,
       ObjectInspector rowInspector, Object[] resultObjects) throws Exception {
 
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo " + dateTimeStringTypeInfo.toString() +
         " integerTypeInfo " + integerTypeInfo +
@@ -377,6 +378,7 @@ public class TestVectorDateAddSub {
         " dateAddSubTestMode ROW_MODE" +
         " columnScalarMode " + columnScalarMode +
         " exprDesc " + exprDesc.toString());
+    */
 
     HiveConf hiveConf = new HiveConf();
     ExprNodeEvaluator evaluator =
