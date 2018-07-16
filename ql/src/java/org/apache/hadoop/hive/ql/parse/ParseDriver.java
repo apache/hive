@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.NoViableAltException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
@@ -147,10 +148,19 @@ public class ParseDriver {
     }
 
     @Override
-    public Object dupNode(Object t) {
+    public Token createToken(int tokenType, String text) {
+      if (tokenType == HiveParser.TOK_SETCOLREF) {
+        // ParseUtils.processSetColsNode() can change type of TOK_SETCOLREF nodes later
+        return new CommonToken(tokenType, text);
+      } else {
+        return new ImmutableCommonToken(tokenType, text);
+      }
+    }
 
+    @Override
+    public Object dupNode(Object t) {
       return create(((CommonTree)t).token);
-    };
+    }
 
     @Override
     public Object dupTree(Object t, Object parent) {
@@ -166,7 +176,7 @@ public class ParseDriver {
     @Override
     public Object errorNode(TokenStream input, Token start, Token stop, RecognitionException e) {
       return new ASTErrorNode(input, start, stop, e);
-    };
+    }
   };
 
   public ASTNode parse(String command) throws ParseException {
