@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
@@ -250,6 +251,25 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     VectorUDAFAvgDecimalPartial2.class, VectorUDAFAvgDecimalFinal.class})
   public static class GenericUDAFAverageEvaluatorDecimal extends AbstractGenericUDAFAverageEvaluator<HiveDecimal> {
 
+    private int resultPrecision = -1;
+    private int resultScale = -1;
+
+    @Override
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters)
+        throws HiveException {
+
+      // Intercept result ObjectInspector so we can extract the DECIMAL precision and scale.
+      ObjectInspector resultOI = super.init(m, parameters);
+      if (m == Mode.COMPLETE || m == Mode.FINAL) {
+        DecimalTypeInfo decimalTypeInfo =
+            (DecimalTypeInfo)
+                TypeInfoUtils.getTypeInfoFromObjectInspector(resultOI);
+        resultPrecision = decimalTypeInfo.getPrecision();
+        resultScale = decimalTypeInfo.getScale();
+      }
+      return resultOI;
+    }
+
     @Override
     public void doReset(AverageAggregationBuffer<HiveDecimal> aggregation) throws HiveException {
       aggregation.count = 0;
@@ -336,6 +356,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       } else {
         HiveDecimalWritable result = new HiveDecimalWritable(HiveDecimal.ZERO);
         result.set(aggregation.sum.divide(HiveDecimal.create(aggregation.count)));
+        result.mutateEnforcePrecisionScale(resultPrecision, resultScale);
         return result;
       }
     }
