@@ -1,0 +1,258 @@
+PREHOOK: query: CREATE DATABASE sometableshavehook
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:sometableshavehook
+POSTHOOK: query: CREATE DATABASE sometableshavehook
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:sometableshavehook
+PREHOOK: query: USE sometableshavehook
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sometableshavehook
+POSTHOOK: query: USE sometableshavehook
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sometableshavehook
+PREHOOK: query: CREATE TABLE NOHOOK0 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK0
+POSTHOOK: query: CREATE TABLE NOHOOK0 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK0
+PREHOOK: query: CREATE TABLE NOHOOK1 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK1
+POSTHOOK: query: CREATE TABLE NOHOOK1 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK1
+PREHOOK: query: CREATE TABLE NOHOOK2 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK2
+POSTHOOK: query: CREATE TABLE NOHOOK2 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK2
+PREHOOK: query: CREATE TABLE NOHOOK3 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK3
+POSTHOOK: query: CREATE TABLE NOHOOK3 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK3
+PREHOOK: query: CREATE TABLE NOHOOK4 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK4
+POSTHOOK: query: CREATE TABLE NOHOOK4 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK4
+PREHOOK: query: CREATE TABLE HBASEHOOK0 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@HBASEHOOK0
+POSTHOOK: query: CREATE TABLE HBASEHOOK0 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@HBASEHOOK0
+PREHOOK: query: CREATE TABLE HBASEHOOK1 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@HBASEHOOK1
+POSTHOOK: query: CREATE TABLE HBASEHOOK1 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@HBASEHOOK1
+PREHOOK: query: CREATE TABLE HBASEHOOK2 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@HBASEHOOK2
+POSTHOOK: query: CREATE TABLE HBASEHOOK2 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@HBASEHOOK2
+PREHOOK: query: DROP DATABASE sometableshavehook CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:sometableshavehook
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@hbasehook0
+PREHOOK: Output: sometableshavehook@hbasehook1
+PREHOOK: Output: sometableshavehook@hbasehook2
+PREHOOK: Output: sometableshavehook@nohook0
+PREHOOK: Output: sometableshavehook@nohook1
+PREHOOK: Output: sometableshavehook@nohook2
+PREHOOK: Output: sometableshavehook@nohook3
+PREHOOK: Output: sometableshavehook@nohook4
+POSTHOOK: query: DROP DATABASE sometableshavehook CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:sometableshavehook
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@hbasehook0
+POSTHOOK: Output: sometableshavehook@hbasehook1
+POSTHOOK: Output: sometableshavehook@hbasehook2
+POSTHOOK: Output: sometableshavehook@nohook0
+POSTHOOK: Output: sometableshavehook@nohook1
+POSTHOOK: Output: sometableshavehook@nohook2
+POSTHOOK: Output: sometableshavehook@nohook3
+POSTHOOK: Output: sometableshavehook@nohook4
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: CREATE DATABASE sometableshavehook
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:sometableshavehook
+POSTHOOK: query: CREATE DATABASE sometableshavehook
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:sometableshavehook
+PREHOOK: query: USE sometableshavehook
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sometableshavehook
+POSTHOOK: query: USE sometableshavehook
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sometableshavehook
+PREHOOK: query: CREATE TABLE NOHOOK0 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK0
+POSTHOOK: query: CREATE TABLE NOHOOK0 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK0
+PREHOOK: query: CREATE TABLE NOHOOK1 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK1
+POSTHOOK: query: CREATE TABLE NOHOOK1 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK1
+PREHOOK: query: CREATE TABLE NOHOOK2 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK2
+POSTHOOK: query: CREATE TABLE NOHOOK2 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK2
+PREHOOK: query: CREATE TABLE NOHOOK3 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK3
+POSTHOOK: query: CREATE TABLE NOHOOK3 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK3
+PREHOOK: query: CREATE TABLE NOHOOK4 (name string, number int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@NOHOOK4
+POSTHOOK: query: CREATE TABLE NOHOOK4 (name string, number int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@NOHOOK4
+PREHOOK: query: CREATE TABLE HBASEHOOK0 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@HBASEHOOK0
+POSTHOOK: query: CREATE TABLE HBASEHOOK0 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@HBASEHOOK0
+PREHOOK: query: CREATE TABLE HBASEHOOK1 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@HBASEHOOK1
+POSTHOOK: query: CREATE TABLE HBASEHOOK1 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@HBASEHOOK1
+PREHOOK: query: CREATE TABLE HBASEHOOK2 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@HBASEHOOK2
+POSTHOOK: query: CREATE TABLE HBASEHOOK2 (key int, val binary)
+    STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+    WITH SERDEPROPERTIES (
+    "hbase.columns.mapping" = ":key,cf:val#b"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@HBASEHOOK2
+PREHOOK: query: DROP DATABASE sometableshavehook CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:sometableshavehook
+PREHOOK: Output: database:sometableshavehook
+PREHOOK: Output: sometableshavehook@hbasehook0
+PREHOOK: Output: sometableshavehook@hbasehook1
+PREHOOK: Output: sometableshavehook@hbasehook2
+PREHOOK: Output: sometableshavehook@nohook0
+PREHOOK: Output: sometableshavehook@nohook1
+PREHOOK: Output: sometableshavehook@nohook2
+PREHOOK: Output: sometableshavehook@nohook3
+PREHOOK: Output: sometableshavehook@nohook4
+POSTHOOK: query: DROP DATABASE sometableshavehook CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:sometableshavehook
+POSTHOOK: Output: database:sometableshavehook
+POSTHOOK: Output: sometableshavehook@hbasehook0
+POSTHOOK: Output: sometableshavehook@hbasehook1
+POSTHOOK: Output: sometableshavehook@hbasehook2
+POSTHOOK: Output: sometableshavehook@nohook0
+POSTHOOK: Output: sometableshavehook@nohook1
+POSTHOOK: Output: sometableshavehook@nohook2
+POSTHOOK: Output: sometableshavehook@nohook3
+POSTHOOK: Output: sometableshavehook@nohook4
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default

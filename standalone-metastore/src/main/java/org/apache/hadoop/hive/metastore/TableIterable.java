@@ -16,13 +16,12 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.metadata;
+package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TException;
 
@@ -58,22 +57,24 @@ public class TableIterable implements Iterable<Table> {
       private void getNextBatch() {
         // get next batch of table names in this list
         List<String> nameBatch = new ArrayList<String>();
-        int batch_counter = 0;
-        while (batch_counter < batch_size && tableNamesIter.hasNext()) {
+        int batchCounter = 0;
+        while (batchCounter < batchSize && tableNamesIter.hasNext()) {
           nameBatch.add(tableNamesIter.next());
-          batch_counter++;
+          batchCounter++;
         }
         // get the Table objects for this batch of table names and get iterator
         // on it
+
         try {
-          try {
+          if (catName != null) {
+            batchIter = msc.getTableObjectsByName(catName, dbname, nameBatch).iterator();
+          } else {
             batchIter = msc.getTableObjectsByName(dbname, nameBatch).iterator();
-          } catch (TException e) {
-            throw new HiveException(e);
           }
-        } catch (HiveException e) {
+        } catch (TException e) {
           throw new RuntimeException(e);
         }
+
       }
 
       @Override
@@ -87,18 +88,28 @@ public class TableIterable implements Iterable<Table> {
   private final IMetaStoreClient msc;
   private final String dbname;
   private final List<String> tableNames;
-  private final int batch_size;
+  private final int batchSize;
+  private final String catName;
 
   /**
    * Primary constructor that fetches all tables in a given msc, given a Hive
-   * object,a db name and a table name list
+   * object,a db name and a table name list.
    */
-  public TableIterable(IMetaStoreClient msc, String dbname, List<String> tableNames, int batch_size)
+  public TableIterable(IMetaStoreClient msc, String dbname, List<String> tableNames, int batchSize)
       throws TException {
     this.msc = msc;
+    this.catName = null;
     this.dbname = dbname;
     this.tableNames = tableNames;
-    this.batch_size = batch_size;
+    this.batchSize = batchSize;
   }
 
+  public TableIterable(IMetaStoreClient msc, String catName, String dbname, List<String>
+          tableNames, int batchSize) throws TException {
+    this.msc = msc;
+    this.catName = catName;
+    this.dbname = dbname;
+    this.tableNames = tableNames;
+    this.batchSize = batchSize;
+  }
 }

@@ -1296,6 +1296,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return;
     }
 
+    String dbNameWithCatalog = prependCatalogToDbName(catalogName, dbName, conf);
+
     if (cascade) {
       // Note that this logic may drop some of the tables of the database
       // even if the drop database fail for any reason
@@ -1305,18 +1307,115 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         // First we delete the materialized views
         dropTable(dbName, table, deleteData, true);
       }
-      List<String> tableList = getAllTables(dbName);
-      for (String table : tableList) {
-        // Now we delete the rest of tables
-        try {
-          // Subclasses can override this step (for example, for temporary tables)
-          dropTable(dbName, table, deleteData, true);
-        } catch (UnsupportedOperationException e) {
-          // Ignore Index tables, those will be dropped with parent tables
+
+      /**
+       * When dropping db cascade, client side hooks have to be called at each table removal.
+       * If {@link org.apache.hadoop.hive.metastore.conf.MetastoreConf#ConfVars.BATCH_RETRIEVE_MAX
+       * BATCH_RETRIEVE_MAX} is less than the number of tables in the DB, we'll have to call the
+       * hooks one by one each alongside with a
+       * {@link #dropTable(String, String, boolean, boolean, EnvironmentContext) dropTable} call to
+       * ensure transactionality.
+       */
+      List<String> tableNameList = getAllTables(dbName);
+      int tableCount = tableNameList.size();
+      int maxBatchSize = MetastoreConf.getIntVar(conf, ConfVars.BATCH_RETRIEVE_MAX);
+      LOG.debug("Selecting dropDatabase method for " + dbName + " (" + tableCount + " tables), " +
+                    ConfVars.BATCH_RETRIEVE_MAX.getVarname() + "=" + maxBatchSize);
+
+      if (tableCount > maxBatchSize) {
+        LOG.debug("Dropping database in a per table batch manner.");
+        dropDatabaseCascadePerTable(catalogName, dbName, tableNameList, deleteData, maxBatchSize);
+      } else {
+        LOG.debug("Dropping database in a per DB manner.");
+        dropDatabaseCascadePerDb(catalogName, dbName, tableNameList, deleteData);
+      }
+
+    } else {
+      client.drop_database(dbNameWithCatalog, deleteData, cascade);
+    }
+  }
+
+  /**
+   * Handles dropDatabase by invoking drop_table in HMS for each table.
+   * Useful when table list in DB is too large to fit in memory. It will retrieve tables in
+   * chunks and for each table with a drop_table hook it will invoke drop_table on both HMS and
+   * the hook. This is a timely operation so hookless tables are skipped and will be dropped on
+   * server side when the client invokes drop_database.
+   * Note that this is 'less transactional' than dropDatabaseCascadePerDb since we're dropping
+   * table level objects, so the overall outcome of this method might result in a halfly dropped DB.
+   * @param catName
+   * @param dbName
+   * @param tableList
+   * @param deleteData
+   * @param maxBatchSize
+   * @throws TException
+   */
+  private void dropDatabaseCascadePerTable(String catName, String dbName, List<String> tableList,
+                                           boolean deleteData, int maxBatchSize) throws TException {
+    String dbNameWithCatalog = prependCatalogToDbName(catName, dbName, conf);
+    for (Table table : new TableIterable(this, catName, dbName, tableList, maxBatchSize)) {
+      boolean success = false;
+      HiveMetaHook hook = getHook(table);
+      if (hook == null) {
+        continue;
+      }
+      try {
+        hook.preDropTable(table);
+        client.drop_table_with_environment_context(dbNameWithCatalog, table.getTableName(), deleteData, null);
+        hook.commitDropTable(table, deleteData);
+        success = true;
+      } finally {
+        if (!success) {
+          hook.rollbackDropTable(table);
         }
       }
     }
-    client.drop_database(prependCatalogToDbName(catalogName, dbName, conf), deleteData, cascade);
+    client.drop_database(dbNameWithCatalog, deleteData, true);
+  }
+
+  /**
+   * Handles dropDatabase by invoking drop_database in HMS.
+   * Useful when table list in DB can fit in memory, it will retrieve all tables at once and
+   * call drop_database once. Also handles drop_table hooks.
+   * @param catName
+   * @param dbName
+   * @param tableList
+   * @param deleteData
+   * @throws TException
+   */
+  private void dropDatabaseCascadePerDb(String catName, String dbName, List<String> tableList,
+                                        boolean deleteData) throws TException {
+    String dbNameWithCatalog = prependCatalogToDbName(catName, dbName, conf);
+    List<Table> tables = getTableObjectsByName(catName, dbName, tableList);
+    boolean success = false;
+    try {
+      for (Table table : tables) {
+        HiveMetaHook hook = getHook(table);
+        if (hook == null) {
+          continue;
+        }
+        hook.preDropTable(table);
+      }
+      client.drop_database(dbNameWithCatalog, deleteData, true);
+      for (Table table : tables) {
+        HiveMetaHook hook = getHook(table);
+        if (hook == null) {
+          continue;
+        }
+        hook.commitDropTable(table, deleteData);
+      }
+      success = true;
+    } finally {
+      if (!success) {
+        for (Table table : tables) {
+          HiveMetaHook hook = getHook(table);
+          if (hook == null) {
+            continue;
+          }
+          hook.rollbackDropTable(table);
+        }
+      }
+    }
   }
 
   @Override

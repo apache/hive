@@ -16,30 +16,38 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.metadata;
+package org.apache.hadoop.hive.metastore;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.thrift.TException;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 /**
- * Unit tests for TableIterable
+ * Unit tests for TableIterable.
  */
+@Category(MetastoreUnitTest.class)
 public class TestTableIterable  {
 
   @Test
-  public void testNumReturned() throws MetaException, InvalidOperationException, UnknownDBException, TException {
+  public void testNumReturned() throws MetaException, InvalidOperationException,
+          UnknownDBException, TException {
     HiveMetaStoreClient msc = mock(HiveMetaStoreClient.class);
 
 
@@ -49,7 +57,8 @@ public class TestTableIterable  {
     when(msc.getTableObjectsByName(anyString(), anyListOf(String.class))).thenReturn(threeTables);
 
     List<String> tableNames = Arrays.asList("a", "b", "c", "d", "e", "f");
-    TableIterable tIterable = new TableIterable(msc, "dummy", tableNames, threeTables.size());
+    TableIterable tIterable = new TableIterable(msc, "dummy", tableNames,
+            threeTables.size());
     tIterable.iterator();
 
     Iterator<Table> tIter = tIterable.iterator();
@@ -60,8 +69,8 @@ public class TestTableIterable  {
     }
     assertEquals("Number of table objects returned", size, tableNames.size());
 
-    verify(msc).getTableObjectsByName("dummy", Arrays.asList("a","b","c"));
-    verify(msc).getTableObjectsByName("dummy", Arrays.asList("d","e","f"));
-    
+    verify(msc).getTableObjectsByName("dummy", Arrays.asList("a", "b", "c"));
+    verify(msc).getTableObjectsByName("dummy", Arrays.asList("d", "e", "f"));
+
   }
 }
