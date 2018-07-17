@@ -249,8 +249,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           if (caught == null) {
             throw e;
           } else {
-            LOG.error("failed to reset the db state for "+uniqueKey
-                +" on failure of repl dump", e);
+            LOG.error("failed to reset the db state for " + uniqueKey
+                + " on failure of repl dump", e);
             throw caught;
           }
         }
