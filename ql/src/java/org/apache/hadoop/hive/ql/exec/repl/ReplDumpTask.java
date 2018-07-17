@@ -232,6 +232,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dumpFunctionMetadata(dbName, dumpRoot);
 
       String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
+      Exception caught = null;
       try {
         for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
           LOG.debug(
@@ -239,8 +240,23 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           dumpTable(dbName, tblName, validTxnList, dbRoot);
           dumpConstraintMetadata(dbName, tblName, dbRoot);
         }
+      } catch (Exception e) {
+        caught = e;
       } finally {
-        Utils.resetDbBootstrapDumpState(hiveDb, dbName, uniqueKey);
+        try {
+          Utils.resetDbBootstrapDumpState(hiveDb, dbName, uniqueKey);
+        } catch (Exception e) {
+          if (caught == null) {
+            throw e;
+          } else {
+            LOG.error("failed to reset the db state for "+uniqueKey
+                +" on failure of repl dump", e);
+            throw caught;
+          }
+        }
+        if(caught != null) {
+          throw caught;
+        }
       }
       replLogger.endLog(bootDumpBeginReplId.toString());
     }
