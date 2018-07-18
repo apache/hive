@@ -29,6 +29,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -36,9 +37,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -56,6 +60,7 @@ import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -223,6 +228,57 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("drop table if exists " + importName);
     runStatementOnDriver("drop table if exists " + tableName);
     msClient.close();
+  }
+
+
+  @Test
+  public void testTxnStatsOnOff() throws Exception {
+    String tableName = "mm_table";
+    hiveConf.setBoolean("hive.stats.autogather", true);
+    hiveConf.setBoolean("hive.stats.column.autogather", true);
+    runStatementOnDriver("drop table if exists " + tableName);
+    runStatementOnDriver(String.format("create table %s (a int) stored as orc " +
+        "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
+        tableName));
+
+    runStatementOnDriver(String.format("insert into %s (a) values (1)", tableName));
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+    List<ColumnStatisticsObj> stats = getTxnTableStats(msClient, tableName);
+    Assert.assertEquals(1, stats.size());
+    runStatementOnDriver(String.format("insert into %s (a) values (1)", tableName));
+    stats = getTxnTableStats(msClient, tableName);
+    Assert.assertEquals(1, stats.size());
+    msClient.close();
+    hiveConf.setBoolean(MetastoreConf.ConfVars.HIVE_TXN_STATS_ENABLED.getVarname(), false);
+    msClient = new HiveMetaStoreClient(hiveConf);
+    // Even though the stats are valid in metastore, txn stats are disabled.
+    stats = getTxnTableStats(msClient, tableName);
+    Assert.assertEquals(0, stats.size());
+    msClient.close();
+    hiveConf.setBoolean(MetastoreConf.ConfVars.HIVE_TXN_STATS_ENABLED.getVarname(), true);
+    msClient = new HiveMetaStoreClient(hiveConf);
+    stats = getTxnTableStats(msClient, tableName);
+    // Now the stats are visible again.
+    Assert.assertEquals(1, stats.size());
+    msClient.close();
+    hiveConf.setBoolean(MetastoreConf.ConfVars.HIVE_TXN_STATS_ENABLED.getVarname(), false);
+    // Running the query with stats disabled will cause stats in metastore itself to become invalid.
+    runStatementOnDriver(String.format("insert into %s (a) values (1)", tableName));
+    hiveConf.setBoolean(MetastoreConf.ConfVars.HIVE_TXN_STATS_ENABLED.getVarname(), true);
+    msClient = new HiveMetaStoreClient(hiveConf);
+    stats = getTxnTableStats(msClient, tableName);
+    Assert.assertEquals(0, stats.size());
+    msClient.close();
+  }
+
+  public List<ColumnStatisticsObj> getTxnTableStats(IMetaStoreClient msClient,
+      String tableName) throws TException, NoSuchObjectException, MetaException {
+    String validWriteIds;
+    List<ColumnStatisticsObj> stats;
+    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    stats = msClient.getTableColumnStatistics(
+        "default", tableName, Lists.newArrayList("a"), -1, validWriteIds);
+    return stats;
   }
 
   private void assertIsDelta(FileStatus stat) {

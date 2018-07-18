@@ -1430,7 +1430,6 @@ public class Driver implements IDriver {
               JavaUtils.txnIdToString(txnMgr.getCurrentTxnId()));
     }
     List<String> txnTables = getTransactionalTableList(plan);
-    LOG.error("TODO# txnTables " + txnTables);
     ValidTxnWriteIdList txnWriteIds = null;
     if (compactionWriteIds != null) {
       if (txnTables.size() != 1) {
