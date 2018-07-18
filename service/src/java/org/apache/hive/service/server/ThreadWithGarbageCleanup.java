@@ -68,7 +68,11 @@ public class ThreadWithGarbageCleanup extends Thread {
   public void cacheThreadLocalRawStore() {
     Long threadId = this.getId();
     RawStore threadLocalRawStore = HiveMetaStore.HMSHandler.getRawStore();
-    if (threadLocalRawStore != null && !threadRawStoreMap.containsKey(threadId)) {
+    if (threadLocalRawStore == null) {
+      LOG.debug("Thread Local RawStore is null, for the thread: " +
+              this.getName() + " and so removing entry from threadRawStoreMap.");
+      threadRawStoreMap.remove(threadId);
+    } else {
       LOG.debug("Adding RawStore: " + threadLocalRawStore + ", for the thread: " +
           this.getName() + " to threadRawStoreMap for future cleanup.");
       threadRawStoreMap.put(threadId, threadLocalRawStore);
