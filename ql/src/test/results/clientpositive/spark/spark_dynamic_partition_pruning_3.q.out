@@ -366,7 +366,7 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target Columns: [Map 4 -> [part_col:int (part_col)]]
+                            Target Columns: [Map 1 -> [part_col:int (part_col)], Map 4 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Local Work:
               Map Reduce Local Work
@@ -432,7 +432,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: partitioned_table1
-                  filterExpr: (part_col > 1) (type: boolean)
                   Statistics: Num rows: 12 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: part_col (type: int)

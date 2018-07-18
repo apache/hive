@@ -1416,7 +1416,7 @@ POSTHOOK: Input: default@t1_v
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T2_v
 POSTHOOK: Lineage: T2_v.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select * 
 from T1_v where T1_v.key not in (select T2_v.key from T2_v)
@@ -1478,7 +1478,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: CASE WHEN ((key > '104')) THEN (null) ELSE (key) END (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 83 Data size: 15272 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 83 Data size: 7221 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
@@ -1570,7 +1570,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * 
 from T1_v where T1_v.key not in (select T2_v.key from T2_v)
 PREHOOK: type: QUERY
@@ -2427,7 +2427,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[35][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
@@ -2550,16 +2550,24 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint), _col1 (type: bigint)
-                  Group By Operator
-                    keys: _col0 (type: bigint)
-                    mode: hash
+                Select Operator
+                  expressions: _col1 (type: double)
+                  outputColumnNames: _col1
+                  Statistics: Num rows: 13 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: floor(_col1) (type: bigint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: bigint)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: bigint)
+                    Statistics: Num rows: 13 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: bigint)
+                      mode: hash
+                      outputColumnNames: _col0
                       Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2597,7 +2605,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[35][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -3106,7 +3114,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: (UDFToDouble(p_type) + 2.0D) (type: double), p_brand (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 26 Data size: 2600 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 26 Data size: 5096 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: double), _col1 (type: string)
                         mode: hash
@@ -3223,11 +3231,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 10 <- Map 9 (SIMPLE_EDGE)
+        Reducer 11 <- Map 9 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (ONE_TO_ONE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (ONE_TO_ONE_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE), Reducer 10 (ONE_TO_ONE_EDGE)
         Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
-        Reducer 7 <- Map 4 (SIMPLE_EDGE), Reducer 10 (ONE_TO_ONE_EDGE)
+        Reducer 7 <- Map 4 (SIMPLE_EDGE), Reducer 11 (ONE_TO_ONE_EDGE)
         Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -3286,8 +3295,25 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: p_size is not null (type: boolean)
+                  filterExpr: (p_size is not null or p_size is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: p_size is not null (type: boolean)
+                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: (p_size + 1) (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3320,6 +3346,14 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 11 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
@@ -3822,7 +3856,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: concat('v', value) (type: string), key (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 500 Data size: 135500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col1 (type: string), _col0 (type: string)
                         mode: hash
