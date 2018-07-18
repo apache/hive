@@ -308,6 +308,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
   private boolean disableSemJoinReordering = true;
   private EnumSet<ExtendedCBOProfile> profilesCBO;
 
+  private static final CommonToken FROM_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_FROM, "TOK_FROM");
+  private static final CommonToken DEST_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_DESTINATION, "TOK_DESTINATION");
+  private static final CommonToken DIR_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_DIR, "TOK_DIR");
+  private static final CommonToken TMPFILE_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_TMP_FILE, "TOK_TMP_FILE");
+  private static final CommonToken SELECT_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_SELECT, "TOK_SELECT");
+  private static final CommonToken SELEXPR_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+  private static final CommonToken TABLEORCOL_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+  private static final CommonToken INSERT_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_INSERT, "TOK_INSERT");
+  private static final CommonToken QUERY_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_QUERY, "TOK_QUERY");
+  private static final CommonToken SUBQUERY_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY");
+
   public CalcitePlanner(QueryState queryState) throws SemanticException {
     super(queryState);
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)) {
@@ -726,45 +747,45 @@ public class CalcitePlanner extends SemanticAnalyzer {
     //              TOK_TMP_FILE
     //        TOK_SELECT
     //           refs
-    ASTNode from = new ASTNode(new CommonToken(HiveParser.TOK_FROM, "TOK_FROM"));
+    ASTNode from = new ASTNode(FROM_TOKEN);
     from.addChild((ASTNode) ParseDriver.adaptor.dupTree(nodeOfInterest));
-    ASTNode destination = new ASTNode(new CommonToken(HiveParser.TOK_DESTINATION, "TOK_DESTINATION"));
-    ASTNode dir = new ASTNode(new CommonToken(HiveParser.TOK_DIR, "TOK_DIR"));
-    ASTNode tmpFile = new ASTNode(new CommonToken(HiveParser.TOK_TMP_FILE, "TOK_TMP_FILE"));
+    ASTNode destination = new ASTNode(DEST_TOKEN);
+    ASTNode dir = new ASTNode(DIR_TOKEN);
+    ASTNode tmpFile = new ASTNode(TMPFILE_TOKEN);
     dir.addChild(tmpFile);
     destination.addChild(dir);
-    ASTNode select = new ASTNode(new CommonToken(HiveParser.TOK_SELECT, "TOK_SELECT"));
+    ASTNode select = new ASTNode(SELECT_TOKEN);
     int num = 0;
     for (Collection<Object> selectIdentifier : aliasNodes.asMap().values()) {
       Iterator<Object> it = selectIdentifier.iterator();
       ASTNode node = (ASTNode) it.next();
       // Add select expression
-      ASTNode selectExpr = new ASTNode(new CommonToken(HiveParser.TOK_SELEXPR, "TOK_SELEXPR"));
+      ASTNode selectExpr = new ASTNode(SELEXPR_TOKEN);
       selectExpr.addChild((ASTNode) ParseDriver.adaptor.dupTree(node)); // Identifier
       String colAlias = "col" + num;
       selectExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias))); // Alias
       select.addChild(selectExpr);
       // Rewrite all INSERT references (all the node values for this key)
-      ASTNode colExpr = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
+      ASTNode colExpr = new ASTNode(TABLEORCOL_TOKEN);
       colExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias)));
       replaceASTChild(node, colExpr);
       while (it.hasNext()) {
         // Loop to rewrite rest of INSERT references
         node = (ASTNode) it.next();
-        colExpr = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
+        colExpr = new ASTNode(TABLEORCOL_TOKEN);
         colExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias)));
         replaceASTChild(node, colExpr);
       }
       num++;
     }
-    ASTNode insert = new ASTNode(new CommonToken(HiveParser.TOK_INSERT, "TOK_INSERT"));
+    ASTNode insert = new ASTNode(INSERT_TOKEN);
     insert.addChild(destination);
     insert.addChild(select);
-    ASTNode newQuery = new ASTNode(new CommonToken(HiveParser.TOK_QUERY, "TOK_QUERY"));
+    ASTNode newQuery = new ASTNode(QUERY_TOKEN);
     newQuery.addChild(from);
     newQuery.addChild(insert);
     // 3. create subquery
-    ASTNode subq = new ASTNode(new CommonToken(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY"));
+    ASTNode subq = new ASTNode(SUBQUERY_TOKEN);
     subq.addChild(newQuery);
     subq.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, "subq")));
     replaceASTChild(nodeOfInterest, subq);
@@ -2081,18 +2102,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Add views to planner
       List<RelOptMaterialization> materializations = new ArrayList<>();
       try {
-        final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
         if (mvRebuildMode != MaterializationRebuildMode.NONE) {
           // We only retrieve the materialization corresponding to the rebuild. In turn,
           // we pass 'true' for the forceMVContentsUpToDate parameter, as we cannot allow the
           // materialization contents to be stale for a rebuild if we want to use it.
           materializations = Hive.get().getValidMaterializedView(mvRebuildDbName, mvRebuildName,
-              true, validTxnsList);
+              getTablesUsed(basePlan), true);
         } else {
           // This is not a rebuild, we retrieve all the materializations. In turn, we do not need
           // to force the materialization contents to be up-to-date, as this is not a rebuild, and
           // we apply the user parameters (HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) instead.
-          materializations = Hive.get().getAllValidMaterializedViews(false, validTxnsList);
+          materializations = Hive.get().getAllValidMaterializedViews(getTablesUsed(basePlan), false);
         }
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
@@ -2169,7 +2189,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // A rewriting was produced, we will check whether it was part of an incremental rebuild
           // to try to replace INSERT OVERWRITE by INSERT
           if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD &&
-              HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL) &&
               HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL)) {
             // First we need to check if it is valid to convert to MERGE/INSERT INTO.
             // If we succeed, we modify the plan and afterwards the AST.
@@ -2194,6 +2213,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
       return basePlan;
+    }
+
+    private List<String> getTablesUsed(RelNode plan) {
+      List<String> tablesUsed = new ArrayList<>();
+      new RelVisitor() {
+        @Override
+        public void visit(RelNode node, int ordinal, RelNode parent) {
+          if (node instanceof TableScan) {
+            TableScan ts = (TableScan) node;
+            tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullyQualifiedName());
+          }
+          super.visit(node, ordinal, parent);
+        }
+      }.go(plan);
+      return tablesUsed;
     }
 
     /**

@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -398,6 +399,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       HiveParser.TOK_DISTRIBUTEBY, HiveParser.TOK_SORTBY);
 
   private String invalidQueryMaterializationReason;
+
+  private static final CommonToken SELECTDI_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_SELECTDI, "TOK_SELECTDI");
+  private static final CommonToken SELEXPR_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+  private static final CommonToken TABLEORCOL_TOKEN =
+      new ImmutableCommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+  private static final CommonToken DOT_TOKEN =
+      new ImmutableCommonToken(HiveParser.DOT, ".");
 
   static class Phase1Ctx {
     String dest;
@@ -14576,7 +14586,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static ASTNode genSelectDIAST(RowResolver rr) {
     LinkedHashMap<String, LinkedHashMap<String, ColumnInfo>> map = rr.getRslvMap();
-    ASTNode selectDI = new ASTNode(new CommonToken(HiveParser.TOK_SELECTDI, "TOK_SELECTDI"));
+    ASTNode selectDI = new ASTNode(SELECTDI_TOKEN);
     // Note: this will determine the order of columns in the result. For now, the columns for each
     //       table will be together; the order of the tables, as well as the columns within each
     //       table, is deterministic, but undefined - RR stores them in the order of addition.
@@ -14588,10 +14598,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return selectDI;
   }
   private static ASTNode buildSelExprSubTree(String tableAlias, String col) {
-    ASTNode selexpr = new ASTNode(new CommonToken(HiveParser.TOK_SELEXPR, "TOK_SELEXPR"));
-    ASTNode tableOrCol = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL,
-        "TOK_TABLE_OR_COL"));
-    ASTNode dot = new ASTNode(new CommonToken(HiveParser.DOT, "."));
+    tableAlias = StringInternUtils.internIfNotNull(tableAlias);
+    col = StringInternUtils.internIfNotNull(col);
+    ASTNode selexpr = new ASTNode(SELEXPR_TOKEN);
+    ASTNode tableOrCol = new ASTNode(TABLEORCOL_TOKEN);
+    ASTNode dot = new ASTNode(DOT_TOKEN);
     tableOrCol.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, tableAlias)));
     dot.addChild(tableOrCol);
     dot.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, col)));

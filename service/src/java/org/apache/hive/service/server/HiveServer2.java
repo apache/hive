@@ -62,7 +62,6 @@ import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.ServerUtils;
-import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -739,16 +738,18 @@ public class HiveServer2 extends CompositeService {
       }
     }
 
-    if (!activePassiveHA) {
-      LOG.info("HS2 interactive HA not enabled. Starting tez sessions..");
-      try {
-        startOrReconnectTezSessions();
-      } catch (Exception e) {
-        LOG.error("Error starting  Tez sessions: ", e);
-        throw new ServiceException(e);
+    if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      if (!activePassiveHA) {
+        LOG.info("HS2 interactive HA not enabled. Starting tez sessions..");
+        try {
+          startOrReconnectTezSessions();
+        } catch (Exception e) {
+          LOG.error("Error starting  Tez sessions: ", e);
+          throw new ServiceException(e);
+        }
+      } else {
+        LOG.info("HS2 interactive HA enabled. Tez sessions will be started/reconnected by the leader.");
       }
-    } else {
-      LOG.info("HS2 interactive HA enabled. Tez sessions will be started/reconnected by the leader.");
     }
   }
 
@@ -1209,11 +1210,17 @@ public class HiveServer2 extends CompositeService {
         for (String propKey : confProps.stringPropertyNames()) {
           // save logging message for log4j output latter after log4j initialize properly
           debugMessage.append("Setting " + propKey + "=" + confProps.getProperty(propKey) + ";\n");
-          if (propKey.equalsIgnoreCase("hive.root.logger")) {
-            CommonCliOptions.splitAndSetLogger(propKey, confProps);
-          } else {
-            System.setProperty(propKey, confProps.getProperty(propKey));
+          if ("hive.log.file".equals(propKey) ||
+              "hive.log.dir".equals(propKey) ||
+              "hive.root.logger".equals(propKey)) {
+            throw new IllegalArgumentException("Logs will be split in two "
+                + "files if the commandline argument " + propKey + " is "
+                + "used. To prevent this use to HADOOP_CLIENT_OPTS -D"
+                + propKey + "=" + confProps.getProperty(propKey)
+                + " or use the set the value in the configuration file"
+                + " (see HIVE-19886)");
           }
+          System.setProperty(propKey, confProps.getProperty(propKey));
         }
 
         // Process --help

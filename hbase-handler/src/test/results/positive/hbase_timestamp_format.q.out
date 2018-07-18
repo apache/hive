@@ -1,14 +1,14 @@
-PREHOOK: query: create table hbase_str(rowkey string,mytime string,mystr string)
+PREHOOK: query: create external table hbase_str(rowkey string,mytime string,mystr string)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ('hbase.columns.mapping' = 'm:mytime,m:mystr')
-  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts')
+  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts', 'external.table.purge' = 'true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_str
-POSTHOOK: query: create table hbase_str(rowkey string,mytime string,mystr string)
+POSTHOOK: query: create external table hbase_str(rowkey string,mytime string,mystr string)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ('hbase.columns.mapping' = 'm:mytime,m:mystr')
-  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts')
+  TBLPROPERTIES ('hbase.table.name' = 'hbase_ts', 'external.table.purge' = 'true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_str

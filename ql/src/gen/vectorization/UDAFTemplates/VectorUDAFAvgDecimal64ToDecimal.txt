@@ -81,7 +81,6 @@ public class <ClassName> extends VectorAggregateExpression {
     /**
      * Value is explicitly (re)initialized in reset()
      */
-    private boolean isNull = true;
     private boolean usingRegularDecimal = false;
 
     public Aggregation(int inputScale, HiveDecimalWritable temp) {
@@ -90,26 +89,21 @@ public class <ClassName> extends VectorAggregateExpression {
     }
 
     public void avgValue(long value) {
-      if (isNull) {
-        sum = value;
-        count = 1;
-        isNull = false;
-      } else {
-        if (Math.abs(sum) > nearDecimal64Max) {
-          if (!usingRegularDecimal) {
-            usingRegularDecimal = true;
-            regularDecimalSum.deserialize64(sum, inputScale);
-          } else {
-            temp.deserialize64(sum, inputScale);
-            regularDecimalSum.mutateAdd(temp);
-          }
-          sum = value;
-        } else {
-          sum += value;
-        }
 
-        count++;
+      if (Math.abs(sum) > nearDecimal64Max) {
+        if (!usingRegularDecimal) {
+          usingRegularDecimal = true;
+          regularDecimalSum.deserialize64(sum, inputScale);
+        } else {
+          temp.deserialize64(sum, inputScale);
+          regularDecimalSum.mutateAdd(temp);
+        }
+        sum = value;
+      } else {
+        sum += value;
       }
+
+      count++;
     }
 
     @Override
@@ -119,7 +113,6 @@ public class <ClassName> extends VectorAggregateExpression {
 
     @Override
     public void reset () {
-      isNull = true;
       usingRegularDecimal = false;
       sum = 0;
       regularDecimalSum.setFromLong(0);
@@ -202,15 +195,9 @@ public class <ClassName> extends VectorAggregateExpression {
         }
       } else {
         if (inputVector.isRepeating) {
-          if (batch.selectedInUse) {
-            iterateHasNullsRepeatingSelectionWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              vector[0], batchSize, batch.selected, inputVector.isNull);
-          } else {
-            iterateHasNullsRepeatingWithAggregationSelection(
-              aggregationBufferSets, bufferIndex,
-              vector[0], batchSize, inputVector.isNull);
-          }
+          iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, bufferIndex,
+            vector[0], batchSize, inputVector.isNull);
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
@@ -268,28 +255,6 @@ public class <ClassName> extends VectorAggregateExpression {
           i);
         myagg.avgValue(values[i]);
       }
-    }
-
-    private void iterateHasNullsRepeatingSelectionWithAggregationSelection(
-      VectorAggregationBufferRow[] aggregationBufferSets,
-      int bufferIndex,
-      long value,
-      int batchSize,
-      int[] selection,
-      boolean[] isNull) {
-
-      if (isNull[0]) {
-        return;
-      }
-
-      for (int i=0; i < batchSize; ++i) {
-        Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets,
-          bufferIndex,
-          i);
-        myagg.avgValue(value);
-      }
-
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
@@ -502,8 +467,43 @@ public class <ClassName> extends VectorAggregateExpression {
 #ENDIF COMPLETE
 
     Aggregation myagg = (Aggregation) agg;
+
+#IF PARTIAL1
+    if (myagg.count > 0) {
+
+      if (!myagg.usingRegularDecimal) {
+        myagg.regularDecimalSum.deserialize64(myagg.sum, inputScale);
+      } else {
+        myagg.temp.deserialize64(myagg.sum, inputScale);
+        myagg.regularDecimalSum.mutateAdd(myagg.temp);
+      }
+
+      // For AVG, we only mark NULL on actual overflow.
+      if (!myagg.regularDecimalSum.isSet()) {
+        outputColVector.noNulls = false;
+        outputColVector.isNull[batchIndex] = true;
+        return;
+      }
+    }
+
+    outputColVector.isNull[batchIndex] = false;
+    ColumnVector[] fields = outputColVector.fields;
+    fields[AVERAGE_COUNT_FIELD_INDEX].isNull[batchIndex] = false;
+    ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
+    fields[AVERAGE_SUM_FIELD_INDEX].isNull[batchIndex] = false;
+    ((DecimalColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).set(
+        batchIndex, myagg.regularDecimalSum);
+
+    // NULL out useless source field.
+    ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];
+    sourceColVector.isRepeating = true;
+    sourceColVector.noNulls = false;
+    sourceColVector.isNull[0] = true;
+
+#ENDIF PARTIAL1
+#IF COMPLETE
     final boolean isNull;
-    if (!myagg.isNull) {
+    if (myagg.count > 0) {
       if (!myagg.usingRegularDecimal) {
         myagg.regularDecimalSum.deserialize64(myagg.sum, inputScale);
       } else {
@@ -523,22 +523,6 @@ public class <ClassName> extends VectorAggregateExpression {
     Preconditions.checkState(myagg.count > 0);
     outputColVector.isNull[batchIndex] = false;
 
-#IF PARTIAL1
-    ColumnVector[] fields = outputColVector.fields;
-    fields[AVERAGE_COUNT_FIELD_INDEX].isNull[batchIndex] = false;
-    ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
-    fields[AVERAGE_SUM_FIELD_INDEX].isNull[batchIndex] = false;
-    ((DecimalColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).set(
-        batchIndex, myagg.regularDecimalSum);
-
-    // NULL out useless source field.
-    ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];
-    sourceColVector.isRepeating = true;
-    sourceColVector.noNulls = false;
-    sourceColVector.isNull[0] = true;
-
-#ENDIF PARTIAL1
-#IF COMPLETE
     temp.setFromLong (myagg.count);
     HiveDecimalWritable result = outputColVector.vector[batchIndex];
     result.set(myagg.regularDecimalSum);
