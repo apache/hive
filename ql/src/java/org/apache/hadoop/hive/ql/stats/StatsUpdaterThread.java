@@ -82,7 +82,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
 
   // Configuration
   /** Whether to only update stats that already exist and are out of date. */
-  private boolean isExistingOnly;
+  private boolean isExistingOnly, areTxnStatsEnabled;
   private long noUpdatesWaitMs;
   private int batchSize;
 
@@ -101,6 +101,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     noUpdatesWaitMs = MetastoreConf.getTimeVar(
         conf, ConfVars.STATS_AUTO_UPDATE_NOOP_WAIT, TimeUnit.MILLISECONDS);
+    areTxnStatsEnabled = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
     batchSize = MetastoreConf.getIntVar(conf, ConfVars.BATCH_RETRIEVE_MAX);
     int workerCount = MetastoreConf.getIntVar(conf, ConfVars.STATS_AUTO_UPDATE_WORKER_COUNT);
     if (workerCount <= 0) {
@@ -220,6 +221,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     String writeIdString = null;
     boolean isTxn = AcidUtils.isTransactionalTable(table);
     if (isTxn) {
+      if (!areTxnStatsEnabled) return null; // Skip transactional tables.
       ValidReaderWriteIdList writeIds = getWriteIds(fullTableName);
       if (writeIds == null) {
         LOG.error("Cannot get writeIds for transactional table " + fullTableName + "; skipping");
