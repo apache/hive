@@ -297,6 +297,7 @@ public class Worker extends CompactorThread {
         }
         sb.setLength(sb.length() - 1); //remove trailing ,
         LOG.info(ci + ": running '" + sb.toString() + "'");
+        conf.setVar(HiveConf.ConfVars.METASTOREURIS,"");
         Driver d = new Driver(new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build(), userName);
         SessionState localSession = null;
         try {
