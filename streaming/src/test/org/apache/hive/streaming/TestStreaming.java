@@ -2072,20 +2072,19 @@ public class TestStreaming {
     System.setOut(origOut);
 
     String outDump = new String(myOut.toByteArray());
-    // make sure delta files are written with no indexes, no compression and no dictionary
-    // no compression
-    Assert.assertEquals(true, outDump.contains("Compression: NONE"));
+    // make sure delta files are written with no indexes and no dictionary
+    Assert.assertEquals(true, outDump.contains("Compression: ZLIB"));
     // no stats/indexes
     Assert.assertEquals(true, outDump.contains("Column 0: count: 0 hasNull: false"));
-    Assert.assertEquals(true, outDump.contains("Column 1: count: 0 hasNull: false bytesOnDisk: 12 sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 2: count: 0 hasNull: false bytesOnDisk: 12 sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 3: count: 0 hasNull: false bytesOnDisk: 24 sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 4: count: 0 hasNull: false bytesOnDisk: 14 sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 5: count: 0 hasNull: false bytesOnDisk: 12 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 1: count: 0 hasNull: false bytesOnDisk: 15 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 2: count: 0 hasNull: false bytesOnDisk: 15 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 3: count: 0 hasNull: false bytesOnDisk: 19 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 4: count: 0 hasNull: false bytesOnDisk: 17 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 5: count: 0 hasNull: false bytesOnDisk: 15 sum: 0"));
     Assert.assertEquals(true, outDump.contains("Column 6: count: 0 hasNull: false"));
-    Assert.assertEquals(true, outDump.contains("Column 7: count: 0 hasNull: false bytesOnDisk: 11864"));
-    Assert.assertEquals(true, outDump.contains("Column 8: count: 0 hasNull: false bytesOnDisk: 2033 sum: 0"));
-    Assert.assertEquals(true, outDump.contains("Column 9: count: 0 hasNull: false bytesOnDisk: 13629"));
+    Assert.assertEquals(true, outDump.contains("Column 7: count: 0 hasNull: false bytesOnDisk: 3929"));
+    Assert.assertEquals(true, outDump.contains("Column 8: count: 0 hasNull: false bytesOnDisk: 1484 sum: 0"));
+    Assert.assertEquals(true, outDump.contains("Column 9: count: 0 hasNull: false bytesOnDisk: 816"));
     // no dictionary
     Assert.assertEquals(true, outDump.contains("Encoding column 7: DIRECT_V2"));
     Assert.assertEquals(true, outDump.contains("Encoding column 9: DIRECT_V2"));
