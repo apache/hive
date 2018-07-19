@@ -63,6 +63,7 @@
     <module>packaging</module>
     <module>standalone-metastore</module>
     <module>upgrade-acid</module>
+    <module>hive-kafka-reader</module>
   </modules>
 
   <properties>

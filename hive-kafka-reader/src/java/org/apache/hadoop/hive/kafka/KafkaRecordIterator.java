@@ -1,0 +1,183 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.kafka;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.common.TopicPartition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Iterator over Kafka Records to read records from a single topic partition inclusive start exclusive end.
+ * <p>
+ * If {@code startOffset} is not null will seek up to that offset
+ * Else If {@code startOffset} is null will seek to beginning see {@link org.apache.kafka.clients.consumer.Consumer#seekToBeginning(Collection)}
+ * <p>
+ * When provided with an end offset it will return records up to the record with offset == endOffset - 1,
+ * Else If end offsets is null it will read up to the current end see {@link org.apache.kafka.clients.consumer.Consumer#endOffsets(Collection)}
+ */
+public class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte[]>>
+{
+  private static final Logger log = LoggerFactory.getLogger(KafkaRecordIterator.class);
+
+  private final Consumer<byte[], byte[]> consumer;
+  private final TopicPartition topicPartition;
+  private long endOffset;
+  private long startOffset;
+  private final long pollTimeout;
+  private final Stopwatch stopwatch = Stopwatch.createUnstarted();
+  private ConsumerRecords<byte[], byte[]> records;
+  private long currentOffset;
+  private ConsumerRecord<byte[], byte[]> nextRecord;
+  private boolean hasMore = true;
+  private Iterator<ConsumerRecord<byte[], byte[]>> cursor = null;
+
+  /**
+   * @param consumer       functional kafka consumer
+   * @param topicPartition kafka topic partition
+   * @param startOffset    start position of stream.
+   * @param endOffset      requested end position. If null will read up to current last
+   * @param pollTimeout    poll time out in ms
+   */
+  public KafkaRecordIterator(
+      Consumer<byte[], byte[]> consumer, TopicPartition topicPartition,
+      @Nullable Long startOffset, @Nullable Long endOffset, long pollTimeout
+  )
+  {
+    this.consumer = Preconditions.checkNotNull(consumer, "Consumer can not be null");
+    this.topicPartition = Preconditions.checkNotNull(topicPartition, "Topic partition can not be null");
+    this.pollTimeout = pollTimeout;
+    Preconditions.checkState(pollTimeout > 0, "poll timeout has to be positive number");
+    this.startOffset = startOffset == null ? -1l : startOffset;
+    this.endOffset = endOffset == null ? -1l : endOffset;
+  }
+
+  public KafkaRecordIterator(
+      Consumer consumer, TopicPartition tp, long pollTimeout
+  )
+  {
+    this(consumer, tp, null, null, pollTimeout);
+  }
+
+  private void assignAndSeek()
+  {
+    // assign topic partition to consumer
+    final List<TopicPartition> topicPartitionList = ImmutableList.of(topicPartition);
+    if (log.isTraceEnabled()) {
+      stopwatch.reset().start();
+    }
+
+    consumer.assign(topicPartitionList);
+    // compute offsets and seek to start
+    if (startOffset > -1) {
+      log.info("Seeking to offset [{}] of topic partition [{}]", startOffset, topicPartition);
+      consumer.seek(topicPartition, startOffset);
+    } else {
+      log.info("Seeking to beginning of topic partition [{}]", topicPartition);
+      // seekToBeginning is lazy thus need to call position() or poll(0)
+      this.consumer.seekToBeginning(Collections.singleton(topicPartition));
+      startOffset = consumer.position(topicPartition);
+    }
+    if (endOffset == -1) {
+      this.endOffset = consumer.endOffsets(topicPartitionList).get(topicPartition);
+      log.debug("EndOffset is {}", endOffset);
+    }
+    currentOffset = consumer.position(topicPartition);
+    Preconditions.checkState(this.endOffset >= currentOffset,
+                             "End offset [%s] need to be greater than start offset [%s]", this.endOffset, currentOffset
+    );
+    log.info("Kafka Iterator ready, assigned TopicPartition [{}]; startOffset [{}]; endOffset [{}]", topicPartition,
+             currentOffset, this.endOffset
+    );
+    if (log.isTraceEnabled()) {
+      stopwatch.stop();
+      log.trace("Time to assign and seek [{}] ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+    }
+  }
+
+  @Override
+  public boolean hasNext()
+  {
+    if (records == null) {
+      assignAndSeek();
+    }
+    //Init poll OR Need to poll at least one more record since currentOffset + 1 < endOffset
+    if (records == null || (hasMore == false && currentOffset + 1 < endOffset)) {
+      pollRecords();
+      findNext();
+    }
+    return hasMore;
+  }
+
+  private void pollRecords()
+  {
+    if (log.isTraceEnabled()) {
+      stopwatch.reset().start();
+    }
+    records = consumer.poll(pollTimeout);
+    if (log.isTraceEnabled()) {
+      stopwatch.stop();
+      log.trace("Pulled [{}] records in [{}] ms", records.count(),
+                stopwatch.elapsed(TimeUnit.MILLISECONDS)
+      );
+    }
+    Preconditions.checkState(!records.isEmpty() || currentOffset == endOffset,
+                             "Current read offset [%s]-TopicPartition:[%s], End offset[%s]."
+                             + "Consumer returned 0 record due to exhausted poll timeout [%s] ms",
+                             currentOffset, topicPartition.toString(), endOffset, pollTimeout
+    );
+    cursor = records.iterator();
+  }
+
+  @Override
+  public ConsumerRecord<byte[], byte[]> next()
+  {
+    ConsumerRecord<byte[], byte[]> value = nextRecord;
+    Preconditions.checkState(value.offset() < endOffset);
+    findNext();
+    return Preconditions.checkNotNull(value);
+  }
+
+  private void findNext()
+  {
+    if (cursor.hasNext()) {
+      nextRecord = cursor.next();
+      hasMore = true;
+      if (nextRecord.offset() < endOffset) {
+        currentOffset = nextRecord.offset();
+        return;
+      }
+    }
+    hasMore = false;
+    nextRecord = null;
+  }
+
+}
