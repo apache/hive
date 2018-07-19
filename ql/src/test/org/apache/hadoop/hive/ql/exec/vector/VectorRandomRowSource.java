@@ -654,7 +654,11 @@ public class VectorRandomRowSource {
       dataTypePhysicalVariations[c] = dataTypePhysicalVariation;
       final Category category = typeInfo.getCategory();
       categories[c] = category;
-      ObjectInspector objectInspector = getObjectInspector(typeInfo, dataTypePhysicalVariation);
+
+      // Do not represent DECIMAL_64 to make ROW mode tests easier --
+      // make the VECTOR mode tests convert into the VectorizedRowBatch.
+      ObjectInspector objectInspector = getObjectInspector(typeInfo, DataTypePhysicalVariation.NONE);
+
       switch (category) {
       case PRIMITIVE:
         {
@@ -1161,24 +1165,14 @@ public class VectorRandomRowSource {
       }
     case DECIMAL:
       {
-        if (dataTypePhysicalVariation == dataTypePhysicalVariation.DECIMAL_64) {
-          final long value;
-          if (object instanceof HiveDecimal) {
-            DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) primitiveTypeInfo;
-            value = new HiveDecimalWritable((HiveDecimal) object).serialize64(
-                decimalTypeInfo.getScale());
-          } else {
-            value = (long) object;
-          }
-          return ((WritableLongObjectInspector) objectInspector).create(value);
+        // Do not represent DECIMAL_64 to make ROW mode tests easier --
+        // make the VECTOR mode tests convert into the VectorizedRowBatch.
+        WritableHiveDecimalObjectInspector writableOI =
+            new WritableHiveDecimalObjectInspector((DecimalTypeInfo) primitiveTypeInfo);
+        if (object instanceof HiveDecimal) {
+          return writableOI.create((HiveDecimal) object);
         } else {
-          WritableHiveDecimalObjectInspector writableOI =
-              new WritableHiveDecimalObjectInspector((DecimalTypeInfo) primitiveTypeInfo);
-          if (object instanceof HiveDecimal) {
-            return writableOI.create((HiveDecimal) object);
-          } else {
-            return writableOI.copyObject(object);
-          }
+          return writableOI.copyObject(object);
         }
       }
     default:
@@ -1501,11 +1495,10 @@ public class VectorRandomRowSource {
       return getRandIntervalDayTime(r);
     case DECIMAL:
       {
+        // Do not represent DECIMAL_64 to make ROW mode tests easier --
+        // make the VECTOR mode tests convert into the VectorizedRowBatch.
         DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) primitiveTypeInfo;
         HiveDecimal hiveDecimal = getRandHiveDecimal(r, decimalTypeInfo);
-        if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
-          return new HiveDecimalWritable(hiveDecimal).serialize64(decimalTypeInfo.getScale());
-        }
         return hiveDecimal;
       }
     default:
