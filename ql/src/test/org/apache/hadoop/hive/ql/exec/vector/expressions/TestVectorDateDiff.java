@@ -440,12 +440,16 @@ public class TestVectorDateDiff {
     resultVectorExtractRow.init(new TypeInfo[] { TypeInfoFactory.intTypeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo1 " + dateTimeStringTypeInfo1.toString() +
         " dateTimeStringTypeInfo2 " + dateTimeStringTypeInfo2.toString() +
         " dateDiffTestMode " + dateDiffTestMode +
         " columnScalarMode " + columnScalarMode +
         " vectorExpression " + vectorExpression.toString());
+    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;
