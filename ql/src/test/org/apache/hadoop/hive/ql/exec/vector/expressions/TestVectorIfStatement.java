@@ -459,6 +459,8 @@ public class TestVectorIfStatement {
     resultVectorExtractRow.init(new TypeInfo[] { typeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
     /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
