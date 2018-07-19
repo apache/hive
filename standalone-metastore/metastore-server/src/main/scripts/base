@@ -87,6 +87,12 @@ if [ ! -f ${METASTORE_LIB}/hive-standalone-metastore-common-*.jar ]; then
   exit 2;
 fi
 
+# needed for execution
+if [ ! -f ${METASTORE_LIB}/hive-standalone-metastore-server-*.jar ]; then
+  echo "Missing Standalone MetaStore Jar"
+  exit 2;
+fi
+
 for f in ${METASTORE_LIB}/*.jar; do
   CLASSPATH=${CLASSPATH}:$f;
 done
