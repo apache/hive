@@ -828,8 +828,20 @@ public class Hive {
           pvals.add(val);
         }
       }
-      getMSC().renamePartition(tbl.getDbName(), tbl.getTableName(), pvals,
-          newPart.getTPartition());
+      String validWriteIds = null;
+      long txnId = -1;
+      if (AcidUtils.isTransactionalTable(tbl)) {
+        // Set table snapshot to api.Table to make it persistent.
+        TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, true);
+        if (tableSnapshot != null) {
+          newPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
+          txnId = tableSnapshot.getTxnId();
+          validWriteIds = tableSnapshot.getValidWriteIdList();
+        }
+      }
+
+      getMSC().renamePartition(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), pvals,
+          newPart.getTPartition(), txnId, validWriteIds);
 
     } catch (InvalidOperationException e){
       throw new HiveException("Unable to rename partition. " + e.getMessage(), e);

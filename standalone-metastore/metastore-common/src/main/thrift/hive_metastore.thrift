@@ -1623,6 +1623,19 @@ struct AlterPartitionsRequest {
 struct AlterPartitionsResponse {
 }
 
+struct RenamePartitionRequest {
+  1: optional string catName,
+  2: required string dbName,
+  3: required string tableName,
+  4: required list<string> partVals,
+  5: required Partition newPart,
+  6: optional i64 txnId=-1,
+  7: optional string validWriteIdList
+}
+
+struct RenamePartitionResponse {
+}
+
 struct AlterTableRequest {
   1: optional string catName,
   2: required string dbName,
@@ -1989,6 +2002,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // in the new_part. old partition is identified from part_vals.
   // partition keys in new_part should be the same as those in old partition.
   void rename_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:Partition new_part)
+                       throws (1:InvalidOperationException o1, 2:MetaException o2)
+  
+  RenamePartitionResponse rename_partition_req(1:RenamePartitionRequest req)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   // returns whether or not the partition name is valid based on the value of the config

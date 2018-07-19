@@ -224,6 +224,19 @@ public final class TxnDbUtil {
       }
 
       try {
+        stmt.execute("CREATE TABLE \"APP\".\"DBS\" (\"DB_ID\" BIGINT NOT NULL, \"DESC\" " +
+            "VARCHAR(4000), \"DB_LOCATION_URI\" VARCHAR(4000) NOT NULL, \"NAME\" VARCHAR(128), " +
+            "\"OWNER_NAME\" VARCHAR(128), \"OWNER_TYPE\" VARCHAR(10), " +
+            "\"CTLG_NAME\" VARCHAR(256) NOT NULL, PRIMARY KEY (DB_ID))");
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("TBLS table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      try {
         stmt.execute("CREATE TABLE \"APP\".\"PARTITIONS\" (" +
             " \"PART_ID\" BIGINT NOT NULL, \"CREATE_TIME\" INTEGER NOT NULL, " +
             " \"LAST_ACCESS_TIME\" INTEGER NOT NULL, \"PART_NAME\" VARCHAR(767), " +

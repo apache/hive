@@ -1080,7 +1080,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
 
     Partition partToRename = oldParts.get(3);
     partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
-    client.renamePartition("nosuch", DB_NAME, TABLE_NAME, oldValues.get(3), partToRename);
+    client.renamePartition("nosuch", DB_NAME, TABLE_NAME, oldValues.get(3), partToRename, -1, null);
   }
 
   @Test(expected = InvalidOperationException.class)

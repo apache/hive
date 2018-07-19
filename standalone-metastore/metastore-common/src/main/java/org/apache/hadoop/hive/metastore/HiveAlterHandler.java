@@ -547,6 +547,7 @@ public class HiveAlterHandler implements AlterHandler {
       // 2) partition column stats if there are any because of part_name field in HMS table PART_COL_STATS
       // 3) rename the partition directory if it is not an external table
       if (!tbl.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+        // TODO: refactor this into a separate method after master merge, this one is too big.
         try {
           db = msdb.getDatabase(catName, dbname);
 
@@ -620,8 +621,6 @@ public class HiveAlterHandler implements AlterHandler {
       if (cs != null) {
         cs.getStatsDesc().setPartName(newPartName);
         try {
-          // Verifying ACID state again is not strictly needed here (alterPartition above does it),
-          // but we are going to use the uniform approach for simplicity.
           msdb.updatePartitionColumnStatistics(cs, new_part.getValues(),
               txnId, validWriteIds, new_part.getWriteId());
         } catch (InvalidInputException iie) {
