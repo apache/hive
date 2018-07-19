@@ -206,7 +206,7 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
                                 </copy>
                                 <mkdir dir="${test.tmp.dir}/scripts/metastore/upgrade" />
                                 <copy todir="${test.tmp.dir}/scripts/metastore/upgrade">
-                                    <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-common/src/main/sql/"/>
+                                    <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
                                 </copy>
                             </target>
                         </configuration>

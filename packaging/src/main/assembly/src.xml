@@ -97,6 +97,7 @@
         <include>spark-client/**/*</include>
         <include>storage-api/**/*</include>
         <include>standalone-metastore/metastore-common/**/*</include>
+        <include>standalone-metastore/metastore-server/**/*</include>
         <include>streaming/**/*</include>
         <include>testutils/**/*</include>
         <include>upgrade-acid/**/*</include>

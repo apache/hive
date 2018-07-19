@@ -183,6 +183,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>hive-serde</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
@@ -568,7 +574,7 @@
                   <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
                 </copy>
                 <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
-                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-common/src/main/sql/"/>
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
                 </copy>
               </target>
             </configuration>

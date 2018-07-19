@@ -9,10 +9,17 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>hive-standalone-metastore-common</artifactId>
-  <name>Hive Standalone Metastore Common Code</name>
+  <artifactId>hive-standalone-metastore-server</artifactId>
+  <name>Hive Metastore Server</name>
+
 
   <dependencies>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
+      <version>4.0.0-SNAPSHOT</version>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-core</artifactId>
@@ -152,6 +159,7 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-storage-api</artifactId>
+      <version>${storage-api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -170,16 +178,40 @@
       <artifactId>libthrift</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.datanucleus</groupId>
+      <artifactId>datanucleus-api-jdo</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.datanucleus</groupId>
+      <artifactId>datanucleus-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.datanucleus</groupId>
+      <artifactId>datanucleus-rdbms</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.datanucleus</groupId>
+      <artifactId>javax.jdo</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>sqlline</groupId>
+      <artifactId>sqlline</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
     </dependency>
     <!-- test scope dependencies -->
-
+    <dependency>
+      <groupId>com.microsoft.sqlserver</groupId>
+      <artifactId>mssql-jdbc</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -188,6 +220,18 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- Note, this is LGPL.  But we're only using it in a test and not changing it, so I
+      believe we are fine. -->
+      <groupId>org.mariadb.jdbc</groupId>
+      <artifactId>mariadb-java-client</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -201,90 +245,6 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
-              <execution>
-                <id>generate-thrift-sources</id>
-                <phase>generate-sources</phase>
-                <configuration>
-                  <target>
-                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
-                             classpathref="maven.plugin.classpath" />
-                    <property name="thrift.args" value="${thrift.args}"/>
-                    <property name="thrift.gen.dir" value="${thrift.gen.dir}"/>
-                    <delete dir="${thrift.gen.dir}"/>
-                    <mkdir dir="${thrift.gen.dir}"/>
-                    <for param="thrift.file">
-                      <path>
-                        <fileset dir="." includes="src/main/thrift/*.thrift" />
-                      </path>
-                      <sequential>
-                        <echo message="Generating Thrift code for @{thrift.file}"/>
-                        <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
-                          <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} " />
-                        </exec>
-                      </sequential>
-                    </for>
-                  </target>
-                </configuration>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>com.google.code.maven-replacer-plugin</groupId>
-            <artifactId>replacer</artifactId>
-            <version>1.5.3</version>
-            <executions>
-              <execution>
-                <id>process-thrift-sources-string-intern</id>
-                <phase>process-sources</phase>
-                <goals>
-                  <goal>replace</goal>
-                </goals>
-                <configuration>
-                  <basedir>${basedir}/src/gen/thrift/gen-javabean/org/apache/hadoop/hive/metastore/api/</basedir>
-                  <includes>
-                    <include>FieldSchema.java</include>
-                    <include>Partition.java</include>
-                    <include>SerDeInfo.java</include>
-                    <include>StorageDescriptor.java</include>
-                    <include>ColumnStatisticsDesc.java</include>
-                    <include>ColumnStatisticsObj.java</include>
-                  </includes>
-                  <tokenValueMap>${basedir}/src/main/resources/thrift-replacements.txt</tokenValueMap>
-                  <regex>true</regex>
-                  <quiet>false</quiet>
-                </configuration>
-              </execution>
-              <execution>
-                <id>process-thrift-sources-interface-annotations</id>
-                <phase>process-sources</phase>
-                <goals>
-                  <goal>replace</goal>
-                </goals>
-                <configuration>
-                  <basedir>${basedir}/src/gen/thrift/gen-javabean/org/apache/hadoop/hive/metastore/api/</basedir>
-                  <filesToInclude>*.java</filesToInclude>
-                  <replacements>
-                    <replacement>
-                      <token>public class</token>
-                      <value>@org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class</value>
-                      <unescape>true</unescape>
-                    </replacement>
-                    <replacement>
-                      <token>public static class</token>
-                      <value>@org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public static class</value>
-                      <unescape>true</unescape>
-                    </replacement>
-                    <replacement>
-                      <token>public interface</token>
-                      <value>@org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public interface</value>
-                      <unescape>true</unescape>
-                    </replacement>
-                  </replacements>
-                </configuration>
-              </execution>
             </executions>
           </plugin>
         </plugins>
@@ -323,6 +283,48 @@
         </plugins>
       </reporting>
     </profile>
+    <!--
+  <profile>
+    <id>checkin</id>
+    <build>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.version}</version>
+          <configuration>
+            <includes>
+              <include>**/Test*</include>
+            </includes>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+            <reuseForks>false</reuseForks>
+            <forkCount>${test.forkcount}</forkCount>
+            <argLine>-Xmx2048m</argLine>
+            <failIfNoTests>false</failIfNoTests>
+            <systemPropertyVariables>
+              <build.dir>${project.build.directory}</build.dir>
+              <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>
+              <derby.version>${derby.version}</derby.version>
+              <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+              <log4j.debug>true</log4j.debug>
+              <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
+              <javax.jdo.option.ConnectionURL>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</javax.jdo.option.ConnectionURL>
+              <metastore.schema.verification>false</metastore.schema.verification>
+              <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
+              <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+            </systemPropertyVariables>
+            <additionalClasspathElements>
+              <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
+            </additionalClasspathElements>
+          </configuration>
+
+        </plugin>
+
+
+      </plugins>
+    </build>
+  </profile>
+  -->
   </profiles>
 
   <build>
@@ -381,10 +383,10 @@
             </goals>
             <configuration>
               <target>
-                <delete dir="${test.tmp.dir}" />
-                <delete dir="${test.warehouse.dir}" />
-                <mkdir dir="${test.tmp.dir}" />
-                <mkdir dir="${test.warehouse.dir}" />
+                <delete dir="${test.tmp.dir}"/>
+                <delete dir="${test.warehouse.dir}"/>
+                <mkdir dir="${test.tmp.dir}"/>
+                <mkdir dir="${test.warehouse.dir}"/>
               </target>
             </configuration>
           </execution>
@@ -411,6 +413,14 @@
             <goals>
               <goal>run</goal>
             </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore/upgrade"/>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade">
+                  <fileset dir="${basedir}/src/main/sql/"/>
+                </copy>
+              </target>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -536,10 +546,13 @@
             <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
             <log4j.debug>true</log4j.debug>
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
-            <javax.jdo.option.ConnectionURL>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</javax.jdo.option.ConnectionURL>
+            <javax.jdo.option.ConnectionURL>
+              jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true
+            </javax.jdo.option.ConnectionURL>
             <metastore.schema.verification>false</metastore.schema.verification>
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
-            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}
+            </metastore.warehouse.dir>
           </systemPropertyVariables>
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
@@ -605,6 +618,50 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>java</executable>
+          <arguments>
+            <argument>-classpath</argument>
+            <classpath/>
+            <argument>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</argument>
+            <argument>
+              ${project.build.directory}/generated-sources/conf/metastore-site.xml.template
+            </argument>
+          </arguments>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.datanucleus</groupId>
+        <artifactId>datanucleus-maven-plugin</artifactId>
+        <version>4.0.5</version>
+        <configuration>
+          <api>JDO</api>
+          <verbose>false</verbose>
+          <log4jConfiguration>${basedir}/src/main/resources/datanucleus-log4j.properties
+          </log4jConfiguration>
+          <metadataIncludes>**/*.jdo</metadataIncludes>
+          <fork>false</fork>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>enhance</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr3-maven-plugin</artifactId>
         <version>${antlr.version}</version>
@@ -622,5 +679,6 @@
       </plugin>
     </plugins>
   </build>
+
 
 </project>
