@@ -454,6 +454,9 @@ public class TestVectorDateAddSub {
     resultVectorExtractRow.init(new TypeInfo[] { TypeInfoFactory.dateTypeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
+    /*
     System.out.println(
         "*DEBUG* dateTimeStringTypeInfo " + dateTimeStringTypeInfo.toString() +
         " integerTypeInfo " + integerTypeInfo +
@@ -461,6 +464,7 @@ public class TestVectorDateAddSub {
         " dateAddSubTestMode " + dateAddSubTestMode +
         " columnScalarMode " + columnScalarMode +
         " vectorExpression " + vectorExpression.toString());
+    */
 
     batchSource.resetBatchIteration();
     int rowIndex = 0;

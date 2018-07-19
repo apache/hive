@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount.GenericUDAFCountEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
@@ -82,6 +84,8 @@ public class AggregationBase {
       Object[] results)
           throws Exception {
 
+    // System.out.println("*ROW AGGREGATION EXPRESSION* " + evaluator.getClass().getSimpleName());
+
     /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
@@ -95,7 +99,14 @@ public class AggregationBase {
     ObjectInspector objectInspector = TypeInfoUtils
         .getStandardWritableObjectInspectorFromTypeInfo(outputTypeInfo);
 
-    Object[] parameterArray = new Object[1];
+    final boolean isCountStar;
+    if (evaluator instanceof GenericUDAFCountEvaluator) {
+      GenericUDAFCountEvaluator countEvaluator = (GenericUDAFCountEvaluator) evaluator;
+      isCountStar = countEvaluator.getCountAllColumns();
+    } else {
+      isCountStar = false;
+    }
+    final Object[] parameterArray = isCountStar ? new Object[0] : new Object[1];
     final int rowCount = randomRows.length;
     for (int i = 0; i < rowCount; i++) {
       Object[] row = randomRows[i];
@@ -112,7 +123,9 @@ public class AggregationBase {
         aggregationBuffer = evaluator.getNewAggregationBuffer();
         aggregationBuffers[key] = aggregationBuffer;
       }
-      parameterArray[0] = row[1];
+      if (!isCountStar) {
+        parameterArray[0] = row[1];
+      }
       evaluator.aggregate(aggregationBuffer, parameterArray);
     }
 
@@ -231,6 +244,8 @@ public class AggregationBase {
     }
     VectorExpression.doTransientInit(vecAggrExpr.getInputExpression());
 
+    // System.out.println("*VECTOR AGGREGATION EXPRESSION* " + vecAggrExpr.getClass().getSimpleName());
+
     /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
@@ -316,7 +331,7 @@ public class AggregationBase {
         new VectorizedRowBatchCtx(
             outputColumnNames,
             outputTypeInfos,
-            null,
+            new DataTypePhysicalVariation[] { vecAggrExpr.getOutputDataTypePhysicalVariation() },
             /* dataColumnNums */ null,
             /* partitionColumnCount */ 0,
             /* virtualColumnCount */ 0,
@@ -374,6 +389,7 @@ public class AggregationBase {
       int maxKeyCount, List<String> columns, String[] columnNames,
       List<ExprNodeDesc> parameters, Object[][] randomRows,
       VectorRandomRowSource rowSource, VectorRandomBatchSource batchSource,
+      boolean tryDecimal64,
       Object[] resultsArray)
           throws Exception {
 

@@ -407,6 +407,8 @@ public class TestVectorStringConcat {
         new TypeInfo[] { outputTypeInfo }, new int[] { columns.size() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
     /*
     System.out.println(
         "*DEBUG* stringTypeInfo1 " + stringTypeInfo1.toString() +

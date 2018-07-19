@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpe
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount.GenericUDAFCountEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
@@ -46,6 +48,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 
 import junit.framework.Assert;
@@ -73,7 +76,14 @@ public class TestVectorAggregation extends AggregationBase {
   public void testAvgDecimal() throws Exception {
     Random random = new Random(7743);
 
-    doDecimalTests("avg", random);
+    doDecimalTests("avg", random, /* tryDecimal64 */ false);
+  }
+
+  @Test
+  public void testAvgDecimal64() throws Exception {
+    Random random = new Random(7743);
+
+    doDecimalTests("avg", random, /* tryDecimal64 */ true);
   }
 
   @Test
@@ -101,12 +111,29 @@ public class TestVectorAggregation extends AggregationBase {
   }
 
   @Test
+  public void testCountStar() throws Exception {
+    Random random = new Random(7743);
+
+    doTests(
+        random, "count", TypeInfoFactory.shortTypeInfo, true, false);
+    doTests(
+        random, "count", TypeInfoFactory.longTypeInfo, true, false);
+    doTests(
+        random, "count", TypeInfoFactory.doubleTypeInfo, true, false);
+    doTests(
+        random, "count", new DecimalTypeInfo(18, 10), true, false);
+    doTests(
+        random, "count", TypeInfoFactory.stringTypeInfo, true, false);
+  }
+
+  @Test
   public void testMax() throws Exception {
     Random random = new Random(7743);
 
     doIntegerTests("max", random);
     doFloatingTests("max", random);
-    doDecimalTests("max", random);
+    doDecimalTests("max", random, /* tryDecimal64 */ false);
+    doDecimalTests("max", random, /* tryDecimal64 */ true);
 
     doTests(
         random, "max", TypeInfoFactory.timestampTypeInfo);
@@ -122,7 +149,8 @@ public class TestVectorAggregation extends AggregationBase {
 
     doIntegerTests("min", random);
     doFloatingTests("min", random);
-    doDecimalTests("min", random);
+    doDecimalTests("min", random, /* tryDecimal64 */ false);
+    doDecimalTests("min", random, /* tryDecimal64 */ true);
 
     doTests(
         random, "min", TypeInfoFactory.timestampTypeInfo);
@@ -143,11 +171,36 @@ public class TestVectorAggregation extends AggregationBase {
     doTests(
         random, "sum", TypeInfoFactory.doubleTypeInfo);
 
-    doDecimalTests("sum", random);
+    doDecimalTests("sum", random, /* tryDecimal64 */ false);
+    doDecimalTests("sum", random, /* tryDecimal64 */ true);
+
+    doTests(
+        random, "sum", TypeInfoFactory.timestampTypeInfo);
   }
 
-  private final static Set<String> varianceNames =
-      GenericUDAFVariance.VarianceKind.nameMap.keySet();
+  @Ignore
+  @Test
+  public void testBloomFilter() throws Exception {
+    Random random = new Random(7743);
+
+    doIntegerTests("bloom_filter", random);
+    doFloatingTests("bloom_filter", random);
+    doDecimalTests("bloom_filter", random, /* tryDecimal64 */ false);
+
+    doTests(
+        random, "bloom_filter", TypeInfoFactory.timestampTypeInfo);
+
+    doStringFamilyTests("bloom_filter", random);
+  }
+
+  private final static Set<String> varianceNames = new HashSet<String>();
+  static {
+    // Don't include synonyms.
+    varianceNames.add("variance");
+    varianceNames.add("var_samp");
+    varianceNames.add("std");
+    varianceNames.add("stddev_samp");
+  }
 
   @Test
   public void testVarianceIntegers() throws Exception {
@@ -172,7 +225,17 @@ public class TestVectorAggregation extends AggregationBase {
     Random random = new Random(7743);
 
     for (String aggregationName : varianceNames) {
-      doDecimalTests(aggregationName, random);
+      doDecimalTests(aggregationName, random, /* tryDecimal64 */ false);
+    }
+  }
+
+  @Test
+  public void testVarianceTimestamp() throws Exception {
+    Random random = new Random(7743);
+
+    for (String aggregationName : varianceNames) {
+      doTests(
+          random, aggregationName, TypeInfoFactory.timestampTypeInfo);
     }
   }
 
@@ -215,11 +278,12 @@ public class TestVectorAggregation extends AggregationBase {
     new DecimalTypeInfo(7, 1)
   };
 
-  private void doDecimalTests(String aggregationName, Random random)
-      throws Exception {
+  private void doDecimalTests(String aggregationName, Random random,
+      boolean tryDecimal64)
+          throws Exception {
     for (TypeInfo typeInfo : decimalTypeInfos) {
       doTests(
-          random, aggregationName, typeInfo);
+          random, aggregationName, typeInfo, /* isCountStar */ false, tryDecimal64);
     }
   }
 
@@ -237,6 +301,15 @@ public class TestVectorAggregation extends AggregationBase {
       doTests(
           random, aggregationName, typeInfo);
     }
+  }
+
+  private boolean checkDecimal64(boolean tryDecimal64, TypeInfo typeInfo) {
+    if (!tryDecimal64 || !(typeInfo instanceof DecimalTypeInfo)) {
+      return false;
+    }
+    DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
+    boolean result = HiveDecimalWritable.isPrecisionDecimal64(decimalTypeInfo.getPrecision());
+    return result;
   }
 
   public static int getLinearRandomNumber(Random random, int maxSize) {
@@ -366,6 +439,7 @@ public class TestVectorAggregation extends AggregationBase {
         mergeRandomRows,
         mergeRowSource,
         mergeBatchSource,
+        /* tryDecimal64 */ false,
         mergeResultsArray);
 
     verifyAggregationResults(
@@ -378,6 +452,12 @@ public class TestVectorAggregation extends AggregationBase {
 
   private void doTests(Random random, String aggregationName, TypeInfo typeInfo)
       throws Exception {
+    doTests(random, aggregationName, typeInfo, false, false);
+  }
+
+  private void doTests(Random random, String aggregationName, TypeInfo typeInfo,
+      boolean isCountStar, boolean tryDecimal64)
+          throws Exception {
 
     List<GenerationSpec> dataAggrGenerationSpecList = new ArrayList<GenerationSpec>();
     List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList =
@@ -388,9 +468,13 @@ public class TestVectorAggregation extends AggregationBase {
     dataAggrGenerationSpecList.add(keyGenerationSpec);
     explicitDataTypePhysicalVariationList.add(DataTypePhysicalVariation.NONE);
 
+    final boolean decimal64Enable = checkDecimal64(tryDecimal64, typeInfo);
     GenerationSpec generationSpec = GenerationSpec.createSameType(typeInfo);
     dataAggrGenerationSpecList.add(generationSpec);
-    explicitDataTypePhysicalVariationList.add(DataTypePhysicalVariation.NONE);
+    explicitDataTypePhysicalVariationList.add(
+        decimal64Enable ?
+            DataTypePhysicalVariation.DECIMAL_64 :
+            DataTypePhysicalVariation.NONE);
 
     List<String> columns = new ArrayList<String>();
     columns.add("col0");
@@ -398,7 +482,9 @@ public class TestVectorAggregation extends AggregationBase {
 
     ExprNodeColumnDesc dataAggrCol1Expr = new ExprNodeColumnDesc(typeInfo, "col1", "table", false);
     List<ExprNodeDesc> dataAggrParameters = new ArrayList<ExprNodeDesc>();
-    dataAggrParameters.add(dataAggrCol1Expr);
+    if (!isCountStar) {
+      dataAggrParameters.add(dataAggrCol1Expr);
+    }
     final int dataAggrParameterCount = dataAggrParameters.size();
     ObjectInspector[] dataAggrParameterObjectInspectors = new ObjectInspector[dataAggrParameterCount];
     for (int i = 0; i < dataAggrParameterCount; i++) {
@@ -420,8 +506,9 @@ public class TestVectorAggregation extends AggregationBase {
 
     VectorRandomRowSource partial1RowSource = new VectorRandomRowSource();
 
+    boolean allowNull = !aggregationName.equals("bloom_filter");
     partial1RowSource.initGenerationSpecSchema(
-        random, dataAggrGenerationSpecList, /* maxComplexDepth */ 0, /* allowNull */ true,
+        random, dataAggrGenerationSpecList, /* maxComplexDepth */ 0, allowNull,
         explicitDataTypePhysicalVariationList);
 
     Object[][] partial1RandomRows = partial1RowSource.randomRows(TEST_ROW_COUNT);
@@ -441,6 +528,11 @@ public class TestVectorAggregation extends AggregationBase {
             null);
 
     GenericUDAFEvaluator partial1Evaluator = getEvaluator(aggregationName, typeInfo);
+    if (isCountStar) {
+      Assert.assertTrue(partial1Evaluator instanceof GenericUDAFCountEvaluator);
+      GenericUDAFCountEvaluator countEvaluator = (GenericUDAFCountEvaluator) partial1Evaluator;
+      countEvaluator.setCountAllColumns(true);
+    }
 
     /*
     System.out.println(
@@ -473,6 +565,7 @@ public class TestVectorAggregation extends AggregationBase {
         partial1RandomRows,
         partial1RowSource,
         partial1BatchSource,
+        tryDecimal64,
         partial1ResultsArray);
 
     verifyAggregationResults(
@@ -488,16 +581,9 @@ public class TestVectorAggregation extends AggregationBase {
     } else {
       switch (aggregationName) {
       case "avg":
-        /*
-        if (typeInfo instanceof DecimalTypeInfo) {
-          // UNDONE: Row-mode GenericUDAFAverage does not call enforcePrecisionScale...
-          hasDifferentCompleteExpr = false;
-        } else {
-          hasDifferentCompleteExpr = true;
-        }
-        */
         hasDifferentCompleteExpr = true;
         break;
+      case "bloom_filter":
       case "count":
       case "max":
       case "min":
@@ -570,6 +656,7 @@ public class TestVectorAggregation extends AggregationBase {
           completeRandomRows,
           completeRowSource,
           completeBatchSource,
+          tryDecimal64,
           completeResultsArray);
 
       verifyAggregationResults(
@@ -588,6 +675,7 @@ public class TestVectorAggregation extends AggregationBase {
       case "avg":
         hasDifferentPartial2Expr = true;
         break;
+      case "bloom_filter":
       case "count":
       case "max":
       case "min":
@@ -599,7 +687,7 @@ public class TestVectorAggregation extends AggregationBase {
       }
     }
 
-    if (hasDifferentPartial2Expr && false) {
+    if (hasDifferentPartial2Expr) {
 
       /*
        * PARTIAL2.
@@ -628,6 +716,7 @@ public class TestVectorAggregation extends AggregationBase {
       case "avg":
         hasDifferentFinalExpr = true;
         break;
+      case "bloom_filter":
       case "count":
         hasDifferentFinalExpr = true;
         break;

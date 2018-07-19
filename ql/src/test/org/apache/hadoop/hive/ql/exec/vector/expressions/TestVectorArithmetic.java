@@ -114,10 +114,58 @@ public class TestVectorArithmetic {
   }
 
   @Test
-  public void testDecimals() throws Exception {
+  public void testDecimal() throws Exception {
     Random random = new Random(7743);
 
-    doDecimalTests(random);
+    doDecimalTests(random, /* tryDecimal64 */ false);
+  }
+
+  @Test
+  public void testDecimal64() throws Exception {
+    Random random = new Random(7743);
+
+    doDecimalTests(random, /* tryDecimal64 */ true);
+  }
+
+  @Test
+  public void testInterval() throws Exception {
+    Random random = new Random(7743);
+
+    doIntervalTests(random);
+  }
+
+  @Test
+  public void testTimestampInterval() throws Exception {
+    Random random = new Random(7743);
+
+    doAddSubTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.intervalYearMonthTypeInfo);
+    doAddSubTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.intervalDayTimeTypeInfo);
+
+    doSubTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.timestampTypeInfo);
+
+    doAddTests(random, TypeInfoFactory.intervalYearMonthTypeInfo, TypeInfoFactory.timestampTypeInfo);
+    doAddTests(random, TypeInfoFactory.intervalDayTimeTypeInfo, TypeInfoFactory.timestampTypeInfo);
+  }
+
+  @Test
+  public void testTimestampDate() throws Exception {
+    Random random = new Random(7743);
+
+    doSubTests(random, TypeInfoFactory.dateTypeInfo, TypeInfoFactory.timestampTypeInfo);
+    doSubTests(random, TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.dateTypeInfo);
+  }
+
+  @Test
+  public void testDateInterval() throws Exception {
+    Random random = new Random(7743);
+
+    doAddSubTests(random, TypeInfoFactory.dateTypeInfo, TypeInfoFactory.intervalYearMonthTypeInfo);
+    doAddSubTests(random, TypeInfoFactory.dateTypeInfo, TypeInfoFactory.intervalDayTimeTypeInfo);
+
+    doSubTests(random, TypeInfoFactory.dateTypeInfo, TypeInfoFactory.dateTypeInfo);
+
+    doAddTests(random, TypeInfoFactory.intervalYearMonthTypeInfo, TypeInfoFactory.dateTypeInfo);
+    doAddTests(random, TypeInfoFactory.intervalDayTimeTypeInfo, TypeInfoFactory.dateTypeInfo);
   }
 
   public enum ArithmeticTestMode {
@@ -201,13 +249,26 @@ public class TestVectorArithmetic {
     new DecimalTypeInfo(7, 1)
   };
 
-  private void doDecimalTests(Random random)
+  private void doDecimalTests(Random random, boolean tryDecimal64)
       throws Exception {
     for (TypeInfo typeInfo : decimalTypeInfos) {
       for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
         doTestsWithDiffColumnScalar(
-            random, typeInfo, typeInfo, columnScalarMode);
+            random, typeInfo, typeInfo, columnScalarMode, tryDecimal64);
       }
+    }
+  }
+
+  private static TypeInfo[] intervalTypeInfos = new TypeInfo[] {
+    TypeInfoFactory.intervalYearMonthTypeInfo,
+    TypeInfoFactory.intervalDayTimeTypeInfo
+  };
+
+  private void doIntervalTests(Random random)
+      throws Exception {
+    for (TypeInfo typeInfo : intervalTypeInfos) {
+      doAddSubTests(
+          random, typeInfo, typeInfo);
     }
   }
 
@@ -236,16 +297,57 @@ public class TestVectorArithmetic {
     return new DecimalTypeInfo(precision, scale);
   }
 
+  private boolean checkDecimal64(boolean tryDecimal64, TypeInfo typeInfo) {
+    if (!tryDecimal64 || !(typeInfo instanceof DecimalTypeInfo)) {
+      return false;
+    }
+    DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
+    boolean result = HiveDecimalWritable.isPrecisionDecimal64(decimalTypeInfo.getPrecision());
+    return result;
+  }
+
+  private void doAddTests(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2)
+      throws Exception {
+    for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
+      doTestsWithDiffColumnScalar(
+          random, typeInfo1, typeInfo2, columnScalarMode, Arithmetic.ADD, false);
+    }
+  }
+
+  private void doSubTests(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2)
+      throws Exception {
+    for (ColumnScalarMode columnScalarMode : ColumnScalarMode.values()) {
+      doTestsWithDiffColumnScalar(
+          random, typeInfo1, typeInfo2, columnScalarMode, Arithmetic.SUBTRACT, false);
+    }
+  }
+
+  private void doAddSubTests(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2)
+          throws Exception {
+    doAddTests(random, typeInfo1, typeInfo2);
+    doSubTests(random, typeInfo1, typeInfo2);
+  }
+
   private void doTestsWithDiffColumnScalar(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2,
       ColumnScalarMode columnScalarMode)
           throws Exception {
     for (Arithmetic arithmetic : Arithmetic.values()) {
-      doTestsWithDiffColumnScalar(random, typeInfo1, typeInfo2, columnScalarMode, arithmetic);
+      doTestsWithDiffColumnScalar(
+          random, typeInfo1, typeInfo2, columnScalarMode, arithmetic, false);
     }
   }
 
   private void doTestsWithDiffColumnScalar(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2,
-      ColumnScalarMode columnScalarMode, Arithmetic arithmetic)
+      ColumnScalarMode columnScalarMode, boolean tryDecimal64)
+          throws Exception {
+    for (Arithmetic arithmetic : Arithmetic.values()) {
+      doTestsWithDiffColumnScalar(
+          random, typeInfo1, typeInfo2, columnScalarMode, arithmetic, tryDecimal64);
+    }
+  }
+
+  private void doTestsWithDiffColumnScalar(Random random, TypeInfo typeInfo1, TypeInfo typeInfo2,
+      ColumnScalarMode columnScalarMode, Arithmetic arithmetic, boolean tryDecimal64)
           throws Exception {
 
     String typeName1 = typeInfo1.getTypeName();
@@ -265,11 +367,15 @@ public class TestVectorArithmetic {
 
     ExprNodeDesc col1Expr;
     Object scalar1Object = null;
+    final boolean decimal64Enable1 = checkDecimal64(tryDecimal64, typeInfo1);
     if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
         columnScalarMode == ColumnScalarMode.COLUMN_SCALAR) {
       generationSpecList.add(
           GenerationSpec.createSameType(typeInfo1));
-      explicitDataTypePhysicalVariationList.add(DataTypePhysicalVariation.NONE);
+      explicitDataTypePhysicalVariationList.add(
+          decimal64Enable1 ?
+              DataTypePhysicalVariation.DECIMAL_64 :
+              DataTypePhysicalVariation.NONE);
 
       String columnName = "col" + (columnNum++);
       col1Expr = new ExprNodeColumnDesc(typeInfo1, columnName, "table", false);
@@ -288,12 +394,16 @@ public class TestVectorArithmetic {
     }
     ExprNodeDesc col2Expr;
     Object scalar2Object = null;
+    final boolean decimal64Enable2 = checkDecimal64(tryDecimal64, typeInfo2);
     if (columnScalarMode == ColumnScalarMode.COLUMN_COLUMN ||
         columnScalarMode == ColumnScalarMode.SCALAR_COLUMN) {
       generationSpecList.add(
           GenerationSpec.createSameType(typeInfo2));
 
-      explicitDataTypePhysicalVariationList.add(DataTypePhysicalVariation.NONE);
+      explicitDataTypePhysicalVariationList.add(
+          decimal64Enable2 ?
+              DataTypePhysicalVariation.DECIMAL_64 :
+              DataTypePhysicalVariation.NONE);
 
       String columnName = "col" + (columnNum++);
       col2Expr = new ExprNodeColumnDesc(typeInfo2, columnName, "table", false);
@@ -430,7 +540,8 @@ public class TestVectorArithmetic {
           if (expectedResult != null || vectorResult != null) {
             Assert.fail(
                 "Row " + i +
-                " typeName " + typeName1 +
+                " typeName1 " + typeName1 +
+                " typeName2 " + typeName2 +
                 " outputTypeName " + outputTypeInfo.getTypeName() +
                 " " + arithmetic +
                 " " + ArithmeticTestMode.values()[v] +
@@ -448,7 +559,8 @@ public class TestVectorArithmetic {
           if (!expectedResult.equals(vectorResult)) {
             Assert.fail(
                 "Row " + i +
-                " typeName " + typeName1 +
+                " typeName1 " + typeName1 +
+                " typeName2 " + typeName2 +
                 " outputTypeName " + outputTypeInfo.getTypeName() +
                 " " + arithmetic +
                 " " + ArithmeticTestMode.values()[v] +
@@ -545,6 +657,9 @@ public class TestVectorArithmetic {
     HiveConf hiveConf = new HiveConf();
     if (arithmeticTestMode == ArithmeticTestMode.ADAPTOR) {
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_VECTOR_ADAPTOR_OVERRIDE, true);
+
+      // Don't use DECIMAL_64 with the VectorUDFAdaptor.
+      dataTypePhysicalVariations = null;
     }
 
     VectorizationContext vectorizationContext =
@@ -552,12 +667,14 @@ public class TestVectorArithmetic {
             "name",
             columns,
             Arrays.asList(typeInfos),
-            Arrays.asList(dataTypePhysicalVariations),
+            dataTypePhysicalVariations == null ? null : Arrays.asList(dataTypePhysicalVariations),
             hiveConf);
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
 
     String[] outputScratchTypeNames= vectorizationContext.getScratchColumnTypeNames();
+    DataTypePhysicalVariation[] outputDataTypePhysicalVariations =
+        vectorizationContext.getScratchDataTypePhysicalVariations();
 
     VectorizedRowBatchCtx batchContext =
         new VectorizedRowBatchCtx(
@@ -569,7 +686,7 @@ public class TestVectorArithmetic {
             /* virtualColumnCount */ 0,
             /* neededVirtualColumns */ null,
             outputScratchTypeNames,
-            null);
+            outputDataTypePhysicalVariations);
 
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
 
@@ -577,6 +694,8 @@ public class TestVectorArithmetic {
     resultVectorExtractRow.init(
         new TypeInfo[] { outputTypeInfo }, new int[] { vectorExpression.getOutputColumnNum() });
     Object[] scrqtchRow = new Object[1];
+
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
 
     /*
     System.out.println(

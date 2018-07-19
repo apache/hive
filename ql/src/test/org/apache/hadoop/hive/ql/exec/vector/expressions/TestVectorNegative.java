@@ -427,6 +427,8 @@ public class TestVectorNegative {
         new TypeInfo[] { outputTypeInfo }, new int[] { vectorExpression.getOutputColumnNum() });
     Object[] scrqtchRow = new Object[1];
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
     /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +
