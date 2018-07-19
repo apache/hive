@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkPartitionPruningSinkOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorTopNKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkCommonOperator;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFOperator;
@@ -76,6 +77,7 @@ import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.SparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
@@ -126,6 +128,7 @@ public final class OperatorFactory {
     opvec.put(OrcFileMergeDesc.class, OrcFileMergeOperator.class);
     opvec.put(CommonMergeJoinDesc.class, CommonMergeJoinOperator.class);
     opvec.put(ListSinkDesc.class, ListSinkOperator.class);
+    opvec.put(TopNKeyDesc.class, TopNKeyOperator.class);
   }
 
   static {
@@ -143,6 +146,7 @@ public final class OperatorFactory {
     vectorOpvec.put(LimitDesc.class, VectorLimitOperator.class);
     vectorOpvec.put(PTFDesc.class, VectorPTFOperator.class);
     vectorOpvec.put(SparkHashTableSinkDesc.class, VectorSparkHashTableSinkOperator.class);
+    vectorOpvec.put(TopNKeyDesc.class, VectorTopNKeyOperator.class);
   }
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(
