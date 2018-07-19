@@ -1800,15 +1800,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col12
                 Statistics: Num rows: 28 Data size: 17955 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: _col5 BETWEEN CASE WHEN (_col10 is null) THEN (null) ELSE (_col9) END AND _col12 (type: boolean)
-                  Statistics: Num rows: 3 Data size: 1923 Basic stats: COMPLETE Column stats: NONE
+                  predicate: CASE WHEN (_col10 is null) THEN (_col5 BETWEEN null AND _col12) ELSE (_col5 BETWEEN _col9 AND _col12) END (type: boolean)
+                  Statistics: Num rows: 14 Data size: 8977 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 3 Data size: 1923 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 14 Data size: 8977 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 3 Data size: 1923 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 14 Data size: 8977 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2329,15 +2329,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
                 Statistics: Num rows: 26 Data size: 16262 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (UDFToLong(_col5) <> CASE WHEN (_col10 is null) THEN (0) ELSE (_col9) END) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 16262 Basic stats: COMPLETE Column stats: COMPLETE
+                  predicate: CASE WHEN (_col10 is null) THEN ((UDFToLong(_col5) <> 0)) ELSE ((UDFToLong(_col5) <> _col9)) END (type: boolean)
+                  Statistics: Num rows: 13 Data size: 8131 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 13 Data size: 8047 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 13 Data size: 8047 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4713,15 +4713,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                 Statistics: Num rows: 5 Data size: 3476 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (UDFToLong(_col2) <> CASE WHEN (_col11 is null) THEN (0) ELSE (_col10) END) (type: boolean)
-                  Statistics: Num rows: 5 Data size: 3476 Basic stats: COMPLETE Column stats: NONE
+                  predicate: CASE WHEN (_col11 is null) THEN ((UDFToLong(_col2) <> 0)) ELSE ((UDFToLong(_col2) <> _col10)) END (type: boolean)
+                  Statistics: Num rows: 2 Data size: 1390 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                    Statistics: Num rows: 5 Data size: 3476 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 1390 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 5 Data size: 3476 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 1390 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -4974,17 +4974,17 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                 Statistics: Num rows: 5 Data size: 3476 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (UDFToLong(_col2) <> CASE WHEN (_col11 is null) THEN (0) ELSE (_col10) END) (type: boolean)
-                  Statistics: Num rows: 5 Data size: 3476 Basic stats: COMPLETE Column stats: NONE
+                  predicate: CASE WHEN (_col11 is null) THEN ((UDFToLong(_col2) <> 0)) ELSE ((UDFToLong(_col2) <> _col10)) END (type: boolean)
+                  Statistics: Num rows: 2 Data size: 1390 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                    Statistics: Num rows: 5 Data size: 3476 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2 Data size: 1390 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col2 (type: int)
-                      Statistics: Num rows: 5 Data size: 3476 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2 Data size: 1390 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
         Reducer 3 
             Execution mode: llap
@@ -4996,9 +4996,9 @@ STAGE PLANS:
                   0 _col2 (type: int)
                   1 _col2 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col13, _col14
-                Statistics: Num rows: 5 Data size: 3823 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 1529 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (UDFToLong(_col0) > CASE WHEN (_col14 is null) THEN (0) ELSE (_col13) END) (type: boolean)
+                  predicate: CASE WHEN (_col14 is null) THEN ((UDFToLong(_col0) > 0)) ELSE ((UDFToLong(_col0) > _col13)) END (type: boolean)
                   Statistics: Num rows: 1 Data size: 764 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
@@ -6003,15 +6003,15 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
                 Statistics: Num rows: 26 Data size: 16406 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (UDFToLong(_col5) <> CASE WHEN (_col10 is null) THEN (0) ELSE (_col9) END) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 16406 Basic stats: COMPLETE Column stats: COMPLETE
+                  predicate: CASE WHEN (_col10 is null) THEN ((UDFToLong(_col5) <> 0)) ELSE ((UDFToLong(_col5) <> _col9)) END (type: boolean)
+                  Statistics: Num rows: 13 Data size: 8203 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                    Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 13 Data size: 8047 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 13 Data size: 8047 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

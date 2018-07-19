@@ -1239,7 +1239,7 @@ where (case when cint % 2 = 0 then cint else 0 end) = cint) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-0
+4086
 PREHOOK: query: select count(*)
 from (
 select

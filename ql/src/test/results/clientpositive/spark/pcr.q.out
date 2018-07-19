@@ -1927,7 +1927,7 @@ POSTHOOK: query: explain extended select key, value from pcr_t1 where ds>='2000-
 POSTHOOK: type: QUERY
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`pcr_t1`
-WHERE `ds` >= '2000-04-08' OR `ds` < '2000-04-10'
+WHERE `ds` >= '2000-04-08' OR `ds` IS NOT NULL
 ORDER BY `key`, `value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1944,7 +1944,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pcr_t1
-                  filterExpr: ((ds >= '2000-04-08') or (ds < '2000-04-10')) (type: boolean)
+                  filterExpr: ((ds >= '2000-04-08') or ds is not null) (type: boolean)
                   Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Select Operator
