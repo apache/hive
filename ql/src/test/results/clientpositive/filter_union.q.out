@@ -24,6 +24,13 @@ select key, c, 4 as m from (select key, count(key) as c from src group by key)s4
 )sub
 where m >2
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, COUNT(`key`) AS `c`, 3 AS `m`
+FROM `default`.`src`
+GROUP BY `key`
+UNION ALL
+SELECT `key`, COUNT(`key`) AS `c`, 4 AS `m`
+FROM `default`.`src`
+GROUP BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1, Stage-3

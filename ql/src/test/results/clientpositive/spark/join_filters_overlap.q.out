@@ -14,6 +14,15 @@ PREHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`a_n4`) AS `t`
+LEFT JOIN (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 50) AS `t1` ON `t`.`key` = `t1`.`key` AND `t`.`value` = 50
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60) AS `t3` ON `t`.`key` = `t3`.`key` AND `t`.`value` = 60
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -328,6 +337,15 @@ PREHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 50) AS `t0`
+RIGHT JOIN (SELECT `key`, `value`
+FROM `default`.`a_n4`) AS `t1` ON `t0`.`key` = `t1`.`key` AND `t1`.`value` = 50
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60) AS `t3` ON `t1`.`key` = `t3`.`key` AND `t1`.`value` = 60
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -642,6 +660,15 @@ PREHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50 AND b.value>10) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 50) AS `t0`
+RIGHT JOIN (SELECT `key`, `value`
+FROM `default`.`a_n4`) AS `t1` ON `t0`.`key` = `t1`.`key` AND `t1`.`value` = 50
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60) AS `t3` ON `t1`.`key` = `t3`.`key` AND `t1`.`value` = 60
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -956,6 +983,17 @@ PREHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`a_n4`) AS `t`
+FULL JOIN (SELECT `key`, `value`
+FROM `default`.`a_n4`) AS `t0` ON `t`.`key` = `t0`.`key` AND `t`.`value` = 50 AND `t0`.`value` = 50
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`value` = 60
+LEFT JOIN (SELECT `key`, CAST(40 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 40) AS `t4` ON `t`.`key` = `t4`.`key` AND `t`.`value` = 40
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1338,6 +1376,18 @@ PREHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (a_n4.key=b.key AND a_n4.value=50 AND b.value=50) left outer join a_n4 c on (a_n4.key=c.key AND a_n4.value=60 AND c.value=60) left outer join a_n4 d on (a_n4.key=d.key AND a_n4.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, `value`
+FROM `default`.`a_n4`) AS `t`
+LEFT JOIN (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 50) AS `t1` ON `t`.`key` = `t1`.`key` AND `t`.`value` = 50
+LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 60) AS `t3` ON `t`.`key` = `t3`.`key` AND `t`.`value` = 60
+LEFT JOIN (SELECT `key`, CAST(40 AS INTEGER) AS `value`
+FROM `default`.`a_n4`
+WHERE `value` = 40) AS `t5` ON `t`.`key` = `t5`.`key` AND `t`.`value` = 40
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

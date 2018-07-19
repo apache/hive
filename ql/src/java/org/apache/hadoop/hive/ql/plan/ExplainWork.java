@@ -50,6 +50,8 @@ public class ExplainWork implements Serializable {
 
   String cboInfo;
 
+  private String optimizedSQL;
+
   private transient BaseSemanticAnalyzer analyzer;
 
   public ExplainWork() {
@@ -61,7 +63,8 @@ public class ExplainWork implements Serializable {
       Task<?> fetchTask,
       BaseSemanticAnalyzer analyzer,
       ExplainConfiguration config,
-      String cboInfo) {
+      String cboInfo,
+      String optimizedSQL) {
     this.resFile = resFile;
     this.rootTasks = new ArrayList<Task<?>>(rootTasks);
     this.fetchTask = fetchTask;
@@ -71,6 +74,7 @@ public class ExplainWork implements Serializable {
     }
     this.pCtx = pCtx;
     this.cboInfo = cboInfo;
+    this.optimizedSQL = optimizedSQL;
     this.config = config;
   }
 
@@ -168,6 +172,14 @@ public class ExplainWork implements Serializable {
 
   public void setCboInfo(String cboInfo) {
     this.cboInfo = cboInfo;
+  }
+
+  public String getOptimizedSQL() {
+    return optimizedSQL;
+  }
+
+  public void setOptimizedSQL(String optimizedSQL) {
+    this.optimizedSQL = optimizedSQL;
   }
 
   public ExplainConfiguration getConfig() {

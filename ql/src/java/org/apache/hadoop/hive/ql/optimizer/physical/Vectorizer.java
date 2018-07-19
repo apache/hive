@@ -124,6 +124,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.VectorAppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.VectorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorFileSinkDesc;
@@ -135,6 +136,7 @@ import org.apache.hadoop.hive.ql.plan.VectorTableScanDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.plan.VectorSparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorSparkPartitionPruningSinkDesc;
+import org.apache.hadoop.hive.ql.plan.VectorTopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.VectorLimitDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinInfo;
 import org.apache.hadoop.hive.ql.plan.VectorSMBJoinDesc;
@@ -2555,6 +2557,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         desc, "Predicate", VectorExpressionDescriptor.Mode.FILTER, /* allowComplex */ true);
   }
 
+  private boolean validateTopNKeyOperator(TopNKeyOperator op) {
+    List<ExprNodeDesc> keyColumns = op.getConf().getKeyColumns();
+    return validateExprNodeDesc(keyColumns, "Key columns");
+  }
 
   private boolean validateGroupByOperator(GroupByOperator op, boolean isReduce,
       boolean isTezOrSpark, VectorGroupByDesc vectorGroupByDesc) {
@@ -4155,6 +4161,20 @@ public class Vectorizer implements PhysicalPlanResolver {
         vContext, vectorFilterDesc);
   }
 
+  private static Operator<? extends OperatorDesc> vectorizeTopNKeyOperator(
+      Operator<? extends OperatorDesc> topNKeyOperator, VectorizationContext vContext,
+      VectorTopNKeyDesc vectorTopNKeyDesc) throws HiveException {
+
+    TopNKeyDesc topNKeyDesc = (TopNKeyDesc) topNKeyOperator.getConf();
+
+    List<ExprNodeDesc> keyColumns = topNKeyDesc.getKeyColumns();
+    VectorExpression[] keyExpressions = vContext.getVectorExpressions(keyColumns);
+    vectorTopNKeyDesc.setKeyExpressions(keyExpressions);
+    return OperatorFactory.getVectorOperator(
+        topNKeyOperator.getCompilationOpContext(), topNKeyDesc,
+        vContext, vectorTopNKeyDesc);
+  }
+
   private static Class<? extends VectorAggregateExpression> findVecAggrClass(
       Class<? extends VectorAggregateExpression>[] vecAggrClasses,
       String aggregateName, ColumnVector.Type inputColVectorType,
@@ -5046,6 +5066,23 @@ public class Vectorizer implements PhysicalPlanResolver {
             if (vectorTaskColumnInfo != null) {
               VectorExpression vectorPredicateExpr = vectorFilterDesc.getPredicateExpression();
               if (usesVectorUDFAdaptor(vectorPredicateExpr)) {
+                vectorTaskColumnInfo.setUsesVectorUDFAdaptor(true);
+              }
+            }
+          }
+          break;
+        case TOPNKEY:
+          {
+            if (!validateTopNKeyOperator((TopNKeyOperator) op)) {
+              throw new VectorizerCannotVectorizeException();
+            }
+
+            VectorTopNKeyDesc vectorTopNKeyDesc = new VectorTopNKeyDesc();
+            vectorOp = vectorizeTopNKeyOperator(op, vContext, vectorTopNKeyDesc);
+            isNative = true;
+            if (vectorTaskColumnInfo != null) {
+              VectorExpression[] keyExpressions = vectorTopNKeyDesc.getKeyExpressions();
+              if (usesVectorUDFAdaptor(keyExpressions)) {
                 vectorTaskColumnInfo.setUsesVectorUDFAdaptor(true);
               }
             }

@@ -80,6 +80,9 @@ PREHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and h
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (key='484' and value= 'val_484')
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`
+FROM `default`.`fact_daily`
+WHERE `ds` = '1' AND `hr` = '4' AND `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -166,6 +169,9 @@ PREHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and (key='238' and value= 'val_238')
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST('238' AS STRING) AS `key`, CAST('val_238' AS STRING) AS `value`
+FROM `default`.`fact_daily`
+WHERE `ds` = '1' AND `hr` = '4' AND `key` = '238' AND `value` = 'val_238'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -253,6 +259,9 @@ PREHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and h
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT key FROM fact_daily WHERE ( ds='1' and hr='4') and (value = "3")
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`
+FROM `default`.`fact_daily`
+WHERE `ds` = '1' AND `hr` = '4' AND `value` = '3'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -338,6 +347,9 @@ PREHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT key,value FROM fact_daily WHERE ( ds='1' and hr='4') and key = '495'
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST('495' AS STRING) AS `key`, `value`
+FROM `default`.`fact_daily`
+WHERE `ds` = '1' AND `hr` = '4' AND `key` = '495'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

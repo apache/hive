@@ -49,6 +49,11 @@
       <artifactId>hive-standalone-metastore-common</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 	<dependency>
 		<groupId>javolution</groupId>
 		<artifactId>javolution</artifactId>

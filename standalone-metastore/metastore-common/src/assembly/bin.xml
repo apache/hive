@@ -77,27 +77,6 @@
     </fileSet>
 
     <fileSet>
-      <fileMode>755</fileMode>
-      <directory>${project.basedir}/src/main/scripts</directory>
-      <includes>
-        <include>base</include>
-        <include>schematool</include>
-        <include>start-metastore</include>
-        <include>metastore-config.sh</include>
-        <include>ext/**/*</include>
-      </includes>
-      <outputDirectory>bin</outputDirectory>
-    </fileSet>
-
-    <fileSet>
-      <directory>${project.basedir}/src/main/sql</directory>
-      <includes>
-        <include>**/*</include>
-      </includes>
-      <outputDirectory>scripts/metastore/upgrade</outputDirectory>
-    </fileSet>
-
-    <fileSet>
       <directory>${project.basedir}/src/gen/thrift/gen-php</directory>
       <includes>
         <include>**/*</include>
@@ -118,19 +97,12 @@
       <directory>${project.basedir}/src/main/resources/</directory>
       <fileMode>644</fileMode>
       <includes>
-        <include>metastore-site.xml</include>
         <include>metastore-log4j2.properties</include>
       </includes>
       <outputDirectory>conf</outputDirectory>
     </fileSet>
   </fileSets>
 
-  <files>
-    <file>
-      <source>${project.build.directory}/generated-sources/conf/metastore-site.xml.template</source>
-      <outputDirectory>conf</outputDirectory>
-    </file>
-  </files>
 
 </assembly>
 

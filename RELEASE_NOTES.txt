@@ -29,6 +29,7 @@ Release Notes - Hive - Version 3.1.0
     * [HIVE-19214] - High throughput ingest ORC format
     * [HIVE-19222] - TestNegativeCliDriver tests are failing due to "java.lang.OutOfMemoryError: GC overhead limit exceeded"
     * [HIVE-19243] - Upgrade hadoop.version to 3.1.0
+    * [HIVE-19252] - TestJdbcWithMiniKdcCookie.testCookieNegative is failing consistently
     * [HIVE-19274] - Add an OpTreeSignature persistence checker hook
     * [HIVE-19332] - Disable compute.query.using.stats for external table
     * [HIVE-19336] - Disable SMB/Bucketmap join for external tables
@@ -95,12 +96,15 @@ Release Notes - Hive - Version 3.1.0
     * [HIVE-19331] - Repl load config in "with" clause not pass to Context.getStagingDir
     * [HIVE-19350] - Vectorization: Turn off vectorization for explainuser_1.q / spark_explainuser_1
     * [HIVE-19352] - Vectorization: Disable vectorization for org.apache.hive.jdbc.TestJdbcDriver2.testResultSetMetaData
+    * [HIVE-19357] - Vectorization: assert_true HiveException erroneously gets suppressed to NULL
     * [HIVE-19358] - CBO decorrelation logic should generate Hive operators
     * [HIVE-19365] - Index on COMPLETED_TXN_COMPONENTS in Metastore RDBMS has different names in different scripts
     * [HIVE-19370] - Issue: ADD Months function on timestamp datatype fields in hive
     * [HIVE-19381] - Function replication in cloud fail when download resource from AWS
     * [HIVE-19382] - Acquire locks before generating valid transaction list for some operations
     * [HIVE-19384] - Vectorization: IfExprTimestamp* do not handle NULLs correctly
+    * [HIVE-19385] - Optional hive env variable to redirect bin/hive to use Beeline
+    * [HIVE-19389] - Schematool: For Hive's Information Schema, use embedded HS2 as default
     * [HIVE-19410] - don't create serde reader in LLAP if there's no cache
     * [HIVE-19418] - add background stats updater similar to compactor
     * [HIVE-19423] - REPL LOAD creates staging directory in source dump directory instead of table data location
@@ -226,6 +230,7 @@ Release Notes - Hive - Version 3.1.0
     * [HIVE-19997] - Batches for TestMiniDruidCliDriver
     * [HIVE-20002] - Shipping jdbd-storage-handler dependency jars in LLAP
     * [HIVE-20010] - Fix create view over literals
+    * [HIVE-20076] - ACID: Fix Synthetic ROW__ID generation for vectorized orc readers
 
 
 ** New Feature
@@ -265,6 +270,8 @@ Release Notes - Hive - Version 3.1.0
     * [HIVE-19776] - HiveServer2.startHiveServer2 retries of start has concurrency issues
     * [HIVE-19824] - Improve online datasize estimations for MapJoins
     * [HIVE-19885] - Druid Kafka Ingestion - Allow user to set kafka consumer properties via table properties
+    * [HIVE-20102] - Add a couple of additional tests for query parsing
+    * [HIVE-20135] - Fix incompatible change in TimestampColumnVector to default to UTC
 
 ** Test
     * [HIVE-19271] - TestMiniLlapLocalCliDriver default_constraint and check_constraint failing
@@ -280,6 +287,7 @@ Release Notes - Hive - Version 3.1.0
     * [HIVE-19699] - Re-enable TestReOptimization
     * [HIVE-19706] - Disable TestJdbcWithMiniHS2#testHttpRetryOnServerIdleTimeout
     * [HIVE-19731] - Change staging tmp directory used by TestHCatLoaderComplexSchema
+    * [HIVE-20123] - Fix masking tests after HIVE-19617
 
 
 ** Task

@@ -490,6 +490,8 @@ public class TestVectorCastStatement {
     VectorExpression vectorExpression = vectorizationContext.getVectorExpression(exprDesc);
     vectorExpression.transientInit();
 
+    // System.out.println("*VECTOR EXPRESSION* " + vectorExpression.getClass().getSimpleName());
+
     /*
     System.out.println(
         "*DEBUG* typeInfo " + typeInfo.toString() +

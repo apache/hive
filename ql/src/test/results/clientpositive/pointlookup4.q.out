@@ -52,6 +52,10 @@ from pcr_t1_n0
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, `ds2`
+FROM `default`.`pcr_t1_n0`
+WHERE `ds1` = '2000-04-08' AND `ds2` = '2001-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `ds2` = '2001-04-09' AND `key` = 2
+ORDER BY `key`, `value`, `ds1`, `ds2`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
