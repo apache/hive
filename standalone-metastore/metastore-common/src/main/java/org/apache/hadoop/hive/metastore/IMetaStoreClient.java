@@ -2217,6 +2217,7 @@ public interface IMetaStoreClient {
    * @throws TException
    *          if error in communicating with metastore server
    */
+  @Deprecated
   void renamePartition(final String dbname, final String tableName, final List<String> part_vals,
                        final Partition newPart)
       throws InvalidOperationException, MetaException, TException;
@@ -2240,7 +2241,7 @@ public interface IMetaStoreClient {
    *          if error in communicating with metastore server
    */
   void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
-                       Partition newPart)
+                       Partition newPart, long txnId, String validWriteIds)
       throws InvalidOperationException, MetaException, TException;
 
   /**

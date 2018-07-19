@@ -1660,11 +1660,15 @@ public class AcidUtils {
   }
 
 
+  /** Note: this is generally called in Hive.java; so, the callers of Hive.java make sure
+   *        to set up the acid state during compile, and Hive.java retrieves it if needed. */
   public static TableSnapshot getTableSnapshot(
       Configuration conf, Table tbl, boolean isStatsUpdater) throws LockException {
     return getTableSnapshot(conf, tbl, tbl.getDbName(), tbl.getTableName(), isStatsUpdater);
   }
 
+  /** Note: this is generally called in Hive.java; so, the callers of Hive.java make sure
+   *        to set up the acid state during compile, and Hive.java retrieves it if needed. */
   public static TableSnapshot getTableSnapshot(Configuration conf,
       Table tbl, String dbName, String tblName, boolean isStatsUpdater)
       throws LockException, AssertionError {

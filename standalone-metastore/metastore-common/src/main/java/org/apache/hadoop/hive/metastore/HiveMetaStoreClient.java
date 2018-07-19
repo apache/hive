@@ -434,17 +434,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.alter_table_req(req);
   }
 
+  @Deprecated
   @Override
   public void renamePartition(final String dbname, final String tableName, final List<String> part_vals,
                               final Partition newPart) throws TException {
-    renamePartition(getDefaultCatalog(conf), dbname, tableName, part_vals, newPart);
+    renamePartition(getDefaultCatalog(conf), dbname, tableName, part_vals, newPart, -1, null);
   }
 
   @Override
   public void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
-                              Partition newPart) throws TException {
-    client.rename_partition(prependCatalogToDbName(catName, dbname, conf), tableName, part_vals, newPart);
-
+                              Partition newPart, long txnId, String validWriteIds) throws TException {
+    RenamePartitionRequest req = new RenamePartitionRequest(dbname, tableName, part_vals, newPart);
+    req.setCatName(catName);
+    req.setTxnId(txnId);
+    req.setValidWriteIdList(validWriteIds);
+    client.rename_partition_req(req);
   }
 
   private void open() throws MetaException {

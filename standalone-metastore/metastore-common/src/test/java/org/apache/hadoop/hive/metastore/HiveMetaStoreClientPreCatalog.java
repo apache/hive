@@ -3311,8 +3311,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public void renamePartition(String catName, String dbname, String tableName,
-                              List<String> part_vals, Partition newPart) throws
-      InvalidOperationException, MetaException, TException {
+      List<String> part_vals, Partition newPart, long txnId, String validWriteIds)
+          throws InvalidOperationException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
 

@@ -4809,6 +4809,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           request.getPartitionOrder(), request.getMaxParts());
     }
 
+    @Deprecated
     @Override
     public void alter_partition(final String db_name, final String tbl_name,
         final Partition new_part)
@@ -4816,6 +4817,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       rename_partition(db_name, tbl_name, null, new_part);
     }
 
+    @Deprecated
     @Override
     public void alter_partition_with_environment_context(final String dbName,
         final String tableName, final Partition newPartition,
@@ -4824,9 +4826,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String[] parsedDbName = parseDbName(dbName, conf);
       // TODO: this method name is confusing, it actually does full alter (sortof)
       rename_partition(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, null, newPartition,
-          envContext);
+          envContext, -1, null);
     }
 
+    @Deprecated
     @Override
     public void rename_partition(final String db_name, final String tbl_name,
         final List<String> part_vals, final Partition new_part)
@@ -4834,13 +4837,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // Call rename_partition without an environment context.
       String[] parsedDbName = parseDbName(db_name, conf);
       rename_partition(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, part_vals, new_part,
-          null);
+          null, -1, null);
     }
 
-    private void rename_partition(final String catName, final String db_name, final String tbl_name,
-        final List<String> part_vals, final Partition new_part,
-        final EnvironmentContext envContext)
-        throws TException {
+    public RenamePartitionResponse rename_partition_req(
+        RenamePartitionRequest req) throws InvalidOperationException ,MetaException ,TException {
+      rename_partition(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
+          req.getNewPart(), null, req.getTxnId(), req.getValidWriteIdList());
+      return new RenamePartitionResponse();
+    };
+
+    private void rename_partition(String catName, String db_name, String tbl_name,
+        List<String> part_vals, Partition new_part, EnvironmentContext envContext, long txnId,
+        String validWriteIds) throws TException {
       startTableFunction("alter_partition", catName, db_name, tbl_name);
 
       if (LOG.isInfoEnabled()) {
@@ -4874,7 +4883,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         oldPart = alterHandler.alterPartition(getMS(), wh, catName, db_name, tbl_name,
-            part_vals, new_part, envContext, this, -1, null);
+            part_vals, new_part, envContext, this, txnId, validWriteIds);
 
         // Only fetch the table if we actually have a listener
         Table table = null;
