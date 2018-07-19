@@ -608,15 +608,13 @@ class TruncateTableRequest
   DBNAME = 1
   TABLENAME = 2
   PARTNAMES = 3
-  TXNID = 4
-  WRITEID = 5
-  VALIDWRITEIDLIST = 6
+  WRITEID = 4
+  VALIDWRITEIDLIST = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
@@ -1646,14 +1644,12 @@ class SetPartitionsStatsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   COLSTATS = 1
   NEEDMERGE = 2
-  TXNID = 3
-  WRITEID = 4
-  VALIDWRITEIDLIST = 5
+  WRITEID = 3
+  VALIDWRITEIDLIST = 4
 
   FIELDS = {
     COLSTATS => {:type => ::Thrift::Types::LIST, :name => 'colStats', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ColumnStatistics}},
     NEEDMERGE => {:type => ::Thrift::Types::BOOL, :name => 'needMerge', :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
@@ -2178,15 +2174,13 @@ class TableStatsRequest
   TBLNAME = 2
   COLNAMES = 3
   CATNAME = 4
-  TXNID = 5
-  VALIDWRITEIDLIST = 6
+  VALIDWRITEIDLIST = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     COLNAMES => {:type => ::Thrift::Types::LIST, :name => 'colNames', :element => {:type => ::Thrift::Types::STRING}},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
 
@@ -2208,8 +2202,7 @@ class PartitionsStatsRequest
   COLNAMES = 3
   PARTNAMES = 4
   CATNAME = 5
-  TXNID = 6
-  VALIDWRITEIDLIST = 7
+  VALIDWRITEIDLIST = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -2217,7 +2210,6 @@ class PartitionsStatsRequest
     COLNAMES => {:type => ::Thrift::Types::LIST, :name => 'colNames', :element => {:type => ::Thrift::Types::STRING}},
     PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
 
@@ -2259,8 +2251,7 @@ class AddPartitionsRequest
   IFNOTEXISTS = 4
   NEEDRESULT = 5
   CATNAME = 6
-  TXNID = 7
-  VALIDWRITEIDLIST = 8
+  VALIDWRITEIDLIST = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -2269,7 +2260,6 @@ class AddPartitionsRequest
     IFNOTEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifNotExists'},
     NEEDRESULT => {:type => ::Thrift::Types::BOOL, :name => 'needResult', :default => true, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
 
@@ -3915,7 +3905,6 @@ class GetTableRequest
   TBLNAME = 2
   CAPABILITIES = 3
   CATNAME = 4
-  TXNID = 5
   VALIDWRITEIDLIST = 6
 
   FIELDS = {
@@ -3923,7 +3912,6 @@ class GetTableRequest
     TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
     CAPABILITIES => {:type => ::Thrift::Types::STRUCT, :name => 'capabilities', :class => ::ClientCapabilities, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
 
@@ -5114,9 +5102,8 @@ class AlterPartitionsRequest
   TABLENAME = 3
   PARTITIONS = 4
   ENVIRONMENTCONTEXT = 5
-  TXNID = 6
-  WRITEID = 7
-  VALIDWRITEIDLIST = 8
+  WRITEID = 6
+  VALIDWRITEIDLIST = 7
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -5124,7 +5111,6 @@ class AlterPartitionsRequest
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
     ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
@@ -5162,8 +5148,7 @@ class RenamePartitionRequest
   TABLENAME = 3
   PARTVALS = 4
   NEWPART = 5
-  TXNID = 6
-  VALIDWRITEIDLIST = 7
+  VALIDWRITEIDLIST = 6
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -5171,7 +5156,6 @@ class RenamePartitionRequest
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}},
     NEWPART => {:type => ::Thrift::Types::STRUCT, :name => 'newPart', :class => ::Partition},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }
 
@@ -5209,9 +5193,8 @@ class AlterTableRequest
   TABLENAME = 3
   TABLE = 4
   ENVIRONMENTCONTEXT = 5
-  TXNID = 6
-  WRITEID = 7
-  VALIDWRITEIDLIST = 8
+  WRITEID = 6
+  VALIDWRITEIDLIST = 7
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -5219,7 +5202,6 @@ class AlterTableRequest
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'table', :class => ::Table},
     ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => -1, :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
   }

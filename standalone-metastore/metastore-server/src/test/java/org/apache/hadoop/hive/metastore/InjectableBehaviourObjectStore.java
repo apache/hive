@@ -136,9 +136,8 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tableName,
-      long txnId, String writeIdList) throws MetaException {
-    return getTableModifier.apply(super.getTable(catName, dbName, tableName, txnId, writeIdList));
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList) throws MetaException {
+    return getTableModifier.apply(super.getTable(catName, dbName, tableName, writeIdList));
   }
 
   @Override

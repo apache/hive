@@ -1610,29 +1610,19 @@ public class AcidUtils {
   }
 
   public static class TableSnapshot {
-    private long txnId;
     private long writeId;
     private String validWriteIdList;
 
     public TableSnapshot() {
     }
 
-    public TableSnapshot(long txnId, long writeId, String validWriteIdList) {
-      this.txnId = txnId;
+    public TableSnapshot(long writeId, String validWriteIdList) {
       this.writeId = writeId;
       this.validWriteIdList = validWriteIdList;
     }
 
-    public long getTxnId() {
-      return txnId;
-    }
-
     public String getValidWriteIdList() {
       return validWriteIdList;
-    }
-
-    public void setTxnId(long txnId) {
-      this.txnId = txnId;
     }
 
     public long getWriteId() {
@@ -1649,7 +1639,7 @@ public class AcidUtils {
 
     @Override
     public String toString() {
-      return "[txnId=" + txnId + ", validWriteIdList=" + validWriteIdList + ", writeId=" + writeId + "]";
+      return "[validWriteIdList=" + validWriteIdList + ", writeId=" + writeId + "]";
     }
   }
 
@@ -1681,17 +1671,12 @@ public class AcidUtils {
     if (tblName == null) {
       tblName = tbl.getTableName();
     }
-    long txnId = -1;
     long writeId = -1;
     ValidWriteIdList validWriteIdList = null;
 
     HiveTxnManager sessionTxnMgr = SessionState.get().getTxnMgr();
-
-    if (sessionTxnMgr != null) {
-      txnId = sessionTxnMgr.getCurrentTxnId();
-    }
     String fullTableName = getFullTableName(dbName, tblName);
-    if (txnId > 0) {
+    if (sessionTxnMgr != null && sessionTxnMgr.getCurrentTxnId() > 0) {
       validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
       if (isStatsUpdater) {
         writeId = SessionState.get().getTxnMgr() != null ?
@@ -1718,7 +1703,7 @@ public class AcidUtils {
         throw new AssertionError("Cannot find valid write ID list for " + tblName);
       }
     }
-    return new TableSnapshot(txnId, writeId,
+    return new TableSnapshot(writeId,
         validWriteIdList != null ? validWriteIdList.toString() : null);
   }
 

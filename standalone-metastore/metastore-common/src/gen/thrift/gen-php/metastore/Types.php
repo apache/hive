@@ -3497,10 +3497,6 @@ class TruncateTableRequest {
   /**
    * @var int
    */
-  public $txnId = -1;
-  /**
-   * @var int
-   */
   public $writeId = -1;
   /**
    * @var string
@@ -3527,14 +3523,10 @@ class TruncateTableRequest {
             ),
           ),
         4 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        5 => array(
           'var' => 'writeId',
           'type' => TType::I64,
           ),
-        6 => array(
+        5 => array(
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
           ),
@@ -3549,9 +3541,6 @@ class TruncateTableRequest {
       }
       if (isset($vals['partNames'])) {
         $this->partNames = $vals['partNames'];
-      }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
       }
       if (isset($vals['writeId'])) {
         $this->writeId = $vals['writeId'];
@@ -3614,19 +3603,12 @@ class TruncateTableRequest {
           break;
         case 4:
           if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 5:
-          if ($ftype == TType::I64) {
             $xfer += $input->readI64($this->writeId);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 6:
+        case 5:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->validWriteIdList);
           } else {
@@ -3673,18 +3655,13 @@ class TruncateTableRequest {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 4);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 5);
+      $xfer += $output->writeFieldBegin('writeId', TType::I64, 4);
       $xfer += $output->writeI64($this->writeId);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 6);
+      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 5);
       $xfer += $output->writeString($this->validWriteIdList);
       $xfer += $output->writeFieldEnd();
     }
@@ -10604,10 +10581,6 @@ class SetPartitionsStatsRequest {
   /**
    * @var int
    */
-  public $txnId = -1;
-  /**
-   * @var int
-   */
   public $writeId = -1;
   /**
    * @var string
@@ -10631,14 +10604,10 @@ class SetPartitionsStatsRequest {
           'type' => TType::BOOL,
           ),
         3 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        4 => array(
           'var' => 'writeId',
           'type' => TType::I64,
           ),
-        5 => array(
+        4 => array(
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
           ),
@@ -10650,9 +10619,6 @@ class SetPartitionsStatsRequest {
       }
       if (isset($vals['needMerge'])) {
         $this->needMerge = $vals['needMerge'];
-      }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
       }
       if (isset($vals['writeId'])) {
         $this->writeId = $vals['writeId'];
@@ -10709,19 +10675,12 @@ class SetPartitionsStatsRequest {
           break;
         case 3:
           if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 4:
-          if ($ftype == TType::I64) {
             $xfer += $input->readI64($this->writeId);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 5:
+        case 4:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->validWriteIdList);
           } else {
@@ -10763,18 +10722,13 @@ class SetPartitionsStatsRequest {
       $xfer += $output->writeBool($this->needMerge);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 3);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 4);
+      $xfer += $output->writeFieldBegin('writeId', TType::I64, 3);
       $xfer += $output->writeI64($this->writeId);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 5);
+      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 4);
       $xfer += $output->writeString($this->validWriteIdList);
       $xfer += $output->writeFieldEnd();
     }
@@ -13900,10 +13854,6 @@ class TableStatsRequest {
    */
   public $catName = null;
   /**
-   * @var int
-   */
-  public $txnId = -1;
-  /**
    * @var string
    */
   public $validWriteIdList = null;
@@ -13932,10 +13882,6 @@ class TableStatsRequest {
           'type' => TType::STRING,
           ),
         5 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        6 => array(
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
           ),
@@ -13953,9 +13899,6 @@ class TableStatsRequest {
       }
       if (isset($vals['catName'])) {
         $this->catName = $vals['catName'];
-      }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
       }
       if (isset($vals['validWriteIdList'])) {
         $this->validWriteIdList = $vals['validWriteIdList'];
@@ -14021,13 +13964,6 @@ class TableStatsRequest {
           }
           break;
         case 5:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 6:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->validWriteIdList);
           } else {
@@ -14079,13 +14015,8 @@ class TableStatsRequest {
       $xfer += $output->writeString($this->catName);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 5);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 6);
+      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 5);
       $xfer += $output->writeString($this->validWriteIdList);
       $xfer += $output->writeFieldEnd();
     }
@@ -14119,10 +14050,6 @@ class PartitionsStatsRequest {
    * @var string
    */
   public $catName = null;
-  /**
-   * @var int
-   */
-  public $txnId = -1;
   /**
    * @var string
    */
@@ -14160,10 +14087,6 @@ class PartitionsStatsRequest {
           'type' => TType::STRING,
           ),
         6 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        7 => array(
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
           ),
@@ -14184,9 +14107,6 @@ class PartitionsStatsRequest {
       }
       if (isset($vals['catName'])) {
         $this->catName = $vals['catName'];
-      }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
       }
       if (isset($vals['validWriteIdList'])) {
         $this->validWriteIdList = $vals['validWriteIdList'];
@@ -14269,13 +14189,6 @@ class PartitionsStatsRequest {
           }
           break;
         case 6:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 7:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->validWriteIdList);
           } else {
@@ -14344,13 +14257,8 @@ class PartitionsStatsRequest {
       $xfer += $output->writeString($this->catName);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 6);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 7);
+      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 6);
       $xfer += $output->writeString($this->validWriteIdList);
       $xfer += $output->writeFieldEnd();
     }
@@ -14515,10 +14423,6 @@ class AddPartitionsRequest {
    */
   public $catName = null;
   /**
-   * @var int
-   */
-  public $txnId = -1;
-  /**
    * @var string
    */
   public $validWriteIdList = null;
@@ -14556,10 +14460,6 @@ class AddPartitionsRequest {
           'type' => TType::STRING,
           ),
         7 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        8 => array(
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
           ),
@@ -14583,9 +14483,6 @@ class AddPartitionsRequest {
       }
       if (isset($vals['catName'])) {
         $this->catName = $vals['catName'];
-      }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
       }
       if (isset($vals['validWriteIdList'])) {
         $this->validWriteIdList = $vals['validWriteIdList'];
@@ -14666,13 +14563,6 @@ class AddPartitionsRequest {
           }
           break;
         case 7:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 8:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->validWriteIdList);
           } else {
@@ -14734,13 +14624,8 @@ class AddPartitionsRequest {
       $xfer += $output->writeString($this->catName);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 7);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 8);
+      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 7);
       $xfer += $output->writeString($this->validWriteIdList);
       $xfer += $output->writeFieldEnd();
     }
@@ -25005,10 +24890,6 @@ class GetTableRequest {
    */
   public $catName = null;
   /**
-   * @var int
-   */
-  public $txnId = -1;
-  /**
    * @var string
    */
   public $validWriteIdList = null;
@@ -25033,10 +24914,6 @@ class GetTableRequest {
           'var' => 'catName',
           'type' => TType::STRING,
           ),
-        5 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
         6 => array(
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
@@ -25055,9 +24932,6 @@ class GetTableRequest {
       }
       if (isset($vals['catName'])) {
         $this->catName = $vals['catName'];
-      }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
       }
       if (isset($vals['validWriteIdList'])) {
         $this->validWriteIdList = $vals['validWriteIdList'];
@@ -25113,13 +24987,6 @@ class GetTableRequest {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 5:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
         case 6:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->validWriteIdList);
@@ -25161,11 +25028,6 @@ class GetTableRequest {
     if ($this->catName !== null) {
       $xfer += $output->writeFieldBegin('catName', TType::STRING, 4);
       $xfer += $output->writeString($this->catName);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 5);
-      $xfer += $output->writeI64($this->txnId);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->validWriteIdList !== null) {
@@ -31706,10 +31568,6 @@ class AlterPartitionsRequest {
   /**
    * @var int
    */
-  public $txnId = -1;
-  /**
-   * @var int
-   */
   public $writeId = -1;
   /**
    * @var string
@@ -31746,14 +31604,10 @@ class AlterPartitionsRequest {
           'class' => '\metastore\EnvironmentContext',
           ),
         6 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        7 => array(
           'var' => 'writeId',
           'type' => TType::I64,
           ),
-        8 => array(
+        7 => array(
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
           ),
@@ -31774,9 +31628,6 @@ class AlterPartitionsRequest {
       }
       if (isset($vals['environmentContext'])) {
         $this->environmentContext = $vals['environmentContext'];
-      }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
       }
       if (isset($vals['writeId'])) {
         $this->writeId = $vals['writeId'];
@@ -31855,19 +31706,12 @@ class AlterPartitionsRequest {
           break;
         case 6:
           if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 7:
-          if ($ftype == TType::I64) {
             $xfer += $input->readI64($this->writeId);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 8:
+        case 7:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->validWriteIdList);
           } else {
@@ -31927,18 +31771,13 @@ class AlterPartitionsRequest {
       $xfer += $this->environmentContext->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 6);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 7);
+      $xfer += $output->writeFieldBegin('writeId', TType::I64, 6);
       $xfer += $output->writeI64($this->writeId);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 8);
+      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 7);
       $xfer += $output->writeString($this->validWriteIdList);
       $xfer += $output->writeFieldEnd();
     }
@@ -32023,10 +31862,6 @@ class RenamePartitionRequest {
    */
   public $newPart = null;
   /**
-   * @var int
-   */
-  public $txnId = -1;
-  /**
    * @var string
    */
   public $validWriteIdList = null;
@@ -32060,10 +31895,6 @@ class RenamePartitionRequest {
           'class' => '\metastore\Partition',
           ),
         6 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        7 => array(
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
           ),
@@ -32084,9 +31915,6 @@ class RenamePartitionRequest {
       }
       if (isset($vals['newPart'])) {
         $this->newPart = $vals['newPart'];
-      }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
       }
       if (isset($vals['validWriteIdList'])) {
         $this->validWriteIdList = $vals['validWriteIdList'];
@@ -32160,13 +31988,6 @@ class RenamePartitionRequest {
           }
           break;
         case 6:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 7:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->validWriteIdList);
           } else {
@@ -32226,13 +32047,8 @@ class RenamePartitionRequest {
       $xfer += $this->newPart->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 6);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 7);
+      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 6);
       $xfer += $output->writeString($this->validWriteIdList);
       $xfer += $output->writeFieldEnd();
     }
@@ -32319,10 +32135,6 @@ class AlterTableRequest {
   /**
    * @var int
    */
-  public $txnId = -1;
-  /**
-   * @var int
-   */
   public $writeId = -1;
   /**
    * @var string
@@ -32355,14 +32167,10 @@ class AlterTableRequest {
           'class' => '\metastore\EnvironmentContext',
           ),
         6 => array(
-          'var' => 'txnId',
-          'type' => TType::I64,
-          ),
-        7 => array(
           'var' => 'writeId',
           'type' => TType::I64,
           ),
-        8 => array(
+        7 => array(
           'var' => 'validWriteIdList',
           'type' => TType::STRING,
           ),
@@ -32383,9 +32191,6 @@ class AlterTableRequest {
       }
       if (isset($vals['environmentContext'])) {
         $this->environmentContext = $vals['environmentContext'];
-      }
-      if (isset($vals['txnId'])) {
-        $this->txnId = $vals['txnId'];
       }
       if (isset($vals['writeId'])) {
         $this->writeId = $vals['writeId'];
@@ -32454,19 +32259,12 @@ class AlterTableRequest {
           break;
         case 6:
           if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 7:
-          if ($ftype == TType::I64) {
             $xfer += $input->readI64($this->writeId);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 8:
+        case 7:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->validWriteIdList);
           } else {
@@ -32517,18 +32315,13 @@ class AlterTableRequest {
       $xfer += $this->environmentContext->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnId !== null) {
-      $xfer += $output->writeFieldBegin('txnId', TType::I64, 6);
-      $xfer += $output->writeI64($this->txnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 7);
+      $xfer += $output->writeFieldBegin('writeId', TType::I64, 6);
       $xfer += $output->writeI64($this->writeId);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->validWriteIdList !== null) {
-      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 8);
+      $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 7);
       $xfer += $output->writeString($this->validWriteIdList);
       $xfer += $output->writeFieldEnd();
     }

@@ -2435,7 +2435,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private boolean is_table_exists(RawStore ms, String catName, String dbname, String name)
         throws MetaException {
-      return (ms.getTable(catName, dbname, name, -1, null) != null);
+      return (ms.getTable(catName, dbname, name, null) != null);
     }
 
     private boolean drop_table_core(final RawStore ms, final String catName, final String dbname,
@@ -2694,7 +2694,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void alterPartitionForTruncate(RawStore ms, String catName, String dbName, String tableName,
-        Table table, Partition partition, long txnId, String validWriteIds, long writeId) throws Exception {
+        Table table, Partition partition, String validWriteIds, long writeId) throws Exception {
       EnvironmentContext environmentContext = new EnvironmentContext();
       updateStatsForTruncate(partition.getParameters(), environmentContext);
 
@@ -2714,17 +2714,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         partition.setWriteId(writeId);
       }
       alterHandler.alterPartition(ms, wh, catName, dbName, tableName, null, partition,
-          environmentContext, this, txnId, validWriteIds);
+          environmentContext, this, validWriteIds);
     }
 
     private void alterTableStatsForTruncate(RawStore ms, String catName, String dbName,
         String tableName, Table table, List<String> partNames,
-        long txnId, String validWriteIds, long writeId) throws Exception {
+        String validWriteIds, long writeId) throws Exception {
       if (partNames == null) {
         if (0 != table.getPartitionKeysSize()) {
           for (Partition partition : ms.getPartitions(catName, dbName, tableName, Integer.MAX_VALUE)) {
             alterPartitionForTruncate(ms, catName, dbName, tableName, table, partition,
-                txnId, validWriteIds, writeId);
+                validWriteIds, writeId);
           }
         } else {
           EnvironmentContext environmentContext = new EnvironmentContext();
@@ -2747,12 +2747,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             table.setWriteId(writeId);
           }
           alterHandler.alterTable(ms, wh, catName, dbName, tableName, table,
-              environmentContext, this, txnId, validWriteIds);
+              environmentContext, this, validWriteIds);
         }
       } else {
         for (Partition partition : ms.getPartitionsByNames(catName, dbName, tableName, partNames)) {
           alterPartitionForTruncate(ms, catName, dbName, tableName, table, partition,
-              txnId, validWriteIds, writeId);
+              validWriteIds, writeId);
         }
       }
       return;
@@ -2791,19 +2791,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public void truncate_table(final String dbName, final String tableName, List<String> partNames)
       throws NoSuchObjectException, MetaException {
       // Deprecated path, won't work for txn tables.
-      truncateTableInternal(dbName, tableName, partNames, -1, null, -1);
+      truncateTableInternal(dbName, tableName, partNames, null, -1);
     }
 
     @Override
     public TruncateTableResponse truncate_table_req(TruncateTableRequest req)
         throws MetaException, TException {
       truncateTableInternal(req.getDbName(), req.getTableName(), req.getPartNames(),
-          req.getTxnId(), req.getValidWriteIdList(), req.getWriteId());
+          req.getValidWriteIdList(), req.getWriteId());
       return new TruncateTableResponse();
     }
 
     private void truncateTableInternal(String dbName, String tableName, List<String> partNames,
-        long txnId, String validWriteIds, long writeId) throws MetaException, NoSuchObjectException {
+        String validWriteIds, long writeId) throws MetaException, NoSuchObjectException {
       try {
         String[] parsedDbName = parseDbName(dbName, conf);
         Table tbl = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
@@ -2835,7 +2835,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         // Alter the table/partition stats and also notify truncate table event
         alterTableStatsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-            tableName, tbl, partNames, txnId, validWriteIds, writeId);
+            tableName, tbl, partNames, validWriteIds, writeId);
       } catch (IOException e) {
         throw new MetaException(e.getMessage());
       } catch (MetaException | NoSuchObjectException e) {
@@ -2866,7 +2866,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException {
       String[] parsedDbName = parseDbName(dbname, conf);
       return getTableInternal(
-          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, -1, null);
+          parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, null, null);
     }
 
     @Override
@@ -2874,11 +2874,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         NoSuchObjectException {
       String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
       return new GetTableResult(getTableInternal(catName, req.getDbName(), req.getTblName(),
-          req.getCapabilities(), req.getTxnId(), req.getValidWriteIdList()));
+          req.getCapabilities(), req.getValidWriteIdList()));
     }
 
     private Table getTableInternal(String catName, String dbname, String name,
-        ClientCapabilities capabilities, long txnId, String writeIdList)
+        ClientCapabilities capabilities, String writeIdList)
         throws MetaException, NoSuchObjectException {
       if (isInTest) {
         assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
@@ -2889,7 +2889,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startTableFunction("get_table", catName, dbname, name);
       Exception ex = null;
       try {
-        t = get_table_core(catName, dbname, name, txnId, writeIdList);
+        t = get_table_core(catName, dbname, name, writeIdList);
         if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
           assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
               "insert-only tables", "get_table_req");
@@ -2929,7 +2929,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String dbname,
         final String name)
         throws MetaException, NoSuchObjectException {
-      return get_table_core(catName, dbname, name, -1, null);
+      return get_table_core(catName, dbname, name, null);
     }
 
     @Override
@@ -2937,12 +2937,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String catName,
         final String dbname,
         final String name,
-        final long txnId,
         final String writeIdList)
         throws MetaException, NoSuchObjectException {
       Table t = null;
       try {
-        t = getMS().getTable(catName, dbname, name, txnId, writeIdList);
+        t = getMS().getTable(catName, dbname, name, writeIdList);
         if (t == null) {
           throw new NoSuchObjectException(TableName.getQualified(catName, dbname, name) +
             " table not found");
@@ -3124,7 +3123,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         MetaStoreUtils.validatePartitionNameCharacters(part_vals, partitionValidationPattern);
 
-        tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), -1, null);
+        tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
         if (tbl == null) {
           throw new InvalidObjectException(
               "Unable to add partition because table or database do not exist");
@@ -3318,7 +3317,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       try {
         ms.openTransaction();
-        tbl = ms.getTable(catName, dbName, tblName, -1, null);
+        tbl = ms.getTable(catName, dbName, tblName, null);
         if (tbl == null) {
           throw new InvalidObjectException("Unable to add partitions because "
               + TableName.getQualified(catName, dbName, tblName) +
@@ -3674,7 +3673,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Database db = null;
       try {
         ms.openTransaction();
-        tbl = ms.getTable(catName, dbName, tblName, -1, null);
+        tbl = ms.getTable(catName, dbName, tblName, null);
         if (tbl == null) {
           throw new InvalidObjectException("Unable to add partitions because "
               + "database or table " + dbName + "." + tblName + " does not exist");
@@ -3844,7 +3843,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       try {
         ms.openTransaction();
-        tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), -1, null);
+        tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
         if (tbl == null) {
           throw new InvalidObjectException(
               "Unable to add partition because table or database do not exist");
@@ -3966,7 +3965,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       Table destinationTable =
           ms.getTable(
-              parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME], destTableName, -1, null);
+              parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME], destTableName, null);
       if (destinationTable == null) {
         throw new MetaException( "The destination table " +
             TableName.getQualified(parsedDestDbName[CAT_NAME],
@@ -3974,7 +3973,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       Table sourceTable =
           ms.getTable(
-              parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME], sourceTableName, -1, null);
+              parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME], sourceTableName, null);
       if (sourceTable == null) {
         throw new MetaException("The source table " +
             TableName.getQualified(parsedSourceDbName[CAT_NAME],
@@ -4151,7 +4150,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
         part = ms.getPartition(catName, db_name, tbl_name, part_vals);
-        tbl = get_table_core(catName, db_name, tbl_name, -1, null);
+        tbl = get_table_core(catName, db_name, tbl_name, null);
         tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
         firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
         mustPurge = isMustPurge(envContext, tbl);
@@ -4826,7 +4825,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String[] parsedDbName = parseDbName(dbName, conf);
       // TODO: this method name is confusing, it actually does full alter (sortof)
       rename_partition(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, null, newPartition,
-          envContext, -1, null);
+          envContext, null);
     }
 
     @Deprecated
@@ -4837,18 +4836,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // Call rename_partition without an environment context.
       String[] parsedDbName = parseDbName(db_name, conf);
       rename_partition(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, part_vals, new_part,
-          null, -1, null);
+          null, null);
     }
 
     public RenamePartitionResponse rename_partition_req(
         RenamePartitionRequest req) throws InvalidOperationException ,MetaException ,TException {
       rename_partition(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
-          req.getNewPart(), null, req.getTxnId(), req.getValidWriteIdList());
+          req.getNewPart(), null, req.getValidWriteIdList());
       return new RenamePartitionResponse();
     };
 
     private void rename_partition(String catName, String db_name, String tbl_name,
-        List<String> part_vals, Partition new_part, EnvironmentContext envContext, long txnId,
+        List<String> part_vals, Partition new_part, EnvironmentContext envContext,
         String validWriteIds) throws TException {
       startTableFunction("alter_partition", catName, db_name, tbl_name);
 
@@ -4883,13 +4882,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         oldPart = alterHandler.alterPartition(getMS(), wh, catName, db_name, tbl_name,
-            part_vals, new_part, envContext, this, txnId, validWriteIds);
+            part_vals, new_part, envContext, this, validWriteIds);
 
         // Only fetch the table if we actually have a listener
         Table table = null;
         if (!listeners.isEmpty()) {
           if (table == null) {
-            table = getMS().getTable(catName, db_name, tbl_name, -1, null);
+            table = getMS().getTable(catName, db_name, tbl_name, null);
           }
 
           MetaStoreListenerNotifier.notifyEvent(listeners,
@@ -4920,14 +4919,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws TException {
       String[] o = parseDbName(db_name, conf);
       alter_partitions_with_environment_context(o[0], o[1],
-          tbl_name, new_parts, null, -1, null, -1);
+          tbl_name, new_parts, null, null, -1);
     }
 
     @Override
     public AlterPartitionsResponse alter_partitions_req(AlterPartitionsRequest req) throws TException {
       alter_partitions_with_environment_context(req.getCatName(),
           req.getDbName(), req.getTableName(), req.getPartitions(), req.getEnvironmentContext(),
-          req.isSetTxnId() ? req.getTxnId() : -1,
           req.isSetValidWriteIdList() ? req.getValidWriteIdList() : null,
           req.isSetWriteId() ? req.getWriteId() : -1);
       return new AlterPartitionsResponse();
@@ -4941,12 +4939,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             throws TException {
       String[] o = parseDbName(db_name, conf);
       alter_partitions_with_environment_context(o[0], o[1], tbl_name, new_parts, environmentContext,
-          -1, null, -1);
+          null, -1);
     }
 
     private void alter_partitions_with_environment_context(String catName, String db_name, final String tbl_name,
         final List<Partition> new_parts, EnvironmentContext environmentContext,
-        long txnId, String writeIdList, long writeId)
+        String writeIdList, long writeId)
         throws TException {
       if (environmentContext == null) {
         environmentContext = new EnvironmentContext();
@@ -4975,7 +4973,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, null, tmpPart, this));
         }
         oldParts = alterHandler.alterPartitions(getMS(), wh,
-            catName, db_name, tbl_name, new_parts, environmentContext, txnId, writeIdList, writeId, this);
+            catName, db_name, tbl_name, new_parts, environmentContext, writeIdList, writeId, this);
         Iterator<Partition> olditr = oldParts.iterator();
         // Only fetch the table if we have a listener that needs it.
         Table table = null;
@@ -4989,7 +4987,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
 
           if (table == null) {
-            table = getMS().getTable(catName, db_name, tbl_name,  -1, null);
+            table = getMS().getTable(catName, db_name, tbl_name,  null);
           }
 
           if (!listeners.isEmpty()) {
@@ -5028,7 +5026,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // Do not set an environment context.
       String[] parsedDbName = parseDbName(dbname, conf);
       alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, newTable,
-          null, -1, null);
+          null, null);
     }
 
     @Override
@@ -5042,14 +5040,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       String[] parsedDbName = parseDbName(dbname, conf);
       alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, newTable,
-          envContext, -1, null);
+          envContext, null);
     }
 
     @Override
     public AlterTableResponse alter_table_req(AlterTableRequest req)
         throws InvalidOperationException, MetaException, TException {
       alter_table_core(req.getCatName(), req.getDbName(), req.getTableName(),
-          req.getTable(), req.getEnvironmentContext(), req.getTxnId(), req.getValidWriteIdList());
+          req.getTable(), req.getEnvironmentContext(), req.getValidWriteIdList());
       return new AlterTableResponse();
     }
 
@@ -5060,11 +5058,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws InvalidOperationException, MetaException {
       String[] parsedDbName = parseDbName(dbname, conf);
       alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-          name, newTable, envContext, -1, null);
+          name, newTable, envContext, null);
     }
 
     private void alter_table_core(String catName, String dbname, String name, Table newTable,
-        EnvironmentContext envContext, long txnId, String validWriteIdList)
+        EnvironmentContext envContext, String validWriteIdList)
         throws InvalidOperationException, MetaException {
       startFunction("alter_table", ": " + TableName.getQualified(catName, dbname, name)
           + " newtbl=" + newTable.getTableName());
@@ -5101,7 +5099,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Table oldt = get_table_core(catName, dbname, name);
         firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
         alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
-                envContext, this, txnId, validWriteIdList);
+                envContext, this, validWriteIdList);
         success = true;
       } catch (NoSuchObjectException e) {
         // thrown when the table to be altered does not exist
@@ -5426,7 +5424,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private List<String> getPartValsFromName(RawStore ms, String catName, String dbName,
                                              String tblName, String partName)
         throws MetaException, InvalidObjectException {
-      Table t = ms.getTable(catName, dbName, tblName,  -1, null);
+      Table t = ms.getTable(catName, dbName, tblName,  null);
       if (t == null) {
         throw new InvalidObjectException(dbName + "." + tblName
             + " table not found");
@@ -5684,7 +5682,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         statsObj = getMS().getTableColumnStatistics(
             parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, Lists.newArrayList(colName),
-            -1, null);
+            null);
         if (statsObj != null) {
           assert statsObj.getStatsObjSize() <= 1;
         }
@@ -5710,7 +5708,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ColumnStatistics cs = getMS().getTableColumnStatistics(
             catName, dbName, tblName, lowerCaseColNames,
-            request.getTxnId(), request.getValidWriteIdList());
+            request.getValidWriteIdList());
         // Note: stats compliance is not propagated to the client; instead, we just return nothing
         //       if stats are not compliant for now. This won't work for stats merging, but that
         //       is currently only done on metastore size (see set_aggr...).
@@ -5779,7 +5777,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
             catName, dbName, tblName, lowerCasePartNames, lowerCaseColNames,
-            request.isSetTxnId() ? request.getTxnId() : -1,
             request.isSetValidWriteIdList() ? request.getValidWriteIdList() : null);
         Map<String, List<ColumnStatisticsObj>> map = new HashMap<>();
         if (stats != null) {
@@ -5803,7 +5800,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public boolean update_table_column_statistics(ColumnStatistics colStats) throws TException {
       // Deprecated API, won't work for transactional tables
-      return updateTableColumnStatsInternal(colStats, -1, null, -1);
+      return updateTableColumnStatsInternal(colStats, null, -1);
     }
 
     @Override
@@ -5819,12 +5816,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       ColumnStatistics colStats = req.getColStatsIterator().next();
       boolean ret = updateTableColumnStatsInternal(colStats,
-          req.getTxnId(), req.getValidWriteIdList(), req.getWriteId());
+          req.getValidWriteIdList(), req.getWriteId());
       return new SetPartitionsStatsResponse(ret);
     }
 
     private boolean updateTableColumnStatsInternal(ColumnStatistics colStats,
-        long txnId, String validWriteIds, long writeId)
+        String validWriteIds, long writeId)
         throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
       normalizeColStatsInput(colStats);
 
@@ -5834,7 +5831,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       boolean ret = false;
       try {
-        ret = getMS().updateTableColumnStatistics(colStats, txnId, validWriteIds, writeId);
+        ret = getMS().updateTableColumnStatistics(colStats, validWriteIds, writeId);
       } finally {
         endFunction("write_column_statistics", ret != false, null,
             colStats.getStatsDesc().getTableName());
@@ -5861,7 +5858,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private boolean updatePartitonColStatsInternal(Table tbl, ColumnStatistics colStats,
-        long txnId, String validWriteIds, long writeId)
+        String validWriteIds, long writeId)
         throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
       normalizeColStatsInput(colStats);
 
@@ -5878,7 +5875,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         List<String> partVals = getPartValsFromName(tbl, csd.getPartName());
         return getMS().updatePartitionColumnStatistics(
-            colStats, partVals, txnId, validWriteIds, writeId);
+            colStats, partVals, validWriteIds, writeId);
       } finally {
         endFunction("write_partition_column_statistics", ret != false, null, tableName);
       }
@@ -5887,7 +5884,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public boolean update_partition_column_statistics(ColumnStatistics colStats) throws TException {
       // Deprecated API.
-      return updatePartitonColStatsInternal(null, colStats, -1, null, -1);
+      return updatePartitonColStatsInternal(null, colStats, null, -1);
     }
 
 
@@ -5904,7 +5901,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       ColumnStatistics colStats = req.getColStatsIterator().next();
       boolean ret = updatePartitonColStatsInternal(null, colStats,
-          req.getTxnId(), req.getValidWriteIdList(), req.getWriteId());
+          req.getValidWriteIdList(), req.getWriteId());
       return new SetPartitionsStatsResponse(ret);
     }
 
@@ -7560,8 +7557,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       try {
         aggrStats = getMS().get_aggr_stats_for(catName, dbName, tblName,
-            lowerCasePartNames, lowerCaseColNames, request.getTxnId(),
-            request.getValidWriteIdList());
+            lowerCasePartNames, lowerCaseColNames, request.getValidWriteIdList());
         return aggrStats;
       } finally {
           endFunction("get_aggr_stats_for", aggrStats == null, null, request.getTblName());
@@ -7597,12 +7593,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           return updateTableColumnStatsWithMerge(catName, dbName, tableName, colNames, request);
         } else {
           // This is the overwrite case, we do not care about the accuracy.
-          return updateTableColumnStatsInternal(firstColStats, request.getTxnId(),
+          return updateTableColumnStatsInternal(firstColStats,
               request.getValidWriteIdList(), request.getWriteId());
         }
       } else {
         // partition level column stats merging
-        List<Partition> partitions = new ArrayList<>();
         // note that we may have two or more duplicate partition names.
         // see autoColumnStats_2.q under TestMiniLlapLocalCliDriver
         Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
@@ -7621,7 +7616,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           Table t = getTable(catName, dbName, tableName);
           for (Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
             // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-            ret = updatePartitonColStatsInternal(t, entry.getValue(), request.getTxnId(),
+            ret = updatePartitonColStatsInternal(t, entry.getValue(),
                 request.getValidWriteIdList(), request.getWriteId()) && ret;
           }
         }
@@ -7640,7 +7635,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<String> partitionNames = new ArrayList<>();
         partitionNames.addAll(newStatsMap.keySet());
         List<ColumnStatistics> csOlds = ms.getPartitionColumnStatistics(catName, dbName, tableName,
-            partitionNames, colNames, request.getTxnId(), request.getValidWriteIdList());
+            partitionNames, colNames, request.getValidWriteIdList());
         if (newStatsMap.values().size() != csOlds.size()) {
           // some of the partitions miss stats.
           LOG.debug("Some of the partitions miss stats.");
@@ -7678,7 +7673,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
           if (!csNew.getStatsObj().isEmpty()) {
             // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-            result = updatePartitonColStatsInternal(t, csNew, request.getTxnId(),
+            result = updatePartitonColStatsInternal(t, csNew,
                 request.getValidWriteIdList(), request.getWriteId()) && result;
           } else if (isInvalidTxnStats) {
             // For now because the stats state is such as it is, we will invalidate everything.
@@ -7688,7 +7683,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             StatsSetupConst.clearColumnStatsState(part.getParameters());
             StatsSetupConst.setBasicStatsState(part.getParameters(), StatsSetupConst.FALSE);
             ms.alterPartition(catName, dbName, tableName, part.getValues(), part,
-                request.getTxnId(), request.getValidWriteIdList());
+                request.getValidWriteIdList());
             result = false;
           } else {
             // TODO: why doesn't the original call for non acid tables invalidate the stats?
@@ -7716,7 +7711,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean isCommitted = false, result = false;
       try {
         ColumnStatistics csOld = ms.getTableColumnStatistics(catName, dbName, tableName, colNames,
-            request.getTxnId(), request.getValidWriteIdList());
+            request.getValidWriteIdList());
         // we first use the valid stats list to prune the stats
         boolean isInvalidTxnStats = csOld != null
             && csOld.isSetIsStatsCompliant() && !csOld.isIsStatsCompliant();
@@ -7734,7 +7729,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         if (!firstColStats.getStatsObj().isEmpty()) {
-          result = updateTableColumnStatsInternal(firstColStats, request.getTxnId(),
+          result = updateTableColumnStatsInternal(firstColStats,
               request.getValidWriteIdList(), request.getWriteId());
         } else if (isInvalidTxnStats) {
           // For now because the stats state is such as it is, we will invalidate everything.
@@ -7744,7 +7739,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           t.setWriteId(request.getWriteId());
           StatsSetupConst.clearColumnStatsState(t.getParameters());
           StatsSetupConst.setBasicStatsState(t.getParameters(), StatsSetupConst.FALSE);
-          ms.alterTable(catName, dbName, tableName, t, request.getTxnId(), request.getValidWriteIdList());
+          ms.alterTable(catName, dbName, tableName, t, request.getValidWriteIdList());
         } else {
           // TODO: why doesn't the original call for non acid tables invalidate the stats?
           LOG.debug("All the column stats are not accurate to merge.");
@@ -7763,13 +7758,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private Table getTable(String catName, String dbName, String tableName)
         throws MetaException, InvalidObjectException {
-      return getTable(catName, dbName, tableName, -1, null);
+      return getTable(catName, dbName, tableName, null);
     }
 
     private Table getTable(String catName, String dbName, String tableName,
-                           long txnId, String writeIdList)
+                           String writeIdList)
         throws MetaException, InvalidObjectException {
-      Table t = getMS().getTable(catName, dbName, tableName, txnId, writeIdList);
+      Table t = getMS().getTable(catName, dbName, tableName, writeIdList);
       if (t == null) {
         throw new InvalidObjectException(TableName.getQualified(catName, dbName, tableName)
             + " table not found");

@@ -863,7 +863,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
     client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext(),
-        -1, null, -1);
+        null, -1);
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -1080,7 +1080,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
 
     Partition partToRename = oldParts.get(3);
     partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
-    client.renamePartition("nosuch", DB_NAME, TABLE_NAME, oldValues.get(3), partToRename, -1, null);
+    client.renamePartition("nosuch", DB_NAME, TABLE_NAME, oldValues.get(3), partToRename, null);
   }
 
   @Test(expected = InvalidOperationException.class)

@@ -41,9 +41,8 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField PART_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("partNames", org.apache.thrift.protocol.TType.LIST, (short)3);
-  private static final org.apache.thrift.protocol.TField TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnId", org.apache.thrift.protocol.TType.I64, (short)4);
-  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)5);
-  private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)4);
+  private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -54,7 +53,6 @@ import org.slf4j.LoggerFactory;
   private String dbName; // required
   private String tableName; // required
   private List<String> partNames; // optional
-  private long txnId; // optional
   private long writeId; // optional
   private String validWriteIdList; // optional
 
@@ -63,9 +61,8 @@ import org.slf4j.LoggerFactory;
     DB_NAME((short)1, "dbName"),
     TABLE_NAME((short)2, "tableName"),
     PART_NAMES((short)3, "partNames"),
-    TXN_ID((short)4, "txnId"),
-    WRITE_ID((short)5, "writeId"),
-    VALID_WRITE_ID_LIST((short)6, "validWriteIdList");
+    WRITE_ID((short)4, "writeId"),
+    VALID_WRITE_ID_LIST((short)5, "validWriteIdList");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -86,11 +83,9 @@ import org.slf4j.LoggerFactory;
           return TABLE_NAME;
         case 3: // PART_NAMES
           return PART_NAMES;
-        case 4: // TXN_ID
-          return TXN_ID;
-        case 5: // WRITE_ID
+        case 4: // WRITE_ID
           return WRITE_ID;
-        case 6: // VALID_WRITE_ID_LIST
+        case 5: // VALID_WRITE_ID_LIST
           return VALID_WRITE_ID_LIST;
         default:
           return null;
@@ -132,10 +127,9 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __TXNID_ISSET_ID = 0;
-  private static final int __WRITEID_ISSET_ID = 1;
+  private static final int __WRITEID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PART_NAMES,_Fields.TXN_ID,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST};
+  private static final _Fields optionals[] = {_Fields.PART_NAMES,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -146,8 +140,6 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.PART_NAMES, new org.apache.thrift.meta_data.FieldMetaData("partNames", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("writeId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -157,8 +149,6 @@ import org.slf4j.LoggerFactory;
   }
 
   public TruncateTableRequest() {
-    this.txnId = -1L;
-
     this.writeId = -1L;
 
   }
@@ -187,7 +177,6 @@ import org.slf4j.LoggerFactory;
       List<String> __this__partNames = new ArrayList<String>(other.partNames);
       this.partNames = __this__partNames;
     }
-    this.txnId = other.txnId;
     this.writeId = other.writeId;
     if (other.isSetValidWriteIdList()) {
       this.validWriteIdList = other.validWriteIdList;
@@ -203,8 +192,6 @@ import org.slf4j.LoggerFactory;
     this.dbName = null;
     this.tableName = null;
     this.partNames = null;
-    this.txnId = -1L;
-
     this.writeId = -1L;
 
     this.validWriteIdList = null;
@@ -294,28 +281,6 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public long getTxnId() {
-    return this.txnId;
-  }
-
-  public void setTxnId(long txnId) {
-    this.txnId = txnId;
-    setTxnIdIsSet(true);
-  }
-
-  public void unsetTxnId() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TXNID_ISSET_ID);
-  }
-
-  /** Returns true if field txnId is set (has been assigned a value) and false otherwise */
-  public boolean isSetTxnId() {
-    return EncodingUtils.testBit(__isset_bitfield, __TXNID_ISSET_ID);
-  }
-
-  public void setTxnIdIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
-  }
-
   public long getWriteId() {
     return this.writeId;
   }
@@ -387,14 +352,6 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case TXN_ID:
-      if (value == null) {
-        unsetTxnId();
-      } else {
-        setTxnId((Long)value);
-      }
-      break;
-
     case WRITE_ID:
       if (value == null) {
         unsetWriteId();
@@ -425,9 +382,6 @@ import org.slf4j.LoggerFactory;
     case PART_NAMES:
       return getPartNames();
 
-    case TXN_ID:
-      return getTxnId();
-
     case WRITE_ID:
       return getWriteId();
 
@@ -451,8 +405,6 @@ import org.slf4j.LoggerFactory;
       return isSetTableName();
     case PART_NAMES:
       return isSetPartNames();
-    case TXN_ID:
-      return isSetTxnId();
     case WRITE_ID:
       return isSetWriteId();
     case VALID_WRITE_ID_LIST:
@@ -501,15 +453,6 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_txnId = true && this.isSetTxnId();
-    boolean that_present_txnId = true && that.isSetTxnId();
-    if (this_present_txnId || that_present_txnId) {
-      if (!(this_present_txnId && that_present_txnId))
-        return false;
-      if (this.txnId != that.txnId)
-        return false;
-    }
-
     boolean this_present_writeId = true && this.isSetWriteId();
     boolean that_present_writeId = true && that.isSetWriteId();
     if (this_present_writeId || that_present_writeId) {
@@ -549,11 +492,6 @@ import org.slf4j.LoggerFactory;
     list.add(present_partNames);
     if (present_partNames)
       list.add(partNames);
-
-    boolean present_txnId = true && (isSetTxnId());
-    list.add(present_txnId);
-    if (present_txnId)
-      list.add(txnId);
 
     boolean present_writeId = true && (isSetWriteId());
     list.add(present_writeId);
@@ -602,16 +540,6 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetPartNames()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partNames, other.partNames);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetTxnId()).compareTo(other.isSetTxnId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTxnId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnId, other.txnId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -679,12 +607,6 @@ import org.slf4j.LoggerFactory;
       } else {
         sb.append(this.partNames);
       }
-      first = false;
-    }
-    if (isSetTxnId()) {
-      if (!first) sb.append(", ");
-      sb.append("txnId:");
-      sb.append(this.txnId);
       first = false;
     }
     if (isSetWriteId()) {
@@ -790,15 +712,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // TXN_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.txnId = iprot.readI64();
-              struct.setTxnIdIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 5: // WRITE_ID
+          case 4: // WRITE_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.writeId = iprot.readI64();
               struct.setWriteIdIsSet(true);
@@ -806,7 +720,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // VALID_WRITE_ID_LIST
+          case 5: // VALID_WRITE_ID_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.validWriteIdList = iprot.readString();
               struct.setValidWriteIdListIsSet(true);
@@ -851,11 +765,6 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
-      if (struct.isSetTxnId()) {
-        oprot.writeFieldBegin(TXN_ID_FIELD_DESC);
-        oprot.writeI64(struct.txnId);
-        oprot.writeFieldEnd();
-      }
       if (struct.isSetWriteId()) {
         oprot.writeFieldBegin(WRITE_ID_FIELD_DESC);
         oprot.writeI64(struct.writeId);
@@ -891,16 +800,13 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartNames()) {
         optionals.set(0);
       }
-      if (struct.isSetTxnId()) {
+      if (struct.isSetWriteId()) {
         optionals.set(1);
       }
-      if (struct.isSetWriteId()) {
+      if (struct.isSetValidWriteIdList()) {
         optionals.set(2);
       }
-      if (struct.isSetValidWriteIdList()) {
-        optionals.set(3);
-      }
-      oprot.writeBitSet(optionals, 4);
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetPartNames()) {
         {
           oprot.writeI32(struct.partNames.size());
@@ -909,9 +815,6 @@ import org.slf4j.LoggerFactory;
             oprot.writeString(_iter82);
           }
         }
-      }
-      if (struct.isSetTxnId()) {
-        oprot.writeI64(struct.txnId);
       }
       if (struct.isSetWriteId()) {
         oprot.writeI64(struct.writeId);
@@ -928,7 +831,7 @@ import org.slf4j.LoggerFactory;
       struct.setDbNameIsSet(true);
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list83 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
@@ -943,14 +846,10 @@ import org.slf4j.LoggerFactory;
         struct.setPartNamesIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.txnId = iprot.readI64();
-        struct.setTxnIdIsSet(true);
-      }
-      if (incoming.get(2)) {
         struct.writeId = iprot.readI64();
         struct.setWriteIdIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(2)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
       }

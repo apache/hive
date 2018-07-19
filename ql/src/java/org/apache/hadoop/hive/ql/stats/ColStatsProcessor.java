@@ -182,7 +182,6 @@ public class ColStatsProcessor implements IStatsProcessor {
     HiveTxnManager txnMgr = AcidUtils.isTransactionalTable(tbl)
         ? SessionState.get().getTxnMgr() : null;
     if (txnMgr != null) {
-      request.setTxnId(txnMgr.getCurrentTxnId());
       request.setValidWriteIdList(AcidUtils.getTableValidWriteIdList(conf,
           AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName())).toString());
       request.setWriteId(txnMgr.getAllocatedTableWriteId(tbl.getDbName(), tbl.getTableName()));

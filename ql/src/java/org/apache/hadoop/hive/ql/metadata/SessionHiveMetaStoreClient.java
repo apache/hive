@@ -159,14 +159,14 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
   @Override
   public void truncateTable(String dbName, String tableName,
-      List<String> partNames, long txnId, String validWriteIds, long writeId)
+      List<String> partNames, String validWriteIds, long writeId)
       throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
     if (table != null) {
       truncateTempTable(table);
       return;
     }
-    super.truncateTable(dbName, tableName, partNames, txnId, validWriteIds, writeId);
+    super.truncateTable(dbName, tableName, partNames, validWriteIds, writeId);
   }
 
   @Override
@@ -362,7 +362,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   @Override
   public void alter_table(String catName, String dbName, String tbl_name,
       org.apache.hadoop.hive.metastore.api.Table new_tbl,
-      EnvironmentContext envContext, long txnId, String validWriteIds)
+      EnvironmentContext envContext, String validWriteIds)
       throws InvalidOperationException, MetaException, TException {
     org.apache.hadoop.hive.metastore.api.Table old_tbl = getTempTable(dbName, tbl_name);
     if (old_tbl != null) {
@@ -370,8 +370,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       alterTempTable(dbName, tbl_name, old_tbl, new_tbl, null);
       return;
     }
-    super.alter_table(catName, dbName, tbl_name, new_tbl, envContext, txnId,
-        validWriteIds);
+    super.alter_table(catName, dbName, tbl_name, new_tbl, envContext, validWriteIds);
   }
 
   @Override
