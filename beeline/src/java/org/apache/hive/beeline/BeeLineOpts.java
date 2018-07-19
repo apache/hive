@@ -503,11 +503,12 @@ class BeeLineOpts implements Completer {
   public boolean getEscapeCRLF() {
     if (beeLine.isBeeLine()) {
       return escapeCRLF;
-    } else {
-      boolean flag;
-      HiveConf conf = beeLine.getCommands().getHiveConf(true);
-      flag = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
-      return flag;
+    } else { //hive cli
+      if(conf != null) {
+        return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
+      } else {
+        return false;
+      }
     }
   }
 
