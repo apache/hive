@@ -70,193 +70,199 @@ Stage-0
     limit:100
     Stage-1
       Reducer 6 vectorized
-      File Output Operator [FS_195]
-        Limit [LIM_194] (rows=100 width=108)
+      File Output Operator [FS_199]
+        Limit [LIM_198] (rows=100 width=108)
           Number of rows:100
-          Select Operator [SEL_193] (rows=304916424 width=108)
+          Select Operator [SEL_197] (rows=304916424 width=108)
             Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
           <-Reducer 5 [SIMPLE_EDGE] vectorized
-            SHUFFLE [RS_192]
-              Group By Operator [GBY_191] (rows=304916424 width=108)
+            SHUFFLE [RS_196]
+              Group By Operator [GBY_195] (rows=304916424 width=108)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["count(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4
               <-Union 4 [SIMPLE_EDGE]
                 <-Reducer 12 [CONTAINS]
-                  Reduce Output Operator [RS_163]
+                  Reduce Output Operator [RS_167]
                     PartitionCols:_col0, _col1, _col2, _col3, _col4
-                    Group By Operator [GBY_162] (rows=609832848 width=108)
+                    Group By Operator [GBY_166] (rows=609832848 width=108)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["count()","sum(_col5)"],keys:_col0, _col1, _col2, _col3, _col4
-                      Select Operator [SEL_160] (rows=174233858 width=135)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                        Merge Join Operator [MERGEJOIN_159] (rows=174233858 width=135)
-                          Conds:RS_45._col0=RS_213._col0(Inner),Output:["_col3","_col5","_col7","_col8"]
-                        <-Map 21 [SIMPLE_EDGE] vectorized
-                          PARTITION_ONLY_SHUFFLE [RS_213]
-                            PartitionCols:_col0
-                            Select Operator [SEL_212] (rows=73049 width=1119)
-                              Output:["_col0","_col1","_col2"]
-                              Filter Operator [FIL_211] (rows=73049 width=1119)
-                                predicate:d_date_sk is not null
-                                TableScan [TS_39] (rows=73049 width=1119)
-                                  default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
-                        <-Reducer 11 [SIMPLE_EDGE]
-                          SHUFFLE [RS_45]
-                            PartitionCols:_col0
-                            Merge Join Operator [MERGEJOIN_147] (rows=158394413 width=135)
-                              Conds:RS_221._col2=RS_170._col0(Inner),Output:["_col0","_col3","_col5"]
-                            <-Map 1 [SIMPLE_EDGE] vectorized
-                              SHUFFLE [RS_170]
-                                PartitionCols:_col0
-                                Select Operator [SEL_165] (rows=462000 width=1436)
-                                  Output:["_col0","_col1"]
-                                  Filter Operator [FIL_164] (rows=462000 width=1436)
-                                    predicate:i_item_sk is not null
-                                    TableScan [TS_0] (rows=462000 width=1436)
-                                      default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_category"]
-                            <-Map 20 [SIMPLE_EDGE] vectorized
-                              SHUFFLE [RS_221]
-                                PartitionCols:_col2
-                                Select Operator [SEL_220] (rows=143994918 width=135)
-                                  Output:["_col0","_col2","_col3"]
-                                  Filter Operator [FIL_219] (rows=143994918 width=135)
-                                    predicate:((cs_item_sk BETWEEN DynamicValue(RS_43_item_i_item_sk_min) AND DynamicValue(RS_43_item_i_item_sk_max) and in_bloom_filter(cs_item_sk, DynamicValue(RS_43_item_i_item_sk_bloom_filter))) and (cs_sold_date_sk BETWEEN DynamicValue(RS_46_date_dim_d_date_sk_min) AND DynamicValue(RS_46_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_46_date_dim_d_date_sk_bloom_filter))) and cs_item_sk is not null and cs_sold_date_sk is not null and cs_warehouse_sk is null)
-                                    TableScan [TS_33] (rows=287989836 width=135)
-                                      default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:NONE,Output:["cs_sold_date_sk","cs_warehouse_sk","cs_item_sk","cs_ext_sales_price"]
-                                    <-Reducer 13 [BROADCAST_EDGE] vectorized
-                                      BROADCAST [RS_210]
-                                        Group By Operator [GBY_209] (rows=1 width=12)
-                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                                          SHUFFLE [RS_177]
-                                            Group By Operator [GBY_174] (rows=1 width=12)
-                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                              Select Operator [SEL_171] (rows=462000 width=1436)
-                                                Output:["_col0"]
-                                                 Please refer to the previous Select Operator [SEL_165]
-                                    <-Reducer 22 [BROADCAST_EDGE] vectorized
-                                      BROADCAST [RS_218]
-                                        Group By Operator [GBY_217] (rows=1 width=12)
-                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                        <-Map 21 [CUSTOM_SIMPLE_EDGE] vectorized
-                                          PARTITION_ONLY_SHUFFLE [RS_216]
-                                            Group By Operator [GBY_215] (rows=1 width=12)
-                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                              Select Operator [SEL_214] (rows=73049 width=1119)
-                                                Output:["_col0"]
-                                                 Please refer to the previous Select Operator [SEL_212]
+                      Top N Key Operator [TNK_165] (rows=609832848 width=108)
+                        keys:_col0, _col1, _col2, _col3, _col4,sort order:+++++,top n:100
+                        Select Operator [SEL_163] (rows=174233858 width=135)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                          Merge Join Operator [MERGEJOIN_162] (rows=174233858 width=135)
+                            Conds:RS_45._col0=RS_217._col0(Inner),Output:["_col3","_col5","_col7","_col8"]
+                          <-Map 21 [SIMPLE_EDGE] vectorized
+                            PARTITION_ONLY_SHUFFLE [RS_217]
+                              PartitionCols:_col0
+                              Select Operator [SEL_216] (rows=73049 width=1119)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_215] (rows=73049 width=1119)
+                                  predicate:d_date_sk is not null
+                                  TableScan [TS_39] (rows=73049 width=1119)
+                                    default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
+                          <-Reducer 11 [SIMPLE_EDGE]
+                            SHUFFLE [RS_45]
+                              PartitionCols:_col0
+                              Merge Join Operator [MERGEJOIN_148] (rows=158394413 width=135)
+                                Conds:RS_225._col2=RS_174._col0(Inner),Output:["_col0","_col3","_col5"]
+                              <-Map 1 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_174]
+                                  PartitionCols:_col0
+                                  Select Operator [SEL_169] (rows=462000 width=1436)
+                                    Output:["_col0","_col1"]
+                                    Filter Operator [FIL_168] (rows=462000 width=1436)
+                                      predicate:i_item_sk is not null
+                                      TableScan [TS_0] (rows=462000 width=1436)
+                                        default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_category"]
+                              <-Map 20 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_225]
+                                  PartitionCols:_col2
+                                  Select Operator [SEL_224] (rows=143994918 width=135)
+                                    Output:["_col0","_col2","_col3"]
+                                    Filter Operator [FIL_223] (rows=143994918 width=135)
+                                      predicate:((cs_item_sk BETWEEN DynamicValue(RS_43_item_i_item_sk_min) AND DynamicValue(RS_43_item_i_item_sk_max) and in_bloom_filter(cs_item_sk, DynamicValue(RS_43_item_i_item_sk_bloom_filter))) and (cs_sold_date_sk BETWEEN DynamicValue(RS_46_date_dim_d_date_sk_min) AND DynamicValue(RS_46_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_46_date_dim_d_date_sk_bloom_filter))) and cs_item_sk is not null and cs_sold_date_sk is not null and cs_warehouse_sk is null)
+                                      TableScan [TS_33] (rows=287989836 width=135)
+                                        default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:NONE,Output:["cs_sold_date_sk","cs_warehouse_sk","cs_item_sk","cs_ext_sales_price"]
+                                      <-Reducer 13 [BROADCAST_EDGE] vectorized
+                                        BROADCAST [RS_214]
+                                          Group By Operator [GBY_213] (rows=1 width=12)
+                                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                          <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                                            SHUFFLE [RS_181]
+                                              Group By Operator [GBY_178] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                Select Operator [SEL_175] (rows=462000 width=1436)
+                                                  Output:["_col0"]
+                                                   Please refer to the previous Select Operator [SEL_169]
+                                      <-Reducer 22 [BROADCAST_EDGE] vectorized
+                                        BROADCAST [RS_222]
+                                          Group By Operator [GBY_221] (rows=1 width=12)
+                                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                          <-Map 21 [CUSTOM_SIMPLE_EDGE] vectorized
+                                            PARTITION_ONLY_SHUFFLE [RS_220]
+                                              Group By Operator [GBY_219] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                Select Operator [SEL_218] (rows=73049 width=1119)
+                                                  Output:["_col0"]
+                                                   Please refer to the previous Select Operator [SEL_216]
                 <-Reducer 3 [CONTAINS]
-                  Reduce Output Operator [RS_153]
+                  Reduce Output Operator [RS_155]
                     PartitionCols:_col0, _col1, _col2, _col3, _col4
-                    Group By Operator [GBY_152] (rows=609832848 width=108)
+                    Group By Operator [GBY_154] (rows=609832848 width=108)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["count()","sum(_col5)"],keys:_col0, _col1, _col2, _col3, _col4
-                      Select Operator [SEL_150] (rows=348477373 width=88)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                        Merge Join Operator [MERGEJOIN_149] (rows=348477373 width=88)
-                          Conds:RS_12._col2=RS_182._col0(Inner),Output:["_col1","_col5","_col7","_col8"]
-                        <-Map 15 [SIMPLE_EDGE] vectorized
-                          SHUFFLE [RS_182]
-                            PartitionCols:_col0
-                            Select Operator [SEL_181] (rows=73049 width=1119)
-                              Output:["_col0","_col1","_col2"]
-                              Filter Operator [FIL_180] (rows=73049 width=1119)
-                                predicate:d_date_sk is not null
-                                TableScan [TS_6] (rows=73049 width=1119)
-                                  default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
-                        <-Reducer 2 [SIMPLE_EDGE]
-                          SHUFFLE [RS_12]
-                            PartitionCols:_col2
-                            Merge Join Operator [MERGEJOIN_143] (rows=316797605 width=88)
-                              Conds:RS_166._col0=RS_190._col1(Inner),Output:["_col1","_col2","_col5"]
-                            <-Map 1 [SIMPLE_EDGE] vectorized
-                              SHUFFLE [RS_166]
-                                PartitionCols:_col0
-                                 Please refer to the previous Select Operator [SEL_165]
-                            <-Map 14 [SIMPLE_EDGE] vectorized
-                              SHUFFLE [RS_190]
-                                PartitionCols:_col1
-                                Select Operator [SEL_189] (rows=287997817 width=88)
-                                  Output:["_col0","_col1","_col3"]
-                                  Filter Operator [FIL_188] (rows=287997817 width=88)
-                                    predicate:((ss_item_sk BETWEEN DynamicValue(RS_9_item_i_item_sk_min) AND DynamicValue(RS_9_item_i_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_9_item_i_item_sk_bloom_filter))) and (ss_sold_date_sk BETWEEN DynamicValue(RS_13_date_dim_d_date_sk_min) AND DynamicValue(RS_13_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_13_date_dim_d_date_sk_bloom_filter))) and ss_addr_sk is null and ss_item_sk is not null and ss_sold_date_sk is not null)
-                                    TableScan [TS_3] (rows=575995635 width=88)
-                                      default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_addr_sk","ss_ext_sales_price"]
-                                    <-Reducer 16 [BROADCAST_EDGE] vectorized
-                                      BROADCAST [RS_187]
-                                        Group By Operator [GBY_186] (rows=1 width=12)
-                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                        <-Map 15 [CUSTOM_SIMPLE_EDGE] vectorized
-                                          SHUFFLE [RS_185]
-                                            Group By Operator [GBY_184] (rows=1 width=12)
-                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                              Select Operator [SEL_183] (rows=73049 width=1119)
-                                                Output:["_col0"]
-                                                 Please refer to the previous Select Operator [SEL_181]
-                                    <-Reducer 7 [BROADCAST_EDGE] vectorized
-                                      BROADCAST [RS_179]
-                                        Group By Operator [GBY_178] (rows=1 width=12)
-                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                                          SHUFFLE [RS_175]
-                                            Group By Operator [GBY_172] (rows=1 width=12)
-                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                              Select Operator [SEL_167] (rows=462000 width=1436)
-                                                Output:["_col0"]
-                                                 Please refer to the previous Select Operator [SEL_165]
+                      Top N Key Operator [TNK_153] (rows=609832848 width=108)
+                        keys:_col0, _col1, _col2, _col3, _col4,sort order:+++++,top n:100
+                        Select Operator [SEL_151] (rows=348477373 width=88)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                          Merge Join Operator [MERGEJOIN_150] (rows=348477373 width=88)
+                            Conds:RS_12._col2=RS_186._col0(Inner),Output:["_col1","_col5","_col7","_col8"]
+                          <-Map 15 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_186]
+                              PartitionCols:_col0
+                              Select Operator [SEL_185] (rows=73049 width=1119)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_184] (rows=73049 width=1119)
+                                  predicate:d_date_sk is not null
+                                  TableScan [TS_6] (rows=73049 width=1119)
+                                    default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
+                          <-Reducer 2 [SIMPLE_EDGE]
+                            SHUFFLE [RS_12]
+                              PartitionCols:_col2
+                              Merge Join Operator [MERGEJOIN_144] (rows=316797605 width=88)
+                                Conds:RS_170._col0=RS_194._col1(Inner),Output:["_col1","_col2","_col5"]
+                              <-Map 1 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_170]
+                                  PartitionCols:_col0
+                                   Please refer to the previous Select Operator [SEL_169]
+                              <-Map 14 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_194]
+                                  PartitionCols:_col1
+                                  Select Operator [SEL_193] (rows=287997817 width=88)
+                                    Output:["_col0","_col1","_col3"]
+                                    Filter Operator [FIL_192] (rows=287997817 width=88)
+                                      predicate:((ss_item_sk BETWEEN DynamicValue(RS_9_item_i_item_sk_min) AND DynamicValue(RS_9_item_i_item_sk_max) and in_bloom_filter(ss_item_sk, DynamicValue(RS_9_item_i_item_sk_bloom_filter))) and (ss_sold_date_sk BETWEEN DynamicValue(RS_13_date_dim_d_date_sk_min) AND DynamicValue(RS_13_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_13_date_dim_d_date_sk_bloom_filter))) and ss_addr_sk is null and ss_item_sk is not null and ss_sold_date_sk is not null)
+                                      TableScan [TS_3] (rows=575995635 width=88)
+                                        default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_addr_sk","ss_ext_sales_price"]
+                                      <-Reducer 16 [BROADCAST_EDGE] vectorized
+                                        BROADCAST [RS_191]
+                                          Group By Operator [GBY_190] (rows=1 width=12)
+                                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                          <-Map 15 [CUSTOM_SIMPLE_EDGE] vectorized
+                                            SHUFFLE [RS_189]
+                                              Group By Operator [GBY_188] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                Select Operator [SEL_187] (rows=73049 width=1119)
+                                                  Output:["_col0"]
+                                                   Please refer to the previous Select Operator [SEL_185]
+                                      <-Reducer 7 [BROADCAST_EDGE] vectorized
+                                        BROADCAST [RS_183]
+                                          Group By Operator [GBY_182] (rows=1 width=12)
+                                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                          <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                                            SHUFFLE [RS_179]
+                                              Group By Operator [GBY_176] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                Select Operator [SEL_171] (rows=462000 width=1436)
+                                                  Output:["_col0"]
+                                                   Please refer to the previous Select Operator [SEL_169]
                 <-Reducer 9 [CONTAINS]
-                  Reduce Output Operator [RS_158]
+                  Reduce Output Operator [RS_161]
                     PartitionCols:_col0, _col1, _col2, _col3, _col4
-                    Group By Operator [GBY_157] (rows=609832848 width=108)
+                    Group By Operator [GBY_160] (rows=609832848 width=108)
                       Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"],aggregations:["count()","sum(_col5)"],keys:_col0, _col1, _col2, _col3, _col4
-                      Select Operator [SEL_155] (rows=87121617 width=135)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-                        Merge Join Operator [MERGEJOIN_154] (rows=87121617 width=135)
-                          Conds:RS_28._col0=RS_200._col0(Inner),Output:["_col3","_col5","_col7","_col8"]
-                        <-Map 18 [SIMPLE_EDGE] vectorized
-                          SHUFFLE [RS_200]
-                            PartitionCols:_col0
-                            Select Operator [SEL_199] (rows=73049 width=1119)
-                              Output:["_col0","_col1","_col2"]
-                              Filter Operator [FIL_198] (rows=73049 width=1119)
-                                predicate:d_date_sk is not null
-                                TableScan [TS_22] (rows=73049 width=1119)
-                                  default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
-                        <-Reducer 8 [SIMPLE_EDGE]
-                          SHUFFLE [RS_28]
-                            PartitionCols:_col0
-                            Merge Join Operator [MERGEJOIN_145] (rows=79201469 width=135)
-                              Conds:RS_208._col1=RS_168._col0(Inner),Output:["_col0","_col3","_col5"]
-                            <-Map 1 [SIMPLE_EDGE] vectorized
-                              SHUFFLE [RS_168]
-                                PartitionCols:_col0
-                                 Please refer to the previous Select Operator [SEL_165]
-                            <-Map 17 [SIMPLE_EDGE] vectorized
-                              SHUFFLE [RS_208]
-                                PartitionCols:_col1
-                                Select Operator [SEL_207] (rows=72001334 width=135)
-                                  Output:["_col0","_col1","_col3"]
-                                  Filter Operator [FIL_206] (rows=72001334 width=135)
-                                    predicate:((ws_item_sk BETWEEN DynamicValue(RS_26_item_i_item_sk_min) AND DynamicValue(RS_26_item_i_item_sk_max) and in_bloom_filter(ws_item_sk, DynamicValue(RS_26_item_i_item_sk_bloom_filter))) and (ws_sold_date_sk BETWEEN DynamicValue(RS_29_date_dim_d_date_sk_min) AND DynamicValue(RS_29_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_29_date_dim_d_date_sk_bloom_filter))) and ws_item_sk is not null and ws_sold_date_sk is not null and ws_web_page_sk is null)
-                                    TableScan [TS_16] (rows=144002668 width=135)
-                                      default@web_sales,web_sales,Tbl:COMPLETE,Col:NONE,Output:["ws_sold_date_sk","ws_item_sk","ws_web_page_sk","ws_ext_sales_price"]
-                                    <-Reducer 10 [BROADCAST_EDGE] vectorized
-                                      BROADCAST [RS_197]
-                                        Group By Operator [GBY_196] (rows=1 width=12)
-                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                                          SHUFFLE [RS_176]
-                                            Group By Operator [GBY_173] (rows=1 width=12)
-                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                              Select Operator [SEL_169] (rows=462000 width=1436)
-                                                Output:["_col0"]
-                                                 Please refer to the previous Select Operator [SEL_165]
-                                    <-Reducer 19 [BROADCAST_EDGE] vectorized
-                                      BROADCAST [RS_205]
-                                        Group By Operator [GBY_204] (rows=1 width=12)
-                                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
-                                        <-Map 18 [CUSTOM_SIMPLE_EDGE] vectorized
-                                          SHUFFLE [RS_203]
-                                            Group By Operator [GBY_202] (rows=1 width=12)
-                                              Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
-                                              Select Operator [SEL_201] (rows=73049 width=1119)
-                                                Output:["_col0"]
-                                                 Please refer to the previous Select Operator [SEL_199]
+                      Top N Key Operator [TNK_159] (rows=609832848 width=108)
+                        keys:_col0, _col1, _col2, _col3, _col4,sort order:+++++,top n:100
+                        Select Operator [SEL_157] (rows=87121617 width=135)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                          Merge Join Operator [MERGEJOIN_156] (rows=87121617 width=135)
+                            Conds:RS_28._col0=RS_204._col0(Inner),Output:["_col3","_col5","_col7","_col8"]
+                          <-Map 18 [SIMPLE_EDGE] vectorized
+                            SHUFFLE [RS_204]
+                              PartitionCols:_col0
+                              Select Operator [SEL_203] (rows=73049 width=1119)
+                                Output:["_col0","_col1","_col2"]
+                                Filter Operator [FIL_202] (rows=73049 width=1119)
+                                  predicate:d_date_sk is not null
+                                  TableScan [TS_22] (rows=73049 width=1119)
+                                    default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_qoy"]
+                          <-Reducer 8 [SIMPLE_EDGE]
+                            SHUFFLE [RS_28]
+                              PartitionCols:_col0
+                              Merge Join Operator [MERGEJOIN_146] (rows=79201469 width=135)
+                                Conds:RS_212._col1=RS_172._col0(Inner),Output:["_col0","_col3","_col5"]
+                              <-Map 1 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_172]
+                                  PartitionCols:_col0
+                                   Please refer to the previous Select Operator [SEL_169]
+                              <-Map 17 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_212]
+                                  PartitionCols:_col1
+                                  Select Operator [SEL_211] (rows=72001334 width=135)
+                                    Output:["_col0","_col1","_col3"]
+                                    Filter Operator [FIL_210] (rows=72001334 width=135)
+                                      predicate:((ws_item_sk BETWEEN DynamicValue(RS_26_item_i_item_sk_min) AND DynamicValue(RS_26_item_i_item_sk_max) and in_bloom_filter(ws_item_sk, DynamicValue(RS_26_item_i_item_sk_bloom_filter))) and (ws_sold_date_sk BETWEEN DynamicValue(RS_29_date_dim_d_date_sk_min) AND DynamicValue(RS_29_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_29_date_dim_d_date_sk_bloom_filter))) and ws_item_sk is not null and ws_sold_date_sk is not null and ws_web_page_sk is null)
+                                      TableScan [TS_16] (rows=144002668 width=135)
+                                        default@web_sales,web_sales,Tbl:COMPLETE,Col:NONE,Output:["ws_sold_date_sk","ws_item_sk","ws_web_page_sk","ws_ext_sales_price"]
+                                      <-Reducer 10 [BROADCAST_EDGE] vectorized
+                                        BROADCAST [RS_201]
+                                          Group By Operator [GBY_200] (rows=1 width=12)
+                                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                          <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                                            SHUFFLE [RS_180]
+                                              Group By Operator [GBY_177] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                Select Operator [SEL_173] (rows=462000 width=1436)
+                                                  Output:["_col0"]
+                                                   Please refer to the previous Select Operator [SEL_169]
+                                      <-Reducer 19 [BROADCAST_EDGE] vectorized
+                                        BROADCAST [RS_209]
+                                          Group By Operator [GBY_208] (rows=1 width=12)
+                                            Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                          <-Map 18 [CUSTOM_SIMPLE_EDGE] vectorized
+                                            SHUFFLE [RS_207]
+                                              Group By Operator [GBY_206] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                Select Operator [SEL_205] (rows=73049 width=1119)
+                                                  Output:["_col0"]
+                                                   Please refer to the previous Select Operator [SEL_203]
 

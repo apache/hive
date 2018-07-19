@@ -1,0 +1,162 @@
+PREHOOK: query: explain vectorization detail
+SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:5
+    Stage-1
+      Reducer 3 vectorized
+      File Output Operator [FS_20]
+        Limit [LIM_19] (rows=5 width=95)
+          Number of rows:5
+          Select Operator [SEL_18] (rows=250 width=95)
+            Output:["_col0","_col1"]
+          <-Reducer 2 [SIMPLE_EDGE] vectorized
+            SHUFFLE [RS_17]
+              Group By Operator [GBY_16] (rows=250 width=95)
+                Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
+              <-Map 1 [SIMPLE_EDGE] vectorized
+                SHUFFLE [RS_15]
+                  PartitionCols:_col0
+                  Group By Operator [GBY_14] (rows=250 width=95)
+                    Output:["_col0","_col1"],aggregations:["sum(_col1)"],keys:_col0
+                    Top N Key Operator [TNK_13] (rows=500 width=178)
+                      keys:_col0,sort order:+,top n:5
+                      Select Operator [SEL_12] (rows=500 width=178)
+                        Output:["_col0","_col1"]
+                        TableScan [TS_0] (rows=500 width=178)
+                          default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+
+PREHOOK: query: SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT key, SUM(CAST(SUBSTR(value,5) AS INT)) FROM src GROUP BY key ORDER BY key LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	0
+10	10
+100	200
+103	206
+104	208
+PREHOOK: query: explain vectorization detail
+SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:5
+    Stage-1
+      Reducer 3 vectorized
+      File Output Operator [FS_19]
+        Limit [LIM_18] (rows=5 width=87)
+          Number of rows:5
+          Select Operator [SEL_17] (rows=250 width=87)
+            Output:["_col0"]
+          <-Reducer 2 [SIMPLE_EDGE] vectorized
+            SHUFFLE [RS_16]
+              Group By Operator [GBY_15] (rows=250 width=87)
+                Output:["_col0"],keys:KEY._col0
+              <-Map 1 [SIMPLE_EDGE] vectorized
+                SHUFFLE [RS_14]
+                  PartitionCols:_col0
+                  Group By Operator [GBY_13] (rows=250 width=87)
+                    Output:["_col0"],keys:key
+                    Top N Key Operator [TNK_12] (rows=500 width=87)
+                      keys:key,sort order:+,top n:5
+                      Select Operator [SEL_11] (rows=500 width=87)
+                        Output:["key"]
+                        TableScan [TS_0] (rows=500 width=87)
+                          default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+
+PREHOOK: query: SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT key FROM src GROUP BY key ORDER BY key LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+10
+100
+103
+104
+PREHOOK: query: explain vectorization detail
+SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:5
+    Stage-1
+      Reducer 3 vectorized
+      File Output Operator [FS_37]
+        Limit [LIM_36] (rows=5 width=178)
+          Number of rows:5
+          Select Operator [SEL_35] (rows=791 width=178)
+            Output:["_col0","_col1"]
+          <-Reducer 2 [SIMPLE_EDGE]
+            SHUFFLE [RS_10]
+              Select Operator [SEL_9] (rows=791 width=178)
+                Output:["_col0","_col1"]
+                Merge Join Operator [MERGEJOIN_28] (rows=791 width=178)
+                  Conds:RS_31._col0=RS_34._col0(Inner),Output:["_col0","_col2"]
+                <-Map 1 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_31]
+                    PartitionCols:_col0
+                    Select Operator [SEL_30] (rows=500 width=87)
+                      Output:["_col0"]
+                      Filter Operator [FIL_29] (rows=500 width=87)
+                        predicate:key is not null
+                        TableScan [TS_0] (rows=500 width=87)
+                          default@src,src1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+                <-Map 4 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_34]
+                    PartitionCols:_col0
+                    Select Operator [SEL_33] (rows=500 width=178)
+                      Output:["_col0","_col1"]
+                      Filter Operator [FIL_32] (rows=500 width=178)
+                        predicate:key is not null
+                        TableScan [TS_3] (rows=500 width=178)
+                          default@src,src2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+
+PREHOOK: query: SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT src1.key, src2.value FROM src src1 JOIN src src2 ON (src1.key = src2.key) ORDER BY src1.key LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
