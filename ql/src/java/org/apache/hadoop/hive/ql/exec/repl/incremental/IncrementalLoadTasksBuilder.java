@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
@@ -84,7 +85,8 @@ public class IncrementalLoadTasksBuilder {
     replLogger.startLog();
   }
 
-  public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log) throws Exception {
+  public Task<? extends Serializable> build(DriverContext driverContext, Hive hive, Logger log,
+                                            ReplLoadWork loadWork) throws Exception {
     Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
     Task<? extends Serializable> taskChainTail = evTaskRoot;
     Long lastReplayedEvent = null;
@@ -145,8 +147,10 @@ public class IncrementalLoadTasksBuilder {
       lastReplayedEvent = eventDmd.getEventTo();
     }
 
-    // If any event is there and db name is known, then dump the start and end logs
-    if (!evTaskRoot.equals(taskChainTail) && !iterator.hasNext()) {
+    if (iterator.hasNext()) {
+      // add load task to start the next iteration
+      taskChainTail.addDependentTask(TaskFactory.get(loadWork, conf));
+    } else {
       Map<String, String> dbProps = new HashMap<>();
       dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(lastReplayedEvent));
       ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);
