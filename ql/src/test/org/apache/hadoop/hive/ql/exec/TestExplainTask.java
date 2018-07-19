@@ -218,7 +218,7 @@ public class TestExplainTask {
 
 
     JsonNode result = objectMapper.readTree(uut.getJSONPlan(null, tasks, null, true,
-            false, false).toString());
+            false, false, null).toString());
     JsonNode expected = objectMapper.readTree("{\"STAGE DEPENDENCIES\":{\"mockTaskId\":" +
             "{\"ROOT STAGE\":\"TRUE\",\"BACKUP STAGE\":\"backup-id-mock\"}},\"STAGE PLANS\":" +
             "{\"mockTaskId\":{}}}");

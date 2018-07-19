@@ -5,6 +5,14 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
  select * from srcpart a join srcpart b where a.ds = '2008-04-08' and a.hr = '11' and b.ds = '2008-04-08' and b.hr = '14' limit 5
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, CAST('2008-04-08' AS STRING) AS `ds1`, CAST('14' AS STRING) AS `hr1`
+FROM (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `hr` = '11') AS `t0`,
+(SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('14' AS STRING) AS `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `hr` = '14') AS `t2`
+LIMIT 5
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

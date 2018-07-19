@@ -4,6 +4,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from srcpart where BLOCK__OFFSET__INSIDE__FILE<100
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `BLOCK__OFFSET__INSIDE__FILE` < 100
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -320,6 +323,14 @@ select b.* from src a join
   (select *,BLOCK__OFFSET__INSIDE__FILE from srcpart where BLOCK__OFFSET__INSIDE__FILE<100) b
     on a.key=b.key AND b.BLOCK__OFFSET__INSIDE__FILE<50 order by ds,hr,BLOCK__OFFSET__INSIDE__FILE
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t2`.`key`, `t2`.`value`, `t2`.`ds`, `t2`.`hr`, `t2`.`BLOCK__OFFSET__INSIDE__FILE` AS `block__offset__inside__file`
+FROM (SELECT `key`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, `ds`, `hr`, `BLOCK__OFFSET__INSIDE__FILE`
+FROM `default`.`srcpart`
+WHERE `BLOCK__OFFSET__INSIDE__FILE` < 50 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t2`.`ds`, `t2`.`hr`, `t2`.`BLOCK__OFFSET__INSIDE__FILE`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

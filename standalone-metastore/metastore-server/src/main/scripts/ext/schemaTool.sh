@@ -22,7 +22,7 @@ schemaTool() {
   if $cygwin; then
     METASTORE_LIB=`cygpath -w "$METASTORE_LIB"`
   fi
-  JAR=${METASTORE_LIB}/hive-standalone-metastore-common-*.jar
+  JAR=${METASTORE_LIB}/hive-standalone-metastore-server-*.jar
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
   exec $HADOOP jar $JAR $CLASS "$@"

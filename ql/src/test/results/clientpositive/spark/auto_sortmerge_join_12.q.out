@@ -139,6 +139,18 @@ PREHOOK: query: explain extended select count(*) FROM bucket_small_n15 a JOIN bu
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(*) FROM bucket_small_n15 a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big_n15 c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM (SELECT `key`
+FROM `default`.`bucket_big_n15`
+WHERE `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_medium`
+WHERE `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+INNER JOIN (SELECT `key`
+FROM `default`.`bucket_small_n15`
+WHERE `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`,
+(SELECT 0 AS `DUMMY`
+FROM `default`.`bucket_medium`) AS `t5`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

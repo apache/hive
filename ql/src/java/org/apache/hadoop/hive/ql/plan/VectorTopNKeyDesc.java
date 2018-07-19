@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,8 +16,24 @@
  * limitations under the License.
  */
 
-/**
- * This package contains test and utility classes for creating MetaStore instances for test
- * purposes.
- */
-package org.apache.hadoop.hive.metastore.minihms;
+package org.apache.hadoop.hive.ql.plan;
+
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+
+public class VectorTopNKeyDesc extends AbstractVectorDesc {
+
+  private static final long serialVersionUID = 1L;
+
+  private VectorExpression[] keyExpressions;
+
+  public VectorTopNKeyDesc() {
+  }
+
+  public VectorExpression[] getKeyExpressions() {
+    return keyExpressions;
+  }
+
+  public void setKeyExpressions(VectorExpression[] keyExpressions) {
+    this.keyExpressions = keyExpressions;
+  }
+}

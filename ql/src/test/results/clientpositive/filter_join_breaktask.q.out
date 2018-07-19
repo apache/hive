@@ -28,6 +28,16 @@ SELECT f.key, g.value
 FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
 JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t2`.`key`, `t0`.`value`
+FROM (SELECT `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`filter_join_breaktask`
+WHERE `ds` = '2008-04-08' AND `value` <> '') AS `t0`
+INNER JOIN ((SELECT `key`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`filter_join_breaktask`
+WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`filter_join_breaktask`
+WHERE `ds` = '2008-04-08' AND `value` <> '' AND `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

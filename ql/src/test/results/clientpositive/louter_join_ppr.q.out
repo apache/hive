@@ -16,6 +16,13 @@ POSTHOOK: query: EXPLAIN EXTENDED
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` < 20 AND `key` > 15) AS `t0`
+INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `key` > 15 AND `key` < 20) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -316,6 +323,13 @@ POSTHOOK: query: EXPLAIN EXTENDED
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcpart`
+WHERE `key` < 20 AND `ds` = '2008-04-08' AND `key` > 15) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` > 15 AND `key` < 20) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -620,6 +634,13 @@ POSTHOOK: query: EXPLAIN EXTENDED
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25 AND b.ds = '2008-04-08'
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` < 20 AND `key` > 15) AS `t0`
+INNER JOIN (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcpart`
+WHERE `key` > 15 AND `ds` = '2008-04-08' AND `key` < 20) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -920,6 +941,13 @@ POSTHOOK: query: EXPLAIN EXTENDED
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25 AND a.ds = '2008-04-08'
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`
+FROM `default`.`srcpart`
+WHERE `key` < 20 AND `ds` = '2008-04-08' AND `key` > 15) AS `t0`
+INNER JOIN (SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` > 15 AND `key` < 20) AS `t2` ON `t0`.`key` = `t2`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

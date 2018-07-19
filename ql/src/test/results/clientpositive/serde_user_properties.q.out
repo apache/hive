@@ -2,6 +2,8 @@ PREHOOK: query: explain extended select key from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key from src
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -24,6 +26,8 @@ PREHOOK: query: explain extended select a.key from src a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select a.key from src a
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -153,6 +157,8 @@ PREHOOK: query: explain extended select key from src ('user.defined.key'='some.v
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key from src ('user.defined.key'='some.value')
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -286,6 +292,8 @@ PREHOOK: query: explain extended select a.key from src ('user.defined.key'='some
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select a.key from src ('user.defined.key'='some.value') a
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`
+FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

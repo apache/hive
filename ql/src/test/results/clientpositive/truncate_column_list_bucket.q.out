@@ -53,6 +53,9 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND 
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '484'
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `part`
+FROM `default`.`test_tab_n3`
+WHERE `part` = '1' AND `key` = '484'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -137,6 +140,9 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND 
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab_n3 WHERE part = '1' AND key = '0'
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST('0' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `part`
+FROM `default`.`test_tab_n3`
+WHERE `part` = '1' AND `key` = '0'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

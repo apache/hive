@@ -52,6 +52,10 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 order by key, ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` <= '2000-04-09' AND `key` < 5
+ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -245,6 +249,10 @@ PREHOOK: query: explain extended select key, value from pcr_t1 where ds<='2000-0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from pcr_t1 where ds<='2000-04-09' or key<5 order by key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`pcr_t1`
+WHERE `ds` <= '2000-04-09' OR `key` < 5
+ORDER BY `key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -524,6 +532,10 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 and value != 'val_2' order by key, ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` <= '2000-04-09' AND `key` < 5 AND `value` <> 'val_2'
+ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -719,6 +731,10 @@ POSTHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-09' and key < 5) or (ds > '2000-04-09' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` < '2000-04-09' AND `key` < 5 OR `ds` > '2000-04-09' AND `value` = 'val_5'
+ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -916,6 +932,10 @@ POSTHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-10' and key < 5) or (ds > '2000-04-08' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` < '2000-04-10' AND `key` < 5 OR `ds` > '2000-04-08' AND `value` = 'val_5'
+ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1172,6 +1192,10 @@ POSTHOOK: query: explain extended
 select key, value, ds from pcr_t1
 where (ds < '2000-04-10' or key < 5) and (ds > '2000-04-08' or value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE (`ds` < '2000-04-10' OR `key` < 5) AND (`ds` > '2000-04-08' OR `value` = 'val_5')
+ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1436,6 +1460,11 @@ PREHOOK: query: explain extended select key, value from pcr_t1 where (ds='2000-0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from pcr_t1 where (ds='2000-04-08' or ds='2000-04-09') and key=14 order by key, value
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST(14 AS INTEGER) AS `key`, `value`
+FROM (SELECT `value`
+FROM `default`.`pcr_t1`
+WHERE (`ds` = '2000-04-08' OR `ds` = '2000-04-09') AND `key` = 14
+ORDER BY `value`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1618,6 +1647,10 @@ PREHOOK: query: explain extended select key, value from pcr_t1 where ds='2000-04
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from pcr_t1 where ds='2000-04-08' or ds='2000-04-09' order by key, value
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`pcr_t1`
+WHERE `ds` = '2000-04-08' OR `ds` = '2000-04-09'
+ORDER BY `key`, `value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1836,6 +1869,10 @@ PREHOOK: query: explain extended select key, value from pcr_t1 where ds>='2000-0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from pcr_t1 where ds>='2000-04-08' or ds<'2000-04-10' order by key, value
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`pcr_t1`
+WHERE `ds` >= '2000-04-08' OR `ds` < '2000-04-10'
+ORDER BY `key`, `value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2125,6 +2162,10 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds='20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` = '2000-04-08' AND `key` = 1 OR `ds` = '2000-04-09' AND `key` = 2
+ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2308,6 +2349,15 @@ PREHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.ke
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08' order by t1.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-08' AS STRING) AS `ds1`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2575,6 +2625,15 @@ PREHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.ke
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09' order by t1.key
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key1`, `t4`.`value1`, CAST('2000-04-09' AS STRING) AS `ds1`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`, CAST('2000-04-08' AS STRING) AS `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
+INNER JOIN (SELECT `key`, `value`, CAST('2000-04-09' AS STRING) AS `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2903,6 +2962,10 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds>='2000-04-08' and ds<='2000-04-11' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` > '2000-04-08' AND `ds` < '2000-04-11' OR `ds` >= '2000-04-08' AND `ds` <= '2000-04-11' AND `key` = 2
+ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3229,6 +3292,10 @@ PREHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds<='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`
+FROM `default`.`pcr_t1`
+WHERE `ds` > '2000-04-08' AND `ds` < '2000-04-11' OR `ds` <= '2000-04-09' AND `key` = 2
+ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4715,6 +4782,11 @@ PREHOOK: query: explain extended select key, value from srcpart where ds='2008-0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value from srcpart where ds='2008-04-08' and hr=11 order by key limit 10
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `hr` = 11
+ORDER BY `key`
+LIMIT 10
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4847,6 +4919,11 @@ PREHOOK: query: explain extended select key, value, ds, hr from srcpart where ds
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds, hr from srcpart where ds='2008-04-08' and (hr='11' or hr='12') and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM (SELECT `key`, `value`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND (`hr` = '11' OR `hr` = '12') AND `key` = 11
+ORDER BY `key`, `hr`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5034,6 +5111,11 @@ PREHOOK: query: explain extended select key, value, ds, hr from srcpart where hr
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key, value, ds, hr from srcpart where hr='11' and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, `ds`, CAST('11' AS STRING) AS `hr`
+FROM (SELECT `key`, `value`, `ds`
+FROM `default`.`srcpart`
+WHERE `hr` = '11' AND `key` = 11
+ORDER BY `key`, `ds`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

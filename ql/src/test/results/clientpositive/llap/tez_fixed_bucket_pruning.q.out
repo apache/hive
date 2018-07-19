@@ -453,6 +453,22 @@ where DW.PROJECT_OBJECT_ID =7147200
 order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
 limit 5
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t9`.`plan_key`, `t9`.`project_key`
+FROM (SELECT `t4`.`plan_key`, `t6`.`project_key`
+FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t2`.`project_object_id`, `t0`.`idp_data_date`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
+FROM (SELECT CAST(DATE '2017-12-28' AS DATE) AS `idp_data_date`, `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
+FROM `default`.`l3_monthly_dw_dimplan`
+WHERE `idp_data_date` = DATE '2017-12-28') AS `t0`
+RIGHT JOIN ((SELECT `plan_detail_object_id`, CAST(7147200 AS BIGINT) AS `project_object_id`
+FROM `default`.`l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1`
+WHERE `project_object_id` = 7147200) AS `t2`,
+(SELECT `l3_snapshot_number`
+FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id` AND `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number`) AS `t4`
+LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`, CAST(7147200 AS BIGINT) AS `project_object_id`, CAST(DATE '2017-12-28' AS DATE) AS `idp_data_date`
+FROM `default`.`l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1`
+WHERE `idp_data_date` = DATE '2017-12-28' AND `project_object_id` = 7147200) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`
+ORDER BY `t4`.`plan_key`, `t6`.`project_key`
+LIMIT 5) AS `t9`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -944,6 +960,22 @@ where DW.PROJECT_OBJECT_ID =7147200
 order by DW.PROJECT_OBJECT_ID, PLAN_KEY, PROJECT_KEY
 limit 5
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT CAST(7147200 AS BIGINT) AS `project_object_id`, `t9`.`plan_key`, `t9`.`project_key`
+FROM (SELECT `t4`.`plan_key`, `t6`.`project_key`
+FROM (SELECT `t3`.`l3_snapshot_number`, `t2`.`plan_detail_object_id`, `t2`.`project_object_id`, `t0`.`idp_data_date`, `t0`.`l3_snapshot_number` AS `l3_snapshot_number0`, `t0`.`plan_key`, `t0`.`finplan_detail_object_id`
+FROM (SELECT CAST(DATE '2017-12-28' AS DATE) AS `idp_data_date`, `l3_snapshot_number`, `plan_key`, `finplan_detail_object_id`
+FROM `default`.`l3_monthly_dw_dimplan`
+WHERE `idp_data_date` = DATE '2017-12-28') AS `t0`
+RIGHT JOIN ((SELECT `plan_detail_object_id`, CAST(7147200 AS BIGINT) AS `project_object_id`
+FROM `default`.`l3_clarity__l3_monthly_dw_factplan_dw_stg_2018022300104_1`
+WHERE `project_object_id` = 7147200) AS `t2`,
+(SELECT `l3_snapshot_number`
+FROM `default`.`l3_clarity__l3_snap_number_2018022300104`) AS `t3`) ON `t0`.`finplan_detail_object_id` = `t2`.`plan_detail_object_id` AND `t0`.`l3_snapshot_number` = `t3`.`l3_snapshot_number`) AS `t4`
+LEFT JOIN (SELECT `project_key`, `l3_snapshot_number`, CAST(7147200 AS BIGINT) AS `project_object_id`, CAST(DATE '2017-12-28' AS DATE) AS `idp_data_date`
+FROM `default`.`l3_clarity__l3_monthly_dw_factplan_datajoin_1_s2_2018022300104_1`
+WHERE `idp_data_date` = DATE '2017-12-28' AND `project_object_id` = 7147200) AS `t6` ON `t4`.`l3_snapshot_number` = `t6`.`l3_snapshot_number`
+ORDER BY `t4`.`plan_key`, `t6`.`project_key`
+LIMIT 5) AS `t9`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

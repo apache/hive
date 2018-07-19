@@ -136,6 +136,18 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-13'
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2011-10-13' AS STRING) AS `ds`
+FROM (SELECT `key`, `value`
+FROM `default`.`t1_new_n0`
+WHERE `ds` = '2011-10-13'
+UNION ALL
+SELECT `t4`.`key`, `t2`.`value`
+FROM (SELECT `keymap`, `value`, CAST('2011-10-13' AS STRING) AS `ds`
+FROM `default`.`t1_old`
+WHERE `ds` = '2011-10-13' AND `keymap` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `key`, `keymap`, CAST('2011-10-13' AS STRING) AS `ds`
+FROM `default`.`t1_mapping`
+WHERE '2011-10-13' = `ds` AND `keymap` IS NOT NULL) AS `t4` ON `t2`.`keymap` = `t4`.`keymap`) AS `t6`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -454,6 +466,18 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select * from t1_n113 where ds = '2011-10-15'
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `key`, `value`, CAST('2011-10-15' AS STRING) AS `ds`
+FROM (SELECT `key`, `value`
+FROM `default`.`t1_new_n0`
+WHERE `ds` = '2011-10-15'
+UNION ALL
+SELECT `t4`.`key`, `t2`.`value`
+FROM (SELECT `keymap`, `value`, CAST('2011-10-15' AS STRING) AS `ds`
+FROM `default`.`t1_old`
+WHERE `ds` = '2011-10-15' AND `keymap` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `key`, `keymap`, CAST('2011-10-15' AS STRING) AS `ds`
+FROM `default`.`t1_mapping`
+WHERE '2011-10-15' = `ds` AND `keymap` IS NOT NULL) AS `t4` ON `t2`.`keymap` = `t4`.`keymap`) AS `t6`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

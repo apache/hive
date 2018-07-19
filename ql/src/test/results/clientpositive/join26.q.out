@@ -18,6 +18,16 @@ SELECT /*+ MAPJOIN(x,y) */ x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
 JOIN srcpart z ON (x.key = z.key and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
+OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+FROM (SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+FROM `default`.`srcpart`
+WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `key` IS NOT NULL) AS `t0`
+INNER JOIN ((SELECT `key`, `value`
+FROM `default`.`src`
+WHERE `key` IS NOT NULL) AS `t2`
+INNER JOIN (SELECT `key`
+FROM `default`.`src1`
+WHERE `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
   Stage-6 depends on stages: Stage-7
