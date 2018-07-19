@@ -825,20 +825,20 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public Table getTable(String catName, String dbName, String tblName) throws MetaException {
-    return getTable(catName, dbName, tblName, -1, null);
+    return getTable(catName, dbName, tblName, null);
   }
 
   // TODO: if writeIdList is not null, check isolation level compliance for SVS,
   // possibly with getTableFromCache() with table snapshot in cache.
   @Override
   public Table getTable(String catName, String dbName, String tblName,
-                        long txnId, String writeIdList)
+                        String writeIdList)
       throws MetaException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
-      return rawStore.getTable(catName, dbName, tblName, txnId,writeIdList);
+      return rawStore.getTable(catName, dbName, tblName, writeIdList);
     }
     Table tbl = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (tbl == null || writeIdList != null) {
@@ -847,7 +847,7 @@ public class CachedStore implements RawStore, Configurable {
       // let's move this table to the top of tblNamesBeingPrewarmed stack,
       // so that it gets loaded to the cache faster and is available for subsequent requests
       tblsPendingPrewarm.prioritizeTableForPrewarm(tblName);
-      return rawStore.getTable(catName, dbName, tblName, txnId, writeIdList);
+      return rawStore.getTable(catName, dbName, tblName, writeIdList);
     }
     if (tbl != null) {
       tbl.unsetPrivileges();
@@ -910,26 +910,26 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public Partition getPartition(String catName, String dbName, String tblName, List<String> part_vals)
       throws MetaException, NoSuchObjectException {
-    return getPartition(catName, dbName, tblName, part_vals, -1, null);
+    return getPartition(catName, dbName, tblName, part_vals, null);
   }
 
   // TODO: the same as getTable()
   @Override
   public Partition getPartition(String catName, String dbName, String tblName,
-                                List<String> part_vals, long txnId, String writeIdList)
+                                List<String> part_vals, String writeIdList)
       throws MetaException, NoSuchObjectException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
       return rawStore.getPartition(
-          catName, dbName, tblName, part_vals, txnId, writeIdList);
+          catName, dbName, tblName, part_vals, writeIdList);
     }
     Partition part = sharedCache.getPartitionFromCache(catName, dbName, tblName, part_vals);
     if (part == null || writeIdList != null) {
       // The table containing the partition is not yet loaded in cache
       return rawStore.getPartition(
-          catName, dbName, tblName, part_vals, txnId, writeIdList);
+          catName, dbName, tblName, part_vals, writeIdList);
     }
     return part;
   }
@@ -1011,8 +1011,8 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public void alterTable(String catName, String dbName, String tblName, Table newTable,
-      long txnId, String validWriteIds) throws InvalidObjectException, MetaException {
-    rawStore.alterTable(catName, dbName, tblName, newTable, txnId, validWriteIds);
+      String validWriteIds) throws InvalidObjectException, MetaException {
+    rawStore.alterTable(catName, dbName, tblName, newTable, validWriteIds);
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
@@ -1162,9 +1162,9 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public void alterPartition(String catName, String dbName, String tblName, List<String> partVals,
-                             Partition newPart, long queryTxnId, String queryValidWriteIds)
+                             Partition newPart, String queryValidWriteIds)
                                  throws InvalidObjectException, MetaException {
-    rawStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryTxnId, queryValidWriteIds);
+    rawStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryValidWriteIds);
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
@@ -1177,10 +1177,10 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
                               List<List<String>> partValsList, List<Partition> newParts,
-                              long writeId, long txnId, String validWriteIds)
+                              long writeId, String validWriteIds)
       throws InvalidObjectException, MetaException {
     rawStore.alterPartitions(
-        catName, dbName, tblName, partValsList, newParts, writeId, txnId, validWriteIds);
+        catName, dbName, tblName, partValsList, newParts, writeId, validWriteIds);
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
@@ -1599,9 +1599,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics colStats, long txnId, String validWriteIds, long writeId)
+  public boolean updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean succ = rawStore.updateTableColumnStatistics(colStats, txnId, validWriteIds, writeId);
+    boolean succ = rawStore.updateTableColumnStatistics(colStats, validWriteIds, writeId);
     if (succ) {
       String catName = colStats.getStatsDesc().isSetCatName() ?
           normalizeIdentifier(colStats.getStatsDesc().getCatName()) :
@@ -1631,27 +1631,27 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tblName,
       List<String> colNames) throws MetaException, NoSuchObjectException {
-    return getTableColumnStatistics(catName, dbName, tblName, colNames, -1, null);
+    return getTableColumnStatistics(catName, dbName, tblName, colNames, null);
   }
 
   // TODO: the same as getTable()
   @Override
   public ColumnStatistics getTableColumnStatistics(
       String catName, String dbName, String tblName, List<String> colNames,
-      long txnId, String writeIdList)
+      String writeIdList)
       throws MetaException, NoSuchObjectException {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
       return rawStore.getTableColumnStatistics(
-          catName, dbName, tblName, colNames, txnId, writeIdList);
+          catName, dbName, tblName, colNames, writeIdList);
     }
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (table == null || writeIdList != null) {
       // The table is not yet loaded in cache
       return rawStore.getTableColumnStatistics(
-          catName, dbName, tblName, colNames, txnId, writeIdList);
+          catName, dbName, tblName, colNames, writeIdList);
     }
     ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tblName);
     List<ColumnStatisticsObj> colStatObjs =
@@ -1678,9 +1678,9 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public boolean updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals,
-      long txnId, String validWriteIds, long writeId)
+      String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean succ = rawStore.updatePartitionColumnStatistics(colStats, partVals, txnId, validWriteIds, writeId);
+    boolean succ = rawStore.updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
     if (succ) {
       String catName = colStats.getStatsDesc().isSetCatName() ?
           normalizeIdentifier(colStats.getStatsDesc().getCatName()) : DEFAULT_CATALOG_NAME;
@@ -1712,10 +1712,10 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(
       String catName, String dbName, String tblName, List<String> partNames,
-      List<String> colNames, long txnId, String writeIdList)
+      List<String> colNames, String writeIdList)
       throws MetaException, NoSuchObjectException {
     return rawStore.getPartitionColumnStatistics(
-        catName, dbName, tblName, partNames, colNames, txnId, writeIdList);
+        catName, dbName, tblName, partNames, colNames, writeIdList);
   }
 
   @Override
@@ -1739,14 +1739,14 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName, List<String> partNames,
       List<String> colNames) throws MetaException, NoSuchObjectException {
-    return get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, -1, null);
+    return get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, null);
   }
 
   @Override
   // TODO: the same as getTable() for transactional stats.
   public AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
                                       List<String> partNames, List<String> colNames,
-                                      long txnId, String writeIdList)
+                                      String writeIdList)
       throws MetaException, NoSuchObjectException {
     List<ColumnStatisticsObj> colStats;
     catName = normalizeIdentifier(catName);
@@ -1754,13 +1754,13 @@ public class CachedStore implements RawStore, Configurable {
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!shouldCacheTable(catName, dbName, tblName)) {
       rawStore.get_aggr_stats_for(
-          catName, dbName, tblName, partNames, colNames, txnId, writeIdList);
+          catName, dbName, tblName, partNames, colNames, writeIdList);
     }
     Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
     if (table == null || writeIdList != null) {
       // The table is not yet loaded in cache
       return rawStore.get_aggr_stats_for(
-          catName, dbName, tblName, partNames, colNames, txnId, writeIdList);
+          catName, dbName, tblName, partNames, colNames, writeIdList);
     }
     List<String> allPartNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
     if (partNames.size() == allPartNames.size()) {

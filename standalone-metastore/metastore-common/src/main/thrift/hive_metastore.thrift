@@ -282,9 +282,8 @@ struct TruncateTableRequest {
   1: required string dbName,
   2: required string tableName,
   3: optional list<string> partNames,
-  4: optional i64 txnId=-1,
-  5: optional i64 writeId=-1,
-  6: optional string validWriteIdList
+  4: optional i64 writeId=-1,
+  5: optional string validWriteIdList
 }
 
 struct TruncateTableResponse {
@@ -596,9 +595,8 @@ struct AggrStats {
 struct SetPartitionsStatsRequest {
 1: required list<ColumnStatistics> colStats,
 2: optional bool needMerge, //stats need to be merged with the existing stats
-3: optional i64 txnId=-1,   // transaction id of the query that sends this structure
-4: optional i64 writeId=-1,         // writeId for the current query that updates the stats
-5: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+3: optional i64 writeId=-1,         // writeId for the current query that updates the stats
+4: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
 }
 
 struct SetPartitionsStatsResponse {
@@ -745,8 +743,7 @@ struct TableStatsRequest {
  2: required string tblName,
  3: required list<string> colNames
  4: optional string catName,
- 5: optional i64 txnId=-1,            // transaction id of the query that sends this structure
- 6: optional string validWriteIdList  // valid write id list for the table for which this struct is being sent
+ 5: optional string validWriteIdList  // valid write id list for the table for which this struct is being sent
 }
 
 struct PartitionsStatsRequest {
@@ -755,8 +752,7 @@ struct PartitionsStatsRequest {
  3: required list<string> colNames,
  4: required list<string> partNames,
  5: optional string catName,
- 6: optional i64 txnId=-1,           // transaction id of the query that sends this structure
- 7: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
+ 6: optional string validWriteIdList // valid write id list for the table for which this struct is being sent
 }
 
 // Return type for add_partitions_req
@@ -773,8 +769,7 @@ struct AddPartitionsRequest {
   4: required bool ifNotExists,
   5: optional bool needResult=true,
   6: optional string catName,
-  7: optional i64 txnId=-1,
-  8: optional string validWriteIdList
+  7: optional string validWriteIdList
 }
 
 // Return type for drop_partitions_req
@@ -1275,7 +1270,6 @@ struct GetTableRequest {
   2: required string tblName,
   3: optional ClientCapabilities capabilities,
   4: optional string catName,
-  5: optional i64 txnId=-1,
   6: optional string validWriteIdList
 }
 
@@ -1615,9 +1609,8 @@ struct AlterPartitionsRequest {
   3: required string tableName,
   4: required list<Partition> partitions,
   5: optional EnvironmentContext environmentContext,
-  6: optional i64 txnId=-1,
-  7: optional i64 writeId=-1,
-  8: optional string validWriteIdList
+  6: optional i64 writeId=-1,
+  7: optional string validWriteIdList
 }
 
 struct AlterPartitionsResponse {
@@ -1629,8 +1622,7 @@ struct RenamePartitionRequest {
   3: required string tableName,
   4: required list<string> partVals,
   5: required Partition newPart,
-  6: optional i64 txnId=-1,
-  7: optional string validWriteIdList
+  6: optional string validWriteIdList
 }
 
 struct RenamePartitionResponse {
@@ -1642,9 +1634,8 @@ struct AlterTableRequest {
   3: required string tableName,
   4: required Table table,
   5: optional EnvironmentContext environmentContext,
-  6: optional i64 txnId=-1,
-  7: optional i64 writeId=-1,
-  8: optional string validWriteIdList
+  6: optional i64 writeId=-1,
+  7: optional string validWriteIdList
 // TODO: also add cascade here, out of envCtx
 }
 

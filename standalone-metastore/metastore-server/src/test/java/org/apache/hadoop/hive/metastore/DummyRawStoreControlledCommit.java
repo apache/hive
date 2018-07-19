@@ -248,9 +248,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tableName, long txnId, String writeIdList)
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList)
       throws MetaException {
-    return objectStore.getTable(catName, dbName, tableName, txnId, writeIdList);
+    return objectStore.getTable(catName, dbName, tableName, writeIdList);
   }
 
   @Override
@@ -267,9 +267,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public Partition getPartition(String catName, String dbName, String tableName,
-                                List<String> partVals, long txnId, String writeIdList)
+                                List<String> partVals, String writeIdList)
       throws MetaException, NoSuchObjectException {
-    return objectStore.getPartition(catName, dbName, tableName, partVals, txnId, writeIdList);
+    return objectStore.getPartition(catName, dbName, tableName, partVals, writeIdList);
   }
 
   @Override
@@ -293,9 +293,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public void alterTable(String catName, String dbName, String name, Table newTable,
-      long queryTxnId, String queryValidWriteIds)
+      String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
-    objectStore.alterTable(catName, dbName, name, newTable, queryTxnId, queryValidWriteIds);
+    objectStore.alterTable(catName, dbName, name, newTable, queryValidWriteIds);
   }
 
   @Override
@@ -358,16 +358,16 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public void alterPartition(String catName, String dbName, String tblName, List<String> partVals,
-      Partition newPart, long queryTxnId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
-    objectStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryTxnId, queryValidWriteIds);
+      Partition newPart, String queryValidWriteIds) throws InvalidObjectException, MetaException {
+    objectStore.alterPartition(catName, dbName, tblName, partVals, newPart, queryValidWriteIds);
   }
 
   @Override
   public void alterPartitions(String catName, String dbName, String tblName,
       List<List<String>> partValsList, List<Partition> newParts,
-      long writeId, long queryTxnId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
+      long writeId, String queryValidWriteIds) throws InvalidObjectException, MetaException {
     objectStore.alterPartitions(
-        catName, dbName, tblName, partValsList, newParts, writeId, queryTxnId, queryValidWriteIds);
+        catName, dbName, tblName, partValsList, newParts, writeId, queryValidWriteIds);
   }
 
   @Override
@@ -671,10 +671,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public ColumnStatistics getTableColumnStatistics(String catName, String dbName,
                                                    String tableName, List<String> colNames,
-                                                   long txnId, String writeIdList)
+                                                   String writeIdList)
       throws MetaException, NoSuchObjectException {
     return objectStore.getTableColumnStatistics(
-        catName, dbName, tableName, colNames, txnId, writeIdList);
+        catName, dbName, tableName, colNames, writeIdList);
   }
 
   @Override
@@ -694,18 +694,18 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public boolean updateTableColumnStatistics(ColumnStatistics statsObj, long txnId, String validWriteIds, long writeId)
+  public boolean updateTableColumnStatistics(ColumnStatistics statsObj, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
-    return objectStore.updateTableColumnStatistics(statsObj, txnId, validWriteIds, writeId);
+    return objectStore.updateTableColumnStatistics(statsObj, validWriteIds, writeId);
   }
 
   @Override
   public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
-      List<String> partVals, long txnId, String validWriteIds, long writeId)
+      List<String> partVals, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
-    return objectStore.updatePartitionColumnStatistics(statsObj, partVals, txnId, validWriteIds, writeId);
+    return objectStore.updatePartitionColumnStatistics(statsObj, partVals, validWriteIds, writeId);
   }
 
   @Override
@@ -772,10 +772,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public List<ColumnStatistics> getPartitionColumnStatistics(
       String catName, String dbName, String tblName, List<String> partNames,
-      List<String> colNames, long txnId, String writeIdList)
+      List<String> colNames, String writeIdList)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartitionColumnStatistics(
-             catName, dbName, tblName  , colNames, partNames, txnId, writeIdList);
+             catName, dbName, tblName  , colNames, partNames, writeIdList);
   }
 
   @Override
@@ -850,7 +850,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public AggrStats get_aggr_stats_for(String catName, String dbName,
                                       String tblName, List<String> partNames,
                                       List<String> colNames,
-                                      long txnId, String writeIdList)
+                                      String writeIdList)
       throws MetaException, NoSuchObjectException {
     return null;
   }

@@ -221,7 +221,7 @@ public interface RawStore extends Configurable {
    * @throws MetaException something went wrong in the RDBMS
    */
   Table getTable(String catalogName, String dbName, String tableName,
-                 long txnId, String writeIdList) throws MetaException;
+                 String writeIdList) throws MetaException;
 
   /**
    * Add a partition.
@@ -289,7 +289,7 @@ public interface RawStore extends Configurable {
    */
   Partition getPartition(String catName, String dbName, String tableName,
                          List<String> part_vals,
-                         long txnId, String writeIdList)
+                         String writeIdList)
       throws MetaException, NoSuchObjectException;
 
   /**
@@ -362,7 +362,7 @@ public interface RawStore extends Configurable {
    * @throws MetaException something went wrong, usually in the RDBMS or storage.
    */
   void alterTable(String catName, String dbname, String name, Table newTable,
-      long queryTxnId, String queryValidWriteIds)
+      String queryValidWriteIds)
       throws InvalidObjectException, MetaException;
 
   /**
@@ -503,7 +503,7 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS.
    */
   void alterPartition(String catName, String db_name, String tbl_name, List<String> part_vals,
-      Partition new_part, long queryTxnId, String queryValidWriteIds)
+      Partition new_part, String queryValidWriteIds)
           throws InvalidObjectException, MetaException;
 
   /**
@@ -524,7 +524,7 @@ public interface RawStore extends Configurable {
    */
   void alterPartitions(String catName, String db_name, String tbl_name,
       List<List<String>> part_vals_list, List<Partition> new_parts, long writeId,
-      long queryTxnId, String queryValidWriteIds)
+      String queryValidWriteIds)
       throws InvalidObjectException, MetaException;
 
   /**
@@ -864,7 +864,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the stats object is invalid
    * @throws InvalidInputException unable to record the stats for the table
    */
-  boolean updateTableColumnStatistics(ColumnStatistics colStats, long txnId, String validWriteIds, long writeId)
+  boolean updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
   /** Persists the given column statistics object to the metastore
@@ -878,7 +878,7 @@ public interface RawStore extends Configurable {
    * @throws TException
    */
   boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
-     List<String> partVals, long txnId, String validWriteIds, long writeId)
+     List<String> partVals, String validWriteIds, long writeId)
      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
   /**
@@ -912,7 +912,7 @@ public interface RawStore extends Configurable {
    */
   ColumnStatistics getTableColumnStatistics(
     String catName, String dbName, String tableName,
-    List<String> colName, long txnId, String writeIdList)
+    List<String> colName, String writeIdList)
       throws MetaException, NoSuchObjectException;
 
   /**
@@ -946,7 +946,7 @@ public interface RawStore extends Configurable {
   List<ColumnStatistics> getPartitionColumnStatistics(
       String catName, String dbName, String tblName,
       List<String> partNames, List<String> colNames,
-      long txnId, String writeIdList)
+      String writeIdList)
       throws MetaException, NoSuchObjectException;
 
   /**
@@ -1208,7 +1208,7 @@ public interface RawStore extends Configurable {
    */
   AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
     List<String> partNames, List<String> colNames,
-    long txnId, String writeIdList)
+    String writeIdList)
       throws MetaException, NoSuchObjectException;
 
   /**

@@ -1428,17 +1428,6 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return fastpath ? t : deepCopy(filterHook.filterTable(t));
   }
 
-  @Override
-  public Table getTable(String dbName, String tableName, long txnId, String validWriteIdList)
-      throws MetaException, TException, NoSuchObjectException {
-    GetTableRequest req = new GetTableRequest(dbName, tableName);
-    req.setCapabilities(version);
-    req.setTxnId(txnId);
-    req.setValidWriteIdList(validWriteIdList);
-    Table t = client.get_table_req(req).getTable();
-    return fastpath ? t : deepCopy(filterHook.filterTable(t));
-  }
-
   /** {@inheritDoc} */
   @Override
   public List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
@@ -1638,14 +1627,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts,
                                EnvironmentContext environmentContext,
-                               long txnId, String writeIdList, long writeId)
+                               String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException {
     AlterPartitionsRequest req = new AlterPartitionsRequest();
     req.setDbName(dbName);
     req.setTableName(tblName);
     req.setPartitions(newParts);
     req.setEnvironmentContext(environmentContext);
-    req.setTxnId(txnId);
     req.setValidWriteIdList(writeIdList);
     client.alter_partitions_req(req);
   }
@@ -1758,10 +1746,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(
-      String dbName, String tableName, List<String> colNames, long txnId, String validWriteIdList)
+      String dbName, String tableName, List<String> colNames, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
     TableStatsRequest tsr = new TableStatsRequest(dbName, tableName, colNames);
-    tsr.setTxnId(txnId);
     tsr.setValidWriteIdList(validWriteIdList);
 
     return client.get_table_statistics_req(tsr).getTableStats();
@@ -1779,10 +1766,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String dbName, String tableName, List<String> partNames,
-      List<String> colNames, long txnId, String validWriteIdList)
+      List<String> colNames, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
     PartitionsStatsRequest psr = new PartitionsStatsRequest(dbName, tableName, colNames, partNames);
-    psr.setTxnId(txnId);
     psr.setValidWriteIdList(validWriteIdList);
     return client.get_partitions_statistics_req(
         psr).getPartStats();
@@ -2651,14 +2637,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public AggrStats getAggrColStatsFor(
       String dbName, String tblName, List<String> colNames,
-      List<String> partName, long txnId, String writeIdList)
+      List<String> partName, String writeIdList)
       throws NoSuchObjectException, MetaException, TException {
     if (colNames.isEmpty() || partName.isEmpty()) {
       LOG.debug("Columns is empty or partNames is empty : Short-circuiting stats eval on client side.");
       return new AggrStats(new ArrayList<>(),0); // Nothing to aggregate
     }
     PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partName);
-    req.setTxnId(txnId);
     req.setValidWriteIdList(writeIdList);
     return client.get_aggr_stats_for(req);
   }
@@ -3072,7 +3057,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public Table getTable(String catName, String dbName, String tableName,
-                        long txnId, String validWriteIdList) throws TException {
+                        String validWriteIdList) throws TException {
     throw new UnsupportedOperationException();
   }
 
@@ -3304,14 +3289,14 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public void alter_partitions(String catName, String dbName, String tblName,
                                List<Partition> newParts,
                                EnvironmentContext environmentContext,
-                               long txnId, String writeIdList, long writeId) throws
+                               String writeIdList, long writeId) throws
       InvalidOperationException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void renamePartition(String catName, String dbname, String tableName,
-      List<String> part_vals, Partition newPart, long txnId, String validWriteIds)
+      List<String> part_vals, Partition newPart, String validWriteIds)
           throws InvalidOperationException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
@@ -3339,7 +3324,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public List<ColumnStatisticsObj> getTableColumnStatistics(
       String catName, String dbName, String tableName, List<String> colNames,
-      long txnId, String validWriteIdList)
+      String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
@@ -3357,7 +3342,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName, List<String> partNames,
-      List<String> colNames, long txnId, String validWriteIdList)
+      List<String> colNames, String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
@@ -3412,7 +3397,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
                                       List<String> colNames, List<String> partNames,
-                                      long txnId, String writeIdList)
+                                      String writeIdList)
       throws NoSuchObjectException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
@@ -3525,21 +3510,21 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public void alter_table(String catName, String databaseName, String tblName, Table table,
-      EnvironmentContext environmentContext, long txnId, String validWriteIdList)
+      EnvironmentContext environmentContext, String validWriteIdList)
       throws InvalidOperationException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void alter_partition(String dbName, String tblName, Partition newPart,
-      EnvironmentContext environmentContext, long txnId, String writeIdList)
+      EnvironmentContext environmentContext, String writeIdList)
       throws InvalidOperationException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void truncateTable(String dbName, String tableName,
-      List<String> partNames, long txnId, String validWriteIds, long writeId)
+      List<String> partNames, String validWriteIds, long writeId)
       throws TException {
     throw new UnsupportedOperationException();
   }

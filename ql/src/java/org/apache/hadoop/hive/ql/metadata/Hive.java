@@ -652,7 +652,6 @@ public class Hive {
       // Why is alter_partitions synchronized while this isn't?
       getMSC().alter_table(
           catName, dbName, tblName, newTbl.getTTable(), environmentContext,
-          tableSnapshot == null ? -1 : tableSnapshot.getTxnId(),
           tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table. " + e.getMessage(), e);
@@ -729,7 +728,6 @@ public class Hive {
       }
       getSynchronizedMSC().alter_partition(
           dbName, tblName, newPart.getTPartition(), environmentContext,
-          tableSnapshot == null ? -1 : tableSnapshot.getTxnId(),
           tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
 
     } catch (MetaException e) {
@@ -784,9 +782,8 @@ public class Hive {
         newTParts.add(tmpPart.getTPartition());
       }
       getMSC().alter_partitions(names[0], names[1], newTParts, environmentContext,
-          tableSnapshot != null ? tableSnapshot.getTxnId() : -1,
           tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null,
-          tableSnapshot != null ? tableSnapshot.getWriteId() : -1    );
+          tableSnapshot != null ? tableSnapshot.getWriteId() : -1);
     } catch (MetaException e) {
       throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
@@ -829,19 +826,17 @@ public class Hive {
         }
       }
       String validWriteIds = null;
-      long txnId = -1;
       if (AcidUtils.isTransactionalTable(tbl)) {
         // Set table snapshot to api.Table to make it persistent.
         TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl, true);
         if (tableSnapshot != null) {
           newPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
-          txnId = tableSnapshot.getTxnId();
           validWriteIds = tableSnapshot.getValidWriteIdList();
         }
       }
 
       getMSC().renamePartition(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(), pvals,
-          newPart.getTPartition(), txnId, validWriteIds);
+          newPart.getTPartition(), validWriteIds);
 
     } catch (InvalidOperationException e){
       throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
@@ -1079,7 +1074,7 @@ public class Hive {
         getMSC().truncateTable(table.getDbName(), table.getTableName(), partNames);
       } else {
         getMSC().truncateTable(table.getDbName(), table.getTableName(), partNames,
-            snapshot.getTxnId(), snapshot.getValidWriteIdList(), snapshot.getWriteId());
+            snapshot.getValidWriteIdList(), snapshot.getWriteId());
       }
     } catch (Exception e) {
       throw new HiveException(e);
@@ -1185,7 +1180,7 @@ public class Hive {
           validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf,
               dbName, tableName);
         }
-        tTable = getMSC().getTable(dbName, tableName, txnId,
+        tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
             validWriteIdList != null ? validWriteIdList.toString() : null);
       } else {
         tTable = getMSC().getTable(dbName, tableName);
@@ -2092,7 +2087,6 @@ public class Hive {
     LOG.debug("Altering existing partition " + newTPart.getSpec());
     getSynchronizedMSC().alter_partition(
         tbl.getDbName(), tbl.getTableName(), newTPart.getTPartition(), new EnvironmentContext(),
-        tableSnapshot == null ? -1 : tableSnapshot.getTxnId(),
         tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
   }
 
@@ -2614,7 +2608,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           out.add(new Partition(tbl, outPart));
         }
         getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),
-            partsToAlter, new EnvironmentContext(), -1, null, -1);
+            partsToAlter, new EnvironmentContext(), null, -1);
 
         for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
         getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){
@@ -4594,7 +4588,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Table tbl = getTable(statsDesc.getDbName(), statsDesc.getTableName());
 
       AcidUtils.TableSnapshot tableSnapshot  = AcidUtils.getTableSnapshot(conf, tbl, true);
-      request.setTxnId(tableSnapshot != null ? tableSnapshot.getTxnId() : 0);
       request.setValidWriteIdList(tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       request.setWriteId(tableSnapshot != null ? tableSnapshot.getWriteId() : 0);
       return getMSC().setPartitionColumnStatistics(request);
@@ -4613,11 +4606,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (checkTransactional) {
         Table tbl = getTable(dbName, tableName);
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
-        if (tableSnapshot.getTxnId() > 0) {
-          retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames,
-              tableSnapshot != null ? tableSnapshot.getTxnId() : -1,
-              tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
-        }
+        retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames,
+            tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       } else {
         retv = getMSC().getTableColumnStatistics(dbName, tableName, colNames);
       }
@@ -4632,18 +4622,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
       String dbName, String tableName, List<String> partNames, List<String> colNames,
       boolean checkTransactional)
       throws HiveException {
-    long txnId = -1;
     String writeIdList = null;
     try {
       if (checkTransactional) {
         Table tbl = getTable(dbName, tableName);
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
-        txnId = tableSnapshot != null ? tableSnapshot.getTxnId() : -1;
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
       }
 
-      return getMSC().getPartitionColumnStatistics(dbName, tableName, partNames, colNames,
-            txnId, writeIdList);
+      return getMSC().getPartitionColumnStatistics(
+          dbName, tableName, partNames, colNames, writeIdList);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -4652,17 +4640,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
      List<String> colNames, List<String> partName, boolean checkTransactional) {
-    long txnId = -1;
     String writeIdList = null;
     try {
       if (checkTransactional) {
         Table tbl = getTable(dbName, tblName);
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
-        txnId = tableSnapshot != null ? tableSnapshot.getTxnId() : -1;
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
       }
-      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName,
-          txnId, writeIdList);
+      return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partName, writeIdList);
     } catch (Exception e) {
       LOG.debug(StringUtils.stringifyException(e));
       return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);

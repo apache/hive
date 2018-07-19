@@ -2510,7 +2510,6 @@ class TruncateTableRequest:
    - dbName
    - tableName
    - partNames
-   - txnId
    - writeId
    - validWriteIdList
   """
@@ -2520,16 +2519,14 @@ class TruncateTableRequest:
     (1, TType.STRING, 'dbName', None, None, ), # 1
     (2, TType.STRING, 'tableName', None, None, ), # 2
     (3, TType.LIST, 'partNames', (TType.STRING,None), None, ), # 3
-    (4, TType.I64, 'txnId', None, -1, ), # 4
-    (5, TType.I64, 'writeId', None, -1, ), # 5
-    (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
+    (4, TType.I64, 'writeId', None, -1, ), # 4
+    (5, TType.STRING, 'validWriteIdList', None, None, ), # 5
   )
 
-  def __init__(self, dbName=None, tableName=None, partNames=None, txnId=thrift_spec[4][4], writeId=thrift_spec[5][4], validWriteIdList=None,):
+  def __init__(self, dbName=None, tableName=None, partNames=None, writeId=thrift_spec[4][4], validWriteIdList=None,):
     self.dbName = dbName
     self.tableName = tableName
     self.partNames = partNames
-    self.txnId = txnId
     self.writeId = writeId
     self.validWriteIdList = validWriteIdList
 
@@ -2564,15 +2561,10 @@ class TruncateTableRequest:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
-        if ftype == TType.I64:
           self.writeId = iprot.readI64()
         else:
           iprot.skip(ftype)
-      elif fid == 6:
+      elif fid == 5:
         if ftype == TType.STRING:
           self.validWriteIdList = iprot.readString()
         else:
@@ -2602,16 +2594,12 @@ class TruncateTableRequest:
         oprot.writeString(iter75)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 4)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 5)
+      oprot.writeFieldBegin('writeId', TType.I64, 4)
       oprot.writeI64(self.writeId)
       oprot.writeFieldEnd()
     if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 5)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -2630,7 +2618,6 @@ class TruncateTableRequest:
     value = (value * 31) ^ hash(self.dbName)
     value = (value * 31) ^ hash(self.tableName)
     value = (value * 31) ^ hash(self.partNames)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.writeId)
     value = (value * 31) ^ hash(self.validWriteIdList)
     return value
@@ -7316,7 +7303,6 @@ class SetPartitionsStatsRequest:
   Attributes:
    - colStats
    - needMerge
-   - txnId
    - writeId
    - validWriteIdList
   """
@@ -7325,15 +7311,13 @@ class SetPartitionsStatsRequest:
     None, # 0
     (1, TType.LIST, 'colStats', (TType.STRUCT,(ColumnStatistics, ColumnStatistics.thrift_spec)), None, ), # 1
     (2, TType.BOOL, 'needMerge', None, None, ), # 2
-    (3, TType.I64, 'txnId', None, -1, ), # 3
-    (4, TType.I64, 'writeId', None, -1, ), # 4
-    (5, TType.STRING, 'validWriteIdList', None, None, ), # 5
+    (3, TType.I64, 'writeId', None, -1, ), # 3
+    (4, TType.STRING, 'validWriteIdList', None, None, ), # 4
   )
 
-  def __init__(self, colStats=None, needMerge=None, txnId=thrift_spec[3][4], writeId=thrift_spec[4][4], validWriteIdList=None,):
+  def __init__(self, colStats=None, needMerge=None, writeId=thrift_spec[3][4], validWriteIdList=None,):
     self.colStats = colStats
     self.needMerge = needMerge
-    self.txnId = txnId
     self.writeId = writeId
     self.validWriteIdList = validWriteIdList
 
@@ -7364,15 +7348,10 @@ class SetPartitionsStatsRequest:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.I64:
           self.writeId = iprot.readI64()
         else:
           iprot.skip(ftype)
-      elif fid == 5:
+      elif fid == 4:
         if ftype == TType.STRING:
           self.validWriteIdList = iprot.readString()
         else:
@@ -7398,16 +7377,12 @@ class SetPartitionsStatsRequest:
       oprot.writeFieldBegin('needMerge', TType.BOOL, 2)
       oprot.writeBool(self.needMerge)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 3)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 4)
+      oprot.writeFieldBegin('writeId', TType.I64, 3)
       oprot.writeI64(self.writeId)
       oprot.writeFieldEnd()
     if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 5)
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -7423,7 +7398,6 @@ class SetPartitionsStatsRequest:
     value = 17
     value = (value * 31) ^ hash(self.colStats)
     value = (value * 31) ^ hash(self.needMerge)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.writeId)
     value = (value * 31) ^ hash(self.validWriteIdList)
     return value
@@ -9722,7 +9696,6 @@ class TableStatsRequest:
    - tblName
    - colNames
    - catName
-   - txnId
    - validWriteIdList
   """
 
@@ -9732,16 +9705,14 @@ class TableStatsRequest:
     (2, TType.STRING, 'tblName', None, None, ), # 2
     (3, TType.LIST, 'colNames', (TType.STRING,None), None, ), # 3
     (4, TType.STRING, 'catName', None, None, ), # 4
-    (5, TType.I64, 'txnId', None, -1, ), # 5
-    (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
+    (5, TType.STRING, 'validWriteIdList', None, None, ), # 5
   )
 
-  def __init__(self, dbName=None, tblName=None, colNames=None, catName=None, txnId=thrift_spec[5][4], validWriteIdList=None,):
+  def __init__(self, dbName=None, tblName=None, colNames=None, catName=None, validWriteIdList=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.colNames = colNames
     self.catName = catName
-    self.txnId = txnId
     self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
@@ -9779,11 +9750,6 @@ class TableStatsRequest:
         else:
           iprot.skip(ftype)
       elif fid == 5:
-        if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 6:
         if ftype == TType.STRING:
           self.validWriteIdList = iprot.readString()
         else:
@@ -9817,12 +9783,8 @@ class TableStatsRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 4)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 5)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 5)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -9844,7 +9806,6 @@ class TableStatsRequest:
     value = (value * 31) ^ hash(self.tblName)
     value = (value * 31) ^ hash(self.colNames)
     value = (value * 31) ^ hash(self.catName)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
@@ -9867,7 +9828,6 @@ class PartitionsStatsRequest:
    - colNames
    - partNames
    - catName
-   - txnId
    - validWriteIdList
   """
 
@@ -9878,17 +9838,15 @@ class PartitionsStatsRequest:
     (3, TType.LIST, 'colNames', (TType.STRING,None), None, ), # 3
     (4, TType.LIST, 'partNames', (TType.STRING,None), None, ), # 4
     (5, TType.STRING, 'catName', None, None, ), # 5
-    (6, TType.I64, 'txnId', None, -1, ), # 6
-    (7, TType.STRING, 'validWriteIdList', None, None, ), # 7
+    (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
   )
 
-  def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None, catName=None, txnId=thrift_spec[6][4], validWriteIdList=None,):
+  def __init__(self, dbName=None, tblName=None, colNames=None, partNames=None, catName=None, validWriteIdList=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.colNames = colNames
     self.partNames = partNames
     self.catName = catName
-    self.txnId = txnId
     self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
@@ -9936,11 +9894,6 @@ class PartitionsStatsRequest:
         else:
           iprot.skip(ftype)
       elif fid == 6:
-        if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
         if ftype == TType.STRING:
           self.validWriteIdList = iprot.readString()
         else:
@@ -9981,12 +9934,8 @@ class PartitionsStatsRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 5)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 6)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 7)
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -10011,7 +9960,6 @@ class PartitionsStatsRequest:
     value = (value * 31) ^ hash(self.colNames)
     value = (value * 31) ^ hash(self.partNames)
     value = (value * 31) ^ hash(self.catName)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
@@ -10122,7 +10070,6 @@ class AddPartitionsRequest:
    - ifNotExists
    - needResult
    - catName
-   - txnId
    - validWriteIdList
   """
 
@@ -10134,18 +10081,16 @@ class AddPartitionsRequest:
     (4, TType.BOOL, 'ifNotExists', None, None, ), # 4
     (5, TType.BOOL, 'needResult', None, True, ), # 5
     (6, TType.STRING, 'catName', None, None, ), # 6
-    (7, TType.I64, 'txnId', None, -1, ), # 7
-    (8, TType.STRING, 'validWriteIdList', None, None, ), # 8
+    (7, TType.STRING, 'validWriteIdList', None, None, ), # 7
   )
 
-  def __init__(self, dbName=None, tblName=None, parts=None, ifNotExists=None, needResult=thrift_spec[5][4], catName=None, txnId=thrift_spec[7][4], validWriteIdList=None,):
+  def __init__(self, dbName=None, tblName=None, parts=None, ifNotExists=None, needResult=thrift_spec[5][4], catName=None, validWriteIdList=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.parts = parts
     self.ifNotExists = ifNotExists
     self.needResult = needResult
     self.catName = catName
-    self.txnId = txnId
     self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
@@ -10194,11 +10139,6 @@ class AddPartitionsRequest:
         else:
           iprot.skip(ftype)
       elif fid == 7:
-        if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 8:
         if ftype == TType.STRING:
           self.validWriteIdList = iprot.readString()
         else:
@@ -10240,12 +10180,8 @@ class AddPartitionsRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 6)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 7)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 8)
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 7)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -10271,7 +10207,6 @@ class AddPartitionsRequest:
     value = (value * 31) ^ hash(self.ifNotExists)
     value = (value * 31) ^ hash(self.needResult)
     value = (value * 31) ^ hash(self.catName)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
@@ -17526,7 +17461,6 @@ class GetTableRequest:
    - tblName
    - capabilities
    - catName
-   - txnId
    - validWriteIdList
   """
 
@@ -17536,16 +17470,15 @@ class GetTableRequest:
     (2, TType.STRING, 'tblName', None, None, ), # 2
     (3, TType.STRUCT, 'capabilities', (ClientCapabilities, ClientCapabilities.thrift_spec), None, ), # 3
     (4, TType.STRING, 'catName', None, None, ), # 4
-    (5, TType.I64, 'txnId', None, -1, ), # 5
+    None, # 5
     (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
   )
 
-  def __init__(self, dbName=None, tblName=None, capabilities=None, catName=None, txnId=thrift_spec[5][4], validWriteIdList=None,):
+  def __init__(self, dbName=None, tblName=None, capabilities=None, catName=None, validWriteIdList=None,):
     self.dbName = dbName
     self.tblName = tblName
     self.capabilities = capabilities
     self.catName = catName
-    self.txnId = txnId
     self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
@@ -17576,11 +17509,6 @@ class GetTableRequest:
       elif fid == 4:
         if ftype == TType.STRING:
           self.catName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
-        if ftype == TType.I64:
-          self.txnId = iprot.readI64()
         else:
           iprot.skip(ftype)
       elif fid == 6:
@@ -17614,10 +17542,6 @@ class GetTableRequest:
       oprot.writeFieldBegin('catName', TType.STRING, 4)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 5)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.validWriteIdList is not None:
       oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
       oprot.writeString(self.validWriteIdList)
@@ -17639,7 +17563,6 @@ class GetTableRequest:
     value = (value * 31) ^ hash(self.tblName)
     value = (value * 31) ^ hash(self.capabilities)
     value = (value * 31) ^ hash(self.catName)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
@@ -22583,7 +22506,6 @@ class AlterPartitionsRequest:
    - tableName
    - partitions
    - environmentContext
-   - txnId
    - writeId
    - validWriteIdList
   """
@@ -22595,18 +22517,16 @@ class AlterPartitionsRequest:
     (3, TType.STRING, 'tableName', None, None, ), # 3
     (4, TType.LIST, 'partitions', (TType.STRUCT,(Partition, Partition.thrift_spec)), None, ), # 4
     (5, TType.STRUCT, 'environmentContext', (EnvironmentContext, EnvironmentContext.thrift_spec), None, ), # 5
-    (6, TType.I64, 'txnId', None, -1, ), # 6
-    (7, TType.I64, 'writeId', None, -1, ), # 7
-    (8, TType.STRING, 'validWriteIdList', None, None, ), # 8
+    (6, TType.I64, 'writeId', None, -1, ), # 6
+    (7, TType.STRING, 'validWriteIdList', None, None, ), # 7
   )
 
-  def __init__(self, catName=None, dbName=None, tableName=None, partitions=None, environmentContext=None, txnId=thrift_spec[6][4], writeId=thrift_spec[7][4], validWriteIdList=None,):
+  def __init__(self, catName=None, dbName=None, tableName=None, partitions=None, environmentContext=None, writeId=thrift_spec[6][4], validWriteIdList=None,):
     self.catName = catName
     self.dbName = dbName
     self.tableName = tableName
     self.partitions = partitions
     self.environmentContext = environmentContext
-    self.txnId = txnId
     self.writeId = writeId
     self.validWriteIdList = validWriteIdList
 
@@ -22653,15 +22573,10 @@ class AlterPartitionsRequest:
           iprot.skip(ftype)
       elif fid == 6:
         if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
-        if ftype == TType.I64:
           self.writeId = iprot.readI64()
         else:
           iprot.skip(ftype)
-      elif fid == 8:
+      elif fid == 7:
         if ftype == TType.STRING:
           self.validWriteIdList = iprot.readString()
         else:
@@ -22699,16 +22614,12 @@ class AlterPartitionsRequest:
       oprot.writeFieldBegin('environmentContext', TType.STRUCT, 5)
       self.environmentContext.write(oprot)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 6)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 7)
+      oprot.writeFieldBegin('writeId', TType.I64, 6)
       oprot.writeI64(self.writeId)
       oprot.writeFieldEnd()
     if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 8)
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 7)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -22731,7 +22642,6 @@ class AlterPartitionsRequest:
     value = (value * 31) ^ hash(self.tableName)
     value = (value * 31) ^ hash(self.partitions)
     value = (value * 31) ^ hash(self.environmentContext)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.writeId)
     value = (value * 31) ^ hash(self.validWriteIdList)
     return value
@@ -22801,7 +22711,6 @@ class RenamePartitionRequest:
    - tableName
    - partVals
    - newPart
-   - txnId
    - validWriteIdList
   """
 
@@ -22812,17 +22721,15 @@ class RenamePartitionRequest:
     (3, TType.STRING, 'tableName', None, None, ), # 3
     (4, TType.LIST, 'partVals', (TType.STRING,None), None, ), # 4
     (5, TType.STRUCT, 'newPart', (Partition, Partition.thrift_spec), None, ), # 5
-    (6, TType.I64, 'txnId', None, -1, ), # 6
-    (7, TType.STRING, 'validWriteIdList', None, None, ), # 7
+    (6, TType.STRING, 'validWriteIdList', None, None, ), # 6
   )
 
-  def __init__(self, catName=None, dbName=None, tableName=None, partVals=None, newPart=None, txnId=thrift_spec[6][4], validWriteIdList=None,):
+  def __init__(self, catName=None, dbName=None, tableName=None, partVals=None, newPart=None, validWriteIdList=None,):
     self.catName = catName
     self.dbName = dbName
     self.tableName = tableName
     self.partVals = partVals
     self.newPart = newPart
-    self.txnId = txnId
     self.validWriteIdList = validWriteIdList
 
   def read(self, iprot):
@@ -22866,11 +22773,6 @@ class RenamePartitionRequest:
         else:
           iprot.skip(ftype)
       elif fid == 6:
-        if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
         if ftype == TType.STRING:
           self.validWriteIdList = iprot.readString()
         else:
@@ -22908,12 +22810,8 @@ class RenamePartitionRequest:
       oprot.writeFieldBegin('newPart', TType.STRUCT, 5)
       self.newPart.write(oprot)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 6)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 7)
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -22938,7 +22836,6 @@ class RenamePartitionRequest:
     value = (value * 31) ^ hash(self.tableName)
     value = (value * 31) ^ hash(self.partVals)
     value = (value * 31) ^ hash(self.newPart)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.validWriteIdList)
     return value
 
@@ -23007,7 +22904,6 @@ class AlterTableRequest:
    - tableName
    - table
    - environmentContext
-   - txnId
    - writeId
    - validWriteIdList
   """
@@ -23019,18 +22915,16 @@ class AlterTableRequest:
     (3, TType.STRING, 'tableName', None, None, ), # 3
     (4, TType.STRUCT, 'table', (Table, Table.thrift_spec), None, ), # 4
     (5, TType.STRUCT, 'environmentContext', (EnvironmentContext, EnvironmentContext.thrift_spec), None, ), # 5
-    (6, TType.I64, 'txnId', None, -1, ), # 6
-    (7, TType.I64, 'writeId', None, -1, ), # 7
-    (8, TType.STRING, 'validWriteIdList', None, None, ), # 8
+    (6, TType.I64, 'writeId', None, -1, ), # 6
+    (7, TType.STRING, 'validWriteIdList', None, None, ), # 7
   )
 
-  def __init__(self, catName=None, dbName=None, tableName=None, table=None, environmentContext=None, txnId=thrift_spec[6][4], writeId=thrift_spec[7][4], validWriteIdList=None,):
+  def __init__(self, catName=None, dbName=None, tableName=None, table=None, environmentContext=None, writeId=thrift_spec[6][4], validWriteIdList=None,):
     self.catName = catName
     self.dbName = dbName
     self.tableName = tableName
     self.table = table
     self.environmentContext = environmentContext
-    self.txnId = txnId
     self.writeId = writeId
     self.validWriteIdList = validWriteIdList
 
@@ -23072,15 +22966,10 @@ class AlterTableRequest:
           iprot.skip(ftype)
       elif fid == 6:
         if ftype == TType.I64:
-          self.txnId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
-        if ftype == TType.I64:
           self.writeId = iprot.readI64()
         else:
           iprot.skip(ftype)
-      elif fid == 8:
+      elif fid == 7:
         if ftype == TType.STRING:
           self.validWriteIdList = iprot.readString()
         else:
@@ -23115,16 +23004,12 @@ class AlterTableRequest:
       oprot.writeFieldBegin('environmentContext', TType.STRUCT, 5)
       self.environmentContext.write(oprot)
       oprot.writeFieldEnd()
-    if self.txnId is not None:
-      oprot.writeFieldBegin('txnId', TType.I64, 6)
-      oprot.writeI64(self.txnId)
-      oprot.writeFieldEnd()
     if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 7)
+      oprot.writeFieldBegin('writeId', TType.I64, 6)
       oprot.writeI64(self.writeId)
       oprot.writeFieldEnd()
     if self.validWriteIdList is not None:
-      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 8)
+      oprot.writeFieldBegin('validWriteIdList', TType.STRING, 7)
       oprot.writeString(self.validWriteIdList)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -23147,7 +23032,6 @@ class AlterTableRequest:
     value = (value * 31) ^ hash(self.tableName)
     value = (value * 31) ^ hash(self.table)
     value = (value * 31) ^ hash(self.environmentContext)
-    value = (value * 31) ^ hash(self.txnId)
     value = (value * 31) ^ hash(self.writeId)
     value = (value * 31) ^ hash(self.validWriteIdList)
     return value

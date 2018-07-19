@@ -277,7 +277,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     List<ColumnStatisticsObj> stats;
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     stats = msClient.getTableColumnStatistics(
-        "default", tableName, Lists.newArrayList("a"), -1, validWriteIds);
+        "default", tableName, Lists.newArrayList("a"), validWriteIds);
     return stats;
   }
 

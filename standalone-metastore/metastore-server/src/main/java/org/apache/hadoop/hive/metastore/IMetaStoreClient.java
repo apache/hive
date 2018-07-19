@@ -624,7 +624,7 @@ public interface IMetaStoreClient {
   void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException;
 
   void truncateTable(String dbName, String tableName, List<String> partNames,
-      long txnId, String validWriteIds, long writeId) throws TException;
+      String validWriteIds, long writeId) throws TException;
 
   /**
    * Truncate the table/partitions in the DEFAULT database.
@@ -717,10 +717,6 @@ public interface IMetaStoreClient {
   Table getTable(String dbName, String tableName) throws MetaException,
       TException, NoSuchObjectException;
 
-  Table getTable(String dbName, String tableName,
-                 long txnId, String validWriteIdList)
-      throws MetaException, TException, NoSuchObjectException;
-
   /**
    * Get a table object.
    * @param catName catalog the table is in.
@@ -733,7 +729,7 @@ public interface IMetaStoreClient {
   Table getTable(String catName, String dbName, String tableName) throws MetaException, TException;
 
   Table getTable(String catName, String dbName, String tableName,
-                        long txnId, String validWriteIdList) throws TException;
+                        String validWriteIdList) throws TException;
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.
@@ -1650,7 +1646,7 @@ public interface IMetaStoreClient {
       TException;
 
   void alter_table(String catName, String databaseName, String tblName, Table table,
-      EnvironmentContext environmentContext, long txnId, String validWriteIdList)
+      EnvironmentContext environmentContext, String validWriteIdList)
           throws InvalidOperationException, MetaException, TException;
   /**
    * Create a new database.
@@ -2084,7 +2080,7 @@ public interface IMetaStoreClient {
 
 
   void alter_partition(String dbName, String tblName, Partition newPart,
-      EnvironmentContext environmentContext, long txnId, String writeIdList)
+      EnvironmentContext environmentContext, String writeIdList)
       throws InvalidOperationException, MetaException, TException;
 
   /**
@@ -2151,7 +2147,7 @@ public interface IMetaStoreClient {
 
   void alter_partitions(String dbName, String tblName, List<Partition> newParts,
                         EnvironmentContext environmentContext,
-                        long txnId, String writeIdList, long writeId)
+                        String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException;
 
   /**
@@ -2174,7 +2170,7 @@ public interface IMetaStoreClient {
   default void alter_partitions(String catName, String dbName, String tblName,
                                 List<Partition> newParts)
       throws InvalidOperationException, MetaException, TException {
-    alter_partitions(catName, dbName, tblName, newParts, new EnvironmentContext(), -1, null, -1);
+    alter_partitions(catName, dbName, tblName, newParts, new EnvironmentContext(),  null, -1);
   }
 
   /**
@@ -2196,7 +2192,7 @@ public interface IMetaStoreClient {
    */
   void alter_partitions(String catName, String dbName, String tblName, List<Partition> newParts,
                         EnvironmentContext environmentContext,
-                        long txnId, String writeIdList, long writeId)
+                        String writeIdList, long writeId)
       throws InvalidOperationException, MetaException, TException;
 
   /**
@@ -2241,7 +2237,7 @@ public interface IMetaStoreClient {
    *          if error in communicating with metastore server
    */
   void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
-                       Partition newPart, long txnId, String validWriteIds)
+                       Partition newPart, String validWriteIds)
       throws InvalidOperationException, MetaException, TException;
 
   /**
@@ -2380,7 +2376,6 @@ public interface IMetaStoreClient {
 
   List<ColumnStatisticsObj> getTableColumnStatistics(String dbName, String tableName,
                                                      List<String> colNames,
-                                                     long txnId,
                                                      String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
@@ -2403,7 +2398,6 @@ public interface IMetaStoreClient {
 
   List<ColumnStatisticsObj> getTableColumnStatistics(String catName, String dbName, String tableName,
                                                      List<String> colNames,
-                                                     long txnId,
                                                      String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
   /**
@@ -2424,7 +2418,7 @@ public interface IMetaStoreClient {
 
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(String dbName,
       String tableName,  List<String> partNames, List<String> colNames,
-      long txnId, String validWriteIdList)
+      String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
 
   /**
@@ -2447,7 +2441,7 @@ public interface IMetaStoreClient {
   Map<String, List<ColumnStatisticsObj>> getPartitionColumnStatistics(
       String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames,
-      long txnId, String validWriteIdList)
+      String validWriteIdList)
       throws NoSuchObjectException, MetaException, TException;
   /**
    * Delete partition level column statistics given dbName, tableName, partName and colName, or
@@ -3300,7 +3294,7 @@ public interface IMetaStoreClient {
 
   AggrStats getAggrColStatsFor(String dbName, String tblName,
       List<String> colNames, List<String> partName,
-      long txnId, String writeIdList)  throws NoSuchObjectException, MetaException, TException;
+      String writeIdList)  throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get aggregated column stats for a set of partitions.
@@ -3320,7 +3314,7 @@ public interface IMetaStoreClient {
 
   AggrStats getAggrColStatsFor(String catName, String dbName, String tblName,
                                List<String> colNames, List<String> partNames,
-                               long txnId, String writeIdList)
+                               String writeIdList)
       throws NoSuchObjectException, MetaException, TException;
   /**
    * Set table or partition column statistics.

@@ -40,9 +40,8 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField COL_STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("colStats", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField NEED_MERGE_FIELD_DESC = new org.apache.thrift.protocol.TField("needMerge", org.apache.thrift.protocol.TType.BOOL, (short)2);
-  private static final org.apache.thrift.protocol.TField TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnId", org.apache.thrift.protocol.TType.I64, (short)3);
-  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)4);
-  private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -52,7 +51,6 @@ import org.slf4j.LoggerFactory;
 
   private List<ColumnStatistics> colStats; // required
   private boolean needMerge; // optional
-  private long txnId; // optional
   private long writeId; // optional
   private String validWriteIdList; // optional
 
@@ -60,9 +58,8 @@ import org.slf4j.LoggerFactory;
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     COL_STATS((short)1, "colStats"),
     NEED_MERGE((short)2, "needMerge"),
-    TXN_ID((short)3, "txnId"),
-    WRITE_ID((short)4, "writeId"),
-    VALID_WRITE_ID_LIST((short)5, "validWriteIdList");
+    WRITE_ID((short)3, "writeId"),
+    VALID_WRITE_ID_LIST((short)4, "validWriteIdList");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -81,11 +78,9 @@ import org.slf4j.LoggerFactory;
           return COL_STATS;
         case 2: // NEED_MERGE
           return NEED_MERGE;
-        case 3: // TXN_ID
-          return TXN_ID;
-        case 4: // WRITE_ID
+        case 3: // WRITE_ID
           return WRITE_ID;
-        case 5: // VALID_WRITE_ID_LIST
+        case 4: // VALID_WRITE_ID_LIST
           return VALID_WRITE_ID_LIST;
         default:
           return null;
@@ -128,10 +123,9 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __NEEDMERGE_ISSET_ID = 0;
-  private static final int __TXNID_ISSET_ID = 1;
-  private static final int __WRITEID_ISSET_ID = 2;
+  private static final int __WRITEID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.NEED_MERGE,_Fields.TXN_ID,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST};
+  private static final _Fields optionals[] = {_Fields.NEED_MERGE,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -140,8 +134,6 @@ import org.slf4j.LoggerFactory;
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnStatistics.class))));
     tmpMap.put(_Fields.NEED_MERGE, new org.apache.thrift.meta_data.FieldMetaData("needMerge", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("writeId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -151,8 +143,6 @@ import org.slf4j.LoggerFactory;
   }
 
   public SetPartitionsStatsRequest() {
-    this.txnId = -1L;
-
     this.writeId = -1L;
 
   }
@@ -177,7 +167,6 @@ import org.slf4j.LoggerFactory;
       this.colStats = __this__colStats;
     }
     this.needMerge = other.needMerge;
-    this.txnId = other.txnId;
     this.writeId = other.writeId;
     if (other.isSetValidWriteIdList()) {
       this.validWriteIdList = other.validWriteIdList;
@@ -193,8 +182,6 @@ import org.slf4j.LoggerFactory;
     this.colStats = null;
     setNeedMergeIsSet(false);
     this.needMerge = false;
-    this.txnId = -1L;
-
     this.writeId = -1L;
 
     this.validWriteIdList = null;
@@ -260,28 +247,6 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NEEDMERGE_ISSET_ID, value);
   }
 
-  public long getTxnId() {
-    return this.txnId;
-  }
-
-  public void setTxnId(long txnId) {
-    this.txnId = txnId;
-    setTxnIdIsSet(true);
-  }
-
-  public void unsetTxnId() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TXNID_ISSET_ID);
-  }
-
-  /** Returns true if field txnId is set (has been assigned a value) and false otherwise */
-  public boolean isSetTxnId() {
-    return EncodingUtils.testBit(__isset_bitfield, __TXNID_ISSET_ID);
-  }
-
-  public void setTxnIdIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
-  }
-
   public long getWriteId() {
     return this.writeId;
   }
@@ -345,14 +310,6 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case TXN_ID:
-      if (value == null) {
-        unsetTxnId();
-      } else {
-        setTxnId((Long)value);
-      }
-      break;
-
     case WRITE_ID:
       if (value == null) {
         unsetWriteId();
@@ -380,9 +337,6 @@ import org.slf4j.LoggerFactory;
     case NEED_MERGE:
       return isNeedMerge();
 
-    case TXN_ID:
-      return getTxnId();
-
     case WRITE_ID:
       return getWriteId();
 
@@ -404,8 +358,6 @@ import org.slf4j.LoggerFactory;
       return isSetColStats();
     case NEED_MERGE:
       return isSetNeedMerge();
-    case TXN_ID:
-      return isSetTxnId();
     case WRITE_ID:
       return isSetWriteId();
     case VALID_WRITE_ID_LIST:
@@ -445,15 +397,6 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_txnId = true && this.isSetTxnId();
-    boolean that_present_txnId = true && that.isSetTxnId();
-    if (this_present_txnId || that_present_txnId) {
-      if (!(this_present_txnId && that_present_txnId))
-        return false;
-      if (this.txnId != that.txnId)
-        return false;
-    }
-
     boolean this_present_writeId = true && this.isSetWriteId();
     boolean that_present_writeId = true && that.isSetWriteId();
     if (this_present_writeId || that_present_writeId) {
@@ -488,11 +431,6 @@ import org.slf4j.LoggerFactory;
     list.add(present_needMerge);
     if (present_needMerge)
       list.add(needMerge);
-
-    boolean present_txnId = true && (isSetTxnId());
-    list.add(present_txnId);
-    if (present_txnId)
-      list.add(txnId);
 
     boolean present_writeId = true && (isSetWriteId());
     list.add(present_writeId);
@@ -531,16 +469,6 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetNeedMerge()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.needMerge, other.needMerge);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetTxnId()).compareTo(other.isSetTxnId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTxnId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnId, other.txnId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -596,12 +524,6 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("needMerge:");
       sb.append(this.needMerge);
-      first = false;
-    }
-    if (isSetTxnId()) {
-      if (!first) sb.append(", ");
-      sb.append("txnId:");
-      sb.append(this.txnId);
       first = false;
     }
     if (isSetWriteId()) {
@@ -696,15 +618,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // TXN_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.txnId = iprot.readI64();
-              struct.setTxnIdIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 4: // WRITE_ID
+          case 3: // WRITE_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.writeId = iprot.readI64();
               struct.setWriteIdIsSet(true);
@@ -712,7 +626,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // VALID_WRITE_ID_LIST
+          case 4: // VALID_WRITE_ID_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.validWriteIdList = iprot.readString();
               struct.setValidWriteIdListIsSet(true);
@@ -748,11 +662,6 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetNeedMerge()) {
         oprot.writeFieldBegin(NEED_MERGE_FIELD_DESC);
         oprot.writeBool(struct.needMerge);
-        oprot.writeFieldEnd();
-      }
-      if (struct.isSetTxnId()) {
-        oprot.writeFieldBegin(TXN_ID_FIELD_DESC);
-        oprot.writeI64(struct.txnId);
         oprot.writeFieldEnd();
       }
       if (struct.isSetWriteId()) {
@@ -795,21 +704,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetNeedMerge()) {
         optionals.set(0);
       }
-      if (struct.isSetTxnId()) {
+      if (struct.isSetWriteId()) {
         optionals.set(1);
       }
-      if (struct.isSetWriteId()) {
+      if (struct.isSetValidWriteIdList()) {
         optionals.set(2);
       }
-      if (struct.isSetValidWriteIdList()) {
-        optionals.set(3);
-      }
-      oprot.writeBitSet(optionals, 4);
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetNeedMerge()) {
         oprot.writeBool(struct.needMerge);
-      }
-      if (struct.isSetTxnId()) {
-        oprot.writeI64(struct.txnId);
       }
       if (struct.isSetWriteId()) {
         oprot.writeI64(struct.writeId);
@@ -834,20 +737,16 @@ import org.slf4j.LoggerFactory;
         }
       }
       struct.setColStatsIsSet(true);
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.needMerge = iprot.readBool();
         struct.setNeedMergeIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.txnId = iprot.readI64();
-        struct.setTxnIdIsSet(true);
-      }
-      if (incoming.get(2)) {
         struct.writeId = iprot.readI64();
         struct.setWriteIdIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(2)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
       }

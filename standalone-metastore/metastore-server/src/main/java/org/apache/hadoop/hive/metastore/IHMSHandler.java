@@ -91,7 +91,7 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
       throws MetaException, NoSuchObjectException;
 
   Table get_table_core(final String catName, final String dbname,
-                       final String name, final long txnId,
+                       final String name,
                        final String writeIdList)
       throws MetaException, NoSuchObjectException;
 

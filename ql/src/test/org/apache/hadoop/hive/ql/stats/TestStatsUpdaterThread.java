@@ -153,13 +153,13 @@ public class TestStatsUpdaterThread {
     List<String> cols = Lists.newArrayList("s");
     String dbName = ss.getCurrentDatabase(), tblName = "simple_stats", fqName = dbName + "." + tblName;
     ValidWriteIdList initialWriteIds = msClient.getValidWriteIds(fqName);
-    verifyStatsUpToDate(tblName, cols, msClient, 0, initialWriteIds.toString(), true);
+    verifyStatsUpToDate(tblName, cols, msClient, initialWriteIds.toString(), true);
     assertFalse(su.runOneIteration());
     drainWorkQueue(su, 0);
 
     executeQuery("insert overwrite table simple_stats values ('test2')");
     ValidWriteIdList nextWriteIds = msClient.getValidWriteIds(fqName);
-    verifyStatsUpToDate(tblName, cols, msClient, 0, nextWriteIds.toString(), true);
+    verifyStatsUpToDate(tblName, cols, msClient, nextWriteIds.toString(), true);
     assertFalse(su.runOneIteration());
     drainWorkQueue(su, 0);
     String currentWriteIds = msClient.getValidWriteIds(fqName).toString();
@@ -171,17 +171,17 @@ public class TestStatsUpdaterThread {
     Table tbl = msClient.getTable(dbName, tblName);
     tbl.setWriteId(badWriteId);
     msClient.alter_table(
-        null, dbName, tblName, tbl, new EnvironmentContext(), -1, initialWriteIds.toString());
+        null, dbName, tblName, tbl, new EnvironmentContext(), initialWriteIds.toString());
 
     // Stats should not be valid.
-    verifyStatsUpToDate(tblName, cols, msClient, 0, currentWriteIds, false);
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, false);
 
     // Analyze should not be able to set valid stats for a running txn.
     assertTrue(su.runOneIteration());
     drainWorkQueue(su);
 
     currentWriteIds = msClient.getValidWriteIds(fqName).toString();
-    verifyStatsUpToDate(tblName, cols, msClient, 0, currentWriteIds, false);
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, false);
 
     msClient.abortTxns(Lists.newArrayList(badTxnId));
 
@@ -191,7 +191,7 @@ public class TestStatsUpdaterThread {
 
     // Stats will now be valid.
     currentWriteIds = msClient.getValidWriteIds(fqName).toString();
-    verifyStatsUpToDate(tblName, cols, msClient, 0, currentWriteIds, true);
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, true);
 
     // Verify that incorrect stats from a valid write ID are also handled.
     badTxnId = msClient.openTxn("moo");
@@ -199,17 +199,17 @@ public class TestStatsUpdaterThread {
     tbl = msClient.getTable(dbName, tblName);
     tbl.setWriteId(badWriteId);
     StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
-    msClient.alter_table(null, dbName, tblName, tbl, new EnvironmentContext(), -1, initialWriteIds.toString());
+    msClient.alter_table(null, dbName, tblName, tbl, new EnvironmentContext(), initialWriteIds.toString());
 
     // Stats should not be valid.
-    verifyStatsUpToDate(tblName, cols, msClient, 0, currentWriteIds, false);
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, false);
 
     // Analyze should not be able to set valid stats for a running txn.
     assertTrue(su.runOneIteration());
     drainWorkQueue(su);
 
     currentWriteIds = msClient.getValidWriteIds(fqName).toString();
-    verifyStatsUpToDate(tblName, cols, msClient, 0, currentWriteIds, false);
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, false);
 
     msClient.commitTxn(badTxnId);
 
@@ -219,7 +219,7 @@ public class TestStatsUpdaterThread {
 
     // Stats will now be valid.
     currentWriteIds = msClient.getValidWriteIds(fqName).toString();
-    verifyStatsUpToDate(tblName, cols, msClient, 0, currentWriteIds, true);
+    verifyStatsUpToDate(tblName, cols, msClient, currentWriteIds, true);
 
     msClient.close();
   }
@@ -256,14 +256,14 @@ public class TestStatsUpdaterThread {
     String currentWriteIds = msClient.getValidWriteIds(fqName).toString();
     // To update write ID we need to specify the write ID list to validate concurrent writes.
     msClient.alter_partitions(dbName, tblName,
-        Lists.newArrayList(part1), null, -1, currentWriteIds, badWriteId);
+        Lists.newArrayList(part1), null, currentWriteIds, badWriteId);
     msClient.alter_partitions(dbName, tblName,
-        Lists.newArrayList(part2), null, -1, currentWriteIds, badWriteId);
+        Lists.newArrayList(part2), null, currentWriteIds, badWriteId);
 
     // We expect two partitions to be updated.
     Map<String, List<ColumnStatisticsObj>> stats = msClient.getPartitionColumnStatistics(
         dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
-        Lists.newArrayList("s"), 0, currentWriteIds);
+        Lists.newArrayList("s"), currentWriteIds);
     assertEquals(1, stats.size());
 
     assertTrue(su.runOneIteration());
@@ -271,14 +271,14 @@ public class TestStatsUpdaterThread {
     // Analyze treats stats like data (new write ID), so stats still should not be valid.
     stats = msClient.getPartitionColumnStatistics(
         dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
-        Lists.newArrayList("s"), 0, currentWriteIds);
+        Lists.newArrayList("s"), currentWriteIds);
     assertEquals(1, stats.size());
 
     // New reader.
     currentWriteIds = msClient.getValidWriteIds(fqName).toString();
     stats = msClient.getPartitionColumnStatistics(
         dbName, tblName, Lists.newArrayList("p=1", "p=2", "p=3"),
-        Lists.newArrayList("s"), 0, currentWriteIds);
+        Lists.newArrayList("s"), currentWriteIds);
     assertEquals(3, stats.size());
 
     msClient.close();
@@ -588,8 +588,8 @@ public class TestStatsUpdaterThread {
   }
 
   private void verifyStatsUpToDate(String tbl, List<String> cols, IMetaStoreClient msClient,
-      long txnId, String validWriteIds, boolean isUpToDate) throws Exception {
-    Table table = msClient.getTable(ss.getCurrentDatabase(), tbl, txnId, validWriteIds);
+      String validWriteIds, boolean isUpToDate) throws Exception {
+    Table table = msClient.getTable(ss.getCurrentCatalog(), ss.getCurrentDatabase(), tbl, validWriteIds);
     verifyStatsUpToDate(table.getParameters(), cols, isUpToDate);
   }
 

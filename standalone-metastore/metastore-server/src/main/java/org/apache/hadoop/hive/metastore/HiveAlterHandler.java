@@ -90,7 +90,7 @@ public class HiveAlterHandler implements AlterHandler {
   @Override
   public void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
       String name, Table newt, EnvironmentContext environmentContext,
-      IHMSHandler handler, long txnId, String writeIdList)
+      IHMSHandler handler, String writeIdList)
           throws InvalidOperationException, MetaException {
     catName = normalizeIdentifier(catName);
     name = name.toLowerCase();
@@ -142,7 +142,7 @@ public class HiveAlterHandler implements AlterHandler {
 
       // check if table with the new name already exists
       if (!newTblName.equals(name) || !newDbName.equals(dbname)) {
-        if (msdb.getTable(catName, newDbName, newTblName,  -1, null) != null) {
+        if (msdb.getTable(catName, newDbName, newTblName, null) != null) {
           throw new InvalidOperationException("new table " + newDbName
               + "." + newTblName + " already exists");
         }
@@ -152,7 +152,7 @@ public class HiveAlterHandler implements AlterHandler {
       msdb.openTransaction();
       // get old table
       // Note: we don't verify stats here; it's done below in alterTableUpdateTableColumnStats.
-      oldt = msdb.getTable(catName, dbname, name, -1, null);
+      oldt = msdb.getTable(catName, dbname, name, null);
       if (oldt == null) {
         throw new InvalidOperationException("table " +
             TableName.getQualified(catName, dbname, name) + " doesn't exist");
@@ -278,7 +278,7 @@ public class HiveAlterHandler implements AlterHandler {
             }
           }
           // Do not verify stats parameters on a partitioned table.
-          msdb.alterTable(catName, dbname, name, newt, -1, null);
+          msdb.alterTable(catName, dbname, name, newt, null);
           // alterPartition is only for changing the partition location in the table rename
           if (dataWasMoved) {
 
@@ -297,7 +297,7 @@ public class HiveAlterHandler implements AlterHandler {
                 partValues.add(part.getValues());
               }
               msdb.alterPartitions(catName, newDbName, newTblName, partValues,
-                  partBatch, newt.getWriteId(), txnId, writeIdList);
+                  partBatch, newt.getWriteId(), writeIdList);
             }
           }
 
@@ -306,11 +306,11 @@ public class HiveAlterHandler implements AlterHandler {
             newPartColStats.getStatsDesc().setDbName(newDbName);
             newPartColStats.getStatsDesc().setTableName(newTblName);
             msdb.updatePartitionColumnStatistics(newPartColStats, partColStats.getKey().getValues(),
-                txnId, writeIdList, newt.getWriteId());
+                writeIdList, newt.getWriteId());
           }
         } else {
           alterTableUpdateTableColumnStats(
-              msdb, oldt, newt, environmentContext, txnId, writeIdList);
+              msdb, oldt, newt, environmentContext, writeIdList);
         }
       } else {
         // operations other than table rename
@@ -334,24 +334,24 @@ public class HiveAlterHandler implements AlterHandler {
               assert(colStats == null);
               if (cascade) {
                 msdb.alterPartition(
-                    catName, dbname, name, part.getValues(), part, txnId, writeIdList);
+                    catName, dbname, name, part.getValues(), part, writeIdList);
               } else {
                 // update changed properties (stats)
                 oldPart.setParameters(part.getParameters());
                 msdb.alterPartition(
-                    catName, dbname, name, part.getValues(), oldPart, txnId, writeIdList);
+                    catName, dbname, name, part.getValues(), oldPart, writeIdList);
               }
             }
             // Don't validate table-level stats for a partitoned table.
-            msdb.alterTable(catName, dbname, name, newt, -1, null);
+            msdb.alterTable(catName, dbname, name, newt, null);
           } else {
             LOG.warn("Alter table not cascaded to partitions.");
             alterTableUpdateTableColumnStats(
-                msdb, oldt, newt, environmentContext, txnId, writeIdList);
+                msdb, oldt, newt, environmentContext, writeIdList);
           }
         } else {
           alterTableUpdateTableColumnStats(
-              msdb, oldt, newt, environmentContext, txnId, writeIdList);
+              msdb, oldt, newt, environmentContext, writeIdList);
         }
       }
 
@@ -431,13 +431,13 @@ public class HiveAlterHandler implements AlterHandler {
     EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     return alterPartition(msdb, wh, DEFAULT_CATALOG_NAME, dbname, name, part_vals, new_part,
-        environmentContext, null, -1, null);
+        environmentContext, null, null);
   }
 
   @Override
   public Partition alterPartition(RawStore msdb, Warehouse wh, String catName, String dbname,
       String name, List<String> part_vals, final Partition new_part,
-      EnvironmentContext environmentContext, IHMSHandler handler, long txnId, String validWriteIds)
+      EnvironmentContext environmentContext, IHMSHandler handler, String validWriteIds)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     boolean success = false;
     Partition oldPart;
@@ -459,7 +459,7 @@ public class HiveAlterHandler implements AlterHandler {
       try {
         msdb.openTransaction();
 
-        Table tbl = msdb.getTable(catName, dbname, name,  -1, null);
+        Table tbl = msdb.getTable(catName, dbname, name, null);
         if (tbl == null) {
           throw new InvalidObjectException(
               "Unable to alter partition because table or database does not exist.");
@@ -481,7 +481,7 @@ public class HiveAlterHandler implements AlterHandler {
               oldPart.getSd().getCols(), tbl, new_part, null);
         }
         msdb.alterPartition(
-            catName, dbname, name, new_part.getValues(), new_part, txnId, validWriteIds);
+            catName, dbname, name, new_part.getValues(), new_part, validWriteIds);
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                                                 EventMessage.EventType.ALTER_PARTITION,
@@ -516,7 +516,7 @@ public class HiveAlterHandler implements AlterHandler {
     Database db;
     try {
       msdb.openTransaction();
-      Table tbl = msdb.getTable(DEFAULT_CATALOG_NAME, dbname, name,  -1, null);
+      Table tbl = msdb.getTable(DEFAULT_CATALOG_NAME, dbname, name, null);
       if (tbl == null) {
         throw new InvalidObjectException(
             "Unable to alter partition because table or database does not exist.");
@@ -617,12 +617,12 @@ public class HiveAlterHandler implements AlterHandler {
       String newPartName = Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues());
       ColumnStatistics cs = updateOrGetPartitionColumnStats(msdb, catName, dbname, name, oldPart.getValues(),
           oldPart.getSd().getCols(), tbl, new_part, null);
-      msdb.alterPartition(catName, dbname, name, part_vals, new_part, txnId, validWriteIds);
+      msdb.alterPartition(catName, dbname, name, part_vals, new_part, validWriteIds);
       if (cs != null) {
         cs.getStatsDesc().setPartName(newPartName);
         try {
           msdb.updatePartitionColumnStatistics(cs, new_part.getValues(),
-              txnId, validWriteIds, new_part.getWriteId());
+              validWriteIds, new_part.getWriteId());
         } catch (InvalidInputException iie) {
           throw new InvalidOperationException("Unable to update partition stats in table rename." + iie);
         } catch (NoSuchObjectException nsoe) {
@@ -668,7 +668,7 @@ public class HiveAlterHandler implements AlterHandler {
     EnvironmentContext environmentContext)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     return alterPartitions(msdb, wh, DEFAULT_CATALOG_NAME, dbname, name, new_parts,
-        environmentContext, -1, null, -1, null);
+        environmentContext, null, -1, null);
   }
 
   @Override
@@ -676,7 +676,7 @@ public class HiveAlterHandler implements AlterHandler {
                                          final String dbname, final String name,
                                          final List<Partition> new_parts,
                                          EnvironmentContext environmentContext,
-                                         long txnId, String writeIdList, long writeId,
+                                         String writeIdList, long writeId,
                                          IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<>();
@@ -691,7 +691,7 @@ public class HiveAlterHandler implements AlterHandler {
       msdb.openTransaction();
 
       // Note: should we pass in write ID here? We only update stats on parts so probably not.
-      Table tbl = msdb.getTable(catName, dbname, name,  -1, null);
+      Table tbl = msdb.getTable(catName, dbname, name, null);
       if (tbl == null) {
         throw new InvalidObjectException(
             "Unable to alter partitions because table or database does not exist.");
@@ -726,7 +726,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
       }
 
-      msdb.alterPartitions(catName, dbname, name, partValsList, new_parts, writeId, txnId, writeIdList);
+      msdb.alterPartitions(catName, dbname, name, partValsList, new_parts, writeId, writeIdList);
       Iterator<Partition> oldPartsIt = oldParts.iterator();
       for (Partition newPart : new_parts) {
         Partition oldPart;
@@ -795,7 +795,7 @@ public class HiveAlterHandler implements AlterHandler {
 
   @VisibleForTesting
   void alterTableUpdateTableColumnStats(RawStore msdb, Table oldTable, Table newTable,
-      EnvironmentContext ec, long txnId, String validWriteIds)
+      EnvironmentContext ec, String validWriteIds)
       throws MetaException, InvalidObjectException {
     String catName = normalizeIdentifier(oldTable.isSetCatName() ? oldTable.getCatName() :
         getDefaultCatalog(conf));
@@ -854,13 +854,13 @@ public class HiveAlterHandler implements AlterHandler {
       }
 
       // Change to new table and append stats for the new table
-      msdb.alterTable(catName, dbName, tableName, newTable, txnId, validWriteIds);
+      msdb.alterTable(catName, dbName, tableName, newTable, validWriteIds);
       if (updateColumnStats && !newStatsObjs.isEmpty()) {
         ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
         statsDesc.setDbName(newDbName);
         statsDesc.setTableName(newTableName);
         colStats.setStatsObj(newStatsObjs);
-        msdb.updateTableColumnStatistics(colStats, txnId, validWriteIds, newTable.getWriteId());
+        msdb.updateTableColumnStatistics(colStats, validWriteIds, newTable.getWriteId());
       }
     } catch (NoSuchObjectException nsoe) {
       LOG.debug("Could not find db entry." + nsoe);

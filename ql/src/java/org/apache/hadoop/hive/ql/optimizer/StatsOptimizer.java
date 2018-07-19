@@ -475,7 +475,6 @@ public class StatsOptimizer extends Transform {
                     hive.getMSC().getTableColumnStatistics(
                       tbl.getDbName(), tbl.getTableName(),
                       Lists.newArrayList(colName),
-                      tableSnapshot != null ? tableSnapshot.getTxnId() : -1,
                       tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
                 if (stats.isEmpty()) {
                   Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
@@ -541,7 +540,6 @@ public class StatsOptimizer extends Transform {
                   hive.getMSC().getTableColumnStatistics(
                     tbl.getDbName(), tbl.getTableName(),
                     Lists.newArrayList(colName),
-                      tableSnapshot != null ? tableSnapshot.getTxnId() : -1,
                       tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
               if (stats.isEmpty()) {
                 Logger.debug("No stats for " + tbl.getTableName() + " column " + colName);
@@ -685,7 +683,6 @@ public class StatsOptimizer extends Transform {
               ColumnStatisticsData statData =
                   hive.getMSC().getTableColumnStatistics(
                     tbl.getDbName(), tbl.getTableName(), Lists.newArrayList(colName),
-                      tableSnapshot != null ? tableSnapshot.getTxnId() : -1,
                       tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null)
                     .get(0).getStatsData();
               String name = colDesc.getTypeString().toUpperCase();
@@ -923,7 +920,6 @@ public class StatsOptimizer extends Transform {
 
       Map<String, List<ColumnStatisticsObj>> result = hive.getMSC().getPartitionColumnStatistics(
           tbl.getDbName(), tbl.getTableName(), partNames, Lists.newArrayList(colName),
-          tableSnapshot != null ? tableSnapshot.getTxnId() : -1,
           tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null);
       if (result.size() != parts.size()) {
         Logger.debug("Received " + result.size() + " stats for " + parts.size() + " partitions");
