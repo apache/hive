@@ -814,7 +814,7 @@ STAGE PLANS:
           properties:
             druid.fieldNames vc,vc0
             druid.fieldTypes boolean,boolean
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n3","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"isnull(\"cstring1\")","outputType":"FLOAT"},{"type":"expression","name":"vc0","expression":"notnull(\"cint\")","outputType":"FLOAT"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n3","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"isnull(\"cstring1\")","outputType":"LONG"},{"type":"expression","name":"vc0","expression":"notnull(\"cint\")","outputType":"LONG"}],"columns":["vc","vc0"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: boolean), vc0 (type: boolean)
